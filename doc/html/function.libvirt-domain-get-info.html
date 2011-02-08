@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+ <head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title>Extract information about a domain</title>
+ </head>
+ <body><div class="manualnavbar" style="text-align: center;">
+ <div class="prev" style="text-align: left; float: left;"><a href="function.libvirt-domain-get-id.html">libvirt_domain_get_id</a></div>
+ <div class="next" style="text-align: right; float: right;"><a href="function.libvirt-domain-get-job-info.html">libvirt_domain_get_job_info</a></div>
+ <div class="up"><a href="ref.libvirt.html">Libvirt Functions</a></div>
+ <div class="home"><a href="index.html">PHP Manual</a></div>
+</div><hr /><div id="function.libvirt-domain-get-info" class="refentry">
+ <div class="refnamediv">
+  <h1 class="refname">libvirt_domain_get_info</h1>
+  <p class="verinfo">(php-libvirt 0.1)</p><p class="refpurpose"><span class="refname">libvirt_domain_get_info</span> &mdash; <span class="dc-title">Extract information about a domain</span></p>
+
+ </div>
+
+ <a name="function.libvirt-domain-get-info.description"></a><div class="refsect1 description">
+  <h3 class="title">Description</h3>
+  <div class="methodsynopsis dc-description">
+   <span class="type">Array</span> <span class="methodname"><b>libvirt_domain_get_info</b></span>
+    ( <span class="methodparam"><span class="type">resource</span> <tt class="parameter">$domain</tt></span>
+   )</div>
+
+  <p class="para rdfs-comment">
+   Extract information about a domain. Note that if the connection used to get the domain is limited only a partial set of the information can be extracted.
+  </p>
+
+
+ </div>
+
+
+ <a name="function.libvirt-domain-get-info.parameters"></a><div class="refsect1 parameters">
+  <h3 class="title">Parameters</h3>
+ <p class="para">
+   </p><dl>
+
+    <dt class="varlistentry">
+
+     <span class="term"><i><tt class="parameter">domain</tt></i>
+</span>
+
+     </dt><dd class="listitem">
+
+      <p class="para">
+       Domain resource of domain to get information for.
+      </p>
+     </dd>
+
+    
+   </dl>
+<p>
+  </p>
+ </div>
+
+
+ <a name="function.libvirt-domain-get-info.returnvalues"></a><div class="refsect1 returnvalues">
+  <h3 class="title">Return Values</h3>
+  
+  <p class="para">
+   <b><tt class="constant">FALSE</tt></b> is returned on failure. On success associative array containing information is returned.
+  </p>
+  <p class="para">
+  The array contains these values:
+   </p><ul class="simplelist">
+   <li class="member">maxMem - the maximum memory in KBytes allowed</li>
+   <li class="member">memory - the memory in KBytes used by the domain</li>
+   <li class="member">nrVirtCpu - the number of virtual CPUs for the domain</li>
+   <li class="member">cpuUsed - the CPU time used in seconds</li>
+   <li class="member">state - the running state (one of <b><tt class="constant">VIR_DOMAIN_NOSTATE</tt></b>, <b><tt class="constant">VIR_DOMAIN_RUNNING</tt></b>, <b><tt class="constant">VIR_DOMAIN_BLOCKED</tt></b>, <b><tt class="constant">VIR_DOMAIN_PAUSED</tt></b>, <b><tt class="constant">VIR_DOMAIN_SHUTDOWN</tt></b>, <b><tt class="constant">VIR_DOMAIN_SHUTOFF</tt></b> or <b><tt class="constant">VIR_DOMAIN_CRASHED</tt></b>)</li>
+   </ul><p>
+  </p>
+ </div>
+
+
+ 
+
+ <a name="function.libvirt-domain-get-info.examples"></a><div class="refsect1 examples">
+  <h3 class="title">Examples</h3>
+  <p class="para">
+   </p><div class="example">
+    <p><b>Example #1 <b>libvirt_domain_get_info()</b> example</b></p>
+    <div class="example-contents para"><p>
+Example of getting domain info for domain named <strong class="userinput"><code>test</code></strong>
+.
+    </p></div>
+    <div class="example-contents programlisting">
+<div class="phpcode"><code><span style="color: #000000">
+<span style="color: #0000BB">&lt;?php<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;$dom</span><span style="color: #007700">=</span><span style="color: #0000BB">libvirt_domain_lookup_by_name</span><span style="color: #007700">(</span><span style="color: #0000BB">$connection</span><span style="color: #007700">,</span><span style="color: #DD0000">"test"</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color: #0000BB">$dominfo</span><span style="color: #007700">=</span><span style="color: #0000BB">libvirt_domain_get_info</span><span style="color: #007700">(</span><span style="color: #0000BB">$dom</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color: #0000BB">print_r</span><span style="color: #007700">(</span><span style="color: #0000BB">$dominfo</span><span style="color: #007700">);<br /><br /></span><span style="color: #0000BB">?&gt;</span>
+</span>
+</code></div>
+    </div>
+
+    <div class="example-contents para"><p>The above example will output 
+something similar to:</p></div>
+    <div class="example-contents screen">
+<div class="cdata"><pre>
+Array
+(
+    [maxMem] =&gt; 1048576
+    [memory] =&gt; 524288
+    [state] =&gt; 1
+    [nrVirtCpu] =&gt; 2
+    [cpuUsed] =&gt; 98718.23
+)
+</pre></div>
+    </div>
+   </div><p>
+  </p>
+ </div>
+
+
+ <a name="function.libvirt-domain-get-info.seealso"></a><div class="refsect1 seealso">
+  <h3 class="title">See Also</h3>
+  <p class="para">
+   </p><ul class="simplelist">
+    <li class="member"><a href="function.libvirt-domain-get-name.html" class="function" rel="rdfs-seeAlso">libvirt_domain_get_name()</a> - Get the public name for that domain</li>
+    <li class="member"><a href="function.libvirt-domain-get-uuid.html" class="function" rel="rdfs-seeAlso">libvirt_domain_get_uuid()</a> - Get the UUID for a domain as binary string.</li>
+    <li class="member"><a href="function.libvirt-domain-get-uuid-string.html" class="function" rel="rdfs-seeAlso">libvirt_domain_get_uuid_string()</a> - Get the UUID for a domain as string.</li>
+   </ul><p>
+  </p>
+ </div>
+
+
+</div><hr /><div class="manualnavbar" style="text-align: center;">
+ <div class="prev" style="text-align: left; float: left;"><a href="function.libvirt-domain-get-id.html">libvirt_domain_get_id</a></div>
+ <div class="next" style="text-align: right; float: right;"><a href="function.libvirt-domain-get-job-info.html">libvirt_domain_get_job_info</a></div>
+ <div class="up"><a href="ref.libvirt.html">Libvirt Functions</a></div>
+ <div class="home"><a href="index.html">PHP Manual</a></div>
+</div></body></html>

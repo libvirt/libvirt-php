@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+ <head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title>Get storagevolume information</title>
+ </head>
+ <body><div class="manualnavbar" style="text-align: center;">
+ <div class="prev" style="text-align: left; float: left;"><a href="function.libvirt-storagevolume-create-xml.html">libvirt_storagevolume_create_xml</a></div>
+ <div class="next" style="text-align: right; float: right;"><a href="function.libvirt-storagevolume-get-xml-desc.html">libvirt_storagevolume_get_xml_desc</a></div>
+ <div class="up"><a href="ref.libvirt.html">Libvirt Functions</a></div>
+ <div class="home"><a href="index.html">PHP Manual</a></div>
+</div><hr /><div id="function.libvirt-storagevolume-get-info" class="refentry">
+ <div class="refnamediv">
+  <h1 class="refname">libvirt_storagevolume_get_info</h1>
+  <p class="verinfo">(php-libvirt 0.4)</p><p class="refpurpose"><span class="refname">libvirt_storagevolume_get_info</span> &mdash; <span class="dc-title">Get storagevolume information</span></p>
+
+ </div>
+
+ <a name="function.libvirt-storagevolume-get-info.description"></a><div class="refsect1 description">
+  <h3 class="title">Description</h3>
+  <div class="methodsynopsis dc-description">
+   <span class="type">array</span> <span class="methodname"><b>libvirt_storagevolume_get_info</b></span>
+    ( <span class="methodparam"><span class="type">resource</span> <tt class="parameter">$volume resource</tt></span>
+   )</div>
+
+  <p class="para rdfs-comment">
+   This function returns array containing volume information 
+  </p>
+   <blockquote><p><b class="note">Note</b>: <b>Warning</b><br />
+.
+This function returns values that may be bigger than 32bit integer limit. Please read this <a href="libvirt.longlong.html" class="link">note</a> for more details.
+<br />
+</p></blockquote>
+ </div>
+
+
+ <a name="function.libvirt-storagevolume-get-info.parameters"></a><div class="refsect1 parameters">
+  <h3 class="title">Parameters</h3>
+ <p class="para">
+   </p><dl>
+
+    <dt class="varlistentry">
+
+     <span class="term"><i><tt class="parameter">volume resource</tt></i>
+</span>
+
+     </dt><dd class="listitem">
+
+      <p class="para">
+       Connection resource of volume
+      </p>
+     </dd>
+
+    
+   </dl>
+<p>
+  </p>
+ </div>
+
+
+ <a name="function.libvirt-storagevolume-get-info.returnvalues"></a><div class="refsect1 returnvalues">
+  <h3 class="title">Return Values</h3>
+  
+  <p class="para">
+    Array with volume information. <b><tt class="constant">FALSE</tt></b> on failure
+  </p>
+ </div>
+
+
+ 
+
+ <a name="function.libvirt-storagevolume-get-info.examples"></a><div class="refsect1 examples">
+  <h3 class="title">Examples</h3>
+  <p class="para">
+   </p><div class="example">
+    <p><b>Example #1 <b>libvirt_storagevolume_get_info()</b> example</b></p>
+    <div class="example-contents para"><p>
+     Array with volume information
+    </p></div>
+    <div class="example-contents programlisting">
+<div class="phpcode"><code><span style="color: #000000">
+<span style="color: #0000BB">&lt;?php<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;$conn</span><span style="color: #007700">=</span><span style="color: #0000BB">libvirt_connect</span><span style="color: #007700">(</span><span style="color: #0000BB">$uri</span><span style="color: #007700">,</span><span style="color: #0000BB">true</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color: #0000BB">$pool</span><span style="color: #007700">=</span><span style="color: #0000BB">libvirt_storagepools_lookup_by_name</span><span style="color: #007700">(</span><span style="color: #0000BB">$conn</span><span style="color: #007700">,</span><span style="color: #DD0000">'default'</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color: #0000BB">$volume</span><span style="color: #007700">=</span><span style="color: #0000BB">libvirt_storagevolume_lookup_by_name</span><span style="color: #007700">(</span><span style="color: #0000BB">$pool</span><span style="color: #007700">,</span><span style="color: #DD0000">'volume1'</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color: #0000BB">$volumeInfo</span><span style="color: #007700">=</span><span style="color: #0000BB">libtvirt_storagevolume_get_info</span><span style="color: #007700">(</span><span style="color: #0000BB">$volue</span><span style="color: #007700">);<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color: #0000BB">var_dump</span><span style="color: #007700">(</span><span style="color: #0000BB">$volumeInfo</span><span style="color: #007700">);<br /></span><span style="color: #0000BB">?&gt;</span>
+</span>
+</code></div>
+    </div>
+
+    <div class="example-contents para"><p>The above example will output 
+something similar to:</p></div>
+    <div class="example-contents screen">
+<div class="cdata"><pre>
+array(3) {
+  [&quot;type&quot;]=&gt;
+  int(1)
+  [&quot;capacity&quot;]=&gt;
+  int(2147483648)
+  [&quot;allocation&quot;]=&gt;
+  int(2147483648)
+}
+</pre></div>
+    </div>
+   </div><p>
+  </p>
+ </div>
+
+
+ <a name="function.libvirt-storagevolume-get-info.seealso"></a><div class="refsect1 seealso">
+  <h3 class="title">See Also</h3>
+  <p class="para">
+   </p><ul class="simplelist">
+    <li class="member"><a href="function.libvirt-storagevolume-lookup-by-name.html" class="function" rel="rdfs-seeAlso">libvirt_storagevolume_lookup_by_name()</a> - Lookup volume resource by name</li>
+    <li class="member"><a href="function.libvirt-storagevolume-get-xml-desc.html" class="function" rel="rdfs-seeAlso">libvirt_storagevolume_get_xml_desc()</a> - Get storagevolume information in XML format</li>
+    <li class="member"><a href="function.libvirt-storagevolume-create-xml.html" class="function" rel="rdfs-seeAlso">libvirt_storagevolume_create_xml()</a> - Create a new storage volume based on XML input</li>
+   </ul><p>
+  </p>
+ </div>
+
+
+</div><hr /><div class="manualnavbar" style="text-align: center;">
+ <div class="prev" style="text-align: left; float: left;"><a href="function.libvirt-storagevolume-create-xml.html">libvirt_storagevolume_create_xml</a></div>
+ <div class="next" style="text-align: right; float: right;"><a href="function.libvirt-storagevolume-get-xml-desc.html">libvirt_storagevolume_get_xml_desc</a></div>
+ <div class="up"><a href="ref.libvirt.html">Libvirt Functions</a></div>
+ <div class="home"><a href="index.html">PHP Manual</a></div>
+</div></body></html>

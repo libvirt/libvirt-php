@@ -1,0 +1,143 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+ <head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title>Extract information about progress of a background job on a domain. Will return an error if the domain is not active.</title>
+ </head>
+ <body><div class="manualnavbar" style="text-align: center;">
+ <div class="prev" style="text-align: left; float: left;"><a href="function.libvirt-domain-get-info.html">libvirt_domain_get_info</a></div>
+ <div class="next" style="text-align: right; float: right;"><a href="function.libvirt-domain-get-name.html">libvirt_domain_get_name</a></div>
+ <div class="up"><a href="ref.libvirt.html">Libvirt Functions</a></div>
+ <div class="home"><a href="index.html">PHP Manual</a></div>
+</div><hr /><div id="function.libvirt-domain-get-job-info" class="refentry">
+ <div class="refnamediv">
+  <h1 class="refname">libvirt_domain_get_job_info</h1>
+  <p class="verinfo">(php-libvirt 0.4)</p><p class="refpurpose"><span class="refname">libvirt_domain_get_job_info</span> &mdash; <span class="dc-title">Extract information about progress of a background job on a domain. Will return an error if the domain is not active.</span></p>
+
+ </div>
+
+
+
+ <a name="function.libvirt-domain-get-job-info.description"></a><div class="refsect1 description">
+  <h3 class="title">Description</h3>
+  <div class="methodsynopsis dc-description">
+   <span class="type">array</span> <span class="methodname"><b>libvirt_domain_get_job_info</b></span>
+    ( <span class="methodparam"><span class="type">resource</span> <tt class="parameter">$domain</tt></span>
+   )</div>
+
+  <p class="para rdfs-comment">
+  Extract information about progress of a background job on a domain. Will return an error if the domain is not active. For exact description of returned values see <a href="http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetJobInfo" class="link external">&raquo; original documentation</a>.
+  </p>
+
+ <blockquote><p><b class="note">Note</b>: <b>Libvirt version</b><br />
+.
+This function has been added to Libvirt in version 0.7.7. You need this or newer version of Libvirt to be able to use this function..
+<br />
+</p></blockquote>
+<blockquote><p><b class="note">Note</b>: <b>Warning</b><br />
+.
+This function returns values that may be bigger than 32bit integer limit. Please read this <a href="libvirt.longlong.html" class="link">note</a> for more details.
+<br />
+</p></blockquote>
+
+
+ </div>
+
+
+ <a name="function.libvirt-domain-get-job-info.parameters"></a><div class="refsect1 parameters">
+  <h3 class="title">Parameters</h3>
+ <p class="para">
+   </p><dl>
+
+    <dt class="varlistentry">
+
+     <span class="term"><i><tt class="parameter">domain</tt></i>
+</span>
+
+     </dt><dd class="listitem">
+
+      <p class="para">
+       Domain resource of domain to get job information of
+      </p>
+     </dd>
+
+    
+   </dl>
+<p>
+  </p>
+ </div>
+
+
+
+ <a name="function.libvirt-domain-get-job-info.returnvalues"></a><div class="refsect1 returnvalues">
+  <h3 class="title">Return Values</h3>
+  
+  <p class="para">
+   Associative array on success and <b><tt class="constant">FALSE</tt></b> on failure.
+  </p>
+ </div>
+
+
+<a name="function.libvirt-domain-get-job-info.examples"></a><div class="refsect1 examples">
+  <h3 class="title">Examples</h3>
+  <p class="para">
+   </p><div class="example">
+    <p><b>Example #1 <b>libvirt_domain_get_job_info()</b> example</b></p>
+    <div class="example-contents para"><p>
+    Get info about live migration of domain.
+    </p></div>
+    <div class="example-contents programlisting">
+<div class="phpcode"><code><span style="color: #000000">
+<span style="color: #0000BB">&lt;?php<br />&nbsp;&nbsp;&nbsp;&nbsp;$dom</span><span style="color: #007700">=@</span><span style="color: #0000BB">libvirt_domain_lookup_by_name</span><span style="color: #007700">(</span><span style="color: #0000BB">$conn</span><span style="color: #007700">,</span><span style="color: #DD0000">"f13_exper"</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(</span><span style="color: #0000BB">$dom</span><span style="color: #007700">==</span><span style="color: #0000BB">false</span><span style="color: #007700">)<br />&nbsp;&nbsp;&nbsp;&nbsp;{<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo&nbsp;(</span><span style="color: #DD0000">"Domain&nbsp;not&nbsp;found\n"</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo&nbsp;(</span><span style="color: #DD0000">"Libvirt&nbsp;last&nbsp;error:&nbsp;"</span><span style="color: #007700">.</span><span style="color: #0000BB">libvirt_get_last_error</span><span style="color: #007700">().</span><span style="color: #DD0000">"\n"</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exit;<br />&nbsp;&nbsp;&nbsp;&nbsp;}<br />&nbsp;&nbsp;&nbsp;&nbsp;echo&nbsp;(</span><span style="color: #DD0000">"Domain&nbsp;found\n"</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;echo&nbsp;(</span><span style="color: #DD0000">"Getting&nbsp;job&nbsp;info&nbsp;for&nbsp;the&nbsp;domain\n"</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color: #0000BB">$info</span><span style="color: #007700">=</span><span style="color: #0000BB">libvirt_domain_get_job_info</span><span style="color: #007700">(</span><span style="color: #0000BB">$dom</span><span style="color: #007700">);<br /><br /></span><span style="color: #0000BB">?&gt;</span>
+</span>
+</code></div>
+    </div>
+
+    <div class="example-contents para"><p>The above example will output 
+something similar to:</p></div>
+    <div class="example-contents screen">
+<div class="cdata"><pre>
+Domain found
+Getting job info for the domain
+Array
+(
+    [type] =&gt; 2
+    [time_elapsed] =&gt; 24036
+    [time_remaining] =&gt; 0
+    [data_total] =&gt; 554041344
+    [data_processed] =&gt; 244097024
+    [data_remaining] =&gt; 313507840
+    [mem_total] =&gt; 554041344
+    [mem_processed] =&gt; 244097024
+    [mem_remaining] =&gt; 313507840
+    [file_total] =&gt; 0
+    [file_processed] =&gt; 0
+    [file_remaining] =&gt; 0
+)
+
+</pre></div>
+    </div>
+   </div><p>
+  </p>
+ </div>
+
+
+
+
+ <a name="function.libvirt-domain-get-job-info.seealso"></a><div class="refsect1 seealso">
+  <h3 class="title">See Also</h3>
+  <p class="para">
+   </p><ul class="simplelist">
+    <li class="member"><a href="function.libvirt-domain-migrate.html" class="function" rel="rdfs-seeAlso">libvirt_domain_migrate()</a> - Migrate the domain object from its current host to the destination host defined by a connection</li>
+    <li class="member"><a href="function.libvirt-domain-migrate-to-uri.html" class="function" rel="rdfs-seeAlso">libvirt_domain_migrate_to_uri()</a> - Migrate the domain object from its current host to the destination host defined by URI</li>
+   </ul><p>
+  </p>
+ </div>
+
+
+</div><hr /><div class="manualnavbar" style="text-align: center;">
+ <div class="prev" style="text-align: left; float: left;"><a href="function.libvirt-domain-get-info.html">libvirt_domain_get_info</a></div>
+ <div class="next" style="text-align: right; float: right;"><a href="function.libvirt-domain-get-name.html">libvirt_domain_get_name</a></div>
+ <div class="up"><a href="ref.libvirt.html">Libvirt Functions</a></div>
+ <div class="home"><a href="index.html">PHP Manual</a></div>
+</div></body></html>

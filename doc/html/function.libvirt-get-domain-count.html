@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+ <head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title>Get the number of all domains</title>
+ </head>
+ <body><div class="manualnavbar" style="text-align: center;">
+ <div class="prev" style="text-align: left; float: left;"><a href="function.libvirt-get-active-domain-count.html">libvirt_get_active_domain_count</a></div>
+ <div class="next" style="text-align: right; float: right;"><a href="function.libvirt-get-hostname.html">libvirt_get_hostname</a></div>
+ <div class="up"><a href="ref.libvirt.html">Libvirt Functions</a></div>
+ <div class="home"><a href="index.html">PHP Manual</a></div>
+</div><hr /><div id="function.libvirt-get-domain-count" class="refentry">
+ <div class="refnamediv">
+  <h1 class="refname">libvirt_get_domain_count</h1>
+  <p class="verinfo">(php-libvirt 0.1)</p><p class="refpurpose"><span class="refname">libvirt_get_domain_count</span> &mdash; <span class="dc-title">Get the number of all domains</span></p>
+
+ </div>
+
+ <a name="function.libvirt-get-domain-count.description"></a><div class="refsect1 description">
+  <h3 class="title">Description</h3>
+  <div class="methodsynopsis dc-description">
+   <span class="type">Integer</span> <span class="methodname"><b>libvirt_get_domain_count</b></span>
+    ( <span class="methodparam"><span class="type">resource</span> <tt class="parameter">$connection</tt></span>
+   )</div>
+
+  <p class="para rdfs-comment">
+   Get the number of active and inactive domains. 
+  </p>
+
+ </div>
+
+
+  <a name="function.libvirt-get-domain-count.parameters"></a><div class="refsect1 parameters">
+  <h3 class="title">Parameters</h3>
+ <p class="para">
+   </p><dl>
+
+    <dt class="varlistentry">
+
+     <span class="term"><i><tt class="parameter">connection</tt></i>
+</span>
+
+     </dt><dd class="listitem">
+
+      <p class="para">
+       Connection resource of hypervisor. 
+      </p>
+     </dd>
+
+    
+   </dl>
+<p>
+  </p>
+ </div>
+
+
+ <a name="function.libvirt-get-domain-count.returnvalues"></a><div class="refsect1 returnvalues">
+  <h3 class="title">Return Values</h3>
+  
+  <p class="para">
+   Number of active and inactive domains. The result is the same as <a href="function.libvirt-get-inactive-domain-count.html" class="function">libvirt_get_inactive_domain_count()</a>+<a href="function.libvirt-get-active-domain-count.html" class="function">libvirt_get_active_domain_count()</a>.
+  </p>
+ </div>
+
+
+ <a name="function.libvirt-get-domain-count.examples"></a><div class="refsect1 examples">
+  <h3 class="title">Examples</h3>
+  <p class="para">
+   </p><div class="example">
+    <p><b>Example #1 <b>libvirt_get_domain_count()</b>,<a href="function.libvirt-get-active-domain-count.html" class="function">libvirt_get_active_domain_count()</a> and <a href="function.libvirt-get-inactive-domain-count.html" class="function">libvirt_get_inactive_domain_count()</a> example</b></p>
+    <div class="example-contents para"><p>
+    Get count of all, active and inactive domains.
+    </p></div>
+    <div class="example-contents programlisting">
+<div class="phpcode"><code><span style="color: #000000">
+<span style="color: #0000BB">&lt;?php<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color: #007700">echo&nbsp;(</span><span style="color: #DD0000">"Domain&nbsp;count:&nbsp;Active&nbsp;"</span><span style="color: #007700">.</span><span style="color: #0000BB">libvirt_get_active_domain_count</span><span style="color: #007700">(</span><span style="color: #0000BB">$conn</span><span style="color: #007700">).</span><span style="color: #DD0000">",Inactive&nbsp;"</span><span style="color: #007700">.</span><span style="color: #0000BB">libvirt_get_inactive_domain_count</span><span style="color: #007700">(</span><span style="color: #0000BB">$conn</span><span style="color: #007700">).</span><span style="color: #DD0000">",&nbsp;Total&nbsp;"</span><span style="color: #007700">.</span><span style="color: #0000BB">libvirt_get_domain_count</span><span style="color: #007700">(</span><span style="color: #0000BB">$conn</span><span style="color: #007700">).</span><span style="color: #DD0000">"\n"</span><span style="color: #007700">);<br /><br /></span><span style="color: #0000BB">?&gt;</span>
+</span>
+</code></div>
+    </div>
+
+    <div class="example-contents para"><p>The above example will output 
+something similar to:</p></div>
+    <div class="example-contents screen">
+<div class="cdata"><pre>
+Domain count: Active 1,Inactive 6, Total 7
+</pre></div>
+    </div>
+   </div><p>
+  </p>
+ </div>
+
+
+<a name="function.libvirt-get-domain-count.seealso"></a><div class="refsect1 seealso">
+  <h3 class="title">See Also</h3>
+  <p class="para">
+   </p><ul class="simplelist">
+    <li class="member"><a href="function.libvirt-get-active-domain-count.html" class="function" rel="rdfs-seeAlso">libvirt_get_active_domain_count()</a> - Get the number of active domains.</li>
+    <li class="member"><a href="function.libvirt-get-inactive-domain-count.html" class="function" rel="rdfs-seeAlso">libvirt_get_inactive_domain_count()</a> - get the number of defined domains</li>
+   </ul><p>
+  </p>
+ </div>
+
+
+</div><hr /><div class="manualnavbar" style="text-align: center;">
+ <div class="prev" style="text-align: left; float: left;"><a href="function.libvirt-get-active-domain-count.html">libvirt_get_active_domain_count</a></div>
+ <div class="next" style="text-align: right; float: right;"><a href="function.libvirt-get-hostname.html">libvirt_get_hostname</a></div>
+ <div class="up"><a href="ref.libvirt.html">Libvirt Functions</a></div>
+ <div class="home"><a href="index.html">PHP Manual</a></div>
+</div></body></html>

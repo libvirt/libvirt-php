@@ -1,0 +1,96 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+ <head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title>Launch a new guest domain, based on an XML description</title>
+ </head>
+ <body><div class="manualnavbar" style="text-align: center;">
+ <div class="prev" style="text-align: left; float: left;"><a href="function.libvirt-domain-block-stats.html">libvirt_domain_block_stats</a></div>
+ <div class="next" style="text-align: right; float: right;"><a href="function.libvirt-domain-create.html">libvirt_domain_create</a></div>
+ <div class="up"><a href="ref.libvirt.html">Libvirt Functions</a></div>
+ <div class="home"><a href="index.html">PHP Manual</a></div>
+</div><hr /><div id="function.libvirt-domain-create-xml" class="refentry">
+ <div class="refnamediv">
+  <h1 class="refname">libvirt_domain_create_xml</h1>
+  <p class="verinfo">(php-libvirt 0.1)</p><p class="refpurpose"><span class="refname">libvirt_domain_create_xml</span> &mdash; <span class="dc-title">Launch a new guest domain, based on an XML description</span></p>
+
+ </div>
+
+ <a name="function.libvirt-domain-create-xml.description"></a><div class="refsect1 description">
+  <h3 class="title">Description</h3>
+  <div class="methodsynopsis dc-description">
+   <span class="type">resource</span> <span class="methodname"><b>libvirt_domain_create_xml</b></span>
+    ( <span class="methodparam"><span class="type">resource</span> <tt class="parameter">$connection</tt></span>
+   , <span class="methodparam"><span class="type">string</span> <tt class="parameter">$xml</tt></span>
+   )</div>
+
+  <p class="para rdfs-comment">
+   Launch a new guest domain, based on an XML description similar to the one returned by <a href="function.libvirt-domain-get-xml-desc.html" class="function">libvirt_domain_get_xml_desc()</a>. This function may requires privileged access to the hypervisor. The domain is not persistent, so its definition will disappear when it is destroyed, or if the host is restarted (see <a href="function.libvirt-domain-define-xml.html" class="function">libvirt_domain_define_xml()</a> to define persistent domains).
+  </p>
+
+ </div>
+
+
+ <a name="function.libvirt-domain-create-xml.parameters"></a><div class="refsect1 parameters">
+  <h3 class="title">Parameters</h3>
+ <p class="para">
+   </p><dl>
+
+    <dt class="varlistentry">
+
+     <span class="term"><i><tt class="parameter">connection</tt></i>
+</span>
+
+     </dt><dd class="listitem">
+
+      <p class="para">
+       Libvirt connection obtained by calling <a href="function.libvirt-connect.html" class="function">libvirt_connect()</a>.
+      </p>
+     </dd>
+
+    
+    <dt class="varlistentry">
+
+     <span class="term"><i><tt class="parameter">xml</tt></i>
+</span>
+
+     </dt><dd class="listitem">
+
+      <p class="para">
+	XML description of the domain. For more details see <a href="http://www.libvirt.org/formatdomain.html" class="link external">&raquo; http://www.libvirt.org/formatdomain.html</a>
+      </p>
+     </dd>
+
+    
+   </dl>
+<p>
+  </p>
+ </div>
+
+
+ <a name="function.libvirt-domain-create-xml.returnvalues"></a><div class="refsect1 returnvalues">
+  <h3 class="title">Return Values</h3>
+  
+  <p class="para">
+   Returns <b><tt class="constant">FALSE</tt></b> on failure and domain resource on success
+  </p>
+ </div>
+
+
+ 
+ <a name="function.libvirt-domain-create-xml.seealso"></a><div class="refsect1 seealso">
+  <h3 class="title">See Also</h3>
+  <p class="para">
+   </p><ul class="simplelist">
+    <li class="member"><a href="function.libvirt-domain-define-xml.html" class="function" rel="rdfs-seeAlso">libvirt_domain_define_xml()</a> - Define a domain, but does not start it.</li>
+   </ul><p>
+  </p>
+ </div>
+
+
+</div><hr /><div class="manualnavbar" style="text-align: center;">
+ <div class="prev" style="text-align: left; float: left;"><a href="function.libvirt-domain-block-stats.html">libvirt_domain_block_stats</a></div>
+ <div class="next" style="text-align: right; float: right;"><a href="function.libvirt-domain-create.html">libvirt_domain_create</a></div>
+ <div class="up"><a href="ref.libvirt.html">Libvirt Functions</a></div>
+ <div class="home"><a href="index.html">PHP Manual</a></div>
+</div></body></html>

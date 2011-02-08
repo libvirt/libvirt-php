@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+ <head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title>Migrate the domain object from its current host to the destination host defined by a connection</title>
+ </head>
+ <body><div class="manualnavbar" style="text-align: center;">
+ <div class="prev" style="text-align: left; float: left;"><a href="function.libvirt-domain-migrate-to-uri.html">libvirt_domain_migrate_to_uri</a></div>
+ <div class="next" style="text-align: right; float: right;"><a href="function.libvirt-domain-reboot.html">libvirt_domain_reboot</a></div>
+ <div class="up"><a href="ref.libvirt.html">Libvirt Functions</a></div>
+ <div class="home"><a href="index.html">PHP Manual</a></div>
+</div><hr /><div id="function.libvirt-domain-migrate" class="refentry">
+ <div class="refnamediv">
+  <h1 class="refname">libvirt_domain_migrate</h1>
+  <p class="verinfo">(php-libvirt 0.4)</p><p class="refpurpose"><span class="refname">libvirt_domain_migrate</span> &mdash; <span class="dc-title">Migrate the domain object from its current host to the destination host defined by a connection</span></p>
+
+ </div>
+
+ <a name="function.libvirt-domain-migrate.description"></a><div class="refsect1 description">
+  <h3 class="title">Description</h3>
+  <div class="methodsynopsis dc-description">
+   <span class="type">resource</span> <span class="methodname"><b>libvirt_domain_migrate</b></span>
+    ( <span class="methodparam"><span class="type">resource</span> <tt class="parameter">$domain</tt></span>
+   , <span class="methodparam"><span class="type">resource</span> <tt class="parameter">$dconn</tt></span>
+   , <span class="methodparam"><span class="type">int</span> <tt class="parameter">$flags</tt></span>
+   , <span class="methodparam"><span class="type">string</span> <tt class="parameter">$dname</tt></span>
+   , <span class="methodparam"><span class="type">string</span> <tt class="parameter">$uri</tt></span>
+   , <span class="methodparam"><span class="type">integer</span> <tt class="parameter">$bandwith</tt></span>
+   )</div>
+
+  <p class="para rdfs-comment">
+   Performs migration of the domain from one host to another. For description of parameters and flags see <a href="http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrate" class="link external">&raquo; original documentation</a>.
+  </p>
+  <p class="para">
+   Please note that the function returns after the migration is complete. It may take a lot of time to migrate a host. Be sure to configure PHP maximum execution time.
+  </p>
+
+ </div>
+
+
+ <a name="function.libvirt-domain-migrate.returnvalues"></a><div class="refsect1 returnvalues">
+  <h3 class="title">Return Values</h3>
+  
+  <p class="para">
+   Resource to new domain  on success and <b><tt class="constant">FALSE</tt></b> on failure. Please note that the resource of the domain is in the context of dconn.
+  </p>
+ </div>
+
+
+<a name="function.libvirt-domain-migrate.examples"></a><div class="refsect1 examples">
+  <h3 class="title">Examples</h3>
+  <p class="para">
+   </p><div class="example">
+    <p><b>Example #1 <b>libvirt_domain_migrate()</b> example</b></p>
+    <div class="example-contents para"><p>
+    Live migrate domain (f13_exper) to another node
+    </p></div>
+    <div class="example-contents programlisting">
+<div class="phpcode"><code><span style="color: #000000">
+<span style="color: #0000BB">&lt;?php<br />&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color: #007700">echo&nbsp;(</span><span style="color: #DD0000">"Looking&nbsp;up&nbsp;f13_exper&nbsp;domain\n"</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color: #0000BB">$dom</span><span style="color: #007700">=@</span><span style="color: #0000BB">libvirt_domain_lookup_by_name</span><span style="color: #007700">(</span><span style="color: #0000BB">$conn</span><span style="color: #007700">,</span><span style="color: #DD0000">"f13_exper"</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(</span><span style="color: #0000BB">$dom</span><span style="color: #007700">==</span><span style="color: #0000BB">false</span><span style="color: #007700">)<br />&nbsp;&nbsp;&nbsp;&nbsp;{<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo&nbsp;(</span><span style="color: #DD0000">"Domain&nbsp;not&nbsp;found\n"</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo&nbsp;(</span><span style="color: #DD0000">"Libvirt&nbsp;last&nbsp;error:&nbsp;"</span><span style="color: #007700">.</span><span style="color: #0000BB">libvirt_get_last_error</span><span style="color: #007700">().</span><span style="color: #DD0000">"\n"</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exit;<br />&nbsp;&nbsp;&nbsp;&nbsp;}<br />&nbsp;&nbsp;&nbsp;&nbsp;echo&nbsp;(</span><span style="color: #DD0000">"Domain&nbsp;found\n"</span><span style="color: #007700">);<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;echo&nbsp;(</span><span style="color: #DD0000">"Connecting&nbsp;to&nbsp;libvirt&nbsp;(URI:$duri)\n"</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color: #0000BB">$dconn</span><span style="color: #007700">=</span><span style="color: #0000BB">libvirt_connect</span><span style="color: #007700">(</span><span style="color: #0000BB">$duri</span><span style="color: #007700">,</span><span style="color: #0000BB">false</span><span style="color: #007700">,</span><span style="color: #0000BB">$credentials</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(</span><span style="color: #0000BB">$dconn</span><span style="color: #007700">==</span><span style="color: #0000BB">false</span><span style="color: #007700">)<br />&nbsp;&nbsp;&nbsp;&nbsp;{<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo&nbsp;(</span><span style="color: #DD0000">"Libvirt&nbsp;last&nbsp;error:&nbsp;"</span><span style="color: #007700">.</span><span style="color: #0000BB">libvirt_get_last_error</span><span style="color: #007700">().</span><span style="color: #DD0000">"\n"</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exit;<br />&nbsp;&nbsp;&nbsp;&nbsp;}<br />&nbsp;&nbsp;&nbsp;&nbsp;echo&nbsp;(</span><span style="color: #DD0000">"Connected\n"</span><span style="color: #007700">);<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;echo&nbsp;(</span><span style="color: #DD0000">"Migrating&nbsp;domain&nbsp;to&nbsp;$duri\n"</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color: #0000BB">$ddom</span><span style="color: #007700">=</span><span style="color: #0000BB">libvirt_domain_migrate</span><span style="color: #007700">(</span><span style="color: #0000BB">$dom</span><span style="color: #007700">,</span><span style="color: #0000BB">$dconn</span><span style="color: #007700">,</span><span style="color: #0000BB">VIR_MIGRATE_LIVE&nbsp;</span><span style="color: #007700">|&nbsp;</span><span style="color: #0000BB">VIR_MIGRATE_PEER2PEER&nbsp;</span><span style="color: #007700">|&nbsp;</span><span style="color: #0000BB">VIR_MIGRATE_PERSIST_DEST&nbsp;</span><span style="color: #007700">|&nbsp;</span><span style="color: #0000BB">VIR_MIGRATE_UNDEFINE_SOURCE</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(</span><span style="color: #0000BB">$ddom</span><span style="color: #007700">==</span><span style="color: #0000BB">false</span><span style="color: #007700">)<br />&nbsp;&nbsp;&nbsp;&nbsp;{<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo&nbsp;(</span><span style="color: #DD0000">"Failure!"</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo&nbsp;(</span><span style="color: #DD0000">"Libvirt&nbsp;last&nbsp;error:&nbsp;"</span><span style="color: #007700">.</span><span style="color: #0000BB">libvirt_get_last_error</span><span style="color: #007700">().</span><span style="color: #DD0000">"\n"</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;}<br />&nbsp;&nbsp;&nbsp;&nbsp;else<br />&nbsp;&nbsp;&nbsp;&nbsp;{<br />&nbsp;&nbsp;&nbsp;&nbsp;echo&nbsp;(</span><span style="color: #DD0000">"Success\n"</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;echo&nbsp;(</span><span style="color: #DD0000">"DDom&nbsp;is&nbsp;resource&nbsp;($ddom)&nbsp;to&nbsp;migrated&nbsp;domain&nbsp;in&nbsp;context&nbsp;of&nbsp;destination&nbsp;connection\n"</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;}<br /><br /></span><span style="color: #0000BB">?&gt;</span>
+</span>
+</code></div>
+    </div>
+
+   </div><p>
+  </p>
+ </div>
+
+
+
+
+ <a name="function.libvirt-domain-migrate.seealso"></a><div class="refsect1 seealso">
+  <h3 class="title">See Also</h3>
+  <p class="para">
+   </p><ul class="simplelist">
+    <li class="member"><a href="function.libvirt-domain-migrate-to-uri.html" class="function" rel="rdfs-seeAlso">libvirt_domain_migrate_to_uri()</a> - Migrate the domain object from its current host to the destination host defined by URI</li>
+    <li class="member"><a href="function.libvirt-domain-get-job-info.html" class="function" rel="rdfs-seeAlso">libvirt_domain_get_job_info()</a> - Extract information about progress of a background job on a domain. Will return an error if the domain is not active.</li>
+   </ul><p>
+  </p>
+ </div>
+
+
+</div><hr /><div class="manualnavbar" style="text-align: center;">
+ <div class="prev" style="text-align: left; float: left;"><a href="function.libvirt-domain-migrate-to-uri.html">libvirt_domain_migrate_to_uri</a></div>
+ <div class="next" style="text-align: right; float: right;"><a href="function.libvirt-domain-reboot.html">libvirt_domain_reboot</a></div>
+ <div class="up"><a href="ref.libvirt.html">Libvirt Functions</a></div>
+ <div class="home"><a href="index.html">PHP Manual</a></div>
+</div></body></html>

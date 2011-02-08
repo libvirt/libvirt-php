@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+ <head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title>Examples</title>
+ </head>
+ <body><div class="manualnavbar" style="text-align: center;">
+ <div class="prev" style="text-align: left; float: left;"><a href="libvirt.longlong.html">Interger ranges between libvirt and PHP</a></div>
+ <div class="next" style="text-align: right; float: right;"><a href="ref.libvirt.html">Libvirt Functions</a></div>
+ <div class="up"><a href="book.libvirt.html">Libvirt</a></div>
+ <div class="home"><a href="index.html">PHP Manual</a></div>
+</div><hr /><div>
+ <h1>Examples</h1>
+
+ <p class="para">
+  A few basic examples
+ </p>
+ <div class="example">
+  <p><b>Example #1 Libvirt Example</b></p>
+  <div class="example-contents programlisting">
+<div class="phpcode"><code><span style="color: #000000">
+<span style="color: #0000BB">&lt;?php<br />$uri</span><span style="color: #007700">=</span><span style="color: #DD0000">"qemu+tcp:///system"</span><span style="color: #007700">;<br /></span><span style="color: #0000BB">$credentials</span><span style="color: #007700">=Array(</span><span style="color: #0000BB">VIR_CRED_AUTHNAME</span><span style="color: #007700">=&gt;</span><span style="color: #DD0000">"fred"</span><span style="color: #007700">,</span><span style="color: #0000BB">VIR_CRED_PASSPHRASE</span><span style="color: #007700">=&gt;</span><span style="color: #DD0000">"fred"</span><span style="color: #007700">);<br />echo&nbsp;(</span><span style="color: #DD0000">"Connecting&nbsp;to&nbsp;libvirt&nbsp;(URI:$uri)\n"</span><span style="color: #007700">);<br /></span><span style="color: #0000BB">$conn</span><span style="color: #007700">=</span><span style="color: #0000BB">libvirt_connect</span><span style="color: #007700">(</span><span style="color: #0000BB">$uri</span><span style="color: #007700">,</span><span style="color: #0000BB">false</span><span style="color: #007700">,</span><span style="color: #0000BB">$credentials</span><span style="color: #007700">);<br />if&nbsp;(</span><span style="color: #0000BB">$conn</span><span style="color: #007700">==</span><span style="color: #0000BB">false</span><span style="color: #007700">)<br />{<br />&nbsp;&nbsp;&nbsp;&nbsp;echo&nbsp;(</span><span style="color: #DD0000">"Libvirt&nbsp;last&nbsp;error:&nbsp;"</span><span style="color: #007700">.</span><span style="color: #0000BB">libvirt_get_last_error</span><span style="color: #007700">().</span><span style="color: #DD0000">"\n"</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;exit;<br />}<br />else<br />{<br />&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color: #0000BB">$hostname</span><span style="color: #007700">=</span><span style="color: #0000BB">libvirt_get_hostname</span><span style="color: #007700">(</span><span style="color: #0000BB">$conn</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;echo&nbsp;(</span><span style="color: #DD0000">"hostname:$hostname\n"</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;echo&nbsp;(</span><span style="color: #DD0000">"Domain&nbsp;count:&nbsp;Active&nbsp;"</span><span style="color: #007700">.</span><span style="color: #0000BB">libvirt_get_active_domain_count</span><span style="color: #007700">(</span><span style="color: #0000BB">$conn</span><span style="color: #007700">).</span><span style="color: #DD0000">",Inactive&nbsp;"</span><span style="color: #007700">.</span><span style="color: #0000BB">libvirt_get_inactive_domain_count</span><span style="color: #007700">(</span><span style="color: #0000BB">$conn</span><span style="color: #007700">).</span><span style="color: #DD0000">",&nbsp;Total&nbsp;"</span><span style="color: #007700">.</span><span style="color: #0000BB">libvirt_get_domain_count</span><span style="color: #007700">(</span><span style="color: #0000BB">$conn</span><span style="color: #007700">).</span><span style="color: #DD0000">"\n"</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;<br />&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color: #0000BB">$domains</span><span style="color: #007700">=</span><span style="color: #0000BB">libvirt_list_domains</span><span style="color: #007700">(</span><span style="color: #0000BB">$conn</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;foreach&nbsp;(</span><span style="color: #0000BB">$domains&nbsp;</span><span style="color: #007700">as&nbsp;</span><span style="color: #0000BB">$dom</span><span style="color: #007700">)<br />&nbsp;&nbsp;&nbsp;&nbsp;{<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo&nbsp;(</span><span style="color: #DD0000">"Name:\t"</span><span style="color: #007700">.</span><span style="color: #0000BB">libvirt_domain_get_name</span><span style="color: #007700">(</span><span style="color: #0000BB">$dom</span><span style="color: #007700">).</span><span style="color: #DD0000">"\n"</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;echo(</span><span style="color: #DD0000">"UUID:\t"</span><span style="color: #007700">.</span><span style="color: #0000BB">libvirt_domain_get_uuid_string</span><span style="color: #007700">(</span><span style="color: #0000BB">$dom</span><span style="color: #007700">).</span><span style="color: #DD0000">"\n"</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color: #0000BB">$dominfo</span><span style="color: #007700">=</span><span style="color: #0000BB">libvirt_domain_get_info</span><span style="color: #007700">(</span><span style="color: #0000BB">$dom</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color: #0000BB">print_r</span><span style="color: #007700">(</span><span style="color: #0000BB">$dominfo</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;}<br />}<br /></span><span style="color: #0000BB">?&gt;</span>
+</span>
+</code></div>
+  </div>
+
+  <div class="example-contents para"><p>The above example will output 
+something similar to:</p></div>
+  <div class="example-contents screen">
+<div class="cdata"><pre>
+Connecting to libvirt (URI:qemu+tcp:///system)
+hostname:kvmtest
+Domain count: Active 2,Inactive 5, Total 7
+Name:   zlobsd1
+UUID:   16890be9-bcb0-ef35-3d43-c2553ea972ea
+Array
+(
+    [maxMem] =&gt; 1048576
+    [memory] =&gt; 524288
+    [state] =&gt; 1
+    [nrVirtCpu] =&gt; 2
+    [cpuUsed] =&gt; 98718.23
+)
+Name:   node4
+UUID:   25ab2490-7c4c-099f-b647-45ff8efa73f6
+Array
+(
+    [maxMem] =&gt; 524288
+    [memory] =&gt; 524288
+    [state] =&gt; 1
+    [nrVirtCpu] =&gt; 1
+    [cpuUsed] =&gt; 2323601.51
+)
+Name:   test1
+UUID:   355fcd8f-ca53-e5e7-5935-47382ba754a0
+Array
+(
+    [maxMem] =&gt; 1053696
+    [memory] =&gt; 1053696
+    [state] =&gt; 5
+    [nrVirtCpu] =&gt; 1
+    [cpuUsed] =&gt; 0
+)
+....
+</pre></div>
+  </div>
+ </div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
+ <div class="prev" style="text-align: left; float: left;"><a href="libvirt.longlong.html">Interger ranges between libvirt and PHP</a></div>
+ <div class="next" style="text-align: right; float: right;"><a href="ref.libvirt.html">Libvirt Functions</a></div>
+ <div class="up"><a href="book.libvirt.html">Libvirt</a></div>
+ <div class="home"><a href="index.html">PHP Manual</a></div>
+</div></body></html>

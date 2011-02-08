@@ -1,0 +1,155 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+ <head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title>provide block device statistics for the block device on domain.</title>
+ </head>
+ <body><div class="manualnavbar" style="text-align: center;">
+ <div class="prev" style="text-align: left; float: left;"><a href="function.libvirt-connect.html">libvirt_connect</a></div>
+ <div class="next" style="text-align: right; float: right;"><a href="function.libvirt-domain-create-xml.html">libvirt_domain_create_xml</a></div>
+ <div class="up"><a href="ref.libvirt.html">Libvirt Functions</a></div>
+ <div class="home"><a href="index.html">PHP Manual</a></div>
+</div><hr /><div id="function.libvirt-domain-block-stats" class="refentry">
+ <div class="refnamediv">
+  <h1 class="refname">libvirt_domain_block_stats</h1>
+  <p class="verinfo">(php-libvirt 0.3)</p><p class="refpurpose"><span class="refname">libvirt_domain_block_stats</span> &mdash; <span class="dc-title">provide block device statistics for the block device on domain.</span></p>
+
+ </div>
+
+ <a name="function.libvirt-domain-block-stats.description"></a><div class="refsect1 description">
+  <h3 class="title">Description</h3>
+  <div class="methodsynopsis dc-description">
+   <span class="type">array</span> <span class="methodname"><b>libvirt_domain_block_stats</b></span>
+    ( <span class="methodparam"><span class="type">resource</span> <tt class="parameter">$domain</tt></span>
+   , <span class="methodparam"><span class="type">string</span> <tt class="parameter">$path</tt></span>
+    )</div>
+
+  <p class="para rdfs-comment">
+   This function returns block device (disk) stats for block devices attached to the domain. The path parameter is the name of the block device. Domains may have more than one block device. To get stats for each you should make multiple calls to this function. Individual fields within the stats structure may be returned as -1, which indicates that the hypervisor does not support that particular statistic.
+  </p>
+  <p class="para">
+  The returned array contains members in accoridng to the libvirt structure virDomainBlockStatsStruct.
+   </p><table class="doctable table"><caption><b>Members of the array returned by libvirt_domain_interface_stats</b></caption>
+  
+<tbody valign="middle" class="tbody">
+<tr valign="middle"><td align="left">rd_req</td><td align="left">number of read requests</td></tr>
+
+<tr valign="middle"><td align="left">rd_bytes</td><td align="left">number of read bytes</td></tr>
+
+<tr valign="middle"><td align="left">wr_req</td><td align="left">number of write requests</td></tr>
+
+<tr valign="middle"><td align="left">wr_bytes</td><td align="left">number of written bytes</td></tr>
+
+<tr valign="middle"><td align="left">errs</td><td align="left">In Xen this returns the mysterious &#039;oo_req&#039;.</td></tr>
+
+</tbody>
+
+</table>
+<p>
+  </p>
+   <blockquote><p><b class="note">Note</b>: <b>Warning</b><br />
+.
+This function returns values that may be bigger than 32bit integer limit. Please read this <a href="libvirt.longlong.html" class="link">note</a> for more details.
+<br />
+</p></blockquote>
+ </div>
+
+
+ <a name="function.libvirt-domain-block-stats.parameters"></a><div class="refsect1 parameters">
+  <h3 class="title">Parameters</h3>
+ <p class="para">
+   </p><dl>
+
+    <dt class="varlistentry">
+
+     <span class="term"><i><tt class="parameter">domain</tt></i>
+</span>
+
+     </dt><dd class="listitem">
+
+      <p class="para">
+       Domain resource of domain the block device is attached to
+      </p>
+     </dd>
+
+    
+    <dt class="varlistentry">
+
+     <span class="term"><i><tt class="parameter">path</tt></i>
+</span>
+
+     </dt><dd class="listitem">
+
+      <p class="para">
+      Path to the block device, i.e. &quot;hda&quot;
+      </p>
+     </dd>
+
+    
+   </dl>
+<p>
+  </p>
+ </div>
+
+
+ <a name="function.libvirt-domain-block-stats.returnvalues"></a><div class="refsect1 returnvalues">
+  <h3 class="title">Return Values</h3>
+  
+  <p class="para">
+   Array with statistics.
+  </p>
+ </div>
+
+
+<a name="function.libvirt-domain-block-stats.examples"></a><div class="refsect1 examples">
+  <h3 class="title">Examples</h3>
+  <p class="para">
+   </p><div class="example">
+    <p><b>Example #1 <b>libvirt_domain_block_stats()</b> example</b></p>
+    <div class="example-contents para"><p>
+    Get interface statistics on blockdevice hda on domain test
+    </p></div>
+    <div class="example-contents programlisting">
+<div class="phpcode"><code><span style="color: #000000">
+<span style="color: #0000BB">&lt;?php<br />&nbsp;&nbsp;&nbsp;&nbsp;$dom</span><span style="color: #007700">=</span><span style="color: #0000BB">libvirt_domain_lookup_by_name</span><span style="color: #007700">(</span><span style="color: #0000BB">$res</span><span style="color: #007700">,</span><span style="color: #DD0000">"test"</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color: #0000BB">print_r</span><span style="color: #007700">(</span><span style="color: #0000BB">libvirt_domain_block_stats</span><span style="color: #007700">(</span><span style="color: #0000BB">$dom</span><span style="color: #007700">,</span><span style="color: #DD0000">"hda"</span><span style="color: #007700">));<br /></span><span style="color: #0000BB">?&gt;</span>
+</span>
+</code></div>
+    </div>
+
+    <div class="example-contents para"><p>The above example will output 
+something similar to:</p></div>
+    <div class="example-contents screen">
+<div class="cdata"><pre>
+Array
+(
+    [rd_req] =&gt; 0
+    [rd_bytes] =&gt; 0
+    [wr_req] =&gt; 0
+    [wr_bytes] =&gt; 0
+    [errs] =&gt; -1
+)
+</pre></div>
+    </div>
+   </div><p>
+  </p>
+ </div>
+
+ 
+
+ <a name="function.libvirt-domain-block-stats.seealso"></a><div class="refsect1 seealso">
+  <h3 class="title">See Also</h3>
+  <p class="para">
+   </p><ul class="simplelist">
+    <li class="member"><a href="function.libvirt-domain-memory-stats.html" class="function" rel="rdfs-seeAlso">libvirt_domain_memory_stats()</a> - provide memory statistics for the domain.</li>
+    <li class="member"><a href="function.libvirt-domain-interface-stats.html" class="function" rel="rdfs-seeAlso">libvirt_domain_interface_stats()</a> - provide interface statistics for the virtual network interface on domain.</li>
+   </ul><p>
+  </p>
+ </div>
+
+
+</div><hr /><div class="manualnavbar" style="text-align: center;">
+ <div class="prev" style="text-align: left; float: left;"><a href="function.libvirt-connect.html">libvirt_connect</a></div>
+ <div class="next" style="text-align: right; float: right;"><a href="function.libvirt-domain-create-xml.html">libvirt_domain_create_xml</a></div>
+ <div class="up"><a href="ref.libvirt.html">Libvirt Functions</a></div>
+ <div class="home"><a href="index.html">PHP Manual</a></div>
+</div></body></html>

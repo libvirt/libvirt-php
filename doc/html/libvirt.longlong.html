@@ -1,0 +1,51 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+ <head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title>Interger ranges between libvirt and PHP</title>
+ </head>
+ <body><div class="manualnavbar" style="text-align: center;">
+ <div class="prev" style="text-align: left; float: left;"><a href="libvirt.constants.html">Predefined Constants</a></div>
+ <div class="next" style="text-align: right; float: right;"><a href="libvirt.examples.html">Examples</a></div>
+ <div class="up"><a href="book.libvirt.html">Libvirt</a></div>
+ <div class="home"><a href="index.html">PHP Manual</a></div>
+</div><hr /><div>
+ <h1>Interger ranges between libvirt and PHP</h1>
+
+  <p class="para">
+      This page address the integer range conflict between PHP and Libvirt. You should read this if you do use functions that could return numbers bigger than 2^31 (i.e. 2GB in case of functions returning bytes).
+  </p>
+  <p class="para">
+      Problem description: A lot of libvirt functions do return unsigned long long values (64bit unsigned). On the other hand, PHP  does use long for all integers. This means that the largest number on 32bit systems is 2147483647. In case of bytes it means only 2GB. What happen when you try to return larger number may vary a lot. It seems that on 64bit platforms PHP can handle 64 bit signed numbers but this is not confirmed.
+  </p>
+  <p class="para">
+      Because of this many functions will return possibly large numbers as string. As PHP uses implicit type conversion this is not a big issue (and you can disable it via <var class="filename">php.ini</var> option). You can encounter these basic situations:
+    </p><ol type="1">
+        <li class="listitem"><p class="para">If you need to output the value, you can safely print the string and there will be no difference</p></li>
+        <li class="listitem"><p class="para">If you are sure that the returned number is within the range, you can use it as number and PHP will cast it for you when needed</p></li>
+        <li class="listitem"><p class="para">If you are sure that your platform will handle 64bit numbers correctly, you can disable this behaviour via php.ini <span class="option">libvirt.longlong_to_string</span> option</p></li>
+        <li class="listitem"><p class="para">In all the other cases you can uses gm functions for multiprecision arithmetics. You will probably convert the string to gmp number, divide it and use as number.</p>
+ <div class="example">
+  <p><b>Example #1 Handling of large numbers using multiprecision library</b></p>
+  <div class="example-contents programlisting">
+<div class="phpcode"><code><span style="color: #000000">
+<span style="color: #0000BB">&lt;?php<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color: #FF8000">//&nbsp;suppose&nbsp;that&nbsp;we&nbsp;have&nbsp;number&nbsp;of&nbsp;I/O&nbsp;reads&nbsp;in&nbsp;$reads<br />&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color: #0000BB">$reads_div_int</span><span style="color: #007700">=</span><span style="color: #0000BB">gmp_intval</span><span style="color: #007700">(</span><span style="color: #0000BB">gmp_div</span><span style="color: #007700">(</span><span style="color: #0000BB">$reads</span><span style="color: #007700">,</span><span style="color: #0000BB">1024</span><span style="color: #007700">))&nbsp;;&nbsp;&nbsp;</span><span style="color: #FF8000">//note&nbsp;the&nbsp;implicit&nbsp;convertsion&nbsp;from&nbsp;string&nbsp;to&nbsp;gmp_number.<br /></span><span style="color: #007700">}<br /></span><span style="color: #0000BB">?&gt;</span>
+</span>
+</code></div>
+  </div>
+
+</div>
+<p class="para">GMP does of course provide more arithmetic operations than division but converting bytes to kilobytes or megabytes is probably the most common operation.</p>
+</li>
+    </ol><p>
+</p>
+<p class="para">
+If you are sure that you platform can handle 64bit numbers and you do not want to use conversion to string, you can disable this behaviour in <var class="filename">php.ini</var> via option <span class="option">libvirt.longlong_to_string</span>. By default it is set to 1 (convert long long to string), setting it to 0 will force php-libvirt to return long long as long.
+</p> 
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
+ <div class="prev" style="text-align: left; float: left;"><a href="libvirt.constants.html">Predefined Constants</a></div>
+ <div class="next" style="text-align: right; float: right;"><a href="libvirt.examples.html">Examples</a></div>
+ <div class="up"><a href="book.libvirt.html">Libvirt</a></div>
+ <div class="home"><a href="index.html">PHP Manual</a></div>
+</div></body></html>

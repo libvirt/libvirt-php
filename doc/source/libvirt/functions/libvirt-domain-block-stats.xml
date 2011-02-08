@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision: 1.28 $ -->
+
+<refentry xml:id="function.libvirt-domain-block-stats" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <refnamediv>
+  <refname>libvirt_domain_block_stats</refname>
+  <refpurpose>provide block device statistics for the block device on domain.</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>array</type><methodname>libvirt_domain_block_stats</methodname>
+   <methodparam ><type>resource</type><parameter>domain</parameter></methodparam>
+   <methodparam ><type>string</type><parameter>path</parameter></methodparam>
+   </methodsynopsis>
+  <para>
+   This function returns block device (disk) stats for block devices attached to the domain. The path parameter is the name of the block device. Domains may have more than one block device. To get stats for each you should make multiple calls to this function. Individual fields within the stats structure may be returned as -1, which indicates that the hypervisor does not support that particular statistic.
+  </para>
+  <para>
+  The returned array contains members in accoridng to the libvirt structure virDomainBlockStatsStruct.
+   <table frame='all'><title>Members of the array returned by libvirt_domain_interface_stats</title>
+  <tgroup cols='2'>
+<tbody>
+<row><entry>rd_req</entry><entry>number of read requests</entry></row>
+<row><entry>rd_bytes</entry><entry>number of read bytes</entry></row>
+<row><entry>wr_req</entry><entry>number of write requests</entry></row>
+<row><entry>wr_bytes</entry><entry>number of written bytes</entry></row>
+<row><entry>errs</entry><entry>In Xen this returns the mysterious 'oo_req'.</entry></row>
+</tbody>
+</tgroup>
+</table>
+  </para>
+   <note><title>Warning</title>
+<para>.
+This function returns values that may be bigger than 32bit integer limit. Please read this <link linkend="libvirt.longlong">note</link> for more details.
+</para>
+</note>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+ <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>domain</parameter></term>
+     <listitem>
+      <para>
+       Domain resource of domain the block device is attached to
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>path</parameter></term>
+     <listitem>
+      <para>
+      Path to the block device, i.e. "hda"
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <!-- See also &return.success; -->
+  <para>
+   Array with statistics.
+  </para>
+ </refsect1>
+
+<refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>libvirt_domain_block_stats</function> example</title>
+    <para>
+    Get interface statistics on blockdevice hda on domain test
+    </para>
+    <programlisting role="php">
+<![CDATA[
+<?php
+	$dom=libvirt_domain_lookup_by_name($res,"test");
+	print_r(libvirt_domain_block_stats($dom,"hda"));
+?>
+]]>
+    </programlisting>
+    &example.outputs.similar;
+    <screen>
+<![CDATA[
+Array
+(
+    [rd_req] => 0
+    [rd_bytes] => 0
+    [wr_req] => 0
+    [wr_bytes] => 0
+    [errs] => -1
+)
+]]>
+    </screen>
+   </example>
+  </para>
+ </refsect1>
+ 
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>libvirt_domain_memory_stats</function></member>
+    <member><function>libvirt_domain_interface_stats</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+</refentry>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"../../../../manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
+

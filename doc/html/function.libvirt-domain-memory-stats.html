@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+ <head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title>provide memory statistics for the domain.</title>
+ </head>
+ <body><div class="manualnavbar" style="text-align: center;">
+ <div class="prev" style="text-align: left; float: left;"><a href="function.libvirt-domain-memory-peek.html">libvirt_domain_memory_peek</a></div>
+ <div class="next" style="text-align: right; float: right;"><a href="function.libvirt-domain-migrate-to-uri.html">libvirt_domain_migrate_to_uri</a></div>
+ <div class="up"><a href="ref.libvirt.html">Libvirt Functions</a></div>
+ <div class="home"><a href="index.html">PHP Manual</a></div>
+</div><hr /><div id="function.libvirt-domain-memory-stats" class="refentry">
+ <div class="refnamediv">
+  <h1 class="refname">libvirt_domain_memory_stats</h1>
+  <p class="verinfo">(php-libvirt 0.3)</p><p class="refpurpose"><span class="refname">libvirt_domain_memory_stats</span> &mdash; <span class="dc-title">provide memory statistics for the domain.</span></p>
+
+ </div>
+
+ <a name="function.libvirt-domain-memory-stats.description"></a><div class="refsect1 description">
+  <h3 class="title">Description</h3>
+  <div class="methodsynopsis dc-description">
+   <span class="type">array</span> <span class="methodname"><b>libvirt_domain_memory_stats</b></span>
+    ( <span class="methodparam"><span class="type">resource</span> <tt class="parameter">$domain</tt></span>
+   [, <span class="methodparam"><span class="type">integer</span> <tt class="parameter">$flags</tt><span class="initializer">= 0</span></span>
+  ] )</div>
+
+  <p class="para rdfs-comment">
+   This function provides memory statistics for the domain. Up to <b><tt class="constant">VIR_DOMAIN_MEMORY_STAT_NR</tt></b> elements will be populated in the returned array with memory statistics from the domain. Only statistics supported by the domain, the driver, and this version of libvirt will be returned. The array is indexed by the numerical values of appropriate constants.
+   
+   </p><table class="doctable table"><caption><b>Possible members of the array returned by libvirt_domain_memory_stats</b></caption>
+  
+<tbody valign="middle" class="tbody">
+<tr valign="middle"><td align="left"><b><tt class="constant">VIR_DOMAIN_MEMORY_STAT_SWAP_IN</tt></b></td><td align="left">The total amount of data read from swap space (in kb)</td></tr>
+
+<tr valign="middle"><td align="left"><b><tt class="constant">VIR_DOMAIN_MEMORY_STAT_SWAP_OUT</tt></b></td><td align="left">The total amount of memory written out to swap space (in kb)</td></tr>
+
+<tr valign="middle"><td align="left"><b><tt class="constant">VIR_DOMAIN_MEMORY_STAT_MAJOR_FAULT</tt></b></td><td align="left">The number of page faults that required disk IO to service.</td></tr>
+
+<tr valign="middle"><td align="left"><b><tt class="constant">VIR_DOMAIN_MEMORY_STAT_MINOR_FAULT</tt></b></td><td align="left">The number of page faults serviced without disk IO.</td></tr>
+
+<tr valign="middle"><td align="left"><b><tt class="constant">VIR_DOMAIN_MEMORY_STAT_UNUSED</tt></b></td><td align="left">The amount of memory which is not being used for any purpose (in kb).</td></tr>
+
+<tr valign="middle"><td align="left"><b><tt class="constant">VIR_DOMAIN_MEMORY_STAT_AVAILABLE</tt></b></td><td align="left">The total amount of memory available to the domain&#039;s OS (in kb).</td></tr>
+
+<tr valign="middle"><td align="left"><b><tt class="constant">VIR_DOMAIN_MEMORY_STAT_NR</tt></b></td><td align="left">.</td></tr>
+
+</tbody>
+
+</table>
+<p>
+   
+   </p>
+   <blockquote><p><b class="note">Note</b>: <b>Warning</b><br />
+.
+This function returns values that may be bigger than 32bit integer limit. Please read this <a href="libvirt.longlong.html" class="link">note</a> for more details.
+<br />
+</p></blockquote>
+ <blockquote><p><b class="note">Note</b>: <b>Libvirt version</b><br />
+ 
+This function has been added to Libvirt in version 0.7.5. You need this or newer version of Libvirt to be able to use this function. 
+<br />
+</p></blockquote>
+ </div>
+
+
+ <a name="function.libvirt-domain-memory-stats.parameters"></a><div class="refsect1 parameters">
+  <h3 class="title">Parameters</h3>
+ <p class="para">
+   </p><dl>
+
+    <dt class="varlistentry">
+
+     <span class="term"><i><tt class="parameter">domain</tt></i>
+</span>
+
+     </dt><dd class="listitem">
+
+      <p class="para">
+       Domain resource of domain to get memory stats.
+      </p>
+     </dd>
+
+    
+     <dt class="varlistentry">
+
+     <span class="term"><i><tt class="parameter">flags</tt></i>
+</span>
+
+     </dt><dd class="listitem">
+
+      <p class="para">
+       unused, always pass 0 (or ommit the parameter as 0 is default value
+      </p>
+     </dd>
+
+    
+   </dl>
+<p>
+  </p>
+ </div>
+
+
+ <a name="function.libvirt-domain-memory-stats.returnvalues"></a><div class="refsect1 returnvalues">
+  <h3 class="title">Return Values</h3>
+  
+  <p class="para">
+   Array containig  Up to <b><tt class="constant">VIR_DOMAIN_MEMORY_STAT_NR</tt></b> elements with statistics. 
+  </p>
+ </div>
+
+
+
+ <a name="function.libvirt-domain-memory-stats.seealso"></a><div class="refsect1 seealso">
+  <h3 class="title">See Also</h3>
+  <p class="para">
+   </p><ul class="simplelist">
+    <li class="member"><a href="function.libvirt-domain-block-stats.html" class="function" rel="rdfs-seeAlso">libvirt_domain_block_stats()</a> - provide block device statistics for the block device on domain.</li>
+    <li class="member"><a href="function.libvirt-domain-interface-stats.html" class="function" rel="rdfs-seeAlso">libvirt_domain_interface_stats()</a> - provide interface statistics for the virtual network interface on domain.</li>
+   </ul><p>
+  </p>
+ </div>
+
+</div><hr /><div class="manualnavbar" style="text-align: center;">
+ <div class="prev" style="text-align: left; float: left;"><a href="function.libvirt-domain-memory-peek.html">libvirt_domain_memory_peek</a></div>
+ <div class="next" style="text-align: right; float: right;"><a href="function.libvirt-domain-migrate-to-uri.html">libvirt_domain_migrate_to_uri</a></div>
+ <div class="up"><a href="ref.libvirt.html">Libvirt Functions</a></div>
+ <div class="home"><a href="index.html">PHP Manual</a></div>
+</div></body></html>

@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+ <head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title>Get a connection to the Hypervisor</title>
+ </head>
+ <body><div class="manualnavbar" style="text-align: center;">
+ <div class="prev" style="text-align: left; float: left;"><a href="ref.libvirt.html">Libvirt Functions</a></div>
+ <div class="next" style="text-align: right; float: right;"><a href="function.libvirt-domain-block-stats.html">libvirt_domain_block_stats</a></div>
+ <div class="up"><a href="ref.libvirt.html">Libvirt Functions</a></div>
+ <div class="home"><a href="index.html">PHP Manual</a></div>
+</div><hr /><div id="function.libvirt-connect" class="refentry">
+ <div class="refnamediv">
+  <h1 class="refname">libvirt_connect</h1>
+  <p class="verinfo">(php-libvirt 0.1)</p><p class="refpurpose"><span class="refname">libvirt_connect</span> &mdash; <span class="dc-title">Get a connection to the Hypervisor</span></p>
+
+ </div>
+
+ <a name="function.libvirt-connect.description"></a><div class="refsect1 description">
+ <h3 class="title">Description</h3>
+  <div class="methodsynopsis dc-description">
+   <span class="type">resource</span> <span class="methodname"><b>libvirt_connect</b></span>
+    ([ <span class="methodparam"><span class="type">string</span> <tt class="parameter">$url</tt><span class="initializer">= NULL</span></span>
+   [, <span class="methodparam"><span class="type">bool</span> <tt class="parameter">$readonly</tt><span class="initializer">= true</span></span>
+   [, <span class="methodparam"><span class="type">array</span> <tt class="parameter">$credentials</tt><span class="initializer">= Array()</span></span>
+  ]]] )</div>
+
+  <p class="para rdfs-comment">
+  This function should be called first to get a connection to the Hypervisor. If necessary, authentication will be performed using supplied credentials.
+  </p>
+ </div>
+
+
+
+ <a name="function.libvirt-connect.parameters"></a><div class="refsect1 parameters">
+  <h3 class="title">Parameters</h3>
+  <p class="para">
+   </p><dl>
+
+    <dt class="varlistentry">
+
+     <span class="term"><i><tt class="parameter">url</tt></i>
+</span>
+
+     </dt><dd class="listitem">
+
+      <p class="para">
+       URL of the hypervisor to connect to. Can be for example <strong class="userinput"><code>qemu:///system</code></strong>
+ or <strong class="userinput"><code>qemu+tcp:///system</code></strong>
+.
+      </p>
+     </dd>
+
+    
+    <dt class="varlistentry">
+
+     <span class="term"><i><tt class="parameter">readonly</tt></i>
+</span>
+
+     </dt><dd class="listitem">
+
+      <p class="para">
+	If <b><tt class="constant">TRUE</tt></b> (default) connection is made readonly.
+      </p>
+     </dd>
+
+    
+    <dt class="varlistentry">
+
+     <span class="term"><i><tt class="parameter">credentials</tt></i>
+</span>
+
+     </dt><dd class="listitem">
+
+      <p class="para">
+       Credentials to authenticate with. See <a href="function.libvirt-connect.html#libvirt.connect.authentiaction" class="link">authentication</a> for more details.
+      </p>
+     </dd>
+
+    
+   </dl>
+<p>
+  </p>
+ </div>
+
+
+
+
+ <a name="function.libvirt-connect.returnvalues"></a><div class="refsect1 returnvalues">
+  <h3 class="title">Return Values</h3>
+  
+  <p class="para">
+   Returns  <b><tt class="constant">FALSE</tt></b>  on failure and connection resource on success. This connection resource must be used for all subsequent calls.
+  </p>
+ </div>
+
+
+ <a name="function.libvirt-connect.errors"></a><div class="refsect1 errors">
+  <h3 class="title">Errors/Exceptions</h3>
+  <p class="para">
+   This function returns errors via PHP E_* error mechanism.
+  </p>
+ </div>
+
+
+ <a name="function.libvirt-connect.notes"></a><div class="refsect1 notes">
+  <h3 class="title">Notes</h3>
+  <blockquote><p><b class="note">Note</b>: 
+  <b>Libvirt version</b><br />
+  
+  Version prior to 0.6.2 are not supported and using phplibvirt with libvirt prior to 0.6.2 will probably cause problems. <b>libvirt_connect()</b> will refuse to connect to libvirt daemon if the version is not at least 0.6.2.
+  <br />
+  </p></blockquote>
+  <blockquote><p><b class="note">Note</b>: 
+   <b>Authentication</b><br />
+     
+    You can authenticate to the libvirt daemon in several ways. If you are using policy kit and you are connecting locally, you can set it up to allow nonroot users. Just add to <var class="filename">/etc/PolicyKit/PolicyKit.conf</var>:
+    </p><div class="example-contents programlisting">
+<div class="xmlcode"><pre class="xmlcode">&lt;match action=&quot;org.libvirt.unix.manage&quot;&gt;
+    &lt;match user=&quot;httpduser&quot;&gt;
+      &lt;return result=&quot;yes&quot;/&gt;
+    &lt;/match&gt;
+&lt;/match&gt;</pre>
+</div>
+</div>
+<p>
+<br />
+If you are connecting to the TCP socket, you need to provide credentials. These credentials must be set beforehand using SASL. See <a href="http://libvirt.org/auth.html#ACL_server_username" class="link external">&raquo; http://libvirt.org/auth.html#ACL_server_username</a> for more details. You can You can specify the creentials as third argument. It is supposed to be an array in form of credential_type=&gt;credential value. In example:
+    </p><div class="example-contents programlisting">
+<div class="phpcode"><code><span style="color: #000000">
+Array(VIR_CRED_AUTHNAME=&gt;"fred",VIR_CRED_PASSPHRASE=&gt;"fred");</span>
+</code></div>
+</div>
+<p>
+<br />
+</p></blockquote>
+ </div>
+
+
+ 
+ <a name="function.libvirt-connect.examples"></a><div class="refsect1 examples">
+  <h3 class="title">Examples</h3>
+  <p class="para">
+   </p><div class="example">
+    <p><b>Example #1 <b>libvirt_connect()</b> example</b></p>
+    <div class="example-contents para"><p>
+This example connects to the hypervisor in various ways.
+    </p></div>
+    <div class="example-contents programlisting">
+<div class="phpcode"><code><span style="color: #000000">
+<span style="color: #0000BB">&lt;?php<br /></span><span style="color: #FF8000">//Anonymous&nbsp;readonly&nbsp;connection<br /></span><span style="color: #0000BB">$res1</span><span style="color: #007700">=</span><span style="color: #0000BB">libvirt_connect</span><span style="color: #007700">(</span><span style="color: #DD0000">"qemu:///system"</span><span style="color: #007700">);<br /></span><span style="color: #0000BB">print_r</span><span style="color: #007700">(</span><span style="color: #0000BB">$res1</span><span style="color: #007700">);&nbsp;</span><span style="color: #0000BB">printf&nbsp;</span><span style="color: #007700">(</span><span style="color: #DD0000">"\n"</span><span style="color: #007700">);<br /><br /></span><span style="color: #FF8000">//Anonymous&nbsp;read-write&nbsp;connection<br /></span><span style="color: #0000BB">$res2</span><span style="color: #007700">=</span><span style="color: #0000BB">libvirt_connect</span><span style="color: #007700">(</span><span style="color: #DD0000">"qemu:///system"</span><span style="color: #007700">,</span><span style="color: #0000BB">false</span><span style="color: #007700">);<br /></span><span style="color: #0000BB">print_r</span><span style="color: #007700">(</span><span style="color: #0000BB">$res2</span><span style="color: #007700">);&nbsp;</span><span style="color: #0000BB">printf&nbsp;</span><span style="color: #007700">(</span><span style="color: #DD0000">"\n"</span><span style="color: #007700">);<br /><br /></span><span style="color: #FF8000">//Read-write&nbsp;connection&nbsp;with&nbsp;authentication<br /></span><span style="color: #0000BB">$res3</span><span style="color: #007700">=</span><span style="color: #0000BB">libvirt_connect</span><span style="color: #007700">(</span><span style="color: #DD0000">"qemu:///system"</span><span style="color: #007700">,</span><span style="color: #0000BB">false</span><span style="color: #007700">,Array(</span><span style="color: #0000BB">VIR_CRED_AUTHNAME</span><span style="color: #007700">=&gt;</span><span style="color: #DD0000">"fred"</span><span style="color: #007700">,</span><span style="color: #0000BB">VIR_CRED_PASSPHRASE</span><span style="color: #007700">=&gt;</span><span style="color: #DD0000">"fred"</span><span style="color: #007700">));<br /></span><span style="color: #0000BB">print_r</span><span style="color: #007700">(</span><span style="color: #0000BB">$res3</span><span style="color: #007700">);&nbsp;</span><span style="color: #0000BB">printf&nbsp;</span><span style="color: #007700">(</span><span style="color: #DD0000">"\n"</span><span style="color: #007700">);<br /></span><span style="color: #0000BB">?&gt;</span>
+</span>
+</code></div>
+    </div>
+
+    <div class="example-contents para"><p>The above example will output 
+something similar to:</p></div>
+    <div class="example-contents screen">
+<div class="cdata"><pre>
+Resource id #4
+Resource id #5
+Resource id #6
+</pre></div>
+    </div>
+   </div><p>
+  </p>
+ </div>
+
+
+
+</div><hr /><div class="manualnavbar" style="text-align: center;">
+ <div class="prev" style="text-align: left; float: left;"><a href="ref.libvirt.html">Libvirt Functions</a></div>
+ <div class="next" style="text-align: right; float: right;"><a href="function.libvirt-domain-block-stats.html">libvirt_domain_block_stats</a></div>
+ <div class="up"><a href="ref.libvirt.html">Libvirt Functions</a></div>
+ <div class="home"><a href="index.html">PHP Manual</a></div>
+</div></body></html>

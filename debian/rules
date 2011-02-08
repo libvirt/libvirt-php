@@ -1,0 +1,75 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+DEB_HOST_GNU_TYPE    ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
+DEB_BUILD_GNU_TYPE	?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
+
+CFLAGS = -Wall -g
+
+ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
+	CFLAGS += -O0
+else
+	CFLAGS += -O2
+endif
+
+configure: configure-php5-stamp
+configure-php5-stamp:
+	mkdir build-php5 && \
+	cp config.m4 libvirt.c php_libvirt.h build-php5 && \
+	cd build-php5 && \
+	phpize5 && \
+	./configure --host=$(DEB_HOST_GNU_TYPE) --build=$(DEB_BUILD_GNU_TYPE) --prefix=/usr --mandir=\$${prefix}/share/man --infodir=\$${prefix}/share/info --with-php-config=/usr/bin/php-config5 --disable-rpath
+	cd build-php5 && sed -i 's/-Wl,-rpath,[^ ]* //g' Makefile
+	touch configure-php5-stamp
+
+build: build-stamp
+build-stamp: configure
+	dh_testdir
+
+	# Add here commands to compile the package.
+	cd build-php5 && $(MAKE)
+	touch build-stamp
+
+clean:
+	dh_testdir
+	dh_testroot
+	rm -rf build-php5
+	rm -rf build-stamp
+	rm -f configure-php5-stamp
+	dh_clean
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_installdirs
+	# Add here commands to install the package into debian/libvirt.
+	cd build-php5 && \
+	$(MAKE) install INSTALL_ROOT=$(CURDIR)/debian/php5-libvirt
+
+# Build architecture-independent files here.
+binary-indep: build install
+# We have nothing to do by default.
+
+# Build architecture-dependent files here.
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs
+	dh_installdocs
+	dh_install
+	dh_link
+	dh_strip
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_shlibdeps
+#	echo "php:Depends=phpapi-`php-config5 --phpapi`" >> debian/php5-$(EXTN).substvars
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install

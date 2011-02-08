@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+ <head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title>Create a new storage volume based on XML input</title>
+ </head>
+ <body><div class="manualnavbar" style="text-align: center;">
+ <div class="prev" style="text-align: left; float: left;"><a href="function.libvirt-storagepool-lookup-by-name.html">libvirt_storagepool_lookup_by_name</a></div>
+ <div class="next" style="text-align: right; float: right;"><a href="function.libvirt-storagevolume-get-info.html">libvirt_storagevolume_get_info</a></div>
+ <div class="up"><a href="ref.libvirt.html">Libvirt Functions</a></div>
+ <div class="home"><a href="index.html">PHP Manual</a></div>
+</div><hr /><div id="function.libvirt-create-xml" class="refentry">
+ <div class="refnamediv">
+  <h1 class="refname">libvirt_storagevolume_create_xml</h1>
+  <p class="verinfo">(No version information available, might only be in CVS)</p><p class="refpurpose"><span class="refname">libvirt_storagevolume_create_xml</span> &mdash; <span class="dc-title">Create a new storage volume based on XML input</span></p>
+
+ </div>
+
+ <a name="function.libvirt-create-xml.description"></a><div class="refsect1 description">
+  <h3 class="title">Description</h3>
+  <div class="methodsynopsis dc-description">
+   <span class="type">array</span> <span class="methodname"><b>libvirt_storagevolume_create_xml</b></span>
+    ( <span class="methodparam"><span class="type">resource</span> <tt class="parameter">$storagepool resource</tt></span>
+   , <span class="methodparam"><span class="type">string</span> <tt class="parameter">$xml</tt></span>
+   )</div>
+
+  <p class="para rdfs-comment">
+   This function returns string containing volume information in XML format
+  </p>
+ </div>
+
+
+ <a name="function.libvirt-create-xml.parameters"></a><div class="refsect1 parameters">
+  <h3 class="title">Parameters</h3>
+ <p class="para">
+   </p><dl>
+
+    <dt class="varlistentry">
+
+     <span class="term"><i><tt class="parameter">storagepool resource</tt></i>
+</span>
+
+     </dt><dd class="listitem">
+
+      <p class="para">
+       Connection resource of the storagepool
+      </p>
+     </dd>
+
+    
+    <dt class="varlistentry">
+
+     <span class="term"><i><tt class="parameter">xml</tt></i>
+</span>
+
+     </dt><dd class="listitem">
+
+      <p class="para">
+       XML information to base the new volume on
+      </p>
+     </dd>
+
+    
+   </dl>
+<p>
+  </p>
+ </div>
+
+
+ <a name="function.libvirt-create-xml.returnvalues"></a><div class="refsect1 returnvalues">
+  <h3 class="title">Return Values</h3>
+  
+  <p class="para">
+    Volume resource of the newly created volume. <b><tt class="constant">FALSE</tt></b> on failure
+  </p>
+ </div>
+
+
+ 
+
+ <a name="function.libvirt-create-xml.examples"></a><div class="refsect1 examples">
+  <h3 class="title">Examples</h3>
+  <p class="para">
+   </p><div class="example">
+    <p><b>Example #1 <b>libvirt_storagevolume_create_xmlc()</b> example</b></p>
+    <div class="example-contents para"><p>
+     Create a new volume in a storagepool
+    </p></div>
+    <div class="example-contents programlisting">
+<div class="phpcode"><code><span style="color: #000000">
+<span style="color: #0000BB">&lt;?php<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;$conn</span><span style="color: #007700">=</span><span style="color: #0000BB">libvirt_connect</span><span style="color: #007700">(</span><span style="color: #0000BB">$uri</span><span style="color: #007700">,</span><span style="color: #0000BB">true</span><span style="color: #007700">);<br />&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color: #0000BB">$pool</span><span style="color: #007700">=</span><span style="color: #0000BB">libvirt_storagepools_lookup_by_name</span><span style="color: #007700">(</span><span style="color: #0000BB">$conn</span><span style="color: #007700">,</span><span style="color: #DD0000">'default'</span><span style="color: #007700">);<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color: #0000BB">$xml&nbsp;</span><span style="color: #007700">=&nbsp;</span><span style="color: #DD0000">"&lt;volume&gt;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;name&gt;volume2&lt;/name&gt;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;key&gt;b10fa7e2-5e48-4c97-a7a0-42ca197d400c&lt;/key&gt;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;capacity&nbsp;unit='M'&gt;100&lt;/capacity&gt;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/volume&gt;"</span><span style="color: #007700">;<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color: #0000BB">$volumeNew</span><span style="color: #007700">=</span><span style="color: #0000BB">libvirt_storagevolume_create_xml</span><span style="color: #007700">(</span><span style="color: #0000BB">$pool</span><span style="color: #007700">,</span><span style="color: #0000BB">$xml</span><span style="color: #007700">);<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color: #0000BB">var_dump</span><span style="color: #007700">(</span><span style="color: #0000BB">$volumeNew</span><span style="color: #007700">);<br /></span><span style="color: #0000BB">?&gt;</span>
+</span>
+</code></div>
+    </div>
+
+    <div class="example-contents para"><p>The above example will output 
+something similar to:</p></div>
+    <div class="example-contents screen">
+<div class="cdata"><pre>
+resource(3) of type (Libvirt volume)
+</pre></div>
+    </div>
+   </div><p>
+  </p>
+ </div>
+
+
+ <a name="function.libvirt-create-xml.seealso"></a><div class="refsect1 seealso">
+  <h3 class="title">See Also</h3>
+  <p class="para">
+   </p><ul class="simplelist">
+    <li class="member"><a href="function.libvirt-storagevolume-lookup-by-name.html" class="function" rel="rdfs-seeAlso">libvirt_storagevolume_lookup_by_name()</a> - Lookup volume resource by name</li>
+    <li class="member"><a href="function.libvirt-storagevolume-get-info.html" class="function" rel="rdfs-seeAlso">libvirt_storagevolume_get_info()</a> - Get storagevolume information</li>
+    <li class="member"><a href="function.libvirt-storagevolume-get-xml-desc.html" class="function" rel="rdfs-seeAlso">libvirt_storagevolume_get_xml_desc()</a> - Get storagevolume information in XML format</li>
+   </ul><p>
+  </p>
+ </div>
+
+
+</div><hr /><div class="manualnavbar" style="text-align: center;">
+ <div class="prev" style="text-align: left; float: left;"><a href="function.libvirt-storagepool-lookup-by-name.html">libvirt_storagepool_lookup_by_name</a></div>
+ <div class="next" style="text-align: right; float: right;"><a href="function.libvirt-storagevolume-get-info.html">libvirt_storagevolume_get_info</a></div>
+ <div class="up"><a href="ref.libvirt.html">Libvirt Functions</a></div>
+ <div class="home"><a href="index.html">PHP Manual</a></div>
+</div></body></html>

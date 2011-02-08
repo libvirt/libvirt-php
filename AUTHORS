@@ -1,0 +1,16 @@
+PHP Libvirt extension
+=====================
+
+PHP Libvirt extension is maintained and developed by:
+
+	Radek Hladik <r.hladik@cybersales.cz>
+
+There are also other people that contributed the to project:
+
+	David King <e-mail@unknown.tld>
+	Jan-Paul van Burgsteden <e-mail@unknown.tld>
+        Michal Novotny <minovotn@redhat.com> or <mignov@gmail.com>
+
+If you would like to be listed in the contributors list
+feel free to clone this repository to your computer and
+add new features and post the patch to maintainer.

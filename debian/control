@@ -1,0 +1,15 @@
+Source: php-libvirt
+Section: web
+Priority: optional
+Maintainer: Andras Elso <elso.andras@gmail.com>
+Build-Depends: debhelper (>= 4.2), po-debconf, php5-dev (>= 5.1.1-1), libvirt-dev (>= 0.7.0)
+Standards-Version: 3.7.2.2
+
+Package: php5-libvirt
+Architecture: any
+Depends: ${shlibs:Depends}, ${php:Depends}, ${misc:Depends}
+Description: A PHP5 extension for Libvirt binding
+ Libvirt is a toolkit to interact with the virtualization capabilities of recent
+ versions of Linux (and other OSes). This is PHP language binding for it. 
+ .
+ This is the extension for php5.

@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+ <head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title>Read the contents of a domain's memory</title>
+ </head>
+ <body><div class="manualnavbar" style="text-align: center;">
+ <div class="prev" style="text-align: left; float: left;"><a href="function.libvirt-domain-lookup-by-uuid.html">libvirt_domain_lookup_by_uuid</a></div>
+ <div class="next" style="text-align: right; float: right;"><a href="function.libvirt-domain-memory-stats.html">libvirt_domain_memory_stats</a></div>
+ <div class="up"><a href="ref.libvirt.html">Libvirt Functions</a></div>
+ <div class="home"><a href="index.html">PHP Manual</a></div>
+</div><hr /><div id="function.libvirt-domain-memory-peek" class="refentry">
+ <div class="refnamediv">
+  <h1 class="refname">libvirt_domain_memory_peek</h1>
+  <p class="verinfo">(php-libvirt 0.1)</p><p class="refpurpose"><span class="refname">libvirt_domain_memory_peek</span> &mdash; <span class="dc-title">Read the contents of a domain&#039;s memory</span></p>
+
+ </div>
+
+ <a name="function.libvirt-domain-memory-peek.description"></a><div class="refsect1 description">
+  <h3 class="title">Description</h3>
+  <div class="methodsynopsis dc-description">
+   <span class="type">string</span> <span class="methodname"><b>libvirt_domain_memory_peek</b></span>
+    ( <span class="methodparam"><span class="type">resource</span> <tt class="parameter">$domain</tt></span>
+   , <span class="methodparam"><span class="type">integer</span> <tt class="parameter">$start</tt></span>
+   , <span class="methodparam"><span class="type">integer</span> <tt class="parameter">$size</tt></span>
+   , <span class="methodparam"><span class="type">integer</span> <tt class="parameter">$flags</tt></span>
+   )</div>
+
+  <p class="para rdfs-comment">
+   This function allows you to read the contents of a domain&#039;s memory. The memory which is read is controlled by the &#039;start&#039;, &#039;size&#039; and &#039;flags&#039; parameters. If &#039;flags&#039; is <b><tt class="constant">VIR_MEMORY_VIRTUAL</tt></b> then the &#039;start&#039; and &#039;size&#039; parameters are interpreted as virtual memory addresses for whichever task happens to be running on the domain at the moment. Although this sounds haphazard it is in fact what you want in order to read Linux kernel state, because it ensures that pointers in the kernel image can be interpreted coherently. &#039;buffer&#039; is the return buffer and must be at least &#039;size&#039; bytes. &#039;size&#039; may be 0 to test if the call would succeed. NB. The remote driver imposes a 64K byte limit on &#039;size&#039;. For your program to be able to work reliably over a remote connection you should split large requests to &lt;= 65536 bytes.
+  </p>
+  <p class="para">
+  This function is experimental and untested.
+  </p>
+
+
+ </div>
+
+
+ <a name="function.libvirt-domain-memory-peek.returnvalues"></a><div class="refsect1 returnvalues">
+  <h3 class="title">Return Values</h3>
+  
+  <p class="para">
+   String containing requested memory
+  </p>
+ </div>
+
+
+
+
+</div><hr /><div class="manualnavbar" style="text-align: center;">
+ <div class="prev" style="text-align: left; float: left;"><a href="function.libvirt-domain-lookup-by-uuid.html">libvirt_domain_lookup_by_uuid</a></div>
+ <div class="next" style="text-align: right; float: right;"><a href="function.libvirt-domain-memory-stats.html">libvirt_domain_memory_stats</a></div>
+ <div class="up"><a href="ref.libvirt.html">Libvirt Functions</a></div>
+ <div class="home"><a href="index.html">PHP Manual</a></div>
+</div></body></html>

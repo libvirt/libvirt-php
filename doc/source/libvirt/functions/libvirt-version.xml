@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision: 1.28 $ -->
+
+<refentry xml:id="function.libvirt-version" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <refnamediv>
+  <refname>libvirt_version</refname>
+  <refpurpose>Get libvirt version</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>array</type><methodname>libvirt_version</methodname>
+   <methodparam choice="opt"><type>string</type><parameter>type</parameter><initializer>null</initializer></methodparam>
+  </methodsynopsis>
+  <para>
+   Provides two information back, libvirt is the version of the library while type will be the version of the hypervisor type against which the library was compiled
+  </para>
+
+ </refsect1>
+
+<refsect1 role="parameters">
+  &reftitle.parameters;
+ <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>type</parameter></term>
+     <listitem>
+      <para>
+       Hypervisor type against which the library was compiled. If <parameter>type</parameter> is NULL, "Xen" is assumed.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <!-- See also &return.success; -->
+  <para>
+   Associative array containing version information. It cointains these members:
+   <simplelist>
+   <member>libvirt.release</member>
+   <member>libvirt.major</member>
+   <member>libvirt.minor</member>
+   <member>type.release</member>
+   <member>type.major</member>
+   <member>type.minor</member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>libvirt_version</function> example</title>
+    <para>
+    Get version of libvirt and xen driver.
+    </para>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+	$version=libvirt_version("xen")
+	print_r($version);
+
+?>
+]]>
+    </programlisting>
+    &example.outputs.similar;
+    <screen>
+<![CDATA[
+Array
+(
+    [libvirt.release] => 0
+    [libvirt.minor] => 6
+    [libvirt.major] => 0
+    [type.release] => 1
+    [type.minor] => 0
+    [type.major] => 3
+)
+
+]]>
+    </screen>
+   </example>
+  </para>
+ </refsect1>
+
+ 
+
+</refentry>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"../../../../manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
