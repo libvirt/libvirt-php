@@ -135,7 +135,7 @@
       </xsl:comment>
       <head>
         <link rel="stylesheet" type="text/css" href="{$href_base}main.css"/>
-        <link rel="SHORTCUT ICON" href="{$href_base}32favicon.png"/>
+        <link rel="SHORTCUT ICON" href="{$href_base}graphics/32favicon.png"/>
         <title>libvirt: <xsl:value-of select="html/body/h1"/></title>
         <meta name="description" content="libvirt, virtualization, virtualization API"/>
       </head>

@@ -8,7 +8,7 @@
     <h2><a name="compiling">Compiling a release tarball</a></h2>
 
     <p>
-      libvirt-php is planned to be using the standard configure/make/install steps:
+      libvirt-php is using the standard configure/make steps:
     </p>
 
     <pre>
@@ -35,6 +35,12 @@
     </p>
 
     <p>
+	Unfortunately the last step is quite complicated so now you need to
+        go to <i>src</i> directory and run `make install-module`. This is
+        doing the module installation and setup to /etc/php.d for you.
+    </p>
+
+    <p>
       Note the use of <b>sudo</b> with the <i>make install</i> command
       below.  Using sudo is only required when installing to a location your
       user does not have write access to.  Installing to a system location
@@ -50,11 +56,11 @@
     <pre>
       $ ./configure <i>[possible options]</i>
       $ make
-      $ <b>sudo</b> <i>make install</i></pre>
+      $ cd src
+      $ <b>sudo</b> <i>make install-module</i></pre>
 
     <p>
-      At this point you <b>may</b> have to run ldconfig or a similar utility
-      to update your list of installed shared libs.
+     By this command you'll have the libvirt-php installed on your system.
     </p>
 
     <h2><a name="building">Building from a GIT checkout</a></h2>
@@ -70,6 +76,7 @@
     <pre>
       $ ./autogen.sh
       $ make
-      $ <b>sudo</b> make install</pre>
+      $ cd src
+      $ <b>sudo</b> make install-module</pre>
   </body>
 </html>
