@@ -134,7 +134,9 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 NAME = libvirt-php
+CP = cp
 RM = rm
+ECHO = echo
 PHPINC = `php-config --includes`
 PHPEDIR = `php-config --extension-dir`
 XMLCFLAGS = `pkg-config libxml-2.0 --cflags`
@@ -264,7 +266,7 @@ install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am:
+install-exec-am: install-exec-local
 
 install-html: install-html-am
 
@@ -302,19 +304,20 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am:
+uninstall-am: uninstall-local
 
 .MAKE: install-am install-strip
 
 .PHONY: all all-am check check-am clean clean-generic distclean \
 	distclean-generic distdir dvi dvi-am html html-am info info-am \
 	install install-am install-data install-data-am install-dvi \
-	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-info install-info-am install-man \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-generic pdf pdf-am ps ps-am uninstall uninstall-am
+	install-dvi-am install-exec install-exec-am install-exec-local \
+	install-html install-html-am install-info install-info-am \
+	install-man install-pdf install-pdf-am install-ps \
+	install-ps-am install-strip installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-generic pdf pdf-am ps ps-am uninstall \
+	uninstall-am uninstall-local
 
 
 all: compile clean-temp
@@ -322,11 +325,15 @@ all: compile clean-temp
 compile:
 	$(CC) -fpic -DCOMPILE_DL_LIBVIRT=1 $(PHPINC) -c -o $(NAME).o libvirt.c $(XMLCFLAGS)
 	$(CC) -shared $(LIBS) -rdynamic -o $(NAME).so $(NAME).o -ldl -lvirt $(XMLLIBS)
-	echo "Extension compiled as $(NAME).so"
+	$(ECHO) "Extension compiled as $(NAME).so"
 
-install-module:
-	cp $(NAME).so $(PHPEDIR)
-	echo "extension=php_libvirt.so" > /etc/php.d/libvirt-php.ini
+install-exec-local:
+	$(CP) $(NAME).so $(PHPEDIR)
+	$(ECHO) "extension=$(NAME)" > /etc/php.d/libvirt-php.ini
+
+uninstall-local:
+	$(RM) -f /etc/php.d/$(NAME).ini
+	$(RM) -f $(PHPEDIR)/$(NAME).so
 
 clean-temp:
 	$(RM) -f *.o

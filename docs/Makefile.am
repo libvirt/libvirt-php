@@ -75,12 +75,12 @@ maintainer-clean-local: clean-local
 rebuild: all
 
 install-data-local:
-	$(mkinstalldirs) $(DESTDIR)$(HTML_DIR)
+	$(mkinstalldirs) $(pkgdatadir)
 	for f in $(css) $(dot_html) $(png); do \
-	  $(INSTALL) -m 0644 $(srcdir)/$$f $(DESTDIR)$(HTML_DIR); \
+	  $(INSTALL) -m 0644 $(srcdir)/$$f $(pkgdatadir); \
 	done
 
 uninstall-local:
 	for f in $(css) $(dot_html) $($png); do \
-	  rm $(DESTDIR)$/$$(basename $$f); \
+	  rm -f $(pkgdatadir)/$$(basename $$f); \
 	done

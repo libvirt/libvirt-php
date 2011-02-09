@@ -1,6 +1,5 @@
-AC_INIT([php-libvirt], [0.4], [http://libvirt.org])
+AC_INIT([libvirt-php], [0.4], [http://libvirt.org])
 AM_INIT_AUTOMAKE([-Wall -Werror])
-AC_PREFIX_DEFAULT([LIBDIR/php/modules])
 AC_CONFIG_FILES([Makefile src/Makefile docs/Makefile])
 AC_CHECK_LIB([virt], [virConnectOpen], [], AC_MSG_ERROR([You need libvirt to compile this module]))
 AM_INIT_AUTOMAKE([-Wno-portability])
