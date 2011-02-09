@@ -1,0 +1,58 @@
+<html>
+  <body>
+    <h1>Examples</h1>
+
+    <ul id="toc"></ul>
+
+    <h2><a name="get-version">Getting libvirt, hypervisor and libvirt-php version</a></h2>
+
+     <p>If you just want to check whether the module is working fine you can try to ask libvirt for
+     libvirt/hypervisor version and libvirt-php version. Libvirt-php version is also available in
+     phpinfo() output when a module is loaded. In your PHP script you can do it using following
+     syntax:</p>
+     <pre>&lt;&#63;php
+     $var = libvirt_version();
+&#63;&gt;</pre>
+
+      <p>The <i>var</i> variable will be having information about major, minor and release versions
+      of the hypervisor and libvirt available and also there will be version number of libvirt-php
+      connector in form of <i>major.minor.release</i>.</p>
+
+     <h2><a name="connecting">Connecting to libvirt daemon</a></h2>
+
+     <p>
+       For connecting to libvirt daemon the <i>libvirt_connect()</i> API function has been introduced.
+       This function accepts 2 arguments:</p>
+
+      <ul>
+        <li>Hypevisor URI: string</li>
+        <li>Readonly: boolean</li>
+      </ul>
+
+     <p>Hypervisor URI could be also string <i>null</i> to make libvirt probe the hypervisor driver
+        that is applicable to the host machine.</p>
+
+     <pre>&lt;&#63;php
+     $var = libvirt_connect('null', false);
+&#63;&gt;</pre>
+
+     <h2><a name="listing-domains">Getting list of domains</a></h2>
+
+     <p>
+       If you want to get the list of domains you can use <i>libvirt_list_domains()</i> API function.
+       This function returns an array of libvirt domain resources that could be used with the
+       <i>libvirt_domain_get_name()</i> API function to get the list of domain names like:</p>
+
+     <pre>&lt;&#63;php
+     $conn = libvirt_connect('null', false);
+     $doms = libvirt_list_domains($conn);
+     $domNames = array();
+     foreach ($doms as $dom)
+         $domNames[] = libvirt_domain_get_name($dom);
+     print_r($domNames);
+&#63;&gt;</pre>
+
+     <p>This script will output all the domain names available on this connection.</p>
+
+  </body>
+</html>

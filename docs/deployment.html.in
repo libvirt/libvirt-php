@@ -1,0 +1,18 @@
+<html>
+  <body>
+    <h1>Deployment</h1>
+
+    <h2>Enabling libvirt-php module</h2>
+
+    <p>Before you start using the module you have to install the module first. The module <i>php_libvirt.so</i> is being generated when you compile it. This is necessary to be loaded in the extensions sections of php.ini file for PHP version older than PHP-5.</p>
+<p>Starting with PHP-5 you can create a file called <i>libvirt.ini</i> in your <i>/etc/php.d</i> directory having just one line:</p>
+<pre>extension=php_libvirt.so</pre>
+<p>This enables the extension for PHP. Of course, you need to have this module copied in the directory with the rest of your PHP modules to make PHP find the module for you.</p>
+<p>If you're using PHP as a module (<i>mod_php5.so</i>) in the Apache webserver you need to restart your Apache to trigger configuration reload for PHP.</p>
+<p>If you're not sure that you have everything set up right and you don't want to restart your Apache webserver before you're sure everything will be working fine you could try running the test using cli-based PHP interpreter. There are some example scripts coming along the source codes in the example subdirectory so you can try to run php on the index.php script to check whether it's working fine to establish connection or not.</p>
+
+<p>When you're having some issues with the connection make sure the apache user is having access to libvirt. For more information please see <a href="http://libvirt.org/auth.html">Libvirt access control page.</a>
+    </p>
+
+  </body>
+</html>

@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<html>
+  <body>
+    <h1>Roadmap for libvirt-php</h1>
+
+    <p>
+     This is the intended roadmap of libvirt-php project for the worth implementing features and/or bug fixes:
+    </p>
+
+    <ul>
+      <li>Write a Windows port to enable management from Windows-based servers</li>
+      <li>Implement traversal lookup for connection objects (e.g. to limit number of connection from PHP and free objects)</li>
+      <li>Write more examples to the website</li>
+      <li>Add support for managing snapshots and new libvirt features</li>
+    </ul>
+
+  </body>
+</html>

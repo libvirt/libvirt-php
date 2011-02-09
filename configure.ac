@@ -1,9 +1,24 @@
 AC_INIT([php-libvirt], [0.3a], [r.hladik@cybersales.cz])
 AM_INIT_AUTOMAKE([-Wall -Werror])
 AC_PREFIX_DEFAULT([LIBDIR/php/modules])
-AC_CONFIG_FILES([Makefile])
-AC_CONFIG_SRCDIR([libvirt.c])
+AC_CONFIG_FILES([src/Makefile docs/Makefile])
 AC_CHECK_LIB([virt], [virConnectOpen], [], AC_MSG_ERROR([You need libvirt to compile this module]))
+AM_INIT_AUTOMAKE([-Wno-portability])
+AM_MAINTAINER_MODE([enable])
+
+dnl Specific XML catalog file for validation of generated html
+AC_ARG_WITH([xml-catalog-file],
+            [AC_HELP_STRING([--with-xml-catalog-file=path],
+                [path to XML catalog file for validating
+                 generated html, default /etc/xml/catalog])],
+            [XML_CATALOG_FILE=$withval],
+            [XML_CATALOG_FILE='/etc/xml/catalog'])
+AC_SUBST([XML_CATALOG_FILE])
+
+# External programs to generate documentation
+AC_PATH_PROG([XSLTPROC], [xsltproc], [/usr/bin/xsltproc])
+AC_PATH_PROG([XMLLINT], [xmllint], [/usr/bin/xmllint])
+AC_PATH_PROG([XMLCATALOG], [xmlcatalog], [/usr/bin/xmlcatalog])
 
 AC_PATH_PROG([PHPIZE], [phpize], [no])
 if test "x$PHPIZE" = "xno"; then

@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<html>
+  <body>
+    <h1>Libvirt-php</h1>
+
+    <p>libvirt-php, originally called php-libvirt, is a project that was started by Radek Hladik in 2010 to integrate libvirt support to PHP.</p>
+    <p>In February 2011 the binding has been moved to libvirt.org site and it's currently maintained by Red Hat engineer Michal Novotny and current
+       version is heavily based on Radek's original version. </p>
+
+    <h2>What is libvirt-php?</h2>
+    <p>libvirt-php is a php module that provides PHP bindings for libvirt virtualization toolkit and therefore you can access libvirt directly from
+       your PHP scripts with no need to have virt-manager or libvirt-based CLI/GUI tools installed</p>
+
+    <h2>How to use libvirt-php</h2>
+    <p>Once you have the libvirt-php module loaded in your PHP configuration you can test it's presence using a simple PHP script like:</p>
+    <pre>&lt;&#63;php
+    print_r( libvirt_version() );
+&#63;&gt;</pre>
+    <p>If you have libvirt-php binding installed and binding is working successfully you should be seeing following output to your console or webpage
+    (this depends on version of PHP you're using - whether cli-based interface to just test it or you're running the script inside of your webserver):</p>
+    <pre>Array
+(
+    [libvirt.release] =&gt; 3
+    [libvirt.minor] =&gt; 8
+    [libvirt.major] =&gt; 0
+    [connector.version] =&gt; 0.4.1
+    [type.release] =&gt; 1
+    [type.minor] =&gt; 0
+    [type.major] =&gt; 3
+)
+</pre>
+    <p>Fields in this output are saying what version of libvirt, hypervisor and libvirt-php you are using. The fields beginning with <i>libvirt.</i> are
+    libvirt daemon related, those with <i>type.</i> prefix are hypervisor related and <i>connector.version</i> is referring to libvirt-php since libvirt-php
+    is just a connector to libvirt daemon so therefore connector.</p>
+
+  </body>
+</html>

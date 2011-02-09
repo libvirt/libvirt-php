@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<html>
+  <body>
+    <h1>Related links</h1>
+
+    <p>
+      Those links are related to libvirt-php project:
+    </p>
+
+    <ul>
+	<li><a href="http://libvirt.org">Libvirt</a></li>
+        <li><a href="http://www.php.net">PHP</a></li>
+    </ul>
+
+  </body>
+</html>

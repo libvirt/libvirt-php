@@ -1,0 +1,10 @@
+<html>
+  <body>
+    <h1>Documentation</h1>
+    <p>
+      If you are a server administration you need to compile and deploy the libvirt-php module first.
+      Once you have libvirt-php compiled and deployed to your PHP and webserver you can start using
+      it. Now please select the area you're interested in from the left menu.
+    </p>
+  </body>
+</html>

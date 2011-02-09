@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<html>
+  <body>
+    <h1>Contributions to libvirt-php</h1>
+    <h3>(aka libvirt-php hacking)</h3>
+
+    <ul id="toc"></ul>
+
+    <h2><a name="hacking">Hacking libvirt-php</a></h2>
+
+    <p>
+      If you want to implement new features to libvirt-php or fix some bugs you have found you can download the source from
+      our GIT repository using</p>
+      <pre>git clone git://libvirt.org/libvirt-php</pre>
+    <p>
+      And then create a patch to fix those bugs or implement your new features. Please make sure you're using
+      the coding style in which the code is already written (beware of spaces instead of tabs etc). If you would like to
+      patch libvirt-php please follow the procedure in <a href="#sending">Sending patches</a> paragraph.
+    </p>
+
+    <h2><a name="sending">Sending patches</a></h2>
+    <p>If you would like to contribute to the libvirt-php project you could write patches for it but please make sure you're following the procedure below:</p>
+      <ol>
+       <li>Sign up to libvirt list if you're not on it yet (libvir-list@redhat.com)</li>
+       <li>Set your git username and e-mail and also set the subject prefix in the project's repository using:
+     <pre>git config --local format.subjectprefix "libvirt-php"</pre>
+
+ </li><li>Create the patch in the form of the commits and include also information about usage (example source codes maybe) and testing</li><li>Format it using <code>git format-patch -X</code> where X is the number of patch parts to be posted, for multipart patch (X is greater than 1) please use also numbering (-n) option and include the cover-letter (--cover-letter).</li><li>Send to libvir-list@redhat.com using the <code>git send-email &lt;files&gt; --to libvir-list@redhat.com</code> command where &lt;files&gt; can be <i>000*</i> to send all the patches formatted by git format-patch since git format-patch names the files starting with the 4 digit numbers.</li></ol>
+
+  </body>
+</html>

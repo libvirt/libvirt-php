@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  </head>
+  <body>
+    <h1>News</h1>
+    <p>Here will the list of official releases of libvirt-php project but it's empty now since no release has been done yet.
+    If you want to see the commits or download the source from git please refer to project's GIT repository at:</p>
+
+    <pre>http://libvirt.org/git/?p=libvirt-php.git</pre>
+
+    <p>
+    If you want to see the latest patches committed to the repository can also refer to <a href="http://libvirt.org/git/?p=libvirt-php.git;a=log">GIT log</a>.
+    </p>
+  </body>
+</html>

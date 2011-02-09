@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<html>
+  <body>
+    <h1>Contacting the development team</h1>
+
+    <ul id="toc"></ul>
+
+    <h2><a name="email">Mailing lists</a></h2>
+
+    <p>
+      If you want to send patches or if you see for advice that's related to libvirt-php or libvirt you can use following mailing list:
+    </p>
+
+    <dl>
+      <dt><a href="https://www.redhat.com/mailman/listinfo/libvir-list">libvir-list@redhat.com</a></dt>
+      <dd>
+        Archives at <a href="https://www.redhat.com/archives/libvir-list">https://www.redhat.com/archives/libvir-list</a>
+      </dd>
+      <dd>
+        This is a high volume mailing list.  It is a place for discussions
+        about the <strong>development</strong> of libvirt-php but it is <strong>not</strong> only for libvirt-php
+        since it's mainly for libvirt itself so please be so kind and include <strong>[libvirt-php]</strong> prefix
+        to your e-mail to address libvirt-php.
+      </dd>
+      <dd>
+        Topics for discussion include:
+        <ul>
+          <li>New features for libvirt-php</li>
+          <li>Bug fixing of libvirt-php</li>
+          <li>Testing and documentation of libvirt-php</li>
+        </ul>
+      </dd>
+
+  </body>
+</html>

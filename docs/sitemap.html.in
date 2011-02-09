@@ -1,0 +1,70 @@
+<html>
+  <body>
+    <h1>Sitemap</h1>
+
+    <div id="sitemap">
+    <ul>
+      <li>
+        <a href="index.html">Home</a>
+        <span>Front page of the libvirt-php website</span>
+      </li>
+      <li>
+        <a href="news.html">News</a>
+        <span>Details of new features and bugs fixed in each release</span>
+        <ul>
+          <li>
+            <a href="http://libvirt.org/git/?p=libvirt-php.git;a=log">Git log</a>
+            <span>Latest commit messages from the source repository </span>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="downloads.html">Downloads</a>
+        <span>Get the latest source releases, binary builds and get access to the source repository</span>
+      </li>
+      <li>
+        <a href="windows.html">Windows port</a>
+        <span>Information on libvirt-php Windows port</span>
+      </li>
+      <li>
+         <a href="contributions.html">Contributions</a>
+         <span>Information on contributing to libvirt-php</span>
+      </li>
+      <li>
+        <a href="docs.html">Documentation</a>
+        <span>Information for users, administrators and developers</span>
+        <ul>
+          <li>
+            <a href="compiling.html">Compiling</a>
+            <span>How to compile libvirt</span>
+          </li>
+          <li>
+            <a href="deployment.html">Deployment</a>
+            <span>Information about deploying and using libvirt</span>
+          </li>
+          <li>
+            <a href="examples.html">Examples</a>
+            <span>Example scripts using libvirt-php</span>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="contact.html">Contact</a>
+        <span>How to contact the developers via email and IRC</span>
+      </li>
+      <li>
+        <a href="links.html">Related links</a>
+        <span>List of links related to libvirt-php project</span>
+      </li>
+      <li>
+        <a href="roadmap.html">Roadmap</a>
+        <span>List of features to be implemented</span>
+      </li>
+      <li>
+        <a href="sitemap.html">Sitemap</a>
+        <span>Libvirt-php site map</span>
+      </li>
+    </ul>
+    </div>
+  </body>
+</html>
