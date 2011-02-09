@@ -170,7 +170,8 @@ void set_error(char *msg)
 }
 
 /* Error handler for receiving libvirt errors */
-catch_error(void *userData, virErrorPtr error)
+static void catch_error(void *userData ATTRIBUTE_UNUSED,
+                           virErrorPtr error)
 {
 	set_error(error->message);
 }
@@ -442,7 +443,7 @@ str_out = estrndup(str_in, strlen(str_in)); \
 #define LONGLONG_ASSOC(out,key,in) \
 	if (LIBVIRT_G(longlong_to_string_ini)) { \
 	  snprintf(tmpnumber,63,"%llu",in); \
-          add_assoc_string(out,key,tmpnumber,1); \
+          add_assoc_string_ex(out,key,strlen(key)+1,tmpnumber,1); \
         } \
 	else \
 	{ \
@@ -637,7 +638,7 @@ PHP_FUNCTION(libvirt_node_get_info)
 	if (retval==-1) RETURN_FALSE;
 
 	array_init(return_value);
-	add_assoc_string(return_value, "model", (long)info.model,1);
+	add_assoc_string_ex(return_value, "model", 6, info.model, 1);
 	add_assoc_long(return_value, "memory", (long)info.memory);
 	add_assoc_long(return_value, "cpus", (long)info.cpus);
 	add_assoc_long(return_value, "nodes", (long)info.nodes);
@@ -1100,10 +1101,13 @@ PHP_FUNCTION(libvirt_domain_get_name)
 {
 	php_libvirt_domain *domain=NULL;
 	zval *zdomain;
-	char *name=NULL;
+	const char *name=NULL;
 	char *name_out;
 
 	GET_DOMAIN_FROM_ARGS("r",&zdomain);
+
+	if (domain->domain == NULL)
+		RETURN_FALSE;
 
 	name=virDomainGetName(domain->domain);
 	if (name==NULL) RETURN_FALSE;
@@ -1486,7 +1490,7 @@ char *get_string_from_xpath(char *xml, char *xpath, zval **val, int *retVal)
 				value = (char *)xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode, 1);
 
 				snprintf(key, sizeof(key), "%d", i);
-				add_assoc_string(*val, key, (long)value, 1);
+				add_assoc_string_ex(*val, key, strlen(key)+1, value, 1);
 				ret++;
 			}
 		}
@@ -1543,15 +1547,15 @@ PHP_FUNCTION(libvirt_domain_get_network_info) {
 	}
 
 	array_init(return_value);
-	add_assoc_string(return_value, "mac", (long)mac, 1);
-	add_assoc_string(return_value, "network", (long)tmp, 1);
+	add_assoc_string_ex(return_value, "mac", 4, mac, 1);
+	add_assoc_string_ex(return_value, "network", 8, tmp, 1);
 
 	snprintf(fnpath, sizeof(fnpath), "//domain/devices/interface[@type='network']/mac[@address='%s']/../model/@type", mac);
 	tmp = get_string_from_xpath(xml, fnpath, NULL, &retval);
 	if ((tmp != NULL) && (retval > 0))
-		add_assoc_string(return_value, "nic_type", (long)tmp, 1);
+		add_assoc_string_ex(return_value, "nic_type", 9, tmp, 1);
 	else
-		add_assoc_string(return_value, "nic_type", (long)"default", 1);
+		add_assoc_string_ex(return_value, "nic_type", 9, "default", 1);
 }
 
 PHP_FUNCTION(libvirt_list_networks)
@@ -1630,11 +1634,6 @@ PHP_FUNCTION(libvirt_list_nodedevs)
 		add_next_index_string(return_value,  names[i], 1);
 		free(names[i]);
 	}
-
-/*
-	if (cap != NULL)
-		add_assoc_string(return_value, "capability", (long)cap, 1);
-*/
 
 	efree(names);
 }
@@ -1739,95 +1738,95 @@ PHP_FUNCTION(libvirt_nodedev_get_information)
 		RETURN_FALSE;
 	}
 
-	add_assoc_string(return_value, "name", (long)tmp, 1);
+	add_assoc_string_ex(return_value, "name", 5, tmp, 1);
 
 	/* Get parent name */
 	tmp = get_string_from_xpath(xml, "//device/parent", NULL, &retval);
 	if ((tmp != NULL) && (retval > 0))
-		add_assoc_string(return_value, "parent", (long)tmp, 1);
+		add_assoc_string_ex(return_value, "parent", 7, tmp, 1);
 
 	/* Get capability */
 	cap = get_string_from_xpath(xml, "//device/capability/@type", NULL, &retval);
 	if ((cap != NULL) && (retval > 0))
-		add_assoc_string(return_value, "capability", (long)cap, 1);
+		add_assoc_string_ex(return_value, "capability", 11, cap, 1);
 
 	/* System capability is having hardware and firmware sub-blocks */
 	if (strcmp(cap, "system") == 0) {
 		/* Get hardware vendor */
 		tmp = get_string_from_xpath(xml, "//device/capability/hardware/vendor", NULL, &retval);
 		if ((tmp != NULL) && (retval > 0))
-			add_assoc_string(return_value, "hardware_vendor", (long)tmp, 1);
+			add_assoc_string_ex(return_value, "hardware_vendor", 16, tmp, 1);
 
 		/* Get hardware version */
 		tmp = get_string_from_xpath(xml, "//device/capability/hardware/version", NULL, &retval);
 		if ((tmp != NULL) && (retval > 0))
-			add_assoc_string(return_value, "hardware_version", (long)tmp, 1);
+			add_assoc_string_ex(return_value, "hardware_version", 17, tmp, 1);
 
 		/* Get hardware serial */
 		tmp = get_string_from_xpath(xml, "//device/capability/hardware/serial", NULL, &retval);
 		if ((tmp != NULL) && (retval > 0))
-			add_assoc_string(return_value, "hardware_serial", (long)tmp, 1);
+			add_assoc_string_ex(return_value, "hardware_serial", 16, tmp, 1);
 
 		/* Get hardware UUID */
 		tmp = get_string_from_xpath(xml, "//device/capability/hardware/uuid", NULL, &retval);
 		if (tmp != NULL)
-			add_assoc_string(return_value, "hardware_uuid", (long)tmp, 1);
+			add_assoc_string_ex(return_value, "hardware_uuid", 15, tmp, 1);
 
 		/* Get firmware vendor */
 		tmp = get_string_from_xpath(xml, "//device/capability/firmware/vendor", NULL, &retval);
 		if ((tmp != NULL) && (retval > 0))
-			add_assoc_string(return_value, "firmware_vendor", (long)tmp, 1);
+			add_assoc_string_ex(return_value, "firmware_vendor", 16, tmp, 1);
 
 		/* Get firmware version */
 		tmp = get_string_from_xpath(xml, "//device/capability/firmware/version", NULL, &retval);
 		if ((tmp != NULL) && (retval > 0))
-			add_assoc_string(return_value, "firmware_version", (long)tmp, 1);
+			add_assoc_string_ex(return_value, "firmware_version", 17, tmp, 1);
 
 		/* Get firmware release date */
 		tmp = get_string_from_xpath(xml, "//device/capability/firmware/release_date", NULL, &retval);
 		if ((tmp != NULL) && (retval > 0))
-			add_assoc_string(return_value, "firmware_release_date", (long)tmp, 1);
+			add_assoc_string_ex(return_value, "firmware_release_date", 22, tmp, 1);
 	}
 
 	/* Get product_id */
 	tmp = get_string_from_xpath(xml, "//device/capability/product/@id", NULL, &retval);
 	if ((tmp != NULL) && (retval > 0))
-		add_assoc_string(return_value, "product_id", (long)tmp, 1);
+		add_assoc_string_ex(return_value, "product_id", 11, tmp, 1);
 
 	/* Get product_name */
 	tmp = get_string_from_xpath(xml, "//device/capability/product", NULL, &retval);
 	if ((tmp != NULL) && (retval > 0))
-		add_assoc_string(return_value, "product_name", (long)tmp, 1);
+		add_assoc_string_ex(return_value, "product_name", 13, tmp, 1);
 
 	/* Get vendor_id */
 	tmp = get_string_from_xpath(xml, "//device/capability/vendor/@id", NULL, &retval);
 	if ((tmp != NULL) && (retval > 0))
-		add_assoc_string(return_value, "vendor_id", (long)tmp, 1);
+		add_assoc_string_ex(return_value, "vendor_id", 10, tmp, 1);
 
 	/* Get vendor_name */
 	tmp = get_string_from_xpath(xml, "//device/capability/vendor", NULL, &retval);
 	if ((tmp != NULL) && (retval > 0))
-		add_assoc_string(return_value, "vendor_name", (long)tmp, 1);
+		add_assoc_string_ex(return_value, "vendor_name", 12, tmp, 1);
 
 	/* Get driver name */
 	tmp = get_string_from_xpath(xml, "//device/driver/name", NULL, &retval);
 	if ((tmp != NULL) && (retval > 0))
-		add_assoc_string(return_value, "driver_name", (long)tmp, 1);
+		add_assoc_string_ex(return_value, "driver_name", 12, tmp, 1);
 
 	/* Get driver name */
 	tmp = get_string_from_xpath(xml, "//device/capability/interface", NULL, &retval);
 	if ((tmp != NULL) && (retval > 0))
-		add_assoc_string(return_value, "interface_name", (long)tmp, 1);
+		add_assoc_string_ex(return_value, "interface_name", 15, tmp, 1);
 
 	/* Get driver name */
 	tmp = get_string_from_xpath(xml, "//device/capability/address", NULL, &retval);
 	if ((tmp != NULL) && (retval > 0))
-		add_assoc_string(return_value, "address", (long)tmp, 1);
+		add_assoc_string_ex(return_value, "address", 8, tmp, 1);
 
 	/* Get driver name */
 	tmp = get_string_from_xpath(xml, "//device/capability/capability/@type", NULL, &retval);
 	if ((tmp != NULL) && (retval > 0))
-		add_assoc_string(return_value, "capabilities", (long)tmp, 1);
+		add_assoc_string_ex(return_value, "capabilities", 11, tmp, 1);
 }
 
 PHP_FUNCTION(libvirt_network_get)
@@ -1928,7 +1927,8 @@ int get_subnet_bits(char *ip)
 	char tmp[4] = { 0 };
 	int i, part = 0, ii = 0, skip = 0;
 	unsigned long long retval = 0;
-	char binary[64] = { 0 };
+	char *binary;
+	int maxBits = 64;
 
 	for (i = 0; i < strlen(ip); i++) {
 		if (ip[i] == '.') {
@@ -1943,7 +1943,8 @@ int get_subnet_bits(char *ip)
 	}
 
 	retval += (atoi(tmp) * pow(256, 3 - part));
-	dec2bin(retval, &binary);
+	binary = (char *)malloc( maxBits * sizeof(char) );
+	dec2bin(retval, binary);
 
 	for (i = 0; i < strlen(binary); i++) {
 		if ((binary[i] != '1') && (binary[i] != '0'))
@@ -1952,6 +1953,7 @@ int get_subnet_bits(char *ip)
 		if (binary[i] != '1')
 			break;
 	}
+	free(binary);
 
 	return i - skip;
 }
@@ -1989,7 +1991,7 @@ PHP_FUNCTION(libvirt_network_get_information)
 		RETURN_FALSE;
 	}
 
-	add_assoc_string(return_value, "name", (long)tmp, 1);
+	add_assoc_string_ex(return_value, "name", 5, tmp, 1);
 
 	/* Get gateway IP address */
 	tmp = get_string_from_xpath(xml, "//network/ip/@address", NULL, &retval);
@@ -2003,7 +2005,7 @@ PHP_FUNCTION(libvirt_network_get_information)
 		RETURN_FALSE;
 	}
 
-	add_assoc_string(return_value, "ip", (long)tmp, 1);
+	add_assoc_string_ex(return_value, "ip", 3, tmp, 1);
 
 	/* Get netmask */
 	tmp2 = get_string_from_xpath(xml, "//network/ip/@netmask", NULL, &retval);
@@ -2017,34 +2019,34 @@ PHP_FUNCTION(libvirt_network_get_information)
 		RETURN_FALSE;
 	}
 
-	add_assoc_string(return_value, "netmask", (long)tmp2, 1);
+	add_assoc_string_ex(return_value, "netmask", 8, tmp2, 1);
 	add_assoc_long(return_value, "netmask_bits", (long)get_subnet_bits(tmp2));
 
 	/* Format CIDR address representation */
 	tmp[strlen(tmp) - 1] = tmp[strlen(tmp) - 1] - 1;
 	snprintf(fixedtemp, sizeof(fixedtemp), "%s/%d", tmp, get_subnet_bits(tmp2));
-	add_assoc_string(return_value, "ip_range", fixedtemp, 1);
+	add_assoc_string_ex(return_value, "ip_range", 9, fixedtemp, 1);
 
 	/* Get forwarding settings */
 	tmp = get_string_from_xpath(xml, "//network/forward/@mode", NULL, &retval);
 	if ((tmp == NULL) || (retval < 0))
-		add_assoc_string(return_value, "forwarding", (long)"None", 1);
+		add_assoc_string_ex(return_value, "forwarding", 11, "None", 1);
 	else
-		add_assoc_string(return_value, "forwarding", (long)tmp, 1);
+		add_assoc_string_ex(return_value, "forwarding", 11, tmp, 1);
 
 	/* Get forwarding settings */
 	tmp = get_string_from_xpath(xml, "//network/forward/@dev", NULL, &retval);
 	if ((tmp == NULL) || (retval < 0))
-		add_assoc_string(return_value, "forward_dev", (long)"any interface", 1);
+		add_assoc_string_ex(return_value, "forward_dev", 12, "any interface", 1);
 	else
-		add_assoc_string(return_value, "forward_dev", (long)tmp, 1);
+		add_assoc_string_ex(return_value, "forward_dev", 12, tmp, 1);
 
 	/* Get DHCP values */
 	tmp = get_string_from_xpath(xml, "//network/ip/dhcp/range/@start", NULL, &retval);
 	tmp2 = get_string_from_xpath(xml, "//network/ip/dhcp/range/@end", NULL, &retval);
 	if ((retval > 0) && (tmp != NULL) && (tmp2 != NULL)) {
-		add_assoc_string(return_value, "dhcp_start", (long)tmp,  1);
-		add_assoc_string(return_value, "dhcp_end",   (long)tmp2, 1);
+		add_assoc_string_ex(return_value, "dhcp_start", 11, tmp,  1);
+		add_assoc_string_ex(return_value, "dhcp_end",    9, tmp2, 1);
 	}
 }
 
@@ -2156,17 +2158,17 @@ PHP_FUNCTION(libvirt_domain_get_block_info) {
 
 	array_init(return_value);
 	LONGLONG_INIT
-	add_assoc_string(return_value, "device", (long)dev, 1);
+	add_assoc_string_ex(return_value, "device", 7, dev, 1);
 
 	if (isFile)
-		add_assoc_string(return_value, "file", (long)tmp, 1);
+		add_assoc_string_ex(return_value, "file", 5, tmp, 1);
 	else
-		add_assoc_string(return_value, "partition", (long)tmp, 1);
+		add_assoc_string_ex(return_value, "partition", 10, tmp, 1);
 
 	snprintf(fnpath, sizeof(fnpath), "//domain/devices/disk/target[@dev='%s']/../driver/@type", dev);
 	tmp = get_string_from_xpath(xml, fnpath, NULL, &retval);
 	if (tmp != NULL)
-		add_assoc_string(return_value, "type", (long)tmp, 1);
+		add_assoc_string_ex(return_value, "type", 5, tmp, 1);
 
 	LONGLONG_ASSOC(return_value, "capacity", info.capacity);
 	LONGLONG_ASSOC(return_value, "allocation", info.allocation);
@@ -2186,7 +2188,8 @@ PHP_FUNCTION(libvirt_domain_xml_xpath) {
 	zval *zpath;
 	char *xml;
 	char *xml_out;
-	long path_len=-1, flags = 0, rc = 0;
+	long path_len=-1, flags = 0;
+	int rc = 0;
 
 	GET_DOMAIN_FROM_ARGS("rs|l",&zdomain, &zpath, &path_len, &flags);
 
@@ -2203,7 +2206,7 @@ PHP_FUNCTION(libvirt_domain_xml_xpath) {
 	if (rc == 0)
 		RETURN_FALSE;
 
-	add_assoc_string(return_value, "xpath", (long)zpath, 1);
+	add_assoc_string_ex(return_value, "xpath", 6, (char *)zpath, 1);
 	if (rc < 0)
 		add_assoc_long(return_value, "error_code", (long)rc);
 }
@@ -2257,7 +2260,7 @@ PHP_FUNCTION(libvirt_version)
 	add_assoc_long(return_value, "libvirt.minor",(long)((libVer/1000) % 1000));
 	add_assoc_long(return_value, "libvirt.major",(long)((libVer/1000000) % 1000));
 
-	add_assoc_string(return_value, "connector.version", (long)PHP_LIBVIRT_WORLD_VERSION, 1);
+	add_assoc_string_ex(return_value, "connector.version", 18, PHP_LIBVIRT_WORLD_VERSION, 1);
 	add_assoc_long(return_value, "type.release",(long)(typeVer %1000));
 	add_assoc_long(return_value, "type.minor",(long)((typeVer/1000) % 1000));
 	add_assoc_long(return_value, "type.major",(long)((typeVer/1000000) % 1000));
