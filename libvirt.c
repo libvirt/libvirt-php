@@ -12,7 +12,7 @@
 #define VIR_NETWORKS_ACTIVE	1
 #define VIR_NETWORKS_INACTIVE	2
 
-//----------------- ZEND thread safe per request globals definition 
+/* ZEND thread safe per request globals definition */
 int le_libvirt_connection;
 int le_libvirt_domain;
 int le_libvirt_storagepool;
@@ -22,7 +22,6 @@ int le_libvirt_nodedev;
 
 ZEND_DECLARE_MODULE_GLOBALS(libvirt)
 
-//static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_libvirt_connect, 0, 0, 0)
 	ZEND_ARG_INFO(0, url)
 	ZEND_ARG_INFO(0, readonly)
@@ -60,18 +59,14 @@ static function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_domain_define_xml, NULL)
 	PHP_FE(libvirt_domain_create_xml, NULL)
 	PHP_FE(libvirt_domain_memory_peek,NULL)
-#if LIBVIR_VERSION_NUMBER>=7005
 	PHP_FE(libvirt_domain_memory_stats,NULL)
-#endif
 	PHP_FE(libvirt_domain_block_stats,NULL)
 	PHP_FE(libvirt_domain_interface_stats,NULL)
 	PHP_FE(libvirt_version,NULL)
 	PHP_FE(libvirt_domain_get_connect, NULL)
 	PHP_FE(libvirt_domain_migrate, NULL)
 	PHP_FE(libvirt_domain_migrate_to_uri, NULL)
-#if LIBVIR_VERSION_NUMBER>=7007     
 	PHP_FE(libvirt_domain_get_job_info, NULL)
-#endif
 	PHP_FE(libvirt_domain_xml_xpath, NULL)
 	PHP_FE(libvirt_domain_get_block_info, NULL)
         PHP_FE(libvirt_domain_get_network_info, NULL)
@@ -121,32 +116,32 @@ zend_module_entry libvirt_module_entry = {
 ZEND_GET_MODULE(libvirt)
 #endif
 
-//----------------- PHP init options
+/* PHP init options */
 PHP_INI_BEGIN()
-STD_PHP_INI_ENTRY("libvirt.longlong_to_string", "1", PHP_INI_ALL, OnUpdateBool, longlong_to_string_ini, zend_libvirt_globals, libvirt_globals)
+	STD_PHP_INI_ENTRY("libvirt.longlong_to_string", "1", PHP_INI_ALL, OnUpdateBool, longlong_to_string_ini, zend_libvirt_globals, libvirt_globals)
 PHP_INI_END()
 
-//PHP requires to have this function defined
+/* PHP requires to have this function defined */
 static void php_libvirt_init_globals(zend_libvirt_globals *libvirt_globals)
 {
 	libvirt_globals->longlong_to_string_ini = 1;
 }
 
-//PHP request initialization
+/* PHP request initialization */
 PHP_RINIT_FUNCTION(libvirt)
 {
 	LIBVIRT_G (last_error)=NULL;
 	return SUCCESS;
 }
 
-//PHP request destruction
+/* PHP request destruction */
 PHP_RSHUTDOWN_FUNCTION(libvirt)
 {
 	if (LIBVIRT_G (last_error)!=NULL) efree(LIBVIRT_G (last_error));
 	return SUCCESS;
 }
 
-//phpinfo()
+/* Information function for phpinfo() */
 PHP_MINFO_FUNCTION(libvirt)
 {
 	unsigned long libVer;
@@ -166,16 +161,22 @@ PHP_MINFO_FUNCTION(libvirt)
 	php_info_print_table_end();
 }
 
-//calback error for receiving errors from libvirt. Pass them to PHP and stores for last_error function
+/* Function to set the error message and pass it to PHP */
+void set_error(char *msg)
+{
+	php_error_docref(NULL TSRMLS_CC, E_WARNING,"%s",msg);
+	if (LIBVIRT_G (last_error)!=NULL) efree(LIBVIRT_G (last_error));
+	LIBVIRT_G (last_error)=estrndup(msg,strlen(msg));
+}
+
+/* Error handler for receiving libvirt errors */
 catch_error(void *userData, virErrorPtr error)
 {
-	php_error_docref(NULL TSRMLS_CC, E_WARNING,"%s",error->message);
-	if (LIBVIRT_G (last_error)!=NULL) efree(LIBVIRT_G (last_error));
-	LIBVIRT_G (last_error)=estrndup(error->message,strlen(error->message));
+	set_error(error->message);
 }
 
 
-//Destructor for connection resource
+/* Destructor for connection resource */
 static void php_libvirt_connection_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 {
 	php_libvirt_connection *conn = (php_libvirt_connection*)rsrc->ptr;
@@ -186,7 +187,7 @@ static void php_libvirt_connection_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 	conn->conn=NULL;
 }
 
-//Destructor for domain resource
+/* Destructor for domain resource */
 static void php_libvirt_domain_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 {
 	php_libvirt_domain *domain = (php_libvirt_domain*)rsrc->ptr;
@@ -196,7 +197,7 @@ static void php_libvirt_domain_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 	domain->domain=NULL;
 }
 
-//Destructor for storagepool resource
+/* Destructor for storagepool resource */
 static void php_libvirt_storagepool_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 {
 	php_libvirt_storagepool *pool = (php_libvirt_storagepool*)rsrc->ptr;
@@ -211,7 +212,7 @@ static void php_libvirt_storagepool_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 	}
 }
 
-//Destructor for volume resource
+/* Destructor for volume resource */
 static void php_libvirt_volume_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 {
 	php_libvirt_volume *volume = (php_libvirt_volume*)rsrc->ptr;
@@ -226,7 +227,7 @@ static void php_libvirt_volume_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 	}
 }
 
-//Destructor for network resource
+/* Destructor for network resource */
 static void php_libvirt_network_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 {
 	php_libvirt_network *network = (php_libvirt_network*)rsrc->ptr;
@@ -241,7 +242,7 @@ static void php_libvirt_network_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 	}
 }
 
-//Destructor for nodedev resource
+/* Destructor for nodedev resource */
 static void php_libvirt_nodedev_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 {
 	php_libvirt_nodedev *nodedev = (php_libvirt_nodedev*)rsrc->ptr;
@@ -256,7 +257,7 @@ static void php_libvirt_nodedev_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 	}
 }
 
-//ZEND Module inicialization function
+/* ZEND Module inicialization function */
 PHP_MINIT_FUNCTION(libvirt)
 {
 	le_libvirt_connection = zend_register_list_destructors_ex(php_libvirt_connection_dtor, NULL, PHP_LIBVIRT_CONNECTION_RES_NAME, module_number);
@@ -270,69 +271,97 @@ PHP_MINIT_FUNCTION(libvirt)
 	ZEND_INIT_MODULE_GLOBALS(libvirt, php_libvirt_init_globals, NULL);
 
 	/* LIBVIRT CONSTANTS */
-	REGISTER_LONG_CONSTANT("VIR_DOMAIN_XML_SECURE", 1, CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("VIR_DOMAIN_XML_INACTIVE", 2, CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("VIR_DOMAIN_NOSTATE", 0, CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("VIR_DOMAIN_RUNNING", 1, CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("VIR_DOMAIN_BLOCKED", 2, CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("VIR_DOMAIN_PAUSED", 3, CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("VIR_DOMAIN_SHUTDOWN", 4, CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("VIR_DOMAIN_SHUTOFF", 5, CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("VIR_DOMAIN_CRASHED", 6, CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("VIR_MEMORY_VIRTUAL	", 1, CONST_CS | CONST_PERSISTENT);
+
+	/* XML contants */
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_XML_SECURE", 	1, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_XML_INACTIVE", 	2, CONST_CS | CONST_PERSISTENT);
+
+	/* Domain constants */
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_NOSTATE", 		0, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_RUNNING", 		1, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_BLOCKED", 		2, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_PAUSED", 		3, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_SHUTDOWN", 		4, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_SHUTOFF", 		5, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_CRASHED", 		6, CONST_CS | CONST_PERSISTENT);
+
+	/* Memory constants */
+	REGISTER_LONG_CONSTANT("VIR_MEMORY_VIRTUAL",		1, CONST_CS | CONST_PERSISTENT);
 
 	/* Network constants */
-	REGISTER_LONG_CONSTANT("VIR_NETWORKS_ACTIVE", VIR_NETWORKS_ACTIVE, CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("VIR_NETWORKS_INACTIVE", VIR_NETWORKS_INACTIVE, CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("VIR_NETWORKS_ALL", VIR_NETWORKS_ACTIVE | VIR_NETWORKS_INACTIVE, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_NETWORKS_ACTIVE",		VIR_NETWORKS_ACTIVE,	CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_NETWORKS_INACTIVE",		VIR_NETWORKS_INACTIVE,	CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_NETWORKS_ALL",		VIR_NETWORKS_ACTIVE |
+								VIR_NETWORKS_INACTIVE,	CONST_CS | CONST_PERSISTENT);
 
-	REGISTER_LONG_CONSTANT("VIR_CRED_USERNAME",1, CONST_CS | CONST_PERSISTENT);//	 : Identity to act as
-	REGISTER_LONG_CONSTANT("VIR_CRED_AUTHNAME",2,CONST_CS | CONST_PERSISTENT);//	: Identify to authorize as
-	REGISTER_LONG_CONSTANT("VIR_CRED_LANGUAGE",3, CONST_CS | CONST_PERSISTENT);//	: RFC 1766 languages, comma separated
-	REGISTER_LONG_CONSTANT("VIR_CRED_CNONCE",4	, CONST_CS | CONST_PERSISTENT);//: client supplies a nonce
-	REGISTER_LONG_CONSTANT("VIR_CRED_PASSPHRASE",5, CONST_CS | CONST_PERSISTENT);//	: Passphrase secret
-	REGISTER_LONG_CONSTANT("VIR_CRED_ECHOPROMPT",6, CONST_CS | CONST_PERSISTENT);//	: Challenge response
-	REGISTER_LONG_CONSTANT("VIR_CRED_NOECHOPROMP",7, CONST_CS | CONST_PERSISTENT);//	: Challenge response
-	REGISTER_LONG_CONSTANT("VIR_CRED_REALM",8, CONST_CS | CONST_PERSISTENT);//	: Authentication realm
-	REGISTER_LONG_CONSTANT("VIR_CRED_EXTERNAL",9, CONST_CS | CONST_PERSISTENT);//	: Externally managed credential More may be added - expect the unexpected
+	/* Credential constants */
+	REGISTER_LONG_CONSTANT("VIR_CRED_USERNAME",		1, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_CRED_AUTHNAME",		2, CONST_CS | CONST_PERSISTENT);
+	/* RFC 1766 languages */
+	REGISTER_LONG_CONSTANT("VIR_CRED_LANGUAGE",		3, CONST_CS | CONST_PERSISTENT);
+	/* Client supplied a nonce */
+	REGISTER_LONG_CONSTANT("VIR_CRED_CNONCE",		4, CONST_CS | CONST_PERSISTENT);
+	/* Passphrase secret */
+	REGISTER_LONG_CONSTANT("VIR_CRED_PASSPHRASE",		5, CONST_CS | CONST_PERSISTENT);
+	/* Challenge response */
+	REGISTER_LONG_CONSTANT("VIR_CRED_ECHOPROMPT",		6, CONST_CS | CONST_PERSISTENT);
+	/* Challenge responce */
+	REGISTER_LONG_CONSTANT("VIR_CRED_NOECHOPROMP",		7, CONST_CS | CONST_PERSISTENT);
+	/* Authentication realm */
+	REGISTER_LONG_CONSTANT("VIR_CRED_REALM",		8, CONST_CS | CONST_PERSISTENT);
+	/* Externally managed credential More may be added - expect the unexpected */
+	REGISTER_LONG_CONSTANT("VIR_CRED_EXTERNAL",		9, CONST_CS | CONST_PERSISTENT);
 
+	/* Domain memory constants */
 	/* The total amount of memory written out to swap space (in kB). */
-	REGISTER_LONG_CONSTANT("VIR_DOMAIN_MEMORY_STAT_SWAP_IN",0,CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_MEMORY_STAT_SWAP_IN",	0, CONST_CS | CONST_PERSISTENT);
 	/*  Page faults occur when a process makes a valid access to virtual memory that is not available. */
 	/* When servicing the page fault, if disk IO is * required, it is considered a major fault. If not, */
 	/* it is a minor fault. * These are expressed as the number of faults that have occurred. */
-	REGISTER_LONG_CONSTANT("VIR_DOMAIN_MEMORY_STAT_SWAP_OUT",1, CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("VIR_DOMAIN_MEMORY_STAT_MAJOR_FAULT",2, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_MEMORY_STAT_SWAP_OUT",	1, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_MEMORY_STAT_MAJOR_FAULT",	2, CONST_CS | CONST_PERSISTENT);
 	/* The amount of memory left completely unused by the system. Memory that is available but used for */
 	/* reclaimable caches should NOT be reported as free. This value is expressed in kB. */
-	REGISTER_LONG_CONSTANT("VIR_DOMAIN_MEMORY_STAT_MINOR_FAULT",3,CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_MEMORY_STAT_MINOR_FAULT",	3, CONST_CS | CONST_PERSISTENT);
 	/* The total amount of usable memory as seen by the domain. This value * may be less than the amount */
 	/* of memory assigned to the domain if a * balloon driver is in use or if the guest OS does not initialize */
 	/* all * assigned pages. This value is expressed in kB.  */
-	REGISTER_LONG_CONSTANT("VIR_DOMAIN_MEMORY_STAT_UNUSED",4,CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_MEMORY_STAT_UNUSED",		4, CONST_CS | CONST_PERSISTENT);
 	/* The number of statistics supported by this version of the interface. To add new statistics, add them */
 	/* to the enum and increase this value. */
-	REGISTER_LONG_CONSTANT("VIR_DOMAIN_MEMORY_STAT_AVAILABLE",5,CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("VIR_DOMAIN_MEMORY_STAT_NR",6,CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_MEMORY_STAT_AVAILABLE",	5, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_MEMORY_STAT_NR",		6, CONST_CS | CONST_PERSISTENT);
     
-	REGISTER_LONG_CONSTANT("VIR_DOMAIN_JOB_NONE",0,CONST_CS | CONST_PERSISTENT);	 // No job is active
-	REGISTER_LONG_CONSTANT("VIR_DOMAIN_JOB_BOUNDED",1,CONST_CS | CONST_PERSISTENT);	//Job with a finite completion time
-	REGISTER_LONG_CONSTANT("VIR_DOMAIN_JOB_UNBOUNDED",2,CONST_CS | CONST_PERSISTENT);	// Job without a finite completion time
-	REGISTER_LONG_CONSTANT("VIR_DOMAIN_JOB_COMPLETED",	3,CONST_CS | CONST_PERSISTENT);	// Job has finished, but isn't cleaned up
-	REGISTER_LONG_CONSTANT("VIR_DOMAIN_JOB_FAILED",4,CONST_CS | CONST_PERSISTENT);	//Job hit error, but isn't cleaned up
-	REGISTER_LONG_CONSTANT("VIR_DOMAIN_JOB_CANCELLED",5,CONST_CS | CONST_PERSISTENT);	// Job was aborted, but isn't cleaned up
+	/* Job constants */
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_JOB_NONE",		0, CONST_CS | CONST_PERSISTENT);
+	/* Job with a finite completion time */
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_JOB_BOUNDED",	1, CONST_CS | CONST_PERSISTENT);
+	/* Job without a finite completion time */
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_JOB_UNBOUNDED",	2, CONST_CS | CONST_PERSISTENT);
+	/* Job has finished but it's not cleaned up yet */
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_JOB_COMPLETED",	3, CONST_CS | CONST_PERSISTENT);
+	/* Job hit error but it's not cleaned up yet */
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_JOB_FAILED",		4, CONST_CS | CONST_PERSISTENT);
+	/* Job was aborted but it's not cleanup up yet */
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_JOB_CANCELLED",	5, CONST_CS | CONST_PERSISTENT);
 
-	REGISTER_LONG_CONSTANT("VIR_MIGRATE_LIVE",1,CONST_CS | CONST_PERSISTENT);	// 	  live migration
+	/* Migration constants */
+	REGISTER_LONG_CONSTANT("VIR_MIGRATE_LIVE",		  1, CONST_CS | CONST_PERSISTENT);
 	/* direct source -> dest host control channel Note the less-common spelling that we're stuck with: */
 	/* VIR_MIGRATE_TUNNELLED should be VIR_MIGRATE_TUNNELED */
-	REGISTER_LONG_CONSTANT("VIR_MIGRATE_PEER2PEER",2,CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("VIR_MIGRATE_TUNNELLED",4,CONST_CS | CONST_PERSISTENT);	// 	 tunnel migration data over libvirtd connection
-	REGISTER_LONG_CONSTANT("VIR_MIGRATE_PERSIST_DEST",8,CONST_CS | CONST_PERSISTENT);	// 	 persist the VM on the destination
-	REGISTER_LONG_CONSTANT("VIR_MIGRATE_UNDEFINE_SOURCE",16,CONST_CS | CONST_PERSISTENT);	// 	 undefine the VM on the source
-	REGISTER_LONG_CONSTANT("VIR_MIGRATE_PAUSED",32,CONST_CS | CONST_PERSISTENT);	// 	 pause on remote side
-	REGISTER_LONG_CONSTANT("VIR_MIGRATE_NON_SHARED_DISK",64,CONST_CS | CONST_PERSISTENT);	// 	 migration with non-shared storage with full disk copy
+	REGISTER_LONG_CONSTANT("VIR_MIGRATE_PEER2PEER",		  2, CONST_CS | CONST_PERSISTENT);
+	/* tunnel migration data over libvirtd connection */
+	REGISTER_LONG_CONSTANT("VIR_MIGRATE_TUNNELLED",		  4, CONST_CS | CONST_PERSISTENT);
+	/* persist the VM on the destination */
+	REGISTER_LONG_CONSTANT("VIR_MIGRATE_PERSIST_DEST",	  8, CONST_CS | CONST_PERSISTENT);
+	/* undefine the VM on the source */
+	REGISTER_LONG_CONSTANT("VIR_MIGRATE_UNDEFINE_SOURCE",	 16, CONST_CS | CONST_PERSISTENT);
+	/* pause on remote side */
+	REGISTER_LONG_CONSTANT("VIR_MIGRATE_PAUSED",		 32, CONST_CS | CONST_PERSISTENT);
+	/* migration with non-shared storage with full disk copy */
+	REGISTER_LONG_CONSTANT("VIR_MIGRATE_NON_SHARED_DISK",	 64, CONST_CS | CONST_PERSISTENT);
 	/* migration with non-shared storage with incremental copy (same base image shared between source and destination) */
-	REGISTER_LONG_CONSTANT("VIR_MIGRATE_NON_SHARED_INC",128,CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_MIGRATE_NON_SHARED_INC",	128, CONST_CS | CONST_PERSISTENT);
     
 	REGISTER_INI_ENTRIES();
 
@@ -343,17 +372,17 @@ PHP_MINIT_FUNCTION(libvirt)
 	return SUCCESS;
 }
 
-// Zend module destruction
+/* Zend module destruction */
 PHP_MSHUTDOWN_FUNCTION(libvirt)
 {
     UNREGISTER_INI_ENTRIES();
 
-    //return error callback back to default (outouts to STDOUT)
+    /* return error callback back to default (outouts to STDOUT) */
     virSetErrorFunc(NULL, NULL);
     return SUCCESS;
 }
 
-//Macros for obtaining resources from arguments
+/* Macros for obtaining resources from arguments */
 #define GET_CONNECTION_FROM_ARGS(args, ...) \
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, args, __VA_ARGS__) == FAILURE) {\
 		RETURN_FALSE;\
@@ -430,7 +459,7 @@ str_out = estrndup(str_in, strlen(str_in)); \
            add_index_long(out, key,in); \
 	}
 
-//Authentication callback function. Should receive list of credentials via cbdata and pass the requested one to libvirt	 
+/* Authentication callback function. Should receive list of credentials via cbdata and pass the requested one to libvirt */
 static int libvirt_virConnectAuthCallback(virConnectCredentialPtr cred,  unsigned int ncred,  void *cbdata)
 {
 	int i,j;
@@ -497,33 +526,31 @@ PHP_FUNCTION(libvirt_connect)
 
 	if (libVer<6002)
 	{
-		php_error_docref(NULL TSRMLS_CC, E_WARNING,"Only libvirt 0.6.2 and higher supported. Please upgrade your libvirt.");
-		if (LIBVIRT_G (last_error)!=NULL) efree(LIBVIRT_G (last_error));
-		LIBVIRT_G (last_error)=estrdup("Only libvirt 0.6.2 and higher supported. Please upgrade your libvirt.");
+		set_error("Only libvirt 0.6.2 and higher supported. Please upgrade your libvirt");
 		RETURN_FALSE;
 	}
 
-	// If 'null' value has been passed as URL override url to NULL value to autodetect the hypervisor
+	/* If 'null' value has been passed as URL override url to NULL value to autodetect the hypervisor */
 	if (strcasecmp(url, "NULL") == 0)
 		url = NULL;
 
 	conn=emalloc(sizeof(php_libvirt_connection));
 	if (zcreds==NULL)
-	{	//connecting without providing authentication
+	{	/* connecting without providing authentication */
 		if (readonly)
 			conn->conn = virConnectOpenReadOnly(url);
 		else
 			conn->conn = virConnectOpen(url);
 	}
 	else
-	{  //connecting with authentication (using callback)
+	{  /* connecting with authentication (using callback) */
 		arr_hash = Z_ARRVAL_P(zcreds);
 		array_count = zend_hash_num_elements(arr_hash);
 
 		credscount=array_count;
 		creds=emalloc(credscount*sizeof(php_libvirt_cred_value));
 		j=0;
-		//parse the input Array and create list of credentials. The list (array) is passed to callback function.
+		/* parse the input Array and create list of credentials. The list (array) is passed to callback function. */
 		for (zend_hash_internal_pointer_reset_ex(arr_hash, &pointer);
 			zend_hash_get_current_data_ex(arr_hash, (void**) &data, &pointer) == SUCCESS;
 			zend_hash_move_forward_ex(arr_hash, &pointer)) {
@@ -1356,6 +1383,11 @@ PHP_FUNCTION(libvirt_domain_memory_stats)
 		LONGLONG_INDEX(return_value, stats[i].tag,stats[i].val)
 	} 
 }
+#else
+PHP_FUNCTION(libvirt_domain_memory_stats)
+{
+	set_error("Only libvirt 0.7.5 and higher supports getting the job information");
+}
 #endif
 
 PHP_FUNCTION(libvirt_domain_block_stats)
@@ -1494,19 +1526,19 @@ PHP_FUNCTION(libvirt_domain_get_network_info) {
 	/* Get XML for the domain */
 	xml=virDomainGetXMLDesc(domain->domain, VIR_DOMAIN_XML_INACTIVE);
 	if (xml==NULL) {
-		LIBVIRT_G (last_error)=estrdup("Cannot get domain XML");
+                set_error("Cannot get domain XML");
 		RETURN_FALSE;
 	}
 
 	snprintf(fnpath, sizeof(fnpath), "//domain/devices/interface[@type='network']/mac[@address='%s']/../source/@network", mac);
 	tmp = get_string_from_xpath(xml, fnpath, NULL, &retval);
 	if (tmp == NULL) {
-		LIBVIRT_G (last_error)=estrdup("Invalid XPath node for source network");
+                set_error("Invalid XPath node for source network");
 		RETURN_FALSE;
 	}
 
 	if (retval < 0) {
-		LIBVIRT_G (last_error)=estrdup("Cannot get XPath expression result for network source");
+		set_error("Cannot get XPath expression result for network source");
 		RETURN_FALSE;
 	}
 
@@ -1621,7 +1653,7 @@ PHP_FUNCTION(libvirt_nodedev_get)
 	GET_CONNECTION_FROM_ARGS("rs",&zconn,&name,&name_len);
 
 	if ((dev = virNodeDeviceLookupByName(conn->conn, name)) == NULL) {
-		LIBVIRT_G (last_error)=estrdup("Cannot get find requested node device");
+		set_error("Cannot get find requested node device");
 		RETURN_FALSE;
 	}
 
@@ -1669,7 +1701,7 @@ PHP_FUNCTION(libvirt_nodedev_get_xml)
 
 	xml=virNodeDeviceGetXMLDesc(nodedev->device, 0);
 	if ( xml == NULL ) {
-		LIBVIRT_G(last_error) = estrdup("Cannot get the device XML information");
+		set_error("Cannot get the device XML information");
 		RETURN_FALSE;
 	}
 
@@ -1689,7 +1721,7 @@ PHP_FUNCTION(libvirt_nodedev_get_information)
 
 	xml=virNodeDeviceGetXMLDesc(nodedev->device, 0);
 	if ( xml == NULL ) {
-		LIBVIRT_G(last_error) = estrdup("Cannot get the device XML information");
+		set_error("Cannot get the device XML information");
 		RETURN_FALSE;
 	}
 
@@ -1698,12 +1730,12 @@ PHP_FUNCTION(libvirt_nodedev_get_information)
 	/* Get name */
 	tmp = get_string_from_xpath(xml, "//device/name", NULL, &retval);
 	if (tmp == NULL) {
-		LIBVIRT_G (last_error)=estrdup("Invalid XPath node for device name");
+		set_error("Invalid XPath node for device name");
 		RETURN_FALSE;
 	}
 
 	if (retval < 0) {
-		LIBVIRT_G (last_error)=estrdup("Cannot get XPath expression result for device name");
+		set_error("Cannot get XPath expression result for device name");
 		RETURN_FALSE;
 	}
 
@@ -1812,7 +1844,7 @@ PHP_FUNCTION(libvirt_network_get)
 	GET_CONNECTION_FROM_ARGS("rs",&zconn,&name,&name_len);
 
 	if ((net = virNetworkLookupByName(conn->conn, name)) == NULL) {
-		LIBVIRT_G (last_error)=estrdup("Cannot get find requested network");
+		set_error("Cannot get find requested network");
 		RETURN_FALSE;
 	}
 
@@ -1834,7 +1866,7 @@ PHP_FUNCTION(libvirt_network_get_bridge)
 	name = virNetworkGetBridgeName(network->network);
 
 	if (name == NULL) {
-		LIBVIRT_G (last_error)=estrdup("Cannot get network bridge name");
+		set_error("Cannot get network bridge name");
 		RETURN_FALSE;
 	}
 
@@ -1852,7 +1884,7 @@ PHP_FUNCTION(libvirt_network_get_active)
 	res = virNetworkIsActive(network->network);
 
 	if (res == -1) {
-		LIBVIRT_G (last_error)=estrdup("Error getting virtual network state");
+		set_error("Error getting virtual network state");
 		RETURN_FALSE;
 	}
 
@@ -1939,7 +1971,7 @@ PHP_FUNCTION(libvirt_network_get_information)
 	xml=virNetworkGetXMLDesc(network->network, 0);
 
 	if (xml==NULL) {
-		LIBVIRT_G (last_error)=estrdup("Cannot get network XML");
+		set_error("Cannot get network XML");
 		RETURN_FALSE;
 	}
 
@@ -1948,12 +1980,12 @@ PHP_FUNCTION(libvirt_network_get_information)
 	/* Get name */
 	tmp = get_string_from_xpath(xml, "//network/name", NULL, &retval);
 	if (tmp == NULL) {
-		LIBVIRT_G (last_error)=estrdup("Invalid XPath node for network name");
+		set_error("Invalid XPath node for network name");
 		RETURN_FALSE;
 	}
 
 	if (retval < 0) {
-		LIBVIRT_G (last_error)=estrdup("Cannot get XPath expression result for network name");
+		set_error("Cannot get XPath expression result for network name");
 		RETURN_FALSE;
 	}
 
@@ -1962,12 +1994,12 @@ PHP_FUNCTION(libvirt_network_get_information)
 	/* Get gateway IP address */
 	tmp = get_string_from_xpath(xml, "//network/ip/@address", NULL, &retval);
 	if (tmp == NULL) {
-		LIBVIRT_G (last_error)=estrdup("Invalid XPath node for network gateway IP address");
+		set_error("Invalid XPath node for network gateway IP address");
 		RETURN_FALSE;
 	}
 
 	if (retval < 0) {
-		LIBVIRT_G (last_error)=estrdup("Cannot get XPath expression result for network gateway IP address");
+		set_error("Cannot get XPath expression result for network gateway IP address");
 		RETURN_FALSE;
 	}
 
@@ -1976,12 +2008,12 @@ PHP_FUNCTION(libvirt_network_get_information)
 	/* Get netmask */
 	tmp2 = get_string_from_xpath(xml, "//network/ip/@netmask", NULL, &retval);
 	if (tmp2 == NULL) {
-		LIBVIRT_G (last_error)=estrdup("Invalid XPath node for network mask");
+		set_error("Invalid XPath node for network mask");
 		RETURN_FALSE;
 	}
 
 	if (retval < 0) {
-		LIBVIRT_G (last_error)=estrdup("Cannot get XPath expression result for network mask");
+		set_error("Cannot get XPath expression result for network mask");
 		RETURN_FALSE;
 	}
 
@@ -2025,23 +2057,27 @@ PHP_FUNCTION(libvirt_network_set_active)
 	GET_NETWORK_FROM_ARGS("rl",&znetwork,&act);
 
 	if ((act != 0) && (act != 1)) {
-		LIBVIRT_G (last_error)=estrdup("Invalid network activity state");
+		set_error("Invalid network activity state");
 		RETURN_FALSE;
 	}
 
 	if (act == 1) {
 		if (virNetworkCreate(network->network) == 0) {
+			/* Network is up and running */
 			RETURN_TRUE;
 		}
 		else {
+			/* We don't have to set error since it's caught by libvirt error handler itself */
 			RETURN_FALSE;
 		}
 	}
 
 	if (virNetworkDestroy(network->network) == 0) {
+		/* Network is down */
 		RETURN_TRUE;
 	}
 	else {
+		/* Caught by libvirt error handler too */
 		RETURN_FALSE;
 	}
 }
@@ -2057,19 +2093,15 @@ PHP_FUNCTION(libvirt_network_get_xml)
 	xml=virNetworkGetXMLDesc(network->network, 0);
 
 	if (xml==NULL) {
-		LIBVIRT_G (last_error)=estrdup("Cannot get network XML");
+		set_error("Cannot get network XML");
 		RETURN_FALSE;
 	}
 
 	RETURN_STRING(xml, 1);
 }
 
+#if LIBVIR_VERSION_NUMBER>=8000
 PHP_FUNCTION(libvirt_domain_get_block_info) {
-	#if LIBVIR_VERSION_NUMBER<8000
-		LIBVIRT_G (last_error)=estrdup("Only libvirt 0.8.0 and higher supports getting the block info.");		
-		RETURN_FALSE
-	#endif
-
 	php_libvirt_domain *domain=NULL;
 	zval *zdomain;
 	int retval, retval2;
@@ -2087,7 +2119,7 @@ PHP_FUNCTION(libvirt_domain_get_block_info) {
 	/* Get XML for the domain */
 	xml=virDomainGetXMLDesc(domain->domain, VIR_DOMAIN_XML_INACTIVE);
 	if (xml==NULL) {
-		LIBVIRT_G (last_error)=estrdup("Cannot get domain XML");
+		set_error("Cannot get domain XML");
 		RETURN_FALSE;
 	}
 
@@ -2096,7 +2128,7 @@ PHP_FUNCTION(libvirt_domain_get_block_info) {
 	tmp = get_string_from_xpath(xml, fnpath, NULL, &retval);
 
 	if (retval < 0) {
-		LIBVIRT_G (last_error)=estrdup("Cannot get XPath expression result for device storage");
+		set_error("Cannot get XPath expression result for device storage");
 		RETURN_FALSE;
 	}
 
@@ -2104,21 +2136,21 @@ PHP_FUNCTION(libvirt_domain_get_block_info) {
 		snprintf(fnpath, sizeof(fnpath), "//domain/devices/disk/target[@dev='%s']/../source/@file", dev);
 		tmp = get_string_from_xpath(xml, fnpath, NULL, &retval);
 		if (retval < 0) {
-			LIBVIRT_G (last_error)=estrdup("Cannot get XPath expression result for file storage");
+			set_error("Cannot get XPath expression result for file storage");
 			RETURN_FALSE;
 		}
 		isFile = 1;
 	}
 
 	if (retval == 0) {
-		LIBVIRT_G (last_error)=estrdup("No relevant node found");
+		set_error("No relevant node found");
 		RETURN_FALSE;
 	}
 
 	retval=virDomainGetBlockInfo(domain->domain, tmp, &info,0);
 
 	if (retval == -1) {
-		LIBVIRT_G (last_error)=estrdup("Cannot get domain block information");
+		set_error("Cannot get domain block information");
 		RETURN_FALSE;
 	}
 
@@ -2140,6 +2172,13 @@ PHP_FUNCTION(libvirt_domain_get_block_info) {
 	LONGLONG_ASSOC(return_value, "allocation", info.allocation);
 	LONGLONG_ASSOC(return_value, "physical", info.physical);
 }
+#else
+PHP_FUNCTION(libvirt_domain_get_block_info)
+{
+	set_error("Only libvirt 0.8.0 and higher supports getting the block information");
+	RETURN_FALSE;
+}
+#endif
 
 PHP_FUNCTION(libvirt_domain_xml_xpath) {
 	php_libvirt_domain *domain=NULL;
@@ -2161,12 +2200,12 @@ PHP_FUNCTION(libvirt_domain_xml_xpath) {
 
 	free(xml);
 
-        if (rc == 0)
-            RETURN_FALSE;
+	if (rc == 0)
+		RETURN_FALSE;
 
 	add_assoc_string(return_value, "xpath", (long)zpath, 1);
 	if (rc < 0)
-            add_assoc_long(return_value, "error_code", (long)rc);
+		add_assoc_long(return_value, "error_code", (long)rc);
 }
 
 PHP_FUNCTION(libvirt_domain_interface_stats)
@@ -2211,15 +2250,12 @@ PHP_FUNCTION(libvirt_version)
 	if (virGetVersion(&libVer,type,&typeVer) != 0)
 		RETURN_FALSE;
 
-	//major * 1,000,000 + minor * 1,000 + release.
+	/* The version is returned as: major * 1,000,000 + minor * 1,000 + release. */
 	array_init(return_value);
 
 	add_assoc_long(return_value, "libvirt.release",(long)(libVer %1000));
 	add_assoc_long(return_value, "libvirt.minor",(long)((libVer/1000) % 1000));
 	add_assoc_long(return_value, "libvirt.major",(long)((libVer/1000000) % 1000));
-
-	if (type != NULL)
-		add_assoc_string(return_value, "type.type", (long)type, 1);
 
 	add_assoc_string(return_value, "connector.version", (long)PHP_LIBVIRT_WORLD_VERSION, 1);
 	add_assoc_long(return_value, "type.release",(long)(typeVer %1000));
@@ -2229,7 +2265,6 @@ PHP_FUNCTION(libvirt_version)
 
 PHP_FUNCTION(libvirt_domain_get_connect)
 {
-
 	php_libvirt_domain *domain=NULL;
 	zval *zdomain;
         php_libvirt_connection *conn;
@@ -2240,8 +2275,6 @@ PHP_FUNCTION(libvirt_domain_get_connect)
 	if (conn->conn == NULL) RETURN_FALSE;
         RETURN_RESOURCE(conn->resource_id);
 }
-
-
 
 PHP_FUNCTION(libvirt_domain_migrate_to_uri)
 {
@@ -2334,5 +2367,11 @@ PHP_FUNCTION(libvirt_domain_get_job_info)
 	LONGLONG_ASSOC(return_value, "file_total", jobinfo.fileTotal);
 	LONGLONG_ASSOC(return_value, "file_processed", jobinfo.fileProcessed);
 	LONGLONG_ASSOC(return_value, "file_remaining", jobinfo.fileRemaining); 
+}
+#else
+PHP_FUNCTION(libvirt_domain_get_job_info)
+{
+	set_error("Only libvirt 0.7.7 and higher supports getting the job information");
+	RETURN_FALSE;
 }
 #endif

@@ -104,17 +104,13 @@ PHP_FUNCTION(libvirt_domain_reboot);
 PHP_FUNCTION(libvirt_domain_define_xml);
 PHP_FUNCTION(libvirt_domain_create_xml);
 PHP_FUNCTION(libvirt_domain_memory_peek);
-#if LIBVIR_VERSION_NUMBER>=7005
 PHP_FUNCTION(libvirt_domain_memory_stats);
-#endif
 PHP_FUNCTION(libvirt_domain_block_stats);
 PHP_FUNCTION(libvirt_domain_interface_stats);
 PHP_FUNCTION(libvirt_version);
 PHP_FUNCTION(libvirt_domain_get_connect);
 PHP_FUNCTION(libvirt_domain_migrate);
-#if LIBVIR_VERSION_NUMBER>=7007
 PHP_FUNCTION(libvirt_domain_get_job_info);
-#endif
 PHP_FUNCTION(libvirt_domain_xml_xpath);
 PHP_FUNCTION(libvirt_domain_get_block_info);
 PHP_FUNCTION(libvirt_domain_get_network_info);
