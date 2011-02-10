@@ -11,7 +11,7 @@
      phpinfo() output when a module is loaded. In your PHP script you can do it using following
      syntax:</p>
      <pre>&lt;&#63;php
-     $var = libvirt_version();
+     $conn = libvirt_version();
 &#63;&gt;</pre>
 
       <p>The <i>var</i> variable will be having information about major, minor and release versions
@@ -33,7 +33,7 @@
         that is applicable to the host machine.</p>
 
      <pre>&lt;&#63;php
-     $var = libvirt_connect('null', false);
+     $conn = libvirt_connect('null', false);
 &#63;&gt;</pre>
 
      <h2><a name="listing-domains">Getting list of domains</a></h2>
@@ -52,7 +52,7 @@
      print_r($domNames);
 &#63;&gt;</pre>
 
-     <p>This script will output all the domain names available on this connection.</p>
+     <p>This script will output all the domain names available on this connection (all of them are temporarily stored in <i>$domNames</i> array).</p>
 
   </body>
 </html>

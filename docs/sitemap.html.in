@@ -36,11 +36,11 @@
         <ul>
           <li>
             <a href="compiling.html">Compiling</a>
-            <span>How to compile libvirt</span>
+            <span>How to compile libvirt-php</span>
           </li>
           <li>
             <a href="deployment.html">Deployment</a>
-            <span>Information about deploying and using libvirt</span>
+            <span>Information about deploying and using libvirt-php</span>
           </li>
           <li>
             <a href="examples.html">Examples</a>

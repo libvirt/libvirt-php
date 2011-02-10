@@ -4,15 +4,16 @@
     <h1>Libvirt-php</h1>
 
     <p>libvirt-php, originally called php-libvirt, is a project that was started by Radek Hladik in 2010 to integrate libvirt support to PHP.</p>
-    <p>In February 2011 the binding has been moved to libvirt.org site and it's currently maintained by Red Hat engineer Michal Novotny and current
-       version is heavily based on Radek's original version. </p>
+    <p>In February 2011 the binding has been moved to libvirt.org site and it's currently maintained by Red Hat and current version is heavily
+       based on Radek's original version. </p>
 
     <h2>What is libvirt-php?</h2>
     <p>libvirt-php is a php module that provides PHP bindings for libvirt virtualization toolkit and therefore you can access libvirt directly from
        your PHP scripts with no need to have virt-manager or libvirt-based CLI/GUI tools installed</p>
 
     <h2>How to use libvirt-php</h2>
-    <p>Once you have the libvirt-php module loaded in your PHP configuration you can test it's presence using a simple PHP script like:</p>
+    <p>Once you have the libvirt-php module loaded in your PHP configuration you can test it's presence using a standard PHPInfo() output where
+       you could be able to see libvirt extension information if enabled or you can use a simple PHP script like:</p>
     <pre>&lt;&#63;php
     print_r( libvirt_version() );
 &#63;&gt;</pre>
@@ -32,6 +33,8 @@
     <p>Fields in this output are saying what version of libvirt, hypervisor and libvirt-php you are using. The fields beginning with <i>libvirt.</i> are
     libvirt daemon related, those with <i>type.</i> prefix are hypervisor related and <i>connector.version</i> is referring to libvirt-php since libvirt-php
     is just a connector to libvirt daemon so therefore connector.</p>
+    <p>If you don't have the extension installed properly you won't be able to see the extension there or even you may see error page instead if
+    PHP configuration is bad and your PHP or Apache dies on it.</p>
 
   </body>
 </html>

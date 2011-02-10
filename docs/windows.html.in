@@ -4,8 +4,8 @@
     <h1>Windows port</h1>
 
     <p>
-      There is no official Windows port of libvirt-php available yet but if you want to write the patch to
-      support the Windows port we would appreciate it.</p>
+      There is no official Windows port of libvirt-php available yet but if you want to write the Windows port
+      we would appreciate it.</p>
     <p>Since libvirt is known to be running on Windows (please
       refer to <a href="http://libvirt.org/windows.html">Information on libvirt Windows port</a>) it should
       be possible and reasonable to create the libvirt-php port for Windows based operating systems, i.e. in
@@ -14,7 +14,7 @@
 
     <h2>Preparations for libvirt-php Windows port</h2>
     <p>
-      If you're interested in writing Windows port you can download the current codebase from the GIT repository
+      If you are interested in writing Windows port you should download the current codebase from the GIT repository
       and create a patch adding the Windows port itself. Before you do so you have to compile libvirt on Windows
       to be able to access it using the Windows dynamic linked (DLL) library. For more information about getting
       libvirt client to install on Windows box please refer to <a href="http://libvirt.org/windows.html">Information on libvirt Windows port</a>).

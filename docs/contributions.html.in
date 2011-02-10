@@ -13,9 +13,8 @@
       our GIT repository using</p>
       <pre>git clone git://libvirt.org/libvirt-php</pre>
     <p>
-      And then create a patch to fix those bugs or implement your new features. Please make sure you're using
-      the coding style in which the code is already written (beware of spaces instead of tabs etc). If you would like to
-      patch libvirt-php please follow the procedure in <a href="#sending">Sending patches</a> paragraph.
+      Please make sure you're using the coding style in which the code is already written (beware of spaces instead of tabs etc).
+      When you have the patch prepared please send us the patch using the procedure mentioned in <a href="#sending">Sending patches</a> paragraph.
     </p>
 
     <h2><a name="sending">Sending patches</a></h2>

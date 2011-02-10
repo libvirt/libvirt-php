@@ -4,6 +4,10 @@
 
     <h2>Enabling libvirt-php module</h2>
 
+    <p><strong>Note: </strong>The following article describes how to enable libvirt-php module in your PHP configuration. This is done automatically by <i>make install</i> so
+       normally you can ignore this article. However if you experience any issues during installation and you don't have the extension enabled yet it could help you to solve
+       the issue.</p>
+
     <p>Before you start using the module you have to install the module first. The module <i>php_libvirt.so</i> is being generated when you compile it. This is necessary to be loaded in the extensions sections of php.ini file for PHP version older than PHP-5.</p>
 <p>Starting with PHP-5 you can create a file called <i>libvirt.ini</i> in your <i>/etc/php.d</i> directory having just one line:</p>
 <pre>extension=php_libvirt.so</pre>
