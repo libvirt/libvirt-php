@@ -1,11 +1,11 @@
 Name:		php-libvirt
 Version:	0.4
-Release:	1%{?dist}
+Release:	1%{?dist}%{?extra_release}
 Summary:	PHP language binding for Libvirt
 Group:		Development/Libraries
 License:	PHP
-URL:		http://phplibvirt.cybersales.cz/
-Source0:	http://phplibvirt.cybersales.cz/php-libvirt-%{version}.tar.gz
+URL:		http://libvirt.org/
+Source0:	http://libvirt.org/sources/libvirt-php-%{version}.tar.gz
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:	php-devel
@@ -21,30 +21,23 @@ PHP language bindings for Libvirt API.
 For more details see: http://phplibvirt.cybersales.cz/ http://www.libvirt.org/ http://www.php.net/
 
 %prep
-%setup -q -n php-libvirt-%{version}
-phpize
+%setup -q -n libvirt-php-%{version}
 
 %build
-%configure
-./configure --enable-libvirt
+%configure --with-html-dir=%{_datadir}/doc --with-html-subdir=%{name}-%{version}/html
 make %{?_smp_mflags}
 
 %install
 rm -rf %{buildroot}
-make install DESTDIR=%{buildroot} INSTALL_ROOT=%{buildroot}
-mkdir -p "%{buildroot}%{_defaultdocdir}/php-libvirt/"
-cp -r doc "%{buildroot}%{_defaultdocdir}/php-libvirt/"
-mkdir -p "%{buildroot}%{_sysconfdir}/php.d/"
-echo -e "; Enable libvirt extension module\nextension=libvirt.so" > "%{buildroot}%{_sysconfdir}/php.d/libvirt.ini"
+make install DESTDIR=%{buildroot}
 
 %clean
 rm -rf %{buildroot}
 
 %files
 %defattr(-,root,root,-)
-%{_libdir}/php/modules/libvirt.so
-%{_sysconfdir}/php.d/libvirt.ini
-%doc
-%{_defaultdocdir}/php-libvirt/
+%{_libdir}/php/modules/libvirt-php.so
+%{_sysconfdir}/php.d/libvirt-php.ini
+%doc %{_datadir}/doc/%{name}-%{version}/html
 
 %changelog

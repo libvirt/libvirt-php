@@ -13,36 +13,19 @@ png = \
   graphics/libvirt-header-bg.png \
   graphics/libvirt-php-header-logo.png
 
-dot_html_in = $(notdir $(wildcard $(srcdir)/*.html.in)) todo.html.in
+dot_html_in = $(notdir $(wildcard $(srcdir)/*.html.in))
 dot_html = $(dot_html_in:%.html.in=%.html)
 
 EXTRA_DIST=					\
-  site.xsl newapi.xsl news.xsl page.xsl \
+  site.xsl news.xsl page.xsl \
   $(dot_html) $(dot_html_in) $(png) $(css) \
-  sitemap.html.in \
-  todo.pl todo.cfg-example
+  sitemap.html.in
 
 MAINTAINERCLEANFILES = $(dot_html)
 
 all-am: web
 
 web: $(dot_html)
-
-todo.html.in: todo.pl
-	if [ -f  todo.cfg ]; then \
-		echo "Generating $@"; \
-		$(PERL) $(srcdir)/$< > $@ \
-		|| { rm $@ && exit 1; }; \
-	else \
-		echo "Stubbing $@"; \
-		echo "<html><body><h1>Todo list</h1></body></html>" > $@ ; \
-	fi
-
-todo:
-	rm -f todo.html.in
-	$(MAKE) todo.html
-
-.PHONY: todo
 
 %.png: %.fig
 	convert -rotate 90 $< $@
@@ -75,12 +58,12 @@ maintainer-clean-local: clean-local
 rebuild: all
 
 install-data-local:
-	$(mkinstalldirs) $(pkgdatadir)
+	$(mkinstalldirs) $(DESTDIR)$(HTML_DIR)
 	for f in $(css) $(dot_html) $(png); do \
-	  $(INSTALL) -m 0644 $(srcdir)/$$f $(pkgdatadir); \
+	  $(INSTALL) -m 0644 $(srcdir)/$$f $(DESTDIR)$(HTML_DIR); \
 	done
 
 uninstall-local:
-	for f in $(css) $(dot_html) $($png); do \
-	  rm -f $(pkgdatadir)/$$(basename $$f); \
+	for f in $(css) $(dot_html) $(png); do \
+	  rm -f $(DESTDIR)$(HTML_DIR)/$$(basename $$f); \
 	done

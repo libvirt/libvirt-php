@@ -19,6 +19,17 @@ AC_PATH_PROG([XSLTPROC], [xsltproc], [/usr/bin/xsltproc])
 AC_PATH_PROG([XMLLINT], [xmllint], [/usr/bin/xmllint])
 AC_PATH_PROG([XMLCATALOG], [xmlcatalog], [/usr/bin/xmlcatalog])
 
+dnl Specific dir for HTML output ?
+AC_ARG_WITH([html-dir], [AC_HELP_STRING([--with-html-dir=path],
+            [path to base html directory, default $datadir/doc/html])],
+            [HTML_DIR=$withval], [HTML_DIR='$(datadir)/doc'])
+
+AC_ARG_WITH([html-subdir], [AC_HELP_STRING([--with-html-subdir=path],
+            [directory used under html-dir, default $PACKAGE-$VERSION/html])],
+            [test "x$withval" != "x" && HTML_DIR="$HTML_DIR/$withval"],
+            [HTML_DIR="$HTML_DIR/\$(PACKAGE)-\$(VERSION)/html"])
+AC_SUBST([HTML_DIR])
+
 AC_PATH_PROG([PHPIZE], [phpize], [no])
 if test "x$PHPIZE" = "xno"; then
     AC_MSG_ERROR([phpize not found; please install the PHP SDK])
