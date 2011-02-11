@@ -1,0 +1,9 @@
+Makefile
+config.log
+config.status
+configure
+docs/*.html
+autom4te.cache/
+src/*.so
+libvirt-php-*.tar.gz
+*~
