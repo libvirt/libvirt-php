@@ -9,7 +9,7 @@
 
     <h2>What is libvirt-php?</h2>
     <p>libvirt-php is a php module that provides PHP bindings for libvirt virtualization toolkit and therefore you can access libvirt directly from
-       your PHP scripts with no need to have virt-manager or libvirt-based CLI/GUI tools installed</p>
+       your PHP scripts with no need to have virt-manager or libvirt-based CLI/GUI tools installed.</p>
 
     <h2>How to use libvirt-php</h2>
     <p>Once you have the libvirt-php module loaded in your PHP configuration you can test it's presence using a standard PHPInfo() output where

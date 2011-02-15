@@ -20,8 +20,10 @@
       libvirt client to install on Windows box please refer to <a href="http://libvirt.org/windows.html">Information on libvirt Windows port</a>).
     </p>
 
+    <h2>Reference materials on writing Windows libraries/applications under Linux</h2>
     <p>
-      For information about sending the patches please see the <a href="contributions.html">Contributions</a> page.
+      If you seek for some reference information about Windows application/libraries programming under the Linux operating system please refer to
+      author's programming guide at <a href="http://migsoft.net/linux-winprog.html">Windows programming under Linux programming guide</a>.
     </p>
 
   </body>
