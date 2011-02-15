@@ -5,6 +5,7 @@ RM=rm
 ECHO=echo
 PHPINC=`php-config --includes`
 PHPEDIR=`php-config --extension-dir`
+PHPCDIR=`php-config --configure-options | sed -n 's|.*--with-config-file-scan-dir=\([^ ]*\).*|\1|p'`
 XMLCFLAGS=`pkg-config libxml-2.0 --cflags`
 XMLLIBS=`pkg-config libxml-2.0 --libs`
 
@@ -20,11 +21,12 @@ build:
 install-exec-local:
 	mkdir -p $(DESTDIR)$(PHPEDIR)
 	$(CP) $(NAME).so $(DESTDIR)$(PHPEDIR)
-	mkdir -p $(DESTDIR)$(sysconfdir)/php.d
-	$(ECHO) "extension=$(NAME)" > $(DESTDIR)$(sysconfdir)/php.d/libvirt-php.ini
+	mkdir -p $(DESTDIR)$(PHPCDIR)
+	$(ECHO) "extension=$(NAME).so" > $(DESTDIR)$(PHPCDIR)/libvirt-php.ini
+
 
 uninstall-local:
-	$(RM) -f $(sysconfdir)/php.d/$(NAME).ini
+	$(RM) -f $(DESTDIR)$(PHPCDIR)/$(NAME).ini
 	$(RM) -f $(DESTDIR)$(PHPEDIR)/$(NAME).so
 
 clean-temp:
