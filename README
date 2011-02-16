@@ -1,24 +1,25 @@
  Libvirt PHP binding README
  ==========================
 
-PHP-Libvirt which is the original name of libvirt PHP binding is basically
-just PHP binding for libvirt virtualization toolkit.
+Libvirt-php is basically just PHP binding for libvirt virtualization toolkit.
 For more information about libvirt please refer to: http://libvirt.org
-The project site for php-libvirt is http://phplibvirt.cybersales.cz and
-the documentation can be found in the doc subdirectory of this repository.
+The project site for php-libvirt is http://libvirt.org/php and
+the documentation can be found in the doc and/or docs subdirectory of
+this repository.
 
 Implementation details
 ----------------------
 
-php-libvirt is essentially a module to be loaded to your PHP module/binary.
+libvirt-php is essentially a module to be loaded to your PHP module/binary.
 You need to define it to be loaded in /etc/php.ini and/or for newer PHP to
 /etc/php.d/*
 
 Terminology
 -----------
 
-This app should be referred to as php-libvirt (i.e. the project's original
-name) or "libvirt PHP binding".
+This app should be referred to as libvirt-php or "libvirt PHP binding".
+The project's old name (pre-0.4 version) was php-libvirt so both libvirt-php
+and php-libvirt are acceptable although libvirt-php is preferred.
 
 Pre-requisite software
 ----------------------
