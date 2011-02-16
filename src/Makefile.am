@@ -14,8 +14,8 @@ EXTRA_DIST = libvirt.c php_libvirt.h
 all: build clean-temp
 
 build:
-	$(CC) -fpic -DCOMPILE_DL_LIBVIRT=1 $(PHPINC) -c -o $(NAME).o libvirt.c $(XMLCFLAGS)
-	$(CC) -shared $(LIBS) -rdynamic -o $(NAME).so $(NAME).o -ldl -lvirt $(XMLLIBS)
+	$(CC) -Wall -fpic -DCOMPILE_DL_LIBVIRT=1 $(PHPINC) -c -o $(NAME).o libvirt.c $(XMLCFLAGS)
+	$(CC) -Wall -shared $(LIBS) -rdynamic -o $(NAME).so $(NAME).o -ldl -lvirt $(XMLLIBS)
 	$(ECHO) "Extension compiled as $(NAME).so"
 
 install-exec-local:
