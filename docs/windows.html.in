@@ -26,5 +26,14 @@
       author's programming guide at <a href="http://migsoft.net/linux-winprog.html">Windows programming under Linux programming guide</a>.
     </p>
 
+    <h2>Notes on writing PHP extensions under Windows</h2>
+    <p>
+      The situation seems to be pretty complicated for Windows version of PHP since there's no <i>phpize</i> tool or <i>php-config</i> to prepare
+      the module for you. There are some pointers on the internet how to write PHP extensions under Windows systems however all of them are using
+      Visual C++ compiler (although Express edition should be fine I have allocated some of my spare time to investigate this further but I was
+      unable to make it work because of some errors in Zend header files). Steps using Visual Studio (C++) could be found at
+      <a href="http://netindonesia.net/blogs/risman/archive/2008/06/15/part-2-writing-php-extension.aspx">http://netindonesia.net/blogs/risman/archive/2008/06/15/part-2-writing-php-extension.aspx</a> but this is the one I tried and that was not working for me.
+    </p>
+
   </body>
 </html>
