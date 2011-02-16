@@ -1,3 +1,3 @@
 SUBDIRS = src docs
 
-EXTRA_DIST = libvirt-php.obs.spec
+EXTRA_DIST = libvirt-php.spec
