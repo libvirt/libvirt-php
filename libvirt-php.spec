@@ -1,6 +1,6 @@
 %define		req_libvirt_version 0.6.2
 
-%if 0%{?suse_version} || 0%{?sles_version} 
+%if 0%{?suse_version} || 0%{?sles_version}
 %define		php_confdir %{_sysconfdir}/php5/conf.d
 %define		php_extdir 	%{_libdir}/php5/extensions
 %else
