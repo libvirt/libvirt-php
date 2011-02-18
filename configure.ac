@@ -5,6 +5,18 @@ AC_CHECK_LIB([virt], [virConnectOpen], [], AC_MSG_ERROR([You need libvirt to com
 AM_INIT_AUTOMAKE([-Wno-portability])
 AM_MAINTAINER_MODE([enable])
 
+dnl Checks for programs.
+AC_PROG_CC
+AC_LANG([C])
+AC_PROG_INSTALL
+AC_PROG_SED
+AC_CHECK_TOOL([STRIP], [strip])
+AC_CHECK_TOOL([ECHO], [echo])
+AC_CHECK_TOOL([RM], [rm])
+
+dnl Check for libxml2
+AM_PATH_XML2([2.0.0])
+
 dnl Specific XML catalog file for validation of generated html
 AC_ARG_WITH([xml-catalog-file],
             [AC_HELP_STRING([--with-xml-catalog-file=path],
