@@ -1,6 +1,6 @@
 %define		req_libvirt_version 0.6.2
 
-%if 0%{?suse_version} || 0%{?sles_version}
+%if 0%{?suse_version} 
 %define		php_confdir %{_sysconfdir}/php5/conf.d
 %define		php_extdir 	%{_libdir}/php5/extensions
 %else
@@ -13,7 +13,7 @@ Version:	0.4
 Release:	1%{?dist}%{?extra_release}
 Summary:	PHP language binding for Libvirt
 
-%if 0%{?suse_version} || 0%{?sles_version} 
+%if 0%{?suse_version}  
 Group:		Development/Libraries/PHP
 %else
 Group:		Development/Libraries
@@ -26,13 +26,13 @@ BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root
 BuildRequires:	php-devel
 BuildRequires:	libvirt-devel >= %{req_libvirt_version}
 BuildRequires:	libxml2-devel
-%if 0%{?suse_version} || 0%{?sles_version} 
+%if 0%{?suse_version}  
 BuildRequires:	xhtml-dtd
 %else
 BuildRequires:	xhtml1-dtds
 %endif
 Requires:	libvirt >= %{req_libvirt_version}
-%if 0%{?suse_version} || 0%{?sles_version} 
+%if 0%{?suse_version}  
 Requires:	php5
 %else
 Requires:	php
