@@ -66,6 +66,9 @@ static function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_domain_xml_xpath, NULL)
 	PHP_FE(libvirt_domain_get_block_info, NULL)
 	PHP_FE(libvirt_domain_get_network_info, NULL)
+	PHP_FE(libvirt_domain_get_autostart, NULL)
+	PHP_FE(libvirt_domain_set_autostart, NULL)
+	PHP_FE(libvirt_domain_is_active, NULL)
 	/* Storagepool functions */
 	PHP_FE(libvirt_storagepool_lookup_by_name,NULL)
 	PHP_FE(libvirt_storagepool_get_info,NULL)
@@ -916,6 +919,61 @@ PHP_FUNCTION(libvirt_domain_get_counts)
 	add_assoc_long(return_value, "inactive", (long)count_defined);
 }
 
+/*
+	Function name:	libvirt_domain_get_autostart
+	Arguments:		@conn [resource]: libvirt domain resource
+	Returns:		autostart value or -1
+*/
+PHP_FUNCTION(libvirt_domain_get_autostart)
+{
+	php_libvirt_domain *domain = NULL;
+	zval *zdomain;
+	int flags = 0;
+
+	GET_DOMAIN_FROM_ARGS ("r", &zdomain);
+
+	if (virDomainGetAutostart (domain->domain, &flags) != 0)
+	{
+		RETURN_LONG (-1);
+	}
+	RETURN_LONG ((long)flags);
+}
+
+/*
+	Function name:	libvirt_domain_set_autostart
+	Arguments:		@conn [resource]: libvirt domain resource
+					@flags [int]: flag to enable/disable autostart
+	Returns:		TRUE on success, FALSE on error
+*/
+PHP_FUNCTION(libvirt_domain_set_autostart)
+{
+	php_libvirt_domain *domain = NULL;
+	zval *zdomain;
+	zend_bool flags = 0;
+
+	GET_DOMAIN_FROM_ARGS ("rb", &zdomain, &flags);
+
+	if (virDomainSetAutostart (domain->domain, flags) != 0)
+	{
+		RETURN_FALSE;
+	}
+	RETURN_TRUE;
+}
+
+/*
+	Function name:	libvirt_domain_is_active
+	Arguments:		@conn [resource]: libvirt domain resource
+	Returns:		virDomainIsActive() result on the domain
+*/
+PHP_FUNCTION(libvirt_domain_is_active)
+{
+	php_libvirt_domain *domain = NULL;
+	zval *zdomain;
+
+	GET_DOMAIN_FROM_ARGS ("r", &zdomain);
+
+	RETURN_LONG (virDomainIsActive(domain->domain));
+}
 
 /*
 	Function name:	libvirt_domain_lookup_by_name
