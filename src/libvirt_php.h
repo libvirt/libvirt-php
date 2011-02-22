@@ -148,6 +148,7 @@ PHP_FUNCTION(libvirt_list_networks);
 PHP_FUNCTION(libvirt_list_domains);
 PHP_FUNCTION(libvirt_list_domain_resources);
 PHP_FUNCTION(libvirt_list_active_domains);
+PHP_FUNCTION(libvirt_list_active_domain_ids);
 PHP_FUNCTION(libvirt_list_inactive_domains);
 PHP_FUNCTION(libvirt_list_storagepools);
 PHP_FUNCTION(libvirt_version);
