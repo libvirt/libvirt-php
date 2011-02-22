@@ -73,6 +73,19 @@ static function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_storagevolume_get_info,NULL)
 	PHP_FE(libvirt_storagevolume_get_xml_desc,NULL)
 	PHP_FE(libvirt_storagevolume_create_xml,NULL)
+	PHP_FE(libvirt_storagepool_get_uuid_string, NULL)
+	PHP_FE(libvirt_storagepool_get_name, NULL)
+	PHP_FE(libvirt_storagepool_lookup_by_uuid_string, NULL)
+	PHP_FE(libvirt_storagepool_get_xml_desc, NULL)
+	PHP_FE(libvirt_storagepool_define_xml, NULL)
+	PHP_FE(libvirt_storagepool_undefine, NULL)
+	PHP_FE(libvirt_storagepool_create, NULL)
+	PHP_FE(libvirt_storagepool_destroy, NULL)
+	PHP_FE(libvirt_storagepool_is_active, NULL)
+	PHP_FE(libvirt_storagepool_get_volume_count, NULL)
+	PHP_FE(libvirt_storagepool_refresh, NULL)
+	PHP_FE(libvirt_storagepool_set_autostart, NULL)
+	PHP_FE(libvirt_storagepool_get_autostart, NULL)
 	/* Network functions */
 	PHP_FE(libvirt_network_get, NULL)
 	PHP_FE(libvirt_network_get_xml_desc, NULL)
@@ -1942,6 +1955,292 @@ PHP_FUNCTION(libvirt_storagevolume_create_xml)
 	res_volume->volume = volume;
 
 	ZEND_REGISTER_RESOURCE(return_value, res_volume, le_libvirt_volume);
+}
+
+/*
+	Function name:	libvirt_storagepool_get_uuid_string
+	Arguments:		@res [resource]: libvirt storagepool resource
+	Returns:		storagepool UUID string
+*/
+PHP_FUNCTION(libvirt_storagepool_get_uuid_string)
+{
+	php_libvirt_storagepool *pool=NULL;
+	zval *zpool;
+	char *uuid;
+
+	GET_STORAGEPOOL_FROM_ARGS ("r", &zpool);
+
+	uuid = emalloc (VIR_UUID_STRING_BUFLEN);
+	if (virStoragePoolGetUUIDString (pool->pool, uuid) != 0)
+	{
+		RETURN_FALSE;
+	}
+
+	RETURN_STRING(uuid, 0);
+}
+
+/*
+	Function name:	libvirt_storagepool_get_name
+	Arguments:		@res [resource]: libvirt storagepool resource
+	Returns:		storagepool name string
+*/
+PHP_FUNCTION(libvirt_storagepool_get_name)
+{
+	php_libvirt_storagepool *pool = NULL;
+	zval *zpool;
+	const char *name=NULL;
+
+	GET_STORAGEPOOL_FROM_ARGS("r", &zpool);
+
+	name = virStoragePoolGetName (pool->pool);
+	if (name == NULL)
+	{
+		RETURN_FALSE;
+	}
+
+	RETURN_STRING(name, 1);
+}
+
+/*
+	Function name:	libvirt_storagepool_lookup_by_uuid_string
+	Arguments:		@res [resource]: libvirt connection resource
+					@uuid [string]: UUID string to look for storagepool
+	Returns:		libvirt storagepool resource
+*/
+PHP_FUNCTION(libvirt_storagepool_lookup_by_uuid_string)
+{
+	php_libvirt_connection *conn = NULL;
+	zval *zconn;
+	char *uuid = NULL;
+	int uuid_len;
+	virStoragePoolPtr storage=NULL;
+	php_libvirt_storagepool *res_pool;
+
+	GET_CONNECTION_FROM_ARGS("rs", &zconn, &uuid, &uuid_len);
+
+	if ((uuid == NULL) || (uuid_len < 1))
+	{
+		RETURN_FALSE;
+	}
+	storage = virStoragePoolLookupByUUIDString (conn->conn, uuid);
+	if (storage == NULL)
+	{
+		RETURN_FALSE;
+	}
+
+	res_pool = emalloc (sizeof (php_libvirt_storagepool));
+	res_pool->pool = storage;
+
+	ZEND_REGISTER_RESOURCE (return_value, res_pool, le_libvirt_storagepool);
+}
+
+/*
+	Function name:	libvirt_storagepool_get_xml_desc
+	Arguments:		@res [resource]: libvirt storagepool resource
+	Returns:		XML description
+*/
+PHP_FUNCTION(libvirt_storagepool_get_xml_desc)
+{
+	php_libvirt_storagepool *pool = NULL;
+	zval *zpool;
+	char *xml;
+	char *xml_out;
+	long flags = 0;
+
+	GET_STORAGEPOOL_FROM_ARGS("r|l", &zpool, &flags);
+
+	xml = virStoragePoolGetXMLDesc (pool->pool, flags);
+	if (xml == NULL)
+	{
+		RETURN_FALSE;
+	}
+
+	RECREATE_STRING_WITH_E (xml_out, xml);
+	RETURN_STRING (xml_out, 1);
+}
+
+/*
+	Function name:	libvirt_storagepool_define_xml
+	Arguments:		@res [resource]: libvirt connection resource
+					@xml [string]: XML string definition of storagepool
+					@flags [int]: flags to define XML
+	Returns:		libvirt storagepool resource
+*/
+PHP_FUNCTION(libvirt_storagepool_define_xml)
+{
+	php_libvirt_storagepool *res_pool = NULL;
+	php_libvirt_connection *conn = NULL;
+	zval *zconn;
+	virStoragePoolPtr pool = NULL;
+	char *xml;
+	int xml_len;
+	long flags = 0;
+
+
+	GET_CONNECTION_FROM_ARGS ("rs|l", &zconn, &xml, &xml_len, &flags);
+
+	pool = virStoragePoolDefineXML (conn->conn, xml, (unsigned int)flags);
+	if (pool == NULL)
+	{
+		RETURN_FALSE;
+	}
+
+	res_pool = emalloc (sizeof (php_libvirt_storagepool));
+	res_pool->pool = pool;
+
+	ZEND_REGISTER_RESOURCE (return_value, res_pool, le_libvirt_storagepool);
+}
+
+/*
+	Function name:	libvirt_storagepool_undefine
+	Arguments:		@res [resource]: libvirt storagepool resource
+	Returns:		TRUE if success, FALSE on error
+*/
+PHP_FUNCTION(libvirt_storagepool_undefine)
+{
+	php_libvirt_storagepool *pool = NULL;
+	zval *zpool;
+	
+	GET_STORAGEPOOL_FROM_ARGS ("r", &zpool);
+
+	if (virStoragePoolUndefine (pool->pool) != 0)
+	{
+		RETURN_FALSE;
+	}
+	RETURN_TRUE;
+}
+
+/*
+	Function name:	libvirt_storagepool_create
+	Arguments:		@res [resource]: libvirt storagepool resource
+	Returns:		TRUE if success, FALSE on error
+*/
+PHP_FUNCTION(libvirt_storagepool_create)
+{
+	php_libvirt_storagepool *pool = NULL;
+	zval *zpool;
+
+	GET_STORAGEPOOL_FROM_ARGS ("r", &zpool);
+
+	if (virStoragePoolCreate (pool->pool, 0) != 0)
+	{
+		RETURN_FALSE;
+	}
+	RETURN_TRUE;
+}
+
+/*
+	Function name:	libvirt_storagepool_destroy
+	Arguments:		@res [resource]: libvirt storagepool resource
+	Returns:		TRUE if success, FALSE on error
+*/
+PHP_FUNCTION(libvirt_storagepool_destroy)
+{
+	php_libvirt_storagepool *pool = NULL;
+	zval *zpool;
+
+	GET_STORAGEPOOL_FROM_ARGS ("r", &zpool);
+
+	if (virStoragePoolDestroy (pool->pool) != 0)
+	{
+		RETURN_FALSE;
+	}
+	RETURN_TRUE;
+}
+
+/*
+	Function name:	libvirt_storagepool_is_active
+	Arguments:		@res [resource]: libvirt storagepool resource
+	Returns:		result of virStoragePoolIsActive
+*/
+PHP_FUNCTION(libvirt_storagepool_is_active)
+{
+	php_libvirt_storagepool *pool = NULL;
+	zval *zpool;
+
+	GET_STORAGEPOOL_FROM_ARGS ("r", &zpool);
+	
+	RETURN_LONG (virStoragePoolIsActive (pool->pool));
+}
+
+/*
+	Function name:	libvirt_storagepool_get_volume_count
+	Arguments:		@res [resource]: libvirt storagepool resource
+	Returns:		number of volumes in the pool
+*/
+PHP_FUNCTION(libvirt_storagepool_get_volume_count)
+{
+	php_libvirt_storagepool *pool = NULL;
+	zval *zpool;
+
+	GET_STORAGEPOOL_FROM_ARGS ("r", &zpool);
+
+	RETURN_LONG (virStoragePoolNumOfVolumes(pool->pool));
+}
+
+/*
+	Function name:	libvirt_storagepool_refresh
+	Arguments:		@res [resource]: libvirt storagepool resource
+					@flags [int]: refresh flags
+	Returns:		TRUE if success, FALSE on error
+*/
+PHP_FUNCTION(libvirt_storagepool_refresh)
+{
+	php_libvirt_storagepool *pool = NULL;
+	zval *zpool;
+	unsigned long flags = 0;
+
+	GET_STORAGEPOOL_FROM_ARGS ("rl", &zpool, &flags);
+
+	if (virStoragePoolRefresh (pool->pool, flags) < 0)
+	{
+		RETURN_FALSE;
+	}
+	RETURN_TRUE;
+}
+
+/*
+	Function name:	libvirt_storagepool_set_autostart
+	Arguments:		@res [resource]: libvirt storagepool resource
+					@flags [int]: flags to set autostart
+	Returns:		result on setting storagepool autostart value
+*/
+PHP_FUNCTION(libvirt_storagepool_set_autostart)
+{
+	php_libvirt_storagepool *pool = NULL;
+	zval *zpool;
+	zend_bool flags = 0;
+
+	GET_STORAGEPOOL_FROM_ARGS ("rb", &zpool, &flags);
+
+	if (virStoragePoolSetAutostart (pool->pool, flags) != 0)
+	{
+		RETURN_FALSE;
+	}
+	RETURN_TRUE;
+}
+
+/*
+	Function name:	libvirt_storagepool_get_autostart
+	Arguments:		@res [resource]: libvirt storagepool resource
+	Returns:		autostart value for storagepool
+*/
+PHP_FUNCTION(libvirt_storagepool_get_autostart)
+{
+	php_libvirt_storagepool *pool = NULL;
+	zval *zpool;
+	int flags = 0;
+
+	GET_STORAGEPOOL_FROM_ARGS ("r", &zpool);
+
+	if (virStoragePoolGetAutostart (pool->pool, &flags) == 0)
+	{
+		RETURN_LONG ((long)flags);
+	}
+	else
+	{
+		RETURN_LONG (-1);
+	}
 }
 
 /* Listing functions */
