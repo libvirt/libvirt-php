@@ -35,6 +35,10 @@
         <span>Information for users, administrators and developers</span>
         <ul>
           <li>
+            <a href="api-reference.html">API reference</a>
+            <span>API reference documentation</span>
+          </li>
+          <li>
             <a href="compiling.html">Compiling</a>
             <span>How to compile libvirt-php</span>
           </li>

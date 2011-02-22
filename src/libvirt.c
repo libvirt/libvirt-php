@@ -1538,9 +1538,9 @@ PHP_FUNCTION(libvirt_domain_get_network_info) {
 }
 
 /*
-	Function name: libvirt_domain_get_block_info
-	Arguments: @res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
-			   @dev [string]: device to get block information about
+	Function name:	libvirt_domain_get_block_info
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+				@dev [string]: device to get block information about
 	Returns: domain block device information array
 */
 #if LIBVIR_VERSION_NUMBER>=8000
@@ -2604,7 +2604,7 @@ PHP_FUNCTION(libvirt_list_networks)
 /*
 	Function name:	libvirt_list_nodedevs
 	Arguments:		@res [resource]: libvirt connection resource
-					@cap [int]: optional capability string
+					@cap [string]: optional capability string
 	Returns:		libvirt nodedev names array for the connection
 */
 PHP_FUNCTION(libvirt_list_nodedevs)

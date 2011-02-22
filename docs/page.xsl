@@ -10,7 +10,7 @@
 
   <xsl:template match="code[@class='docref']" mode="content">
     <xsl:variable name="name"><xsl:value-of select="."/></xsl:variable>
-    <a href="html/libvirt-libvirt.html#{$name}"><code><xsl:value-of select="$name"/></code></a>
+    <a href="#{$name}"><code><xsl:value-of select="$name"/></code></a>
   </xsl:template>
 
   <xsl:template match="node() | @*" mode="content">
