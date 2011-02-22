@@ -1,4 +1,4 @@
-AC_INIT([libvirt-php], [0.4], [http://libvirt.org])
+AC_INIT([libvirt-php], [0.4.1], [http://libvirt.org])
 AM_INIT_AUTOMAKE([-Wall -Werror])
 AC_CONFIG_FILES([Makefile src/Makefile docs/Makefile])
 AC_CHECK_LIB([virt], [virConnectOpen], [], AC_MSG_ERROR([You need libvirt to compile this module]))
@@ -16,6 +16,15 @@ AC_CHECK_TOOL([RM], [rm])
 
 dnl Check for libxml2
 AM_PATH_XML2([2.0.0])
+
+dnl Get the version information at compile-time
+VERSION_MAJOR=`echo $VERSION | awk -F. '{print $1}'`
+VERSION_MINOR=`echo $VERSION | awk -F. '{print $2}'`
+VERSION_MICRO=`echo $VERSION | awk -F. '{print $3}'`
+
+AC_DEFINE_UNQUOTED(VERSION_MAJOR, $VERSION_MAJOR, [Major version number of package])
+AC_DEFINE_UNQUOTED(VERSION_MINOR, $VERSION_MINOR, [Minor version number of package])
+AC_DEFINE_UNQUOTED(VERSION_MICRO, $VERSION_MICRO, [Micro version number of package])
 
 dnl Specific XML catalog file for validation of generated html
 AC_ARG_WITH([xml-catalog-file],
@@ -54,4 +63,5 @@ fi
 
 AC_SUBST([PHPIZE])
 AC_SUBST([PHPCONFIG])
+AC_CONFIG_HEADERS([config.h])
 AC_OUTPUT

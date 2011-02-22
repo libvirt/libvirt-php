@@ -1,13 +1,14 @@
 PHPINC=$(shell php-config --includes)
 PHPEDIR=$(shell php-config --extension-dir)
 PHPCDIR=$(shell php-config --configure-options | sed -n 's|.*--with-config-file-scan-dir=\([^ ]*\).*|\1|p')
+DEFINES=-DHAVE_CONFIG_H
 
 EXTRA_DIST = libvirt.c php_libvirt.h
 
 all-am: build clean-temp
 
 build:
-	$(CC) -Wall -fpic -DCOMPILE_DL_LIBVIRT=1 $(PHPINC) -c -o $(PACKAGE).o libvirt.c $(XML_CPPFLAGS)
+	$(CC) -Wall -fpic -DCOMPILE_DL_LIBVIRT=1 $(PHPINC) -c -o $(PACKAGE).o libvirt.c $(XML_CPPFLAGS) $(DEFINES)
 	$(CC) -Wall -shared $(LIBS) -rdynamic -o $(PACKAGE).so $(PACKAGE).o -ldl -lvirt $(XML_LIBS)
 	$(ECHO) "Extension compiled as $(PACKAGE).so"
 
