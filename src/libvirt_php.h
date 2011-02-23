@@ -113,6 +113,7 @@ PHP_FUNCTION(libvirt_domain_define_xml);
 PHP_FUNCTION(libvirt_domain_create_xml);
 PHP_FUNCTION(libvirt_domain_memory_peek);
 PHP_FUNCTION(libvirt_domain_memory_stats);
+PHP_FUNCTION(libvirt_domain_update_device);
 PHP_FUNCTION(libvirt_domain_block_stats);
 PHP_FUNCTION(libvirt_domain_interface_stats);
 PHP_FUNCTION(libvirt_domain_get_connect);

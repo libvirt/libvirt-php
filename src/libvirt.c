@@ -394,6 +394,15 @@ PHP_MINIT_FUNCTION(libvirt)
 	/* migration with non-shared storage with incremental copy (same base image shared between source and destination) */
 	REGISTER_LONG_CONSTANT("VIR_MIGRATE_NON_SHARED_INC",	128, CONST_CS | CONST_PERSISTENT);
     
+    /* Modify device allocation based on current domain state */
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_DEVICE_MODIFY_CURRENT",	0, CONST_CS | CONST_PERSISTENT);
+	/* Modify live device allocation */
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_DEVICE_MODIFY_LIVE",		1, CONST_CS | CONST_PERSISTENT);
+	/* Modify persisted device allocation */
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_DEVICE_MODIFY_CONFIG",	2, CONST_CS | CONST_PERSISTENT);
+	/* Forcibly modify device (ex. force eject a cdrom) */
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_DEVICE_MODIFY_FORCE",	4, CONST_CS | CONST_PERSISTENT);
+
 	REGISTER_INI_ENTRIES();
 
 	/* Initialize libvirt and set up error callback */
@@ -1455,6 +1464,39 @@ PHP_FUNCTION(libvirt_domain_memory_stats)
 PHP_FUNCTION(libvirt_domain_memory_stats)
 {
 	set_error("Only libvirt 0.7.5 and higher supports getting the job information");
+}
+#endif
+
+/*
+	Function name:	libvirt_domain_update_device
+	Arguments:		@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+					@xml [string]: XML part for the update
+					@flags [int]: Flags to update the device (VIR_DOMAIN_DEVICE_MODIFY_CURRENT, VIR_DOMAIN_DEVICE_MODIFY_LIVE, VIR_DOMAIN_DEVICE_MODIFY_CONFIG, VIR_DOMAIN_DEVICE_MODIFY_FORCE)
+	Returns:		0 on success, -1 on failure
+*/
+#if LIBVIR_VERSION_NUMBER>=8000
+PHP_FUNCTION(libvirt_domain_update_device)
+{
+	php_libvirt_domain *res_domain=NULL;
+	php_libvirt_domain *domain=NULL;
+	zval *zdomain;	
+	php_libvirt_connection *conn=NULL;
+	zval *zconn;
+	char *xml;
+	int xml_len;
+	long flags;
+	long res;
+	 
+	GET_DOMAIN_FROM_ARGS("rsl",&zdomain,&xml,&xml_len,&flags);
+	 
+	res=virDomainUpdateDeviceFlags(domain->domain,xml,flags);
+
+	RETURN_LONG(res);
+}
+#else
+PHP_FUNCTION(libvirt_domain_update_device)
+{
+	set_error("Only libvirt 0.8.0 and higher supports updating the device information");
 }
 #endif
 
