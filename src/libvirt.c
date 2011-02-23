@@ -536,6 +536,7 @@ static int libvirt_virConnectCredType[] = {
 
 /*
 	Function name:	libvirt_get_last_error
+	Description:	This function is used to get the last error coming either from libvirt or the PHP extension itself
 	Arguments:		None
 	Returns:		last error string
 */
@@ -547,6 +548,7 @@ PHP_FUNCTION(libvirt_get_last_error)
 
 /*
 	Function name:	libvirt_connect
+	Description:	libvirt_connect() is used to connect to the specified libvirt daemon using the specified URL, user can also set the readonly flag and/or set credentials for connection
 	Arguments:		@url [string]: URI for connection
 					@readonly [bool]: flag whether to use read-only connection or not
 					@credentials [array]: array of connection credentials
@@ -643,6 +645,7 @@ PHP_FUNCTION(libvirt_connect)
 
 /*
 	Function name:	libvirt_node_get_info
+	Description:	Function is used to get the information about host node, mainly total memory installed, total CPUs installed and model information are useful
 	Arguments:		@conn [resource]: resource for connection
 	Returns:		array of node information
 */
@@ -671,6 +674,7 @@ PHP_FUNCTION(libvirt_node_get_info)
 
 /*
 	Function name:	libvirt_get_uri
+	Description:	Function is used to get the connection URI. This is useful to check the hypervisor type of host machine when using "null" uri to libvirt_connect()
 	Arguments:		@conn [resource]: resource for connection
 	Returns:		connection URI string
 */
@@ -696,6 +700,7 @@ PHP_FUNCTION(libvirt_get_uri)
 
 /*
 	Function name:	libvirt_get_hostname
+	Description:	Function is used to get the hostname of the guest associated with the connection
 	Arguments:		@conn [resource]: resource for connection
 	Returns:		hostname of the host node
 */
@@ -725,7 +730,8 @@ PHP_FUNCTION(libvirt_get_hostname)
 }
 
 /*
-	Private function name:	get_string_from_path
+	Private function name:	get_string_from_xpath
+	Description:			Function is used to get the XML xPath expression from the XML document. This can be added to val array if not NULL.
 	Arguments:				@xml [string]: input XML document
 							@xpath [string]: xPath expression to find nodes in the XML document
 							@val [array]: Zend array resource to put data to
@@ -826,6 +832,7 @@ char *get_string_from_xpath(char *xml, char *xpath, zval **val, int *retVal)
 
 /*
 	Private function name:	dec_to_bin
+	Description:			Function dec_to_bin() converts the unsigned long long decimal (used e.g. for IPv4 address) to it's binary representation
 	Arguments:				@decimal [int]: decimal value to be converted to binary interpretation
 							@binary [string]: output binary string with the binary interpretation
 	Returns:				None
@@ -864,6 +871,7 @@ void dec_to_bin(unsigned long long decimal, char *binary)
 
 /*
 	Private function name:	get_subnet_bits
+	Description:			Function is used to get number of bits used by subnet determined by IP. Useful to get the CIDR IPv4 address representation
 	Arguments:				@ip [string]: IP address to calculate subnet bits from
 	Returns:				number of bits used by subnet mask
 */
@@ -907,6 +915,7 @@ int get_subnet_bits(char *ip)
 
 /*
 	Function name:	libvirt_domain_get_counts
+	Description:	Function is getting domain counts for all, active and inactive domains
 	Arguments:		@conn [resource]: libvirt connection resource from libvirt_connect()
 	Returns:		array of total, active and inactive (but defined) domain counts
 */
@@ -930,7 +939,8 @@ PHP_FUNCTION(libvirt_domain_get_counts)
 
 /*
 	Function name:	libvirt_domain_get_autostart
-	Arguments:		@conn [resource]: libvirt domain resource
+	Description:	Function is getting the autostart value for the domain
+	Arguments:		@res [resource]: libvirt domain resource
 	Returns:		autostart value or -1
 */
 PHP_FUNCTION(libvirt_domain_get_autostart)
@@ -950,7 +960,8 @@ PHP_FUNCTION(libvirt_domain_get_autostart)
 
 /*
 	Function name:	libvirt_domain_set_autostart
-	Arguments:		@conn [resource]: libvirt domain resource
+	Description:	Function is setting the autostart value for the domain
+	Arguments:		@res [resource]: libvirt domain resource
 					@flags [int]: flag to enable/disable autostart
 	Returns:		TRUE on success, FALSE on error
 */
@@ -971,7 +982,8 @@ PHP_FUNCTION(libvirt_domain_set_autostart)
 
 /*
 	Function name:	libvirt_domain_is_active
-	Arguments:		@conn [resource]: libvirt domain resource
+	Description:	Function is getting information whether domain identified by resource is active or not
+	Arguments:		@res [resource]: libvirt domain resource
 	Returns:		virDomainIsActive() result on the domain
 */
 PHP_FUNCTION(libvirt_domain_is_active)
@@ -986,7 +998,8 @@ PHP_FUNCTION(libvirt_domain_is_active)
 
 /*
 	Function name:	libvirt_domain_lookup_by_name
-	Arguments:		@conn [resource]: libvirt connection resource from libvirt_connect()
+	Description:	Function is used to lookup for domain by it's name
+	Arguments:		@res [resource]: libvirt connection resource from libvirt_connect()
 					@name [string]: domain name to look for
 	Returns:		libvirt domain resource
 */
@@ -1014,7 +1027,8 @@ PHP_FUNCTION(libvirt_domain_lookup_by_name)
 
 /*
 	Function name:	libvirt_domain_lookup_by_uuid
-	Arguments:		@conn [resource]: libvirt connection resource from libvirt_connect()
+	Description:	Function is used to lookup for domain by it's UUID in the binary format
+	Arguments:		@res [resource]: libvirt connection resource from libvirt_connect()
 					@uuid [string]: binary defined UUID to look for
 	Returns:		libvirt domain resource
 */
@@ -1042,7 +1056,8 @@ PHP_FUNCTION(libvirt_domain_lookup_by_uuid)
 
 /*
 	Function name:	libvirt_domain_lookup_by_uuid_string
-	Arguments:		@conn [resource]: libvirt connection resource from libvirt_connect()
+	Description:	Function is used to get the domain by it's UUID that's accepted in string format
+	Arguments:		@res [resource]: libvirt connection resource from libvirt_connect()
 					@uuid [string]: domain UUID [in string format] to look for
 	Returns:		libvirt domain resource
 */
@@ -1071,6 +1086,7 @@ PHP_FUNCTION(libvirt_domain_lookup_by_uuid_string)
 
 /*
 	Function name:	libvirt_domain_lookup_by_id
+	Description:	Function is used to get domain by it's ID, applicable only to running guests
 	Arguments:		@conn [resource]: libvirt connection resource from libvirt_connect()
 					@id   [string]: domain id to look for
 	Returns:		libvirt domain resource
@@ -1097,6 +1113,7 @@ PHP_FUNCTION(libvirt_domain_lookup_by_id)
 
 /*
 	Function name:	libvirt_domain_get_name
+	Description:	Function is used to get domain name from it's resource
 	Arguments:		@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
 	Returns:		domain name string
 */
@@ -1119,6 +1136,7 @@ PHP_FUNCTION(libvirt_domain_get_name)
 
 /*
 	Function name:	libvirt_domain_get_uuid_string
+	Description:	Function is used to get the domain's UUID in string format
 	Arguments:		@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
 	Returns:		domain UUID string
 */
@@ -1140,6 +1158,7 @@ PHP_FUNCTION(libvirt_domain_get_uuid_string)
 
 /*
 	Function name:	libvirt_domain_get_uuid
+	Description:	Function is used to get the domain's UUID in binary format
 	Arguments:		@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
 	Returns:		domain UUID in binary format
 */
@@ -1162,6 +1181,7 @@ PHP_FUNCTION(libvirt_domain_get_uuid)
 
 /*
 	Function name:	libvirt_domain_get_id
+	Description:	Function is used to get the domain's ID, applicable to running guests
 	Arguments:		@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
 	Returns:		running domain ID or -1 if not running
 */
@@ -1181,6 +1201,7 @@ PHP_FUNCTION(libvirt_domain_get_id)
 
 /*
 	Function name:	libvirt_domain_get_xml_desc
+	Description:	Function is used to get the domain's XML description
 	Arguments:		@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
 	Returns:		domain XML description string
 */
@@ -1204,6 +1225,7 @@ PHP_FUNCTION(libvirt_domain_get_xml_desc)
 
 /*
 	Function name:	libvirt_domain_get_info
+	Description:	Function is used to get the domain's information
 	Arguments:		@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
 	Returns:		domain information array
 */
@@ -1229,6 +1251,7 @@ PHP_FUNCTION(libvirt_domain_get_info)
 
 /*
 	Function name:	libvirt_domain_create
+	Description:	Function is used to create the domain identified by it's resource
 	Arguments:		@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
 	Returns:		result of domain creation (startup)
 */
@@ -1247,6 +1270,7 @@ PHP_FUNCTION(libvirt_domain_create)
 
 /*
 	Function name:	libvirt_domain_destroy
+	Description:	Function is used to destroy the domain identified by it's resource
 	Arguments:		@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
 	Returns:		result of domain destroy
 */
@@ -1265,6 +1289,7 @@ PHP_FUNCTION(libvirt_domain_destroy)
 
 /*
 	Function name:	libvirt_domain_resume
+	Description:	Function is used to resume the domain identified by it's resource
 	Arguments:		@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
 	Returns:		result of domain resume
 */
@@ -1283,6 +1308,7 @@ PHP_FUNCTION(libvirt_domain_resume)
 
 /*
 	Function name:	libvirt_domain_shutdown
+	Description:	Function is used to shutdown the domain identified by it's resource
 	Arguments:		@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
 	Returns:		result of domain shutdown
 */
@@ -1301,6 +1327,7 @@ PHP_FUNCTION(libvirt_domain_shutdown)
 
 /*
 	Function name:	libvirt_domain_suspend
+	Description:	Function is used to suspend the domain identified by it's resource
 	Arguments:		@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
 	Returns:		result of domain suspend
 */
@@ -1319,6 +1346,7 @@ PHP_FUNCTION(libvirt_domain_suspend)
 
 /*
 	Function name:	libvirt_domain_undefine
+	Description:	Function is used to undefine the domain identified by it's resource
 	Arguments:		@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
 	Returns:		result of domain undefine
 */
@@ -1337,6 +1365,7 @@ PHP_FUNCTION(libvirt_domain_undefine)
 
 /*
 	Function name:	libvirt_domain_reboot
+	Description:	Function is used to reboot the domain identified by it's resource
 	Arguments:		@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
 	Returns:		result of domain reboot
 */
@@ -1356,9 +1385,10 @@ PHP_FUNCTION(libvirt_domain_reboot)
 
 /*
 	Function name:	libvirt_domain_define_xml
+	Description:	Function is used to define the domain from XML string
 	Arguments:		@conn [resource]: libvirt connection resource
 					@xml [string]: XML string to define guest from
-	Returns:		result of domain definition from XML
+	Returns:		newly defined domain resource
 */
 PHP_FUNCTION(libvirt_domain_define_xml)
 {
@@ -1384,9 +1414,10 @@ PHP_FUNCTION(libvirt_domain_define_xml)
 
 /*
 	Function name:	libvirt_domain_create_xml
+	Description:	Function is used to create the domain identified by it's resource
 	Arguments:		@conn [resource]: libvirt connection resource
 					@xml [string]: XML string to create guest from
-	Returns:		result of domain creation (startup) from XML file
+	Returns:		newly started/created domain resource
 */
 PHP_FUNCTION(libvirt_domain_create_xml)
 {
@@ -1412,6 +1443,7 @@ PHP_FUNCTION(libvirt_domain_create_xml)
 
 /*
 	Function name:	libvirt_domain_memory_peek
+	Description:	Function is used to get the domain's memory peek value
 	Arguments:		@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
 	Returns:		domain memory peek
 */
@@ -1435,6 +1467,7 @@ PHP_FUNCTION(libvirt_domain_memory_peek)
 
 /*
 	Function name:	libvirt_domain_memory_stats
+	Description:	Function is used to get the domain's memory stats
 	Arguments:		@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
 	Returns:		domain memory stats array
 */
@@ -1469,19 +1502,17 @@ PHP_FUNCTION(libvirt_domain_memory_stats)
 
 /*
 	Function name:	libvirt_domain_update_device
+	Description:	Function is used to update the domain's devices from the XML string
 	Arguments:		@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
-					@xml [string]: XML part for the update
+					@xml [string]: XML string for the update
 					@flags [int]: Flags to update the device (VIR_DOMAIN_DEVICE_MODIFY_CURRENT, VIR_DOMAIN_DEVICE_MODIFY_LIVE, VIR_DOMAIN_DEVICE_MODIFY_CONFIG, VIR_DOMAIN_DEVICE_MODIFY_FORCE)
 	Returns:		0 on success, -1 on failure
 */
 #if LIBVIR_VERSION_NUMBER>=8000
 PHP_FUNCTION(libvirt_domain_update_device)
 {
-	php_libvirt_domain *res_domain=NULL;
 	php_libvirt_domain *domain=NULL;
 	zval *zdomain;	
-	php_libvirt_connection *conn=NULL;
-	zval *zconn;
 	char *xml;
 	int xml_len;
 	long flags;
@@ -1502,6 +1533,7 @@ PHP_FUNCTION(libvirt_domain_update_device)
 
 /*
 	Function name:	libvirt_domain_block_stats
+	Description:	Function is used to get the domain's block stats
 	Arguments:		@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
 					@path [string]: device path to get statistics about
 	Returns:		domain block stats array
@@ -1532,6 +1564,7 @@ PHP_FUNCTION(libvirt_domain_block_stats)
 
 /*
 	Function name:	libvirt_domain_get_network_info
+	Description:	Function is used to get the domain's network information
 	Arguments:		@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
 					@mac [string]: mac address of the network device
 	Returns:		domain network info array
@@ -1581,6 +1614,7 @@ PHP_FUNCTION(libvirt_domain_get_network_info) {
 
 /*
 	Function name:	libvirt_domain_get_block_info
+	Description:	Function is used to get the domain's block device information
 	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
 				@dev [string]: device to get block information about
 	Returns: domain block device information array
@@ -1666,6 +1700,7 @@ PHP_FUNCTION(libvirt_domain_get_block_info)
 
 /*
 	Function name:	libvirt_domain_xml_xpath
+	Description:	Function is used to get the result of xPath expression that's run against the domain
 	Arguments:		@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
 					@xpath [string]: xPath expression to parse against the domain
 	Returns:		result of the expression
@@ -1700,6 +1735,7 @@ PHP_FUNCTION(libvirt_domain_xml_xpath) {
 
 /*
 	Function name:	libvirt_domain_interface_stats
+	Description:	Function is used to get the domain's interface stats
 	Arguments:		@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
 					@path [string]: path to interface device
 	Returns:		interface stats array
@@ -1733,6 +1769,7 @@ PHP_FUNCTION(libvirt_domain_interface_stats)
 
 /*
 	Function name:	libvirt_domain_get_connect
+	Description:	Function is used to get the domain's connection resource. This function should *not* be used!
 	Arguments:		@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
 	Returns:		libvirt connection resource
 */
@@ -1751,6 +1788,7 @@ PHP_FUNCTION(libvirt_domain_get_connect)
 
 /*
 	Function name:	libvirt_domain_migrate_to_uri
+	Description:	Function is used migrate domain to another libvirt daemon specified by it's URI
 	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
 				@dest_uri [string]: destination URI to migrate to
 				@flags [int]: migration flags
@@ -1784,6 +1822,7 @@ PHP_FUNCTION(libvirt_domain_migrate_to_uri)
 
 /*
 	Function name:	libvirt_domain_migrate
+	Description:	Function is used migrate domain to another domain
 	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
 				@dest_conn [string]: destination host connection object
 				@flags [int]: migration flags
@@ -1830,6 +1869,7 @@ PHP_FUNCTION(libvirt_domain_migrate)
 
 /*
 	Function name:	libvirt_domain_get_job_info
+	Description:	Function is used get job information for the domain
 	Arguments:		@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
 	Returns:		job information array
 */
@@ -1874,6 +1914,7 @@ PHP_FUNCTION(libvirt_domain_get_job_info)
 
 /*
 	Function name:	libvirt_storagepool_lookup_by_name
+	Description:	Function is used to lookup for storage pool by it's name
 	Arguments:		@res [resource]: libvirt connection resource
 					@name [string]: storage pool name
 	Returns:		libvirt storagepool resource
@@ -1901,6 +1942,7 @@ PHP_FUNCTION(libvirt_storagepool_lookup_by_name)
 
 /*
 	Function name:	libvirt_storagepool_list_volumes
+	Description:	Function is used to list volumes in the specified storage pool
 	Arguments:		@res [resource]: libvirt storagepool resource
 	Returns:		list of storage volume names in the storage pool
 */
@@ -1933,6 +1975,7 @@ PHP_FUNCTION(libvirt_storagepool_list_volumes)
 
 /*
 	Function name:	libvirt_storagepool_get_info
+	Description:	Function is used to get information about the storage pool
 	Arguments:		@res [resource]: libvirt storagepool resource
 	Returns:		storage pool information array
 */
@@ -1959,6 +2002,7 @@ PHP_FUNCTION(libvirt_storagepool_get_info)
 
 /*
 	Function name:	libvirt_storagevolume_lookup_by_name
+	Description:	Function is used to lookup for storage volume by it's name
 	Arguments:		@res [resource]: libvirt storagepool resource
 					@name [string]: name of the storage volume to look for
 	Returns:		libvirt storagevolume resource
@@ -1986,6 +2030,7 @@ PHP_FUNCTION(libvirt_storagevolume_lookup_by_name)
 
 /*
 	Function name:	libvirt_storagevolume_get_info
+	Description:	Function is used to get the storage volume information
 	Arguments:		@res [resource]: libvirt storagevolume resource
 	Returns:		storage volume information
 */
@@ -2010,6 +2055,7 @@ PHP_FUNCTION(libvirt_storagevolume_get_info)
 
 /*
 	Function name:	libvirt_storagevolume_get_xml_desc
+	Description:	Function is used to get the storage volume XML description
 	Arguments:		@res [resource]: libvirt storagevolume resource
 	Returns:		storagevolume XML description
 */
@@ -2033,6 +2079,7 @@ PHP_FUNCTION(libvirt_storagevolume_get_xml_desc)
 
 /*
 	Function name:	libvirt_storagevolume_create_xml
+	Description:	Function is used to create the new storage pool and return the handle to new storage pool
 	Arguments:		@res [resource]: libvirt storagepool resource
 					@xml [string]: XML string to create the storage volume in the storage pool
 	Returns:		libvirt storagevolume resource
@@ -2059,6 +2106,7 @@ PHP_FUNCTION(libvirt_storagevolume_create_xml)
 
 /*
 	Function name:	libvirt_storagepool_get_uuid_string
+	Description:	Function is used to get storage pool by UUID string
 	Arguments:		@res [resource]: libvirt storagepool resource
 	Returns:		storagepool UUID string
 */
@@ -2081,6 +2129,7 @@ PHP_FUNCTION(libvirt_storagepool_get_uuid_string)
 
 /*
 	Function name:	libvirt_storagepool_get_name
+	Description:	Function is used to get storage pool name from the storage pool resource
 	Arguments:		@res [resource]: libvirt storagepool resource
 	Returns:		storagepool name string
 */
@@ -2103,6 +2152,7 @@ PHP_FUNCTION(libvirt_storagepool_get_name)
 
 /*
 	Function name:	libvirt_storagepool_lookup_by_uuid_string
+	Description:	Function is used to lookup for storage pool identified by UUID string
 	Arguments:		@res [resource]: libvirt connection resource
 					@uuid [string]: UUID string to look for storagepool
 	Returns:		libvirt storagepool resource
@@ -2136,6 +2186,7 @@ PHP_FUNCTION(libvirt_storagepool_lookup_by_uuid_string)
 
 /*
 	Function name:	libvirt_storagepool_get_xml_desc
+	Description:	Function is used to get the XML description for the storage pool identified by res
 	Arguments:		@res [resource]: libvirt storagepool resource
 	Returns:		XML description
 */
@@ -2161,6 +2212,7 @@ PHP_FUNCTION(libvirt_storagepool_get_xml_desc)
 
 /*
 	Function name:	libvirt_storagepool_define_xml
+	Description:	Function is used to define the storage pool from XML string and return it's resource
 	Arguments:		@res [resource]: libvirt connection resource
 					@xml [string]: XML string definition of storagepool
 					@flags [int]: flags to define XML
@@ -2193,6 +2245,7 @@ PHP_FUNCTION(libvirt_storagepool_define_xml)
 
 /*
 	Function name:	libvirt_storagepool_undefine
+	Description:	Function is used to undefine the storage pool identified by it's resource
 	Arguments:		@res [resource]: libvirt storagepool resource
 	Returns:		TRUE if success, FALSE on error
 */
@@ -2212,6 +2265,7 @@ PHP_FUNCTION(libvirt_storagepool_undefine)
 
 /*
 	Function name:	libvirt_storagepool_create
+	Description:	Function is used to create/start the storage pool
 	Arguments:		@res [resource]: libvirt storagepool resource
 	Returns:		TRUE if success, FALSE on error
 */
@@ -2231,6 +2285,7 @@ PHP_FUNCTION(libvirt_storagepool_create)
 
 /*
 	Function name:	libvirt_storagepool_destroy
+	Description:	Function is used to destory the storage pool
 	Arguments:		@res [resource]: libvirt storagepool resource
 	Returns:		TRUE if success, FALSE on error
 */
@@ -2250,6 +2305,7 @@ PHP_FUNCTION(libvirt_storagepool_destroy)
 
 /*
 	Function name:	libvirt_storagepool_is_active
+	Description:	Function is used to get information whether storage pool is active or not
 	Arguments:		@res [resource]: libvirt storagepool resource
 	Returns:		result of virStoragePoolIsActive
 */
@@ -2265,6 +2321,7 @@ PHP_FUNCTION(libvirt_storagepool_is_active)
 
 /*
 	Function name:	libvirt_storagepool_get_volume_count
+	Description:	Function is used to get storage volume count in the storage pool
 	Arguments:		@res [resource]: libvirt storagepool resource
 	Returns:		number of volumes in the pool
 */
@@ -2280,6 +2337,7 @@ PHP_FUNCTION(libvirt_storagepool_get_volume_count)
 
 /*
 	Function name:	libvirt_storagepool_refresh
+	Description:	Function is used to refresh the storage pool information
 	Arguments:		@res [resource]: libvirt storagepool resource
 					@flags [int]: refresh flags
 	Returns:		TRUE if success, FALSE on error
@@ -2301,6 +2359,7 @@ PHP_FUNCTION(libvirt_storagepool_refresh)
 
 /*
 	Function name:	libvirt_storagepool_set_autostart
+	Description:	Function is used to set autostart of the storage pool
 	Arguments:		@res [resource]: libvirt storagepool resource
 					@flags [int]: flags to set autostart
 	Returns:		result on setting storagepool autostart value
@@ -2322,6 +2381,7 @@ PHP_FUNCTION(libvirt_storagepool_set_autostart)
 
 /*
 	Function name:	libvirt_storagepool_get_autostart
+	Description:	Function is used to get autostart of the storage pool
 	Arguments:		@res [resource]: libvirt storagepool resource
 	Returns:		autostart value for storagepool
 */
@@ -2346,6 +2406,7 @@ PHP_FUNCTION(libvirt_storagepool_get_autostart)
 /* Listing functions */
 /*
 	Function name:	libvirt_list_storagepools
+	Description:	Function is used to list storage pools on the connection
 	Arguments:		@res [resource]: libvirt connection resource
 	Returns:		libvirt storagepool names array for the connection
 */
@@ -2378,6 +2439,7 @@ PHP_FUNCTION(libvirt_list_storagepools)
 
 /*
 	Function name:	libvirt_list_domains
+	Description:	Function is used to list domains on the connection
 	Arguments:		@res [resource]: libvirt connection resource
 	Returns:		libvirt domain names array for the connection
 */
@@ -2427,6 +2489,7 @@ PHP_FUNCTION(libvirt_list_domains)
 
 /*
 	Function name:	libvirt_list_domain_resources
+	Description:	Function is used to list domain resources on the connection
 	Arguments:		@res [resource]: libvirt connection resource
 	Returns:		libvirt domain resources array for the connection
 */
@@ -2494,6 +2557,7 @@ PHP_FUNCTION(libvirt_list_domain_resources)
 
 /*
 	Function name:	libvirt_list_active_domain_ids
+	Description:	Function is used to list active domain IDs on the connection
 	Arguments:		@res [resource]: libvirt connection resource
 	Returns:		libvirt active domain ids array for the connection
 */
@@ -2523,6 +2587,7 @@ PHP_FUNCTION(libvirt_list_active_domain_ids)
 
 /*
 	Function name:	libvirt_list_active_domains
+	Description:	Function is used to list active domain names on the connection
 	Arguments:		@res [resource]: libvirt connection resource
 	Returns:		libvirt active domain names array for the connection
 */
@@ -2560,6 +2625,7 @@ PHP_FUNCTION(libvirt_list_active_domains)
 
 /*
 	Function name:	libvirt_list_inactive_domains
+	Description:	Function is used to list inactive domain names on the connection
 	Arguments:		@res [resource]: libvirt connection resource
 	Returns:		libvirt inactive domain names array for the connection
 */
@@ -2590,6 +2656,7 @@ PHP_FUNCTION(libvirt_list_inactive_domains)
 
 /*
 	Function name:	libvirt_list_networks
+	Description:	Function is used to list networks on the connection
 	Arguments:		@res [resource]: libvirt connection resource
 					@flags [int]: flags whether to list active, inactive or all networks (VIR_NETWORKS_{ACTIVE|INACTIVE|ALL} constants)
 	Returns:		libvirt network names array for the connection
@@ -2645,6 +2712,7 @@ PHP_FUNCTION(libvirt_list_networks)
 
 /*
 	Function name:	libvirt_list_nodedevs
+	Description:	Function is used to list node devices on the connection
 	Arguments:		@res [resource]: libvirt connection resource
 					@cap [string]: optional capability string
 	Returns:		libvirt nodedev names array for the connection
@@ -2679,6 +2747,7 @@ PHP_FUNCTION(libvirt_list_nodedevs)
 /* Nodedev functions */
 /*
 	Function name:	libvirt_nodedev_get
+	Description:	Function is used to get the node device by it's name
 	Arguments:		@res [resource]: libvirt connection resource
 					@name [string]: name of the nodedev to get resource
 	Returns:		libvirt nodedev resource
@@ -2708,6 +2777,7 @@ PHP_FUNCTION(libvirt_nodedev_get)
 
 /*
 	Function name:	libvirt_nodedev_capabilities
+	Description:	Function is used to list node devices by capabilities
 	Arguments:		@res [resource]: libvirt nodedev resource
 	Returns:		nodedev capabilities array
 */
@@ -2739,6 +2809,7 @@ PHP_FUNCTION(libvirt_nodedev_capabilities)
 
 /*
 	Function name:	libvirt_nodedev_get_xml_desc
+	Description:	Function is used to get the node device's XML description
 	Arguments:		@res [resource]: libvirt nodedev resource
 	Returns:		nodedev XML description
 */
@@ -2761,6 +2832,7 @@ PHP_FUNCTION(libvirt_nodedev_get_xml_desc)
 
 /*
 	Function name:	libvirt_nodedev_get_information
+	Description:	Function is used to get the node device's information
 	Arguments:		@res [resource]: libvirt nodedev resource
 	Returns:		nodedev information array
 */
@@ -2890,6 +2962,7 @@ PHP_FUNCTION(libvirt_nodedev_get_information)
 
 /*
 	Function name:	libvirt_network_get
+	Description:	Function is used to get the network resource from name
 	Arguments:		@res [resource]: libvirt connection resource
 					@name [string]: network name string
 	Returns:		libvirt network resource
@@ -2919,6 +2992,7 @@ PHP_FUNCTION(libvirt_network_get)
 
 /*
 	Function name:	libvirt_network_get_bridge
+	Description:	Function is used to get the bridge associated with the network
 	Arguments:		@res [resource]: libvirt network resource
 	Returns:		bridge name string
 */
@@ -2942,6 +3016,7 @@ PHP_FUNCTION(libvirt_network_get_bridge)
 
 /*
 	Function name:	libvirt_network_get_active
+	Description:	Function is used to get the activity state of the network
 	Arguments:		@res [resource]: libvirt network resource
 	Returns:		1 when active, 0 when inactive, FALSE on error
 */
@@ -2965,6 +3040,7 @@ PHP_FUNCTION(libvirt_network_get_active)
 
 /*
 	Function name:	libvirt_network_get_information
+	Description:	Function is used to get the network information
 	Arguments:		@res [resource]: libvirt network resource
 	Returns:		network information array
 */
@@ -3062,6 +3138,7 @@ PHP_FUNCTION(libvirt_network_get_information)
 
 /*
 	Function name:	libvirt_network_set_active
+	Description:	Function is used to set the activity state of the network
 	Arguments:		@res [resource]: libvirt network resource
 	Returns:		TRUE if success, FALSE on error
 */
@@ -3101,6 +3178,7 @@ PHP_FUNCTION(libvirt_network_set_active)
 
 /*
 	Function name:	libvirt_network_get_xml_desc
+	Description:	Function is used to get the XML description for the network
 	Arguments:		@res [resource]: libvirt network resource
 	Returns:		network XML string
 */
@@ -3124,6 +3202,7 @@ PHP_FUNCTION(libvirt_network_get_xml_desc)
 
 /*
 	Function name:	libvirt_version
+	Description:	Function is used to get libvirt, driver and libvirt-php version numbers. Can be used for information purposes, for version checking please use libvirt_check_version() defined below
 	Arguments:		@type [string]: optional type string to identify driver to look at
 	Returns:		libvirt, type (driver) and connector (libvirt-php) version numbers array
 */
@@ -3158,6 +3237,7 @@ PHP_FUNCTION(libvirt_version)
 
 /*
 	Function name:	libvirt_check_version
+	Description:	Function is used to check major, minor and micro (also sometimes called release) versions of libvirt-php or libvirt itself. This could useful when you want your application to support only versions of libvirt or libvirt-php higher than some version specified.
 	Arguments:		@major [int]: major version number to check for
 					@minor [int]: minor version number to check for
 					@micro [int]: micro (also release) version number to check for

@@ -6,6 +6,7 @@
 
 typedef struct func_t {
 	char *name;
+	char *desc;
 	int num_args;
 	char **args;
 	char *returns;
@@ -42,6 +43,10 @@ void parse_comment(char *line, int func_num, int *arg_num)
 	if (strncmp(ltrimmed, "Function name:", 14) == 0) {
 		functions[func_num].name = strdup( ltrim_string( ltrimmed + 14) );
 	}
+        else
+        if (strncmp(ltrimmed, "Description:", 12) == 0) {
+                functions[func_num].desc = strdup( ltrim_string( ltrimmed + 12) );
+        }
 	else
 	if (strncmp(ltrimmed, "Arguments:", 10) == 0) {
 		char *str = ltrim_string(ltrimmed + 11);
@@ -98,8 +103,7 @@ char *get_rpart(char *str)
 	if (!tmp)
 		return str;
 
-	*tmp++;
-	return tmp;
+	return (++tmp);
 }
 
 void free_functions(int function_number)
@@ -110,6 +114,7 @@ void free_functions(int function_number)
 		for (j = 0; j < functions[i].num_args; j++)
 			free(functions[i].args[j]);
 		free(functions[i].name);
+		free(functions[i].desc);
 		free(functions[i].returns);
 	}
 	free(functions);
@@ -177,7 +182,7 @@ int main(int argc, char *argv[])
 					int decrement;
 
 					if (new[0] == '@')
-						*new++;
+						new++;
 
 					part = strchr(new, ' ');
 					decrement = (part != NULL) ? strlen( part ) : 0;
@@ -208,7 +213,7 @@ int main(int argc, char *argv[])
 					int decrement;
 
 					if (new[0] == '@')
-						*new++;
+						new++;
 
 					part = strchr(new, ' ');
 					decrement = (part != NULL) ? strlen( part ) : 0;
@@ -222,6 +227,7 @@ int main(int argc, char *argv[])
 			}
 
 			fprintf(fp, ")</pre>\n");
+			fprintf(fp, "<p>%s.</p>", functions[i].desc);
 			fprintf(fp, "<div class=\"variablelist\">\n");
 			fprintf(fp, "\t<table border=\"0\">\n");
 			fprintf(fp, "\t\t<col align=\"left\" />\n");
