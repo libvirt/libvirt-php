@@ -6,6 +6,7 @@
 
 typedef struct func_t {
 	char *name;
+	int private;
 	char *desc;
 	int num_args;
 	char **args;
@@ -42,8 +43,13 @@ void parse_comment(char *line, int func_num, int *arg_num)
 
 	if (strncmp(ltrimmed, "Function name:", 14) == 0) {
 		functions[func_num].name = strdup( ltrim_string( ltrimmed + 14) );
+		functions[func_num].private = 0;
 	}
         else
+	if (strncmp(ltrimmed, "Private function name:", 22) == 0) {
+		functions[func_num].name = strdup( ltrim_string( ltrimmed + 22) );
+		functions[func_num].private = 1;
+        }
         if (strncmp(ltrimmed, "Description:", 12) == 0) {
                 functions[func_num].desc = strdup( ltrim_string( ltrimmed + 12) );
         }
@@ -172,7 +178,7 @@ int main(int argc, char *argv[])
 
 	fprintf(fp, "<?xml version=\"1.0\"?>\n<html>\n  <body>\n    <h1>API Reference guide</h1>\n\n    <h3>Functions</h3>\n\n    <!-- Links -->\n<pre>Functions supported are:<br /><br />\n");
 	for (i = 0; i <= function_number; i++) {
-		if (functions[i].name != NULL) {
+		if ((functions[i].name != NULL) && (!functions[i].private)) {
 			fprintf(fp, "\t<code class=\"docref\">%s</code>(", functions[i].name);
 
 			for (j = 0; j < functions[i].num_args; j++) {
@@ -202,7 +208,7 @@ int main(int argc, char *argv[])
 	fprintf(fp, "</pre>\n");
 
 	for (i = 0; i <= function_number; i++) {
-		if (functions[i].name != NULL) {
+		if ((functions[i].name != NULL) && (!functions[i].private)) {
 			fprintf(fp, "<h3><a name=\"%s\"><code>%s</code></a></h3>\n", functions[i].name, functions[i].name);
 			fprintf(fp, "<pre class=\"programlisting\">%s(", functions[i].name);
 
@@ -262,6 +268,7 @@ int main(int argc, char *argv[])
 	fclose(fp);
 
 	free_functions(function_number);
+	printf("Documentation has been generated successfully\n");
 	return 0;
 }
 
