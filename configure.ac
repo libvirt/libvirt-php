@@ -82,9 +82,21 @@ AC_ARG_WITH([xml-catalog-file],
 AC_SUBST([XML_CATALOG_FILE])
 
 # External programs to generate documentation
-AC_PATH_PROG([XSLTPROC], [xsltproc], [/usr/bin/xsltproc])
-AC_PATH_PROG([XMLLINT], [xmllint], [/usr/bin/xmllint])
-AC_PATH_PROG([XMLCATALOG], [xmlcatalog], [/usr/bin/xmlcatalog])
+AC_PATH_PROG([XSLTPROC], [xsltproc], [no])
+if test "x$XSLTPROC" = "xno"; then
+    AC_MSG_ERROR([xsltproc not found])
+fi
+
+AC_PATH_PROG([XMLLINT], [xmllint], [no])
+if test "x$XMLLINT" = "xno"; then
+    AC_MSG_ERROR([xmllint not found])
+fi
+
+AC_PATH_PROG([XMLCATALOG], [xmlcatalog], [no])
+if test "x$XMLCATALOG" = "xno"; then
+    AC_MSG_ERROR([xmlcatalog not found])
+fi
+
 
 dnl Specific dir for HTML output ?
 AC_ARG_WITH([html-dir], [AC_HELP_STRING([--with-html-dir=path],
