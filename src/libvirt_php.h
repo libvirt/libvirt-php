@@ -168,6 +168,8 @@ PHP_FUNCTION(libvirt_list_active_domains);
 PHP_FUNCTION(libvirt_list_active_domain_ids);
 PHP_FUNCTION(libvirt_list_inactive_domains);
 PHP_FUNCTION(libvirt_list_storagepools);
+PHP_FUNCTION(libvirt_list_active_storagepools);
+PHP_FUNCTION(libvirt_list_inactive_storagepools);
 PHP_FUNCTION(libvirt_version);
 PHP_FUNCTION(libvirt_check_version);
 

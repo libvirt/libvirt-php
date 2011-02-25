@@ -9,7 +9,7 @@
 %endif
 
 Name:		libvirt-php
-Version:	0.4
+Version:	0.4.1
 Release:	1%{?dist}%{?extra_release}
 Summary:	PHP language binding for Libvirt
 
