@@ -126,23 +126,46 @@ void free_functions(int function_number)
 	free(functions);
 }
 
+int count_functions(int num_funcs, int private)
+{
+	int i, num = 0;
+
+	for (i = 0; i < num_funcs; i++)
+		if ((functions[i].name != NULL) && (functions[i].private == private))
+			num++;
+
+	return num;
+}
+
 int main(int argc, char *argv[])
 {
 	char	line[1024]	= { 0 };
 	short	in_comment	= 0;
 	int	function_number	= -1;
 	int	arg_number	= 0;
+	int	private		= 0;
+	int	idx		= 1;
 	FILE	*fp;
 
 	if (argc < 3) {
-		fprintf(stderr, "Syntax: %s source-file output-in-file\n", argv[0]);
+		fprintf(stderr, "Syntax: %s [-p|--private] source-file output-in-file\n", argv[0]);
 		return 1;
 	}
 
-	if (access(argv[1], R_OK) != 0)
+	if ((strcmp(argv[1], "-p") == 0) || (strcmp(argv[1], "--private") == 0)) {
+		if (argc < 4) {
+			fprintf(stderr, "Syntax: %s [-p|--private] source-file output-in-file\n", argv[0]);
+			return 1;
+		}
+
+		private = 1;
+		idx++;
+	}
+
+	if (access(argv[idx], R_OK) != 0)
 		bail_error("Cannot open file %s", argv[1]);
 
-	fp = fopen(argv[1], "r");
+	fp = fopen(argv[idx], "r");
 	if (fp == NULL)
 		bail_error("Error while opening %s", argv[1]);
 
@@ -170,15 +193,18 @@ int main(int argc, char *argv[])
 	fclose(fp);
 
 	int i, j;
-	fp = fopen(argv[2], "w");
+	fp = fopen(argv[idx+1], "w");
 	if (!fp) {
 		free_functions(function_number);
 		bail_error("Cannot write %s", argv[2]);
 	}
 
-	fprintf(fp, "<?xml version=\"1.0\"?>\n<html>\n  <body>\n    <h1>API Reference guide</h1>\n\n    <h3>Functions</h3>\n\n    <!-- Links -->\n<pre>Functions supported are:<br /><br />\n");
+	fprintf(fp, "<?xml version=\"1.0\"?>\n<html>\n  <body>\n");
+
+	fprintf(fp,"<h1>%s API Reference guide</h1>\n\n    <h3>Functions</h3>\n\n    <!-- Links -->\n", (private == 0) ? "PHP" : "Developer's");
+	fprintf(fp, "<pre>Total number of functions: %d. Functions supported are:<br /><br />\n", count_functions(function_number, private));
 	for (i = 0; i <= function_number; i++) {
-		if ((functions[i].name != NULL) && (!functions[i].private)) {
+		if ((functions[i].name != NULL) && (functions[i].private == private)) {
 			fprintf(fp, "\t<code class=\"docref\">%s</code>(", functions[i].name);
 
 			for (j = 0; j < functions[i].num_args; j++) {
@@ -208,7 +234,7 @@ int main(int argc, char *argv[])
 	fprintf(fp, "</pre>\n");
 
 	for (i = 0; i <= function_number; i++) {
-		if ((functions[i].name != NULL) && (!functions[i].private)) {
+		if ((functions[i].name != NULL) && (functions[i].private == private)) {
 			fprintf(fp, "<h3><a name=\"%s\"><code>%s</code></a></h3>\n", functions[i].name, functions[i].name);
 			fprintf(fp, "<pre class=\"programlisting\">%s(", functions[i].name);
 

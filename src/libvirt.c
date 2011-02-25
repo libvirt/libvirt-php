@@ -189,7 +189,12 @@ PHP_MINFO_FUNCTION(libvirt)
 	php_info_print_table_end();
 }
 
-/* Function to set the error message and pass it to PHP */
+/*
+	Private function name:	set_error
+	Description:			This private function is used to set the error string to the library. This string can be obtained by libvirt_get_last_error() from the PHP application.
+	Arguments:				@msg [string]: error message string
+	Returns:				None
+*/
 void set_error(char *msg)
 {
 	php_error_docref(NULL TSRMLS_CC, E_WARNING,"%s",msg);
