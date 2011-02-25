@@ -10,11 +10,14 @@ autoreconf -i -f
 #phpize
 
 PHPEDIR=`php-config --extension-dir | sed -s "s,/usr,$AUTOBUILD_INSTALL_ROOT,"`
+PHPCDIR=`php-config --configure-options |
+         sed -n 's|.*--with-config-file-scan-dir=\([^ ]*\).*|\1|p' |
+         sed -s "s,/etc,$AUTOBUILD_INSTALL_ROOT/etc,"`
 
 ./configure --prefix=$AUTOBUILD_INSTALL_ROOT
 
 make
-make install PHPEDIR=$PHPEDIR
+make install PHPEDIR=$PHPEDIR PHPCDIR=$PHPCDIR
 
 rm -f *.tar.gz
 make dist
