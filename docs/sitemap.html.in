@@ -53,6 +53,10 @@
         </ul>
       </li>
       <li>
+        <a href="references.html">References</a>
+        <span>List of companies and people using the project</span>
+      </li>
+      <li>
         <a href="contact.html">Contact</a>
         <span>How to contact the developers via email and IRC</span>
       </li>
