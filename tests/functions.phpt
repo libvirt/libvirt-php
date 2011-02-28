@@ -1,7 +1,7 @@
 <?php
 	function bail($msg, $error_code = 1)
 	{
-		printf("Error: $msg\n");
+		printf("[Error] $msg\n");
 		exit($error_code);
 	}
 

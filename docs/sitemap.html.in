@@ -40,7 +40,7 @@
           </li>
           <li>
             <a href="dev-api-reference.html">Developer's API Reference</a>
-            <span>libvirt-php developer's API reference (public functions)</span>
+            <span>libvirt-php developer's API reference (private functions)</span>
           </li>
           <li>
             <a href="compiling.html">Compiling</a>
