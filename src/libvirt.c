@@ -195,7 +195,7 @@ PHP_MINFO_FUNCTION(libvirt)
 	Arguments:				@msg [string]: error message string
 	Returns:				None
 */
-void set_error(char *msg)
+void set_error(char *msg TSRMLS_DC)
 {
 	php_error_docref(NULL TSRMLS_CC, E_WARNING,"%s",msg);
 	if (LIBVIRT_G (last_error)!=NULL) efree(LIBVIRT_G (last_error));
@@ -203,10 +203,11 @@ void set_error(char *msg)
 }
 
 /* Error handler for receiving libvirt errors */
-static void catch_error(void *userData ATTRIBUTE_UNUSED,
+static void catch_error(void *userData,
                            virErrorPtr error)
 {
-	set_error(error->message);
+	TSRMLS_FETCH_FROM_CTX(userData);
+	set_error(error->message TSRMLS_CC);
 }
 
 
@@ -414,7 +415,10 @@ PHP_MINIT_FUNCTION(libvirt)
 
 	/* Initialize libvirt and set up error callback */
 	virInitialize();
-	virSetErrorFunc(NULL, catch_error);
+
+	void *thread_ctx = NULL;
+	TSRMLS_SET_CTX(thread_ctx);
+	virSetErrorFunc(thread_ctx, catch_error);
 
 	return SUCCESS;
 }
@@ -597,7 +601,7 @@ PHP_FUNCTION(libvirt_connect)
 
 	if (libVer<6002)
 	{
-		set_error("Only libvirt 0.6.2 and higher supported. Please upgrade your libvirt");
+		set_error("Only libvirt 0.6.2 and higher supported. Please upgrade your libvirt" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
@@ -1503,7 +1507,7 @@ PHP_FUNCTION(libvirt_domain_memory_stats)
 #else
 PHP_FUNCTION(libvirt_domain_memory_stats)
 {
-	set_error("Only libvirt 0.7.5 and higher supports getting the job information");
+	set_error("Only libvirt 0.7.5 and higher supports getting the job information" TSRMLS_CC);
 }
 #endif
 
@@ -1534,7 +1538,7 @@ PHP_FUNCTION(libvirt_domain_update_device)
 #else
 PHP_FUNCTION(libvirt_domain_update_device)
 {
-	set_error("Only libvirt 0.8.0 and higher supports updating the device information");
+	set_error("Only libvirt 0.8.0 and higher supports updating the device information" TSRMLS_CC);
 }
 #endif
 
@@ -1591,19 +1595,19 @@ PHP_FUNCTION(libvirt_domain_get_network_info) {
 	/* Get XML for the domain */
 	xml=virDomainGetXMLDesc(domain->domain, VIR_DOMAIN_XML_INACTIVE);
 	if (xml==NULL) {
-                set_error("Cannot get domain XML");
+                set_error("Cannot get domain XML" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
 	snprintf(fnpath, sizeof(fnpath), "//domain/devices/interface[@type='network']/mac[@address='%s']/../source/@network", mac);
 	tmp = get_string_from_xpath(xml, fnpath, NULL, &retval);
 	if (tmp == NULL) {
-                set_error("Invalid XPath node for source network");
+                set_error("Invalid XPath node for source network" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
 	if (retval < 0) {
-		set_error("Cannot get XPath expression result for network source");
+		set_error("Cannot get XPath expression result for network source" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
@@ -1644,7 +1648,7 @@ PHP_FUNCTION(libvirt_domain_get_block_info) {
 	/* Get XML for the domain */
 	xml=virDomainGetXMLDesc(domain->domain, VIR_DOMAIN_XML_INACTIVE);
 	if (xml==NULL) {
-		set_error("Cannot get domain XML");
+		set_error("Cannot get domain XML" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
@@ -1653,7 +1657,7 @@ PHP_FUNCTION(libvirt_domain_get_block_info) {
 	tmp = get_string_from_xpath(xml, fnpath, NULL, &retval);
 
 	if (retval < 0) {
-		set_error("Cannot get XPath expression result for device storage");
+		set_error("Cannot get XPath expression result for device storage" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
@@ -1661,21 +1665,21 @@ PHP_FUNCTION(libvirt_domain_get_block_info) {
 		snprintf(fnpath, sizeof(fnpath), "//domain/devices/disk/target[@dev='%s']/../source/@file", dev);
 		tmp = get_string_from_xpath(xml, fnpath, NULL, &retval);
 		if (retval < 0) {
-			set_error("Cannot get XPath expression result for file storage");
+			set_error("Cannot get XPath expression result for file storage" TSRMLS_CC);
 			RETURN_FALSE;
 		}
 		isFile = 1;
 	}
 
 	if (retval == 0) {
-		set_error("No relevant node found");
+		set_error("No relevant node found" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
 	retval=virDomainGetBlockInfo(domain->domain, tmp, &info,0);
 
 	if (retval == -1) {
-		set_error("Cannot get domain block information");
+		set_error("Cannot get domain block information" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
@@ -1700,7 +1704,7 @@ PHP_FUNCTION(libvirt_domain_get_block_info) {
 #else
 PHP_FUNCTION(libvirt_domain_get_block_info)
 {
-	set_error("Only libvirt 0.8.0 and higher supports getting the block information");
+	set_error("Only libvirt 0.8.0 and higher supports getting the block information" TSRMLS_CC);
 	RETURN_FALSE;
 }
 #endif
@@ -1912,7 +1916,7 @@ PHP_FUNCTION(libvirt_domain_get_job_info)
 #else
 PHP_FUNCTION(libvirt_domain_get_job_info)
 {
-	set_error("Only libvirt 0.7.7 and higher supports getting the job information");
+	set_error("Only libvirt 0.7.7 and higher supports getting the job information" TSRMLS_CC);
 	RETURN_FALSE;
 }
 #endif
@@ -2902,7 +2906,7 @@ PHP_FUNCTION(libvirt_nodedev_get)
 	GET_CONNECTION_FROM_ARGS("rs",&zconn,&name,&name_len);
 
 	if ((dev = virNodeDeviceLookupByName(conn->conn, name)) == NULL) {
-		set_error("Cannot get find requested node device");
+		set_error("Cannot get find requested node device" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
@@ -2961,7 +2965,7 @@ PHP_FUNCTION(libvirt_nodedev_get_xml_desc)
 
 	xml=virNodeDeviceGetXMLDesc(nodedev->device, 0);
 	if ( xml == NULL ) {
-		set_error("Cannot get the device XML information");
+		set_error("Cannot get the device XML information" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
@@ -2987,7 +2991,7 @@ PHP_FUNCTION(libvirt_nodedev_get_information)
 
 	xml=virNodeDeviceGetXMLDesc(nodedev->device, 0);
 	if ( xml == NULL ) {
-		set_error("Cannot get the device XML information");
+		set_error("Cannot get the device XML information" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
@@ -2996,12 +3000,12 @@ PHP_FUNCTION(libvirt_nodedev_get_information)
 	/* Get name */
 	tmp = get_string_from_xpath(xml, "//device/name", NULL, &retval);
 	if (tmp == NULL) {
-		set_error("Invalid XPath node for device name");
+		set_error("Invalid XPath node for device name" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
 	if (retval < 0) {
-		set_error("Cannot get XPath expression result for device name");
+		set_error("Cannot get XPath expression result for device name" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
@@ -3117,7 +3121,7 @@ PHP_FUNCTION(libvirt_network_get)
 	GET_CONNECTION_FROM_ARGS("rs",&zconn,&name,&name_len);
 
 	if ((net = virNetworkLookupByName(conn->conn, name)) == NULL) {
-		set_error("Cannot get find requested network");
+		set_error("Cannot get find requested network" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
@@ -3145,7 +3149,7 @@ PHP_FUNCTION(libvirt_network_get_bridge)
 	name = virNetworkGetBridgeName(network->network);
 
 	if (name == NULL) {
-		set_error("Cannot get network bridge name");
+		set_error("Cannot get network bridge name" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
@@ -3169,7 +3173,7 @@ PHP_FUNCTION(libvirt_network_get_active)
 	res = virNetworkIsActive(network->network);
 
 	if (res == -1) {
-		set_error("Error getting virtual network state");
+		set_error("Error getting virtual network state" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
@@ -3197,7 +3201,7 @@ PHP_FUNCTION(libvirt_network_get_information)
 	xml=virNetworkGetXMLDesc(network->network, 0);
 
 	if (xml==NULL) {
-		set_error("Cannot get network XML");
+		set_error("Cannot get network XML" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
@@ -3206,12 +3210,12 @@ PHP_FUNCTION(libvirt_network_get_information)
 	/* Get name */
 	tmp = get_string_from_xpath(xml, "//network/name", NULL, &retval);
 	if (tmp == NULL) {
-		set_error("Invalid XPath node for network name");
+		set_error("Invalid XPath node for network name" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
 	if (retval < 0) {
-		set_error("Cannot get XPath expression result for network name");
+		set_error("Cannot get XPath expression result for network name" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
@@ -3220,12 +3224,12 @@ PHP_FUNCTION(libvirt_network_get_information)
 	/* Get gateway IP address */
 	tmp = get_string_from_xpath(xml, "//network/ip/@address", NULL, &retval);
 	if (tmp == NULL) {
-		set_error("Invalid XPath node for network gateway IP address");
+		set_error("Invalid XPath node for network gateway IP address" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
 	if (retval < 0) {
-		set_error("Cannot get XPath expression result for network gateway IP address");
+		set_error("Cannot get XPath expression result for network gateway IP address" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
@@ -3234,12 +3238,12 @@ PHP_FUNCTION(libvirt_network_get_information)
 	/* Get netmask */
 	tmp2 = get_string_from_xpath(xml, "//network/ip/@netmask", NULL, &retval);
 	if (tmp2 == NULL) {
-		set_error("Invalid XPath node for network mask");
+		set_error("Invalid XPath node for network mask" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
 	if (retval < 0) {
-		set_error("Cannot get XPath expression result for network mask");
+		set_error("Cannot get XPath expression result for network mask" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
@@ -3289,7 +3293,7 @@ PHP_FUNCTION(libvirt_network_set_active)
 	GET_NETWORK_FROM_ARGS("rl",&znetwork,&act);
 
 	if ((act != 0) && (act != 1)) {
-		set_error("Invalid network activity state");
+		set_error("Invalid network activity state" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
@@ -3331,7 +3335,7 @@ PHP_FUNCTION(libvirt_network_get_xml_desc)
 	xml=virNetworkGetXMLDesc(network->network, 0);
 
 	if (xml==NULL) {
-		set_error("Cannot get network XML");
+		set_error("Cannot get network XML" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
@@ -3416,7 +3420,7 @@ PHP_FUNCTION(libvirt_check_version)
 				RETURN_TRUE;
 	}
 	else
-		set_error("Invalid version type");
+		set_error("Invalid version type" TSRMLS_CC);
 
 	RETURN_FALSE;
 }
