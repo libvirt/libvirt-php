@@ -11,30 +11,44 @@
     <p>libvirt-php is a php module that provides PHP bindings for libvirt virtualization toolkit and therefore you can access libvirt directly from
        your PHP scripts with no need to have virt-manager or libvirt-based CLI/GUI tools installed.</p>
 
-    <h2>How to use libvirt-php</h2>
+    <h2>Using libvirt-php</h2>
+    <p>You can use <i>libvirt-php</i> extension to manage your domains (virtual machines) from your PHP scripts. This could be very useful if you
+       manage several physical machines that are all serve like hosts for virtual machines. If all the host machines are running Apache webserver
+       then you could easily write the management scripts using the <i>libvirt-php</i> extension to manage all of the virtual machines on the
+       host.</p>
+    <p>Also, if you have the libvirt authentication setup to be able to remotely connect directly from the PHP script then management tool could
+       be present just on one host machine providing the remote connectivity to all other hosts to manage all of the virtual machines in your
+       environment.</p>
+    <h2>Checking whether libvirt-php is installed</h2>
     <p>Once you have the libvirt-php module loaded in your PHP configuration you can test it's presence using a standard PHPInfo() output where
-       you could be able to see libvirt extension information if enabled or you can use a simple PHP script like:</p>
+       you could be able to see libvirt extension information if enabled or you can try to look for <i>libvirt</i> string in the <b>php -m</b>
+       output (if you're having the CGI/CLI-based version of PHP installed on your system) or you can automate it e.g. by using following command:</p>
+    <pre>$ php -m | grep libvirt &gt; /dev/null; echo $?</pre>
+    <p>The second part after the semicolon is the next command to be processed and this will redirect the grepped <i>php -m</i> to null device so it
+       will not show the command output. Instead, it will show the error code of the <i>grep</i> command which will be 0 for case the extension is
+       installed properly or number 1 if the extension was not found in your PHP configuration.</p>
+
+    <p>If you don't have access to CGI/CLI-based version version of PHP you can use a simple PHP script like:</p>
     <pre>&lt;&#63;php
     print_r( libvirt_version() );
 &#63;&gt;</pre>
-    <p>If you have libvirt-php binding installed and binding is working successfully you should be seeing following output to your console or webpage
-    (this depends on version of PHP you're using - whether cli-based interface to just test it or you're running the script inside of your webserver):</p>
-    <pre>Array
+    <p>If you have libvirt-php binding installed and binding is working successfully you should see output similar to following in your PHP script::</p>
+    <pre>
+Array
 (
     [libvirt.release] =&gt; 3
     [libvirt.minor] =&gt; 8
     [libvirt.major] =&gt; 0
     [connector.version] =&gt; 0.4.1
-    [type.release] =&gt; 1
-    [type.minor] =&gt; 0
-    [type.major] =&gt; 3
+    [connector.major] =&gt; 0
+    [connector.minor] =&gt; 4
+    [connector.release] =&gt; 1
 )
 </pre>
-    <p>Fields in this output are saying what version of libvirt, hypervisor and libvirt-php you are using. The fields beginning with <i>libvirt.</i> are
-    libvirt daemon related, those with <i>type.</i> prefix are hypervisor related and <i>connector.version</i> is referring to libvirt-php since libvirt-php
-    is just a connector to libvirt daemon so therefore connector.</p>
-    <p>If you don't have the extension installed properly you won't be able to see the extension there or even you may see error page instead if
-    PHP configuration is bad and your PHP or Apache dies on it.</p>
-
+    <p>Keys in this output are saying what version of libvirt and libvirt-php you are using. The keys beginning with <i>libvirt.</i> are
+    libvirt daemon related and the <i>connector.</i> keys are referring to libvirt-php since libvirt-php is just a connector to libvirt
+    daemon so therefore it's called <i>connector</i> in the output.</p>
+    <p>If you don't have the extension installed properly you will see the error that the function <i>libvirt_version()</i> is unknown or even
+    you may see error page instead if PHP configuration is bad and your PHP or Apache dies on it.</p>
   </body>
 </html>

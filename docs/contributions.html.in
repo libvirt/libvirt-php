@@ -22,7 +22,7 @@
       <ol>
        <li>Sign up to libvirt list if you're not on it yet (libvir-list@redhat.com)</li>
        <li>Set your git username and e-mail and also set the subject prefix in the project's repository using:
-     <pre>git config --local format.subjectprefix "libvirt-php"</pre>
+     <pre>git config --local format.subjectprefix "libvirt-php PATCH"</pre>
 
  </li><li>Create the patch in the form of the commits and include also information about usage (example source codes maybe) and testing</li><li>Format it using <code>git format-patch -X</code> where X is the number of patch parts to be posted, for multipart patch (X is greater than 1) please use also numbering (-n) option and include the cover-letter (--cover-letter).</li><li>Send to libvir-list@redhat.com using the <code>git send-email &lt;files&gt; --to libvir-list@redhat.com</code> command where &lt;files&gt; can be <i>000*</i> to send all the patches formatted by git format-patch since git format-patch names the files starting with the 4 digit numbers.</li></ol>
 
