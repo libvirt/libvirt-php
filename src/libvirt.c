@@ -173,13 +173,12 @@ PHP_RSHUTDOWN_FUNCTION(libvirt)
 PHP_MINFO_FUNCTION(libvirt)
 {
 	unsigned long libVer;
-	unsigned long typeVer;
 	char *version;
 	php_info_print_table_start();
 	php_info_print_table_row(2, "Libvirt support", "enabled");
 	php_info_print_table_row(2, "Extension version", PHP_LIBVIRT_WORLD_VERSION);
 
-	if (virGetVersion(&libVer,NULL,&typeVer)== 0)
+	if (virGetVersion(&libVer,NULL,NULL)== 0)
 	{
 		version=emalloc(100);
 		snprintf(version, 100, "%i.%i.%i", (long)((libVer/1000000) % 1000),(long)((libVer/1000) % 1000),(long)(libVer % 1000));
@@ -590,13 +589,12 @@ PHP_FUNCTION(libvirt_connect)
 	unsigned long index;
 
 	unsigned long libVer;
-	unsigned long typeVer;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|sba", &url,&url_len,&readonly,&zcreds) == FAILURE) {
         	RETURN_FALSE;
 	}
 
-	if (virGetVersion(&libVer,NULL,&typeVer)!= 0)
+	if (virGetVersion(&libVer,NULL,NULL)!= 0)
 		RETURN_FALSE;
 
 	if (libVer<6002)
@@ -3358,8 +3356,13 @@ PHP_FUNCTION(libvirt_version)
 		RETURN_FALSE;
 	}
 
-	if (virGetVersion(&libVer,type,&typeVer) != 0)
-		RETURN_FALSE;
+	if (ZEND_NUM_ARGS() == 0) {
+		if (virGetVersion(&libVer,NULL,NULL) != 0)
+			RETURN_FALSE;
+    } else {
+		if (virGetVersion(&libVer,type,&typeVer) != 0)
+			RETURN_FALSE;
+	}
 
 	/* The version is returned as: major * 1,000,000 + minor * 1,000 + release. */
 	array_init(return_value);
@@ -3372,9 +3375,12 @@ PHP_FUNCTION(libvirt_version)
 	add_assoc_long(return_value, "connector.major", VERSION_MAJOR);
 	add_assoc_long(return_value, "connector.minor", VERSION_MINOR);
 	add_assoc_long(return_value, "connector.release", VERSION_MICRO);
-	add_assoc_long(return_value, "type.release",(long)(typeVer %1000));
-	add_assoc_long(return_value, "type.minor",(long)((typeVer/1000) % 1000));
-	add_assoc_long(return_value, "type.major",(long)((typeVer/1000000) % 1000));
+
+    if (ZEND_NUM_ARGS() > 0) {
+		add_assoc_long(return_value, "type.release",(long)(typeVer %1000));
+		add_assoc_long(return_value, "type.minor",(long)((typeVer/1000) % 1000));
+		add_assoc_long(return_value, "type.major",(long)((typeVer/1000000) % 1000));
+    }
 }
 
 /*
