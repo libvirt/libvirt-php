@@ -109,14 +109,24 @@ AC_ARG_WITH([html-subdir], [AC_HELP_STRING([--with-html-subdir=path],
             [HTML_DIR="$HTML_DIR/\$(PACKAGE)-\$(VERSION)/html"])
 AC_SUBST([HTML_DIR])
 
-AC_PATH_PROG([PHPIZE], [phpize], [no])
-if test "x$PHPIZE" = "xno"; then
-    AC_MSG_ERROR([phpize not found; please install the PHP SDK])
+AC_ARG_WITH([php-config], [AC_HELP_STRING([--with-php-config=path],
+            [path to php-config, default search all paths])])
+
+if test "x$with_php_config" != "x" ; then
+    AC_MSG_CHECKING(for php-config)
+    PHPCONFIG=$with_php_config
+    AC_MSG_RESULT($with_php_config)
+else
+    AC_PATH_PROG([PHPCONFIG], [php-config], [no])
 fi
 
-AC_PATH_PROG([PHPCONFIG], [php-config], [no])
 if test "x$PHPCONFIG" = "xno"; then
     AC_MSG_ERROR([php-config not found; please install the PHP SDK])
+fi
+
+AC_PATH_PROG([PHPIZE], [phpize], [no], [`php-config --prefix`/bin$PATH_SEPARATOR$PATH])
+if test "x$PHPIZE" = "xno"; then
+    AC_MSG_ERROR([phpize not found; please install the PHP SDK])
 fi
 
 AC_SUBST([PHPIZE])

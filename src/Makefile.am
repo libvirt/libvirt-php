@@ -1,6 +1,6 @@
-PHPINC=$(shell php-config --includes)
-PHPEDIR=$(shell php-config --extension-dir)
-PHPCDIR=$(shell php-config --configure-options | sed -n 's|.*--with-config-file-scan-dir=\([^ ]*\).*|\1|p')
+PHPINC=$(shell $(PHPCONFIG) --includes)
+PHPEDIR=$(shell $(PHPCONFIG) --extension-dir)
+PHPCDIR=$(shell $(PHPCONFIG) --configure-options | sed -n 's|.*--with-config-file-scan-dir=\([^ ]*\).*|\1|p')
 DEFINES=-DHAVE_CONFIG_H
 
 EXTRA_DIST = libvirt.c libvirt_php.h
