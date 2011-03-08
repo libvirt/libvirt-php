@@ -19,8 +19,8 @@ Group:		Development/Libraries/PHP
 Group:		Development/Libraries
 %endif
 License:	PHP
-URL:		http://libvirt.org/
-Source0:	http://libvirt.org/sources/libvirt-php-%{version}.tar.gz
+URL:		http://libvirt.org/php
+Source0:	http://libvirt.org/sources/php/libvirt-php-%{version}.tar.gz
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root
 
 BuildRequires:	php-devel
@@ -59,10 +59,11 @@ This package contain the document for libvirt-php.
 
 %build
 %configure
-./configure --with-html-dir=%{_datadir}/doc --with-html-subdir=%{name}-%{version}/html
+./configure --with-html-dir=%{_datadir}/doc --with-html-subdir=%{name}-%{version}/html --libdir=%{php_extdir}
 make %{?_smp_mflags}
 
 %install
+rm -rf %{buildroot}
 make install DESTDIR=%{buildroot}
 
 %clean
