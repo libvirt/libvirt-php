@@ -4,8 +4,10 @@
     <h1>Libvirt-php</h1>
 
     <p>libvirt-php, originally called php-libvirt, is a project that was started by Radek Hladik in 2010 to integrate libvirt support to PHP.</p>
-    <p>In February 2011 the binding has been moved to libvirt.org site and it's currently maintained by Red Hat and current version is heavily
-       based on Radek's original version. </p>
+    <p>In February 2011 the binding has been moved to libvirt.org site and it's currently maintained by Red Hat.</p>
+    <p>
+       <b>This project is not affiliated with The PHP Group and the PHP project itself.</b>
+    </p>
 
     <h2>What is libvirt-php?</h2>
     <p>libvirt-php is a php module that provides PHP bindings for libvirt virtualization toolkit and therefore you can access libvirt directly from
