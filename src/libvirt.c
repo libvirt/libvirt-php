@@ -36,6 +36,7 @@ static function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_connect_get_uri, NULL)
 	PHP_FE(libvirt_connect_get_hostname, NULL)
 	PHP_FE(libvirt_connect_get_capabilities, NULL)
+	PHP_FE(libvirt_connect_get_information, NULL)
 	PHP_FE(libvirt_connect_get_hypervisor, NULL)
 	PHP_FE(libvirt_connect_get_sysinfo, NULL)
 	PHP_FE(libvirt_connect_get_maxvcpus, NULL)
@@ -690,6 +691,85 @@ PHP_FUNCTION(libvirt_node_get_info)
 	add_assoc_long(return_value, "cores", (long)info.cores);
 	add_assoc_long(return_value, "threads", (long)info.threads);
 	add_assoc_long(return_value, "mhz", (long)info.mhz);
+}
+
+/*
+	Function name:	libvirt_connect_get_information
+	Since version:	0.4.1(-2)
+	Description:	Function is used to get the information about the connection
+	Arguments:		@conn [resource]: resource for connection
+	Returns:		array of information about the connection
+*/
+PHP_FUNCTION(libvirt_connect_get_information)
+{
+	zval *zconn;
+	char *tmp;
+	unsigned long hvVer = 0;
+	const char *type = NULL;
+	char hvStr[64] = { 0 };
+	int iTmp = -1;
+	php_libvirt_connection *conn = NULL;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zconn) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	ZEND_FETCH_RESOURCE(conn, php_libvirt_connection*, &zconn, -1, PHP_LIBVIRT_CONNECTION_RES_NAME, le_libvirt_connection);
+	if ((conn == NULL) || (conn->conn == NULL)) RETURN_FALSE;
+	
+	tmp = virConnectGetURI(conn->conn);
+	array_init(return_value);
+	add_assoc_string_ex(return_value, "uri", 4, tmp ? tmp : "unknown", 1);
+	tmp = virConnectGetHostname(conn->conn);
+	add_assoc_string_ex(return_value, "hostname", 9, tmp ? tmp : "unknown", 1);
+
+	if ((virConnectGetVersion(conn->conn, &hvVer) == 0) && (type = virConnectGetType(conn->conn)))
+	{
+		add_assoc_string_ex(return_value, "hypervisor", 11, (char *)type, 1);
+		add_assoc_long(return_value, "hypervisor_major",(long)((hvVer/1000000) % 1000));
+		add_assoc_long(return_value, "hypervisor_minor",(long)((hvVer/1000) % 1000));
+		add_assoc_long(return_value, "hypervisor_release",(long)(hvVer %1000));
+		snprintf(hvStr, sizeof(hvStr), "%s %d.%d.%d", type,
+					(long)((hvVer/1000000) % 1000), (long)((hvVer/1000) % 1000), (long)(hvVer %1000));
+		add_assoc_string_ex(return_value, "hypervisor_string", 18, hvStr, 1);
+	}
+	
+	add_assoc_long(return_value, "hypervisor_maxvcpus", virConnectGetMaxVcpus(conn->conn, type));
+	iTmp = virConnectIsEncrypted(conn->conn);
+	if (iTmp == 1)
+		add_assoc_string_ex(return_value, "encrypted", 10, "Yes", 1);
+	else
+	if (iTmp == 0)
+		add_assoc_string_ex(return_value, "encrypted", 10, "No", 1);
+	else
+		add_assoc_string_ex(return_value, "encrypted", 10, "unknown", 1);
+
+	iTmp = virConnectIsSecure(conn->conn);
+	if (iTmp == 1)
+		add_assoc_string_ex(return_value, "secure", 7, "Yes", 1);
+	else
+	if (iTmp == 0)
+		add_assoc_string_ex(return_value, "secure", 7, "No", 1);
+	else
+		add_assoc_string_ex(return_value, "secure", 7, "unknown", 1);
+		
+	add_assoc_long(return_value, "num_inactive_domains", virConnectNumOfDefinedDomains(conn->conn));
+	add_assoc_long(return_value, "num_inactive_interfaces", virConnectNumOfDefinedInterfaces(conn->conn));
+	add_assoc_long(return_value, "num_inactive_networks", virConnectNumOfDefinedNetworks(conn->conn));
+	add_assoc_long(return_value, "num_inactive_storagepools", virConnectNumOfDefinedStoragePools(conn->conn));
+
+	add_assoc_long(return_value, "num_active_domains", virConnectNumOfDomains(conn->conn));
+	add_assoc_long(return_value, "num_active_interfaces", virConnectNumOfInterfaces(conn->conn));
+	add_assoc_long(return_value, "num_active_networks", virConnectNumOfNetworks(conn->conn));
+	add_assoc_long(return_value, "num_active_storagepools", virConnectNumOfStoragePools(conn->conn));
+
+	add_assoc_long(return_value, "num_total_domains", virConnectNumOfDomains(conn->conn) + virConnectNumOfDefinedDomains(conn->conn));
+	add_assoc_long(return_value, "num_total_interfaces", virConnectNumOfInterfaces(conn->conn) + virConnectNumOfDefinedInterfaces(conn->conn));
+	add_assoc_long(return_value, "num_total_networks", virConnectNumOfNetworks(conn->conn) + virConnectNumOfDefinedNetworks(conn->conn));
+	add_assoc_long(return_value, "num_total_storagepools", virConnectNumOfStoragePools(conn->conn) +  virConnectNumOfDefinedStoragePools(conn->conn));
+
+	add_assoc_long(return_value, "num_secrets", virConnectNumOfSecrets(conn->conn));
+	add_assoc_long(return_value, "num_nwfilters", virConnectNumOfNWFilters(conn->conn));
 }
 
 /*

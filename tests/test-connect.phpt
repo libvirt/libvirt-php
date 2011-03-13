@@ -39,6 +39,9 @@
 	if (libvirt_connect_get_capabilities($conn) == false)
 		bail('Invalid capabilities on the hypervisor connection');
 
+	if (libvirt_connect_get_information($conn) == false)
+		bail('No information on the connection are available');
+
 	unset($res);
 	unset($conn);
 

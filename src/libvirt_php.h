@@ -96,6 +96,7 @@ PHP_FUNCTION(libvirt_connect_get_maxvcpus);
 PHP_FUNCTION(libvirt_connect_get_sysinfo);
 PHP_FUNCTION(libvirt_connect_get_encrypted);
 PHP_FUNCTION(libvirt_connect_get_secure);
+PHP_FUNCTION(libvirt_connect_get_information);
 /* Node functions */
 PHP_FUNCTION(libvirt_node_get_info);
 /* Domain functions */
