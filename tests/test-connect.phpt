@@ -15,10 +15,10 @@
 		bail('Invalid CPU core count');
 	unset($res);
 
-	if (!libvirt_get_uri($conn))
+	if (!libvirt_connect_get_uri($conn))
 		bail('Invalid URI value');
 
-	if (!libvirt_get_hostname($conn))
+	if (!libvirt_connect_get_hostname($conn))
 		bail('Invalid hostname value');
 
 	if (!($res = libvirt_domain_get_counts($conn)))
@@ -29,6 +29,15 @@
 
 	if ($res['inactive'] != count( libvirt_list_inactive_domains($conn)))
 		bail('Numbers of inactive domains mismatch');
+
+	if (libvirt_connect_get_hypervisor($conn) == false)
+		echo "Warning: Getting hypervisor information failed!\n";
+
+	if (libvirt_connect_get_maxvcpus($conn) == false)
+		echo "Warning: Cannot get the maximum number of VCPUs per VM!\n";
+
+	if (libvirt_connect_get_capabilities($conn) == false)
+		bail('Invalid capabilities on the hypervisor connection');
 
 	unset($res);
 	unset($conn);

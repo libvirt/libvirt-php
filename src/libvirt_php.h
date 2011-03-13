@@ -90,6 +90,12 @@ PHP_FUNCTION(libvirt_get_last_error);
 PHP_FUNCTION(libvirt_connect);
 PHP_FUNCTION(libvirt_connect_get_uri);
 PHP_FUNCTION(libvirt_connect_get_hostname);
+PHP_FUNCTION(libvirt_connect_get_hypervisor);
+PHP_FUNCTION(libvirt_connect_get_capabilities);
+PHP_FUNCTION(libvirt_connect_get_maxvcpus);
+PHP_FUNCTION(libvirt_connect_get_sysinfo);
+PHP_FUNCTION(libvirt_connect_get_encrypted);
+PHP_FUNCTION(libvirt_connect_get_secure);
 /* Node functions */
 PHP_FUNCTION(libvirt_node_get_info);
 /* Domain functions */

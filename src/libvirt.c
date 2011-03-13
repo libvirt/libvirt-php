@@ -35,6 +35,12 @@ static function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_connect, arginfo_libvirt_connect)
 	PHP_FE(libvirt_connect_get_uri, NULL)
 	PHP_FE(libvirt_connect_get_hostname, NULL)
+	PHP_FE(libvirt_connect_get_capabilities, NULL)
+	PHP_FE(libvirt_connect_get_hypervisor, NULL)
+	PHP_FE(libvirt_connect_get_sysinfo, NULL)
+	PHP_FE(libvirt_connect_get_maxvcpus, NULL)
+	PHP_FE(libvirt_connect_get_encrypted, NULL)
+	PHP_FE(libvirt_connect_get_secure, NULL)
 	/* Domain functions */
 	PHP_FE(libvirt_domain_get_counts, NULL)
 	PHP_FE(libvirt_domain_lookup_by_name, NULL)
@@ -661,7 +667,7 @@ PHP_FUNCTION(libvirt_connect)
 	Since version:	0.4.1(-1)
 	Description:	Function is used to get the information about host node, mainly total memory installed, total CPUs installed and model information are useful
 	Arguments:		@conn [resource]: resource for connection
-	Returns:		array of node information
+	Returns:		array of node information or FALSE for error
 */
 PHP_FUNCTION(libvirt_node_get_info)
 {
@@ -691,7 +697,7 @@ PHP_FUNCTION(libvirt_node_get_info)
 	Since version:	0.4.1(-1)
 	Description:	Function is used to get the connection URI. This is useful to check the hypervisor type of host machine when using "null" uri to libvirt_connect()
 	Arguments:		@conn [resource]: resource for connection
-	Returns:		connection URI string
+	Returns:		connection URI string or FALSE for error
 */
 PHP_FUNCTION(libvirt_connect_get_uri)
 {
@@ -718,7 +724,7 @@ PHP_FUNCTION(libvirt_connect_get_uri)
 	Since version:	0.4.1(-1)
 	Description:	Function is used to get the hostname of the guest associated with the connection
 	Arguments:		@conn [resource]: resource for connection
-	Returns:		hostname of the host node
+	Returns:		hostname of the host node or FALSE for error
 */
 PHP_FUNCTION(libvirt_connect_get_hostname)
 {
@@ -744,6 +750,203 @@ PHP_FUNCTION(libvirt_connect_get_hostname)
 
 	RETURN_STRING(hostname_out,0);
 }
+
+/*
+	Function name:	libvirt_connect_get_hypervisor
+	Since version:	0.4.1(-2)
+	Description:	Function is used to get the information about the hypervisor on the connection identified by the connection pointer
+	Arguments:		@conn [resource]: resource for connection
+	Returns:		array of hypervisor information if available
+*/
+PHP_FUNCTION(libvirt_connect_get_hypervisor)
+{
+	php_libvirt_connection *conn=NULL;
+	zval *zconn;
+	unsigned long hvVer = 0;
+	const char *type = NULL;
+	char hvStr[64] = { 0 };
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zconn) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	ZEND_FETCH_RESOURCE(conn, php_libvirt_connection*, &zconn, -1, PHP_LIBVIRT_CONNECTION_RES_NAME, le_libvirt_connection);
+	if ((conn==NULL) || (conn->conn==NULL)) RETURN_FALSE;
+
+	if (conn==NULL) RETURN_FALSE;
+	if (conn->conn==NULL) RETURN_FALSE;
+
+	if (virConnectGetVersion(conn->conn, &hvVer) != 0)
+		RETURN_FALSE;
+
+	type = virConnectGetType(conn->conn);
+	if (type == NULL)
+		RETURN_FALSE;
+
+	array_init(return_value);
+	add_assoc_string_ex(return_value, "hypervisor", 11, (char *)type, 1);
+	add_assoc_long(return_value, "major",(long)((hvVer/1000000) % 1000));
+	add_assoc_long(return_value, "minor",(long)((hvVer/1000) % 1000));
+	add_assoc_long(return_value, "release",(long)(hvVer %1000));
+
+	snprintf(hvStr, sizeof(hvStr), "%s %d.%d.%d", type,
+				(long)((hvVer/1000000) % 1000), (long)((hvVer/1000) % 1000), (long)(hvVer %1000));
+	add_assoc_string_ex(return_value, "hypervisor_string", 18, hvStr, 1);
+}
+
+/*
+	Function name:	libvirt_connect_is_encrypted
+	Since version:	0.4.1(-2)
+	Description:	Function is used to get the information whether the connection is encrypted or not
+	Arguments:		@conn [resource]: resource for connection
+	Returns:		1 if encrypted, 0 if not encrypted, -1 on error
+*/
+PHP_FUNCTION(libvirt_connect_get_encrypted)
+{
+	php_libvirt_connection *conn=NULL;
+	zval *zconn;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zconn) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	ZEND_FETCH_RESOURCE(conn, php_libvirt_connection*, &zconn, -1, PHP_LIBVIRT_CONNECTION_RES_NAME, le_libvirt_connection);
+	if ((conn==NULL) || (conn->conn==NULL)) RETURN_FALSE;
+
+	if (conn==NULL) RETURN_FALSE;
+	if (conn->conn==NULL) RETURN_FALSE;
+
+	RETURN_LONG( virConnectIsEncrypted(conn->conn) );
+}
+
+
+/*
+	Function name:	libvirt_connect_is_secure
+	Since version:	0.4.1(-2)
+	Description:	Function is used to get the information whether the connection is secure or not
+	Arguments:		@conn [resource]: resource for connection
+	Returns:		1 if secure, 0 if not secure, -1 on error
+*/
+PHP_FUNCTION(libvirt_connect_get_secure)
+{
+	php_libvirt_connection *conn=NULL;
+	zval *zconn;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zconn) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	ZEND_FETCH_RESOURCE(conn, php_libvirt_connection*, &zconn, -1, PHP_LIBVIRT_CONNECTION_RES_NAME, le_libvirt_connection);
+	if ((conn==NULL) || (conn->conn==NULL)) RETURN_FALSE;
+
+	if (conn==NULL) RETURN_FALSE;
+	if (conn->conn==NULL) RETURN_FALSE;
+
+	RETURN_LONG( virConnectIsSecure(conn->conn) );
+}
+
+/*
+	Function name:	libvirt_connect_get_maxvcpus
+	Since version:	0.4.1(-2)
+	Description:	Function is used to get maximum number of VCPUs per VM on the hypervisor connection
+	Arguments:		@conn [resource]: resource for connection
+	Returns:		number of VCPUs available per VM on the connection or FALSE for error
+*/
+PHP_FUNCTION(libvirt_connect_get_maxvcpus)
+{
+	php_libvirt_connection *conn=NULL;
+	zval *zconn;
+	const char *type = NULL;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zconn) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	ZEND_FETCH_RESOURCE(conn, php_libvirt_connection*, &zconn, -1, PHP_LIBVIRT_CONNECTION_RES_NAME, le_libvirt_connection);
+	if ((conn==NULL) || (conn->conn==NULL)) RETURN_FALSE;
+
+	if (conn==NULL) RETURN_FALSE;
+	if (conn->conn==NULL) RETURN_FALSE;
+
+	type = virConnectGetType(conn->conn);
+	if (type == NULL)
+		RETURN_FALSE;
+
+	RETURN_LONG(virConnectGetMaxVcpus(conn->conn, type));
+}
+
+/*
+	Function name:	libvirt_connect_get_capabilities
+	Since version:	0.4.1(-2)
+	Description:	Function is used to get the capabilities information from the connection
+	Arguments:		@conn [resource]: resource for connection
+	Returns:		capabilities XML from the connection or FALSE for error
+*/
+PHP_FUNCTION(libvirt_connect_get_capabilities)
+{
+	php_libvirt_connection *conn=NULL;
+	zval *zconn;
+	char *caps;
+	char *caps_out;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zconn) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	ZEND_FETCH_RESOURCE(conn, php_libvirt_connection*, &zconn, -1, PHP_LIBVIRT_CONNECTION_RES_NAME, le_libvirt_connection);
+	if ((conn==NULL) || (conn->conn==NULL)) RETURN_FALSE;
+
+	if (conn==NULL) RETURN_FALSE;
+	if (conn->conn==NULL) RETURN_FALSE;
+
+	caps = virConnectGetCapabilities(conn->conn);
+	if (caps == NULL)
+		RETURN_FALSE;
+
+	RECREATE_STRING_WITH_E(caps_out, caps);
+
+	RETURN_STRING(caps_out,0);
+}
+
+/*
+	Function name:	libvirt_connect_get_sysinfo
+	Since version:	0.4.1(-2)
+	Description:	Function is used to get the system information from connection if available
+	Arguments:		@conn [resource]: resource for connection
+	Returns:		XML description of system information from the connection or FALSE for error
+*/
+#if LIBVIR_VERSION_NUMBER>=8008
+PHP_FUNCTION(libvirt_connect_get_sysinfo)
+{
+	php_libvirt_connection *conn=NULL;
+	zval *zconn;
+	char *sysinfo;
+	char *sysinfo_out;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zconn) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	ZEND_FETCH_RESOURCE(conn, php_libvirt_connection*, &zconn, -1, PHP_LIBVIRT_CONNECTION_RES_NAME, le_libvirt_connection);
+	if ((conn==NULL) || (conn->conn==NULL)) RETURN_FALSE;
+
+	if (conn==NULL) RETURN_FALSE;
+	if (conn->conn==NULL) RETURN_FALSE;
+
+	sysinfo=virConnectGetSysinfo(conn->conn, 0);
+	if (sysinfo==NULL) RETURN_FALSE;
+
+	RECREATE_STRING_WITH_E(sysinfo_out, sysinfo);
+
+	RETURN_STRING(sysinfo_out,0);
+}
+#else
+PHP_FUNCTION(libvirt_connect_get_sysinfo)
+{
+	set_error("Only libvirt 0.8.8 or higher supports virConnectGetSysinfo() API function");
+	RETURN_FALSE;
+}
+#endif
 
 /*
 	Private function name:	get_string_from_xpath
