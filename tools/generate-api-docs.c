@@ -8,6 +8,7 @@ typedef struct func_t {
 	char *name;
 	int private;
 	char *desc;
+	char *version;
 	int num_args;
 	char **args;
 	char *returns;
@@ -45,14 +46,19 @@ void parse_comment(char *line, int func_num, int *arg_num)
 		functions[func_num].name = strdup( ltrim_string( ltrimmed + 14) );
 		functions[func_num].private = 0;
 	}
-        else
+	else
 	if (strncmp(ltrimmed, "Private function name:", 22) == 0) {
 		functions[func_num].name = strdup( ltrim_string( ltrimmed + 22) );
 		functions[func_num].private = 1;
-        }
-        if (strncmp(ltrimmed, "Description:", 12) == 0) {
-                functions[func_num].desc = strdup( ltrim_string( ltrimmed + 12) );
-        }
+	}
+	else
+	if (strncmp(ltrimmed, "Since version:", 14) == 0) {
+		functions[func_num].version = strdup( ltrim_string( ltrimmed + 14) );
+	}
+	else
+	if (strncmp(ltrimmed, "Description:", 12) == 0) {
+		functions[func_num].desc = strdup( ltrim_string( ltrimmed + 12) );
+	}
 	else
 	if (strncmp(ltrimmed, "Arguments:", 10) == 0) {
 		char *str = ltrim_string(ltrimmed + 11);
@@ -259,6 +265,7 @@ int main(int argc, char *argv[])
 			}
 
 			fprintf(fp, ")</pre>\n");
+			fprintf(fp, "<p>[Since version %s]</p>\n", functions[i].version);
 			fprintf(fp, "<p>%s.</p>", functions[i].desc);
 			fprintf(fp, "<div class=\"variablelist\">\n");
 			fprintf(fp, "\t<table border=\"0\">\n");

@@ -86,11 +86,13 @@ PHP_MINFO_FUNCTION(libvirt);
 
 /* Common functions */
 PHP_FUNCTION(libvirt_get_last_error);
+/* Connect functions */
 PHP_FUNCTION(libvirt_connect);
-PHP_FUNCTION(libvirt_get_uri);
-PHP_FUNCTION(libvirt_get_hostname);
+PHP_FUNCTION(libvirt_connect_get_uri);
+PHP_FUNCTION(libvirt_connect_get_hostname);
+/* Node functions */
 PHP_FUNCTION(libvirt_node_get_info);
-/*  Domain functions */
+/* Domain functions */
 PHP_FUNCTION(libvirt_domain_get_counts);
 PHP_FUNCTION(libvirt_domain_lookup_by_name);
 PHP_FUNCTION(libvirt_domain_get_xml_desc);
