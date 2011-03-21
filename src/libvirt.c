@@ -20,6 +20,7 @@ int le_libvirt_storagepool;
 int le_libvirt_volume;
 int le_libvirt_network;
 int le_libvirt_nodedev;
+int le_libvirt_snapshot;
 
 ZEND_DECLARE_MODULE_GLOBALS(libvirt)
 
@@ -78,6 +79,13 @@ static function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_domain_get_autostart, NULL)
 	PHP_FE(libvirt_domain_set_autostart, NULL)
 	PHP_FE(libvirt_domain_is_active, NULL)
+	/* Domain snapshot functions */
+	PHP_FE(libvirt_domain_has_current_snapshot, NULL)
+	PHP_FE(libvirt_domain_snapshot_create, NULL)
+	PHP_FE(libvirt_domain_snapshot_get_xml, NULL)
+	PHP_FE(libvirt_domain_snapshot_revert, NULL)
+	PHP_FE(libvirt_domain_snapshot_delete, NULL)
+	PHP_FE(libvirt_domain_snapshot_lookup_by_name, NULL)
 	/* Storagepool functions */
 	PHP_FE(libvirt_storagepool_lookup_by_name,NULL)
 	PHP_FE(libvirt_storagepool_get_info,NULL)
@@ -114,6 +122,7 @@ static function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_nodedev_get_information, NULL)
 	/* List functions */
 	PHP_FE(libvirt_list_domains, NULL)
+	PHP_FE(libvirt_list_domain_snapshots, NULL)
 	PHP_FE(libvirt_list_domain_resources, NULL)
 	PHP_FE(libvirt_list_nodedevs, NULL)
 	PHP_FE(libvirt_list_networks,NULL)
@@ -301,16 +310,32 @@ static void php_libvirt_nodedev_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 	}
 }
 
+/* Destructor for snapshot resource */
+static void php_libvirt_snapshot_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
+{
+	php_libvirt_snapshot *snapshot = (php_libvirt_snapshot*)rsrc->ptr;
+	if (snapshot != NULL)
+	{
+		if (snapshot->snapshot != NULL)
+		{
+			virDomainSnapshotFree (snapshot->snapshot);
+			snapshot->snapshot=NULL;
+		}
+		efree(snapshot);
+	}
+}
+
 /* ZEND Module inicialization function */
 PHP_MINIT_FUNCTION(libvirt)
 {
+	/* register resource types and their descriptors */
 	le_libvirt_connection = zend_register_list_destructors_ex(php_libvirt_connection_dtor, NULL, PHP_LIBVIRT_CONNECTION_RES_NAME, module_number);
-	/* register resource types and theis descriptors */
 	le_libvirt_domain = zend_register_list_destructors_ex(php_libvirt_domain_dtor, NULL, PHP_LIBVIRT_DOMAIN_RES_NAME, module_number);
 	le_libvirt_storagepool = zend_register_list_destructors_ex(php_libvirt_storagepool_dtor, NULL, PHP_LIBVIRT_STORAGEPOOL_RES_NAME, module_number);
 	le_libvirt_volume = zend_register_list_destructors_ex(php_libvirt_volume_dtor, NULL, PHP_LIBVIRT_VOLUME_RES_NAME, module_number);
 	le_libvirt_network = zend_register_list_destructors_ex(php_libvirt_network_dtor, NULL, PHP_LIBVIRT_NETWORK_RES_NAME, module_number);
 	le_libvirt_nodedev = zend_register_list_destructors_ex(php_libvirt_nodedev_dtor, NULL, PHP_LIBVIRT_NODEDEV_RES_NAME, module_number);
+	le_libvirt_snapshot = zend_register_list_destructors_ex(php_libvirt_snapshot_dtor, NULL, PHP_LIBVIRT_SNAPSHOT_RES_NAME, module_number);
 
 	ZEND_INIT_MODULE_GLOBALS(libvirt, php_libvirt_init_globals, NULL);
 
@@ -329,13 +354,16 @@ PHP_MINIT_FUNCTION(libvirt)
 	REGISTER_LONG_CONSTANT("VIR_DOMAIN_SHUTOFF", 		5, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("VIR_DOMAIN_CRASHED", 		6, CONST_CS | CONST_PERSISTENT);
 
+	/* Domain snapshot constants */
+	REGISTER_LONG_CONSTANT("VIR_SNAPSHOT_DELETE_CHILDREN",	 VIR_DOMAIN_SNAPSHOT_DELETE_CHILDREN,	CONST_CS | CONST_PERSISTENT);
+
 	/* Memory constants */
 	REGISTER_LONG_CONSTANT("VIR_MEMORY_VIRTUAL",		1, CONST_CS | CONST_PERSISTENT);
 
 	/* Version checking constants */
 	REGISTER_LONG_CONSTANT("VIR_VERSION_BINDING",           VIR_VERSION_BINDING,    CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("VIR_VERSION_LIBVIRT",           VIR_VERSION_LIBVIRT,    CONST_CS | CONST_PERSISTENT);
-
+	
 	/* Network constants */
 	REGISTER_LONG_CONSTANT("VIR_NETWORKS_ACTIVE",		VIR_NETWORKS_ACTIVE,	CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("VIR_NETWORKS_INACTIVE",		VIR_NETWORKS_INACTIVE,	CONST_CS | CONST_PERSISTENT);
@@ -490,6 +518,14 @@ PHP_MSHUTDOWN_FUNCTION(libvirt)
 \
 	ZEND_FETCH_RESOURCE(volume, php_libvirt_volume*, &zvolume, -1, PHP_LIBVIRT_VOLUME_RES_NAME, le_libvirt_volume);\
 	if ((volume==NULL) || (volume->volume==NULL)) RETURN_FALSE;\
+
+#define GET_SNAPSHOT_FROM_ARGS(args, ...) \
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, args, __VA_ARGS__) == FAILURE) {\
+		RETURN_FALSE;\
+	}\
+\
+	ZEND_FETCH_RESOURCE(snapshot, php_libvirt_snapshot*, &zsnapshot, -1, PHP_LIBVIRT_SNAPSHOT_RES_NAME, le_libvirt_snapshot);\
+	if ((snapshot==NULL) || (snapshot->snapshot==NULL)) RETURN_FALSE;\
 
 /* Macro to "recreate" string with emalloc and free the original one */
 #define RECREATE_STRING_WITH_E(str_out, str_in) \
@@ -2266,6 +2302,220 @@ PHP_FUNCTION(libvirt_domain_get_job_info)
 PHP_FUNCTION(libvirt_domain_get_job_info)
 {
 	set_error("Only libvirt 0.7.7 and higher supports getting the job information" TSRMLS_CC);
+	RETURN_FALSE;
+}
+#endif
+
+#if LIBVIR_VERSION_NUMBER>=8000
+/*
+	Function name:	libvirt_domain_has_current_snapshot
+	Since version:	0.4.1(-2)
+	Description:	Function is used to get the information whether domain has the current snapshot
+	Arguments:		@res [resource]: libvirt domain resource
+	Returns:		TRUE is domain has the current snapshot, otherwise FALSE (you may need to check for error using libvirt_get_last_error())
+*/
+PHP_FUNCTION(libvirt_domain_has_current_snapshot)
+{
+	php_libvirt_domain *domain=NULL;
+	zval *zdomain;
+	int retval;
+
+	GET_DOMAIN_FROM_ARGS("r",&zdomain);
+
+	retval=virDomainHasCurrentSnapshot(domain->domain, 0); 
+	if (retval <= 0) RETURN_FALSE;
+	RETURN_TRUE;
+}
+
+/*
+	Function name:	libvirt_domain_snapshot_lookup_by_name
+	Since version:	0.4.1(-2)
+	Description:	This functions is used to lookup for the snapshot by it's name
+	Arguments:		@res [resource]: libvirt domain resource
+					@name [string]: name of the snapshot to get the resource
+	Returns:		domain snapshot resource or NULL on error
+*/
+PHP_FUNCTION(libvirt_domain_snapshot_lookup_by_name)
+{
+	php_libvirt_domain *domain=NULL;
+	zval *zdomain;
+	int name_len;
+	char *name=NULL;
+	php_libvirt_snapshot *res_snapshot;
+	virDomainSnapshotPtr snapshot = NULL;
+
+	GET_DOMAIN_FROM_ARGS("rs",&zdomain,&name,&name_len);
+
+	if ( (name == NULL) || (name_len<1)) RETURN_FALSE;
+	snapshot=virDomainSnapshotLookupByName(domain->domain, name, 0);
+	if (snapshot==NULL) RETURN_FALSE;
+
+	res_snapshot = emalloc(sizeof(php_libvirt_snapshot));
+	res_snapshot->domain = domain->domain;
+	res_snapshot->snapshot = snapshot;
+
+ 	ZEND_REGISTER_RESOURCE(return_value, res_snapshot, le_libvirt_snapshot);
+}
+
+/*
+	Function name:	libvirt_domain_snapshot_create
+	Since version:	0.4.1(-2)
+	Description:	This function creates the domain snapshot for the domain identified by it's resource
+	Arguments:		@res [resource]: libvirt domain resource
+	Returns:		domain snapshot resource or NULL on error
+*/
+PHP_FUNCTION(libvirt_domain_snapshot_create)
+{
+	php_libvirt_domain *domain=NULL;
+	php_libvirt_snapshot *res_snapshot;
+	zval *zdomain;
+	virDomainSnapshotPtr snapshot = NULL;
+	
+	GET_DOMAIN_FROM_ARGS("r",&zdomain);
+ 
+	snapshot=virDomainSnapshotCreateXML(domain->domain, "<domainsnapshot/>", 0); 
+	if (snapshot == NULL) RETURN_FALSE;
+
+	res_snapshot = emalloc(sizeof(php_libvirt_snapshot));
+	res_snapshot->domain = domain;
+	res_snapshot->snapshot = snapshot;
+
+ 	ZEND_REGISTER_RESOURCE(return_value, res_snapshot, le_libvirt_snapshot); 	 
+}
+
+/*
+	Function name:	libvirt_domain_snapshot_get_xml
+	Since version:	0.4.1(-2)
+	Description:	Function is used to get the XML description of the snapshot identified by it's resource
+	Arguments:		@res [resource]: libvirt snapshot resource
+	Returns:		XML description string for the snapshot or NULL on error
+*/
+PHP_FUNCTION(libvirt_domain_snapshot_get_xml)
+{
+	char *xml;
+	char *xml_out;
+	zval *zsnapshot;
+	php_libvirt_snapshot *snapshot;
+	
+	GET_SNAPSHOT_FROM_ARGS("r",&zsnapshot);
+
+	xml = virDomainSnapshotGetXMLDesc(snapshot->snapshot, 0);
+	if (xml==NULL) RETURN_FALSE;
+
+	RECREATE_STRING_WITH_E(xml_out,xml);
+
+	RETURN_STRING(xml_out,0);
+}
+
+/*
+	Function name:	libvirt_domain_snapshot_revert
+	Since version:	0.4.1(-2)
+	Description:	Function is used to revert the domain state to the state identified by the snapshot
+	Arguments:		@res [resource]: libvirt snapshot resource
+	Returns:		TRUE on success, FALSE on error
+*/
+PHP_FUNCTION(libvirt_domain_snapshot_revert)
+{
+	zval *zsnapshot;
+	php_libvirt_snapshot *snapshot;
+	
+	GET_SNAPSHOT_FROM_ARGS("r",&zsnapshot);
+
+	if (virDomainRevertToSnapshot(snapshot->snapshot, 0) == -1) RETURN_FALSE;
+	RETURN_TRUE;
+}
+
+/*
+	Function name:	libvirt_domain_snapshot_delete
+	Since version:	0.4.1(-2)
+	Description:	Function is used to revert the domain state to the state identified by the snapshot
+	Arguments:		@res [resource]: libvirt snapshot resource
+					@flags [int]: 0 to delete just snapshot, VIR_SNAPSHOT_DELETE_CHILDREN to delete snapshot children as well
+	Returns:		TRUE on success, FALSE on error
+*/
+PHP_FUNCTION(libvirt_domain_snapshot_delete)
+{
+	zval *zsnapshot;
+	php_libvirt_snapshot *snapshot;
+	int flags = 0;
+	
+	GET_SNAPSHOT_FROM_ARGS("r|l",&zsnapshot, &flags);
+
+	if (virDomainSnapshotDelete(snapshot->snapshot, flags) == -1) RETURN_FALSE;
+	RETURN_TRUE;
+}
+
+/*
+	Function name:	libvirt_list_domain_snapshots
+	Since version:	0.4.1(-2)
+	Description:	Function is used to list domain snapshots for the domain specified by it's resource
+	Arguments:		@res [resource]: libvirt domain resource
+	Returns:		libvirt domain snapshot names array
+*/
+PHP_FUNCTION(libvirt_list_domain_snapshots)
+{
+	php_libvirt_domain *domain=NULL;
+	zval *zdomain;
+	int count=-1;
+	int expectedcount=-1;
+	char **names;
+	int i;
+
+	GET_DOMAIN_FROM_ARGS("r",&zdomain);
+
+	expectedcount=virDomainSnapshotNum(domain->domain, 0);
+
+	names=emalloc( expectedcount * sizeof(char *) );
+	count=virDomainSnapshotListNames(domain->domain, names, expectedcount, 0);
+	if ((count != expectedcount) || (count<0)) RETURN_FALSE;
+	array_init(return_value);
+	for (i=0;i<count;i++)
+	{
+		add_next_index_string(return_value, names[i], 1);
+		free(names[i]);
+	}
+	efree(names);
+}
+#else
+PHP_FUNCTION(libvirt_domain_has_current_snapshot)
+{
+	set_error("Only libvirt 0.8.0 and higher support snapshots" TSRMLS_CC);
+	RETURN_FALSE;
+}
+
+PHP_FUNCTION(libvirt_domain_snapshot_create)
+{
+	set_error("Only libvirt 0.8.0 and higher support snapshots" TSRMLS_CC);
+	RETURN_FALSE;
+}
+
+PHP_FUNCTION(libvirt_domain_snapshot_get_xml)
+{
+	set_error("Only libvirt 0.8.0 and higher support snapshots" TSRMLS_CC);
+	RETURN_FALSE;
+}
+
+PHP_FUNCTION(libvirt_domain_snapshot_lookup_by_name)
+{
+	set_error("Only libvirt 0.8.0 and higher support snapshots" TSRMLS_CC);
+	RETURN_FALSE;
+}
+
+PHP_FUNCTION(libvirt_domain_snapshot_revert)
+{
+	set_error("Only libvirt 0.8.0 and higher support snapshots" TSRMLS_CC);
+	RETURN_FALSE;
+}
+
+PHP_FUNCTION(libvirt_domain_snapshot_delete)
+{
+	set_error("Only libvirt 0.8.0 and higher support snapshots" TSRMLS_CC);
+	RETURN_FALSE;
+}
+
+PHP_FUNCTION(libvirt_list_domain_snapshots)
+{
+	set_error("Only libvirt 0.8.0 and higher support snapshots" TSRMLS_CC);
 	RETURN_FALSE;
 }
 #endif

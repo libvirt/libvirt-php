@@ -44,6 +44,11 @@ typedef struct _php_libvirt_domain {
 	php_libvirt_connection* conn;
 } php_libvirt_domain;
 
+typedef struct _php_libvirt_snapshot {
+	virDomainSnapshotPtr snapshot;
+	php_libvirt_domain* domain;
+} php_libvirt_snapshot;
+
 typedef struct _php_libvirt_network {
 	virNetworkPtr network;
 	php_libvirt_connection* conn;
@@ -77,6 +82,7 @@ typedef struct _php_libvirt_cred_value {
 #define PHP_LIBVIRT_VOLUME_RES_NAME "Libvirt volume"
 #define PHP_LIBVIRT_NETWORK_RES_NAME "Libvirt virtual network"
 #define PHP_LIBVIRT_NODEDEV_RES_NAME "Libvirt node device"
+#define PHP_LIBVIRT_SNAPSHOT_RES_NAME "Libvirt domain snapshot"
 
 PHP_MINIT_FUNCTION(libvirt);
 PHP_MSHUTDOWN_FUNCTION(libvirt);
@@ -136,6 +142,13 @@ PHP_FUNCTION(libvirt_domain_migrate_to_uri);
 PHP_FUNCTION(libvirt_domain_get_autostart);
 PHP_FUNCTION(libvirt_domain_set_autostart);
 PHP_FUNCTION(libvirt_domain_is_active);
+/* Domain snapshot functions */
+PHP_FUNCTION(libvirt_domain_has_current_snapshot);
+PHP_FUNCTION(libvirt_domain_snapshot_create);
+PHP_FUNCTION(libvirt_domain_snapshot_lookup_by_name);
+PHP_FUNCTION(libvirt_domain_snapshot_get_xml);
+PHP_FUNCTION(libvirt_domain_snapshot_revert);
+PHP_FUNCTION(libvirt_domain_snapshot_delete);
 /* Storagepool functions */
 PHP_FUNCTION(libvirt_storagepool_lookup_by_name);
 PHP_FUNCTION(libvirt_storagepool_list_volumes);
@@ -173,6 +186,7 @@ PHP_FUNCTION(libvirt_nodedev_get_information);
 PHP_FUNCTION(libvirt_list_nodedevs);
 PHP_FUNCTION(libvirt_list_networks);
 PHP_FUNCTION(libvirt_list_domains);
+PHP_FUNCTION(libvirt_list_domain_snapshots);
 PHP_FUNCTION(libvirt_list_domain_resources);
 PHP_FUNCTION(libvirt_list_active_domains);
 PHP_FUNCTION(libvirt_list_active_domain_ids);
