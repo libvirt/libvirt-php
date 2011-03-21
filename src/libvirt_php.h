@@ -114,6 +114,7 @@ PHP_FUNCTION(libvirt_domain_lookup_by_uuid_string);
 PHP_FUNCTION(libvirt_domain_destroy);
 PHP_FUNCTION(libvirt_domain_create);
 PHP_FUNCTION(libvirt_domain_resume);
+PHP_FUNCTION(libvirt_domain_core_dump);
 PHP_FUNCTION(libvirt_domain_shutdown);
 PHP_FUNCTION(libvirt_domain_suspend);
 PHP_FUNCTION(libvirt_domain_undefine);

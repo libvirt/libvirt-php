@@ -57,6 +57,7 @@ static function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_domain_destroy, NULL)
 	PHP_FE(libvirt_domain_create, NULL)
 	PHP_FE(libvirt_domain_resume, NULL)
+	PHP_FE(libvirt_domain_core_dump, NULL)
 	PHP_FE(libvirt_domain_shutdown, NULL)
 	PHP_FE(libvirt_domain_suspend, NULL)
 	PHP_FE(libvirt_domain_undefine, NULL)
@@ -1621,6 +1622,28 @@ PHP_FUNCTION(libvirt_domain_resume)
 	GET_DOMAIN_FROM_ARGS("r",&zdomain);
 
 	retval=virDomainResume(domain->domain);
+	if (retval != 0) RETURN_FALSE;
+	RETURN_TRUE;
+}
+
+/*
+	Function name:	libvirt_domain_core_dump
+	Since version:	0.4.1(-2)
+	Description:	Function is used to dump core of the domain identified by it's resource
+	Arguments:		@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Returns:		boolean of core dump command
+*/
+PHP_FUNCTION(libvirt_domain_core_dump)
+{
+	php_libvirt_domain *domain=NULL;
+	zval *zdomain;
+	int retval;
+	int to_len;
+	char *to;
+
+	GET_DOMAIN_FROM_ARGS("rs",&zdomain,&to,&to_len);
+
+	retval=virDomainCoreDump(domain->domain, to, 0);
 	if (retval != 0) RETURN_FALSE;
 	RETURN_TRUE;
 }
