@@ -90,6 +90,8 @@ static function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_storagepool_lookup_by_name,NULL)
 	PHP_FE(libvirt_storagepool_get_info,NULL)
 	PHP_FE(libvirt_storagevolume_lookup_by_name,NULL)
+	PHP_FE(libvirt_storagevolume_get_name,NULL)
+	PHP_FE(libvirt_storagevolume_get_path,NULL)
 	PHP_FE(libvirt_storagevolume_get_info,NULL)
 	PHP_FE(libvirt_storagevolume_get_xml_desc,NULL)
 	PHP_FE(libvirt_storagevolume_create_xml,NULL)
@@ -2351,7 +2353,7 @@ PHP_FUNCTION(libvirt_domain_snapshot_lookup_by_name)
 	if (snapshot==NULL) RETURN_FALSE;
 
 	res_snapshot = emalloc(sizeof(php_libvirt_snapshot));
-	res_snapshot->domain = domain->domain;
+	res_snapshot->domain = domain;
 	res_snapshot->snapshot = snapshot;
 
  	ZEND_REGISTER_RESOURCE(return_value, res_snapshot, le_libvirt_snapshot);
@@ -2641,6 +2643,48 @@ PHP_FUNCTION(libvirt_storagevolume_lookup_by_name)
 	res_volume->volume = volume;
 
 	ZEND_REGISTER_RESOURCE(return_value, res_volume, le_libvirt_volume);
+}
+
+/*
+	Function name:	libvirt_storagevolume_get_name
+	Since version:	0.4.1(-2)
+	Description:	Function is used to get the storage volume name
+	Arguments:		@res [resource]: libvirt storagevolume resource
+	Returns:		 storagevolume name
+*/
+PHP_FUNCTION(libvirt_storagevolume_get_name)
+{
+	php_libvirt_volume *volume = NULL;
+	zval *zvolume;
+	const char *val;
+
+	GET_VOLUME_FROM_ARGS ("r", &zvolume);
+
+	val = virStorageVolGetName (volume->volume);
+	if (val == NULL) RETURN_FALSE;
+
+	RETURN_STRING (val, 1);
+}
+
+/*
+	Function name:	libvirt_storagevolume_path
+	Since version:	0.4.1(-2)
+	Description:	Function is used to get the  storage volume path
+	Arguments:		@res [resource]: libvirt storagevolume resource
+	Returns:		storagevolume path
+*/
+PHP_FUNCTION(libvirt_storagevolume_get_path)
+{
+	php_libvirt_volume *volume = NULL;
+	zval *zvolume;
+	char *val;
+
+	GET_VOLUME_FROM_ARGS ("r", &zvolume);
+
+	val = virStorageVolGetPath (volume->volume);
+	if (val == NULL) RETURN_FALSE;
+
+	RETURN_STRING (val, 1);
 }
 
 /*

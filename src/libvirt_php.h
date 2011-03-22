@@ -154,6 +154,8 @@ PHP_FUNCTION(libvirt_storagepool_lookup_by_name);
 PHP_FUNCTION(libvirt_storagepool_list_volumes);
 PHP_FUNCTION(libvirt_storagepool_get_info);
 PHP_FUNCTION(libvirt_storagevolume_lookup_by_name);
+PHP_FUNCTION(libvirt_storagevolume_get_name);
+PHP_FUNCTION(libvirt_storagevolume_get_path);
 PHP_FUNCTION(libvirt_storagevolume_get_info);
 PHP_FUNCTION(libvirt_storagevolume_get_xml_desc);
 PHP_FUNCTION(libvirt_storagevolume_create_xml);
