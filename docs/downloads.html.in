@@ -6,8 +6,10 @@
     <h2>Official Releases</h2>
 
     <p>
-      There are no official releases available yet.
+      You can download the first official release, release 0.4.1, from:
     </p>
+
+      <pre><a href="http://libvirt.org/sources/php/libvirt-php-0.4.1.tar.gz">http://libvirt.org/sources/php/libvirt-php-0.4.1.tar.gz</a></pre>
 
     <h2>GIT source repository</h2>
 
