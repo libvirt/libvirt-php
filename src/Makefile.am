@@ -3,7 +3,7 @@ PHPEDIR=$(shell $(PHPCONFIG) --extension-dir)
 PHPCDIR=$(shell $(PHPCONFIG) --configure-options | sed -n 's|.*--with-config-file-scan-dir=\([^ ]*\).*|\1|p')
 DEFINES=-DHAVE_CONFIG_H
 
-EXTRA_DIST = libvirt.c libvirt_php.h
+EXTRA_DIST = libvirt-php.c libvirt-php.h
 
 all-am: build clean-temp
 
