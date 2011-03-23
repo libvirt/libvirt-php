@@ -236,9 +236,10 @@ static void php_libvirt_connection_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 {
 	php_libvirt_connection *conn = (php_libvirt_connection*)rsrc->ptr;
 	int rv;
+	
 	rv = virConnectClose(conn->conn);
 	if (rv!=0)
-		php_error_docref(NULL TSRMLS_CC, E_WARNING,"virConnectClose failed with %i on destructor",rv);
+		php_error_docref(NULL TSRMLS_CC, E_WARNING,"virConnectClose failed with %i on destructor: %s", rv, LIBVIRT_G (last_error));
 	conn->conn=NULL;
 }
 
@@ -247,8 +248,10 @@ static void php_libvirt_domain_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 {
 	php_libvirt_domain *domain = (php_libvirt_domain*)rsrc->ptr;
 	int rv;
+	
 	rv = virDomainFree (domain->domain);
-	if (rv != 0) { php_error_docref(NULL TSRMLS_CC, E_WARNING,"virDomainFree failed with %i on destructor",rv); }
+	if (rv != 0)
+		php_error_docref(NULL TSRMLS_CC, E_WARNING,"virDomainFree failed with %i on destructor: %s", rv, LIBVIRT_G (last_error));
 	domain->domain=NULL;
 }
 
@@ -256,11 +259,15 @@ static void php_libvirt_domain_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 static void php_libvirt_storagepool_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 {
 	php_libvirt_storagepool *pool = (php_libvirt_storagepool*)rsrc->ptr;
+	int rv;
+	
 	if (pool != NULL)
 	{
 		if (pool->pool != NULL)
 		{
-			virStoragePoolFree (pool->pool);
+			rv = virStoragePoolFree (pool->pool);
+			if (rv!=0)
+				php_error_docref(NULL TSRMLS_CC, E_WARNING,"virStoragePoolFree failed with %i on destructor: %s", rv, LIBVIRT_G (last_error));
 			pool->pool=NULL;
 		}
 		efree(pool);
@@ -271,11 +278,15 @@ static void php_libvirt_storagepool_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 static void php_libvirt_volume_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 {
 	php_libvirt_volume *volume = (php_libvirt_volume*)rsrc->ptr;
+	int rv;
+	
 	if (volume != NULL)
 	{
 		if (volume->volume != NULL)
 		{
-			virStorageVolFree (volume->volume);
+			rv = virStorageVolFree (volume->volume);
+			if (rv!=0)
+				php_error_docref(NULL TSRMLS_CC, E_WARNING,"virStorageVolFree failed with %i on destructor: %s", rv, LIBVIRT_G (last_error));
 			volume->volume=NULL;
 		}
 		efree(volume);
@@ -286,11 +297,15 @@ static void php_libvirt_volume_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 static void php_libvirt_network_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 {
 	php_libvirt_network *network = (php_libvirt_network*)rsrc->ptr;
+	int rv;
+	
 	if (network != NULL)
 	{
 		if (network->network != NULL)
 		{
-			virNetworkFree (network->network);
+			rv = virNetworkFree (network->network);
+			if (rv!=0)
+				php_error_docref(NULL TSRMLS_CC, E_WARNING,"virStorageVolFree failed with %i on destructor: %s", rv, LIBVIRT_G (last_error));
 			network->network=NULL;
 		}
 		efree(network);
@@ -301,11 +316,15 @@ static void php_libvirt_network_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 static void php_libvirt_nodedev_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 {
 	php_libvirt_nodedev *nodedev = (php_libvirt_nodedev*)rsrc->ptr;
+	int rv;
+	
 	if (nodedev != NULL)
 	{
 		if (nodedev->device != NULL)
 		{
-			virNodeDeviceFree (nodedev->device);
+			rv = virNodeDeviceFree (nodedev->device);
+			if (rv!=0)
+				php_error_docref(NULL TSRMLS_CC, E_WARNING,"virStorageVolFree failed with %i on destructor: %s", rv, LIBVIRT_G (last_error));
 			nodedev->device=NULL;
 		}
 		efree(nodedev);
@@ -316,11 +335,15 @@ static void php_libvirt_nodedev_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 static void php_libvirt_snapshot_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 {
 	php_libvirt_snapshot *snapshot = (php_libvirt_snapshot*)rsrc->ptr;
+	int rv;
+	
 	if (snapshot != NULL)
 	{
 		if (snapshot->snapshot != NULL)
 		{
-			virDomainSnapshotFree (snapshot->snapshot);
+			rv = virDomainSnapshotFree (snapshot->snapshot);
+			if (rv!=0)
+				php_error_docref(NULL TSRMLS_CC, E_WARNING,"virStorageVolFree failed with %i on destructor: %s", rv, LIBVIRT_G (last_error));
 			snapshot->snapshot=NULL;
 		}
 		efree(snapshot);
