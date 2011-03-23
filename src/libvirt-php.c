@@ -1,6 +1,20 @@
+/*
+* libvirt-php.c: Core of the PHP bindings library/module
+*
+* See COPYING for the license of this software
+*
+* Written by:
+*   Radek Hladik <r.hladik@cybersales.cz>
+*   Michal Novotny <minovotn@redhat.com>
+*   David King
+*   Jan-Paul van Burgsteden
+*   Lyre <liyong@skybility.com> (or <4179e1@gmail.com>)
+*   Daniel P. Berrange <berrange@redhat.com>
+*   Tiziano Mueller <dev-zero@gentoo.org>
+*/
 #include "php.h"
 #include "php_ini.h"
-#include "libvirt_php.h"
+#include "libvirt-php.h"
 #include "standard/info.h"
 #include <libvirt/libvirt.h>
 #include <libvirt/virterror.h>

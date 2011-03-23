@@ -8,7 +8,7 @@ EXTRA_DIST = libvirt.c libvirt_php.h
 all-am: build clean-temp
 
 build:
-	$(CC) -Wall -fpic -DCOMPILE_DL_LIBVIRT=1 $(PHPINC) -c -o $(PACKAGE).o libvirt.c $(LIBXML_CFLAGS) $(DEFINES)
+	$(CC) -Wall -fpic -DCOMPILE_DL_LIBVIRT=1 $(PHPINC) -c -o $(PACKAGE).o libvirt-php.c $(LIBXML_CFLAGS) $(DEFINES)
 	$(CC) -Wall -shared $(LIBS) -rdynamic -o $(PACKAGE).so $(PACKAGE).o -ldl -lvirt $(LIBXML_LIBS)
 	$(ECHO) "Extension compiled as $(PACKAGE).so"
 
