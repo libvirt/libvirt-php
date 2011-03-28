@@ -2704,7 +2704,7 @@ PHP_FUNCTION(libvirt_storagevolume_get_name)
 }
 
 /*
-	Function name:	libvirt_storagevolume_path
+	Function name:	libvirt_storagevolume_get_path
 	Since version:	0.4.1(-2)
 	Description:	Function is used to get the  storage volume path
 	Arguments:		@res [resource]: libvirt storagevolume resource
