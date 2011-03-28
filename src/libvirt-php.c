@@ -102,8 +102,10 @@ static function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_domain_snapshot_lookup_by_name, NULL)
 	/* Storagepool functions */
 	PHP_FE(libvirt_storagepool_lookup_by_name,NULL)
+	PHP_FE(libvirt_storagepool_lookup_by_volume,NULL)
 	PHP_FE(libvirt_storagepool_get_info,NULL)
 	PHP_FE(libvirt_storagevolume_lookup_by_name,NULL)
+	PHP_FE(libvirt_storagevolume_lookup_by_path,NULL)
 	PHP_FE(libvirt_storagevolume_get_name,NULL)
 	PHP_FE(libvirt_storagevolume_get_path,NULL)
 	PHP_FE(libvirt_storagevolume_get_info,NULL)
@@ -2591,6 +2593,36 @@ PHP_FUNCTION(libvirt_storagepool_lookup_by_name)
 	ZEND_REGISTER_RESOURCE(return_value, res_pool, le_libvirt_storagepool);
 }
 
+/* Storagepool functions */
+
+/*
+	Function name:	libvirt_storagepool_lookup_by_volume
+	Since version:	0.4.1(-1)
+	Description:	Function is used to lookup for storage pool by a volume
+	Arguments:		@res [volume]: volume resource of storage pool
+	Returns:		libvirt storagepool resource
+*/
+PHP_FUNCTION(libvirt_storagepool_lookup_by_volume)
+{
+	php_libvirt_volume *volume;
+	zval *zvolume;
+	virStoragePoolPtr pool=NULL;
+	php_libvirt_storagepool *res_pool;
+
+	GET_VOLUME_FROM_ARGS ("r", &zvolume);
+
+	pool = virStoragePoolLookupByVolume (volume->volume);
+	if (pool == NULL)
+	{
+		RETURN_FALSE;
+	}
+
+	res_pool = emalloc(sizeof(php_libvirt_storagepool));
+	res_pool->pool = pool;
+
+	ZEND_REGISTER_RESOURCE(return_value, res_pool, le_libvirt_storagepool);
+}
+
 /*
 	Function name:	libvirt_storagepool_list_volumes
 	Since version:	0.4.1(-1)
@@ -2676,6 +2708,38 @@ PHP_FUNCTION(libvirt_storagevolume_lookup_by_name)
 
 	volume=virStorageVolLookupByName (pool->pool,name);
 	if (volume==NULL) RETURN_FALSE;
+
+	res_volume = emalloc(sizeof(php_libvirt_volume));
+	res_volume->volume = volume;
+
+	ZEND_REGISTER_RESOURCE(return_value, res_volume, le_libvirt_volume);
+}
+
+/*
+	Function name:	libvirt_storagevolume_lookup_by_path
+	Since version:	0.4.1(-2)
+	Description:	Function is used to lookup for storage volume by it's path
+	Arguments:		@res [resource]: libvirt connection resource
+					@path [string]: path of the storage volume to look for
+	Returns:		libvirt storagevolume resource
+*/
+PHP_FUNCTION(libvirt_storagevolume_lookup_by_path)
+{
+	php_libvirt_connection *conn=NULL;
+	php_libvirt_volume *res_volume;
+	zval *zconn;
+	int name_len;
+	char *name=NULL;
+	virStorageVolPtr volume=NULL;
+
+	GET_CONNECTION_FROM_ARGS("rs",&zconn,&name,&name_len);
+	if ( (name == NULL) || (name_len<1)) RETURN_FALSE;
+
+	volume=virStorageVolLookupByPath (conn->conn,name);
+	if (volume==NULL)
+	{
+		RETURN_FALSE;
+	}
 
 	res_volume = emalloc(sizeof(php_libvirt_volume));
 	res_volume->volume = volume;
