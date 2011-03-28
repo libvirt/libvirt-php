@@ -109,6 +109,7 @@ static function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_storagevolume_get_info,NULL)
 	PHP_FE(libvirt_storagevolume_get_xml_desc,NULL)
 	PHP_FE(libvirt_storagevolume_create_xml,NULL)
+	PHP_FE(libvirt_storagevolume_create_xml_from,NULL)
 	PHP_FE(libvirt_storagepool_get_uuid_string, NULL)
 	PHP_FE(libvirt_storagepool_get_name, NULL)
 	PHP_FE(libvirt_storagepool_lookup_by_uuid_string, NULL)
@@ -2796,6 +2797,47 @@ PHP_FUNCTION(libvirt_storagevolume_create_xml)
 
 	volume=virStorageVolCreateXML(pool->pool,xml,0);
 	if (volume==NULL) RETURN_FALSE;
+
+	res_volume= emalloc(sizeof(php_libvirt_volume));
+	res_volume->volume = volume;
+
+	ZEND_REGISTER_RESOURCE(return_value, res_volume, le_libvirt_volume);
+}
+
+/*
+	Function name:	libvirt_storagevolume_create_xml_from
+	Since version:	0.4.1(-2)
+	Description:	Function is used to clone the new storage volume into pool from the orignial volume
+	Arguments:		@pool [resource]: libvirt storagepool resource
+					@xml [string]: XML string to create the storage volume in the storage pool
+					@original_volume [resource]: libvirt storagevolume resource
+	Returns:		libvirt storagevolume resource
+*/
+PHP_FUNCTION(libvirt_storagevolume_create_xml_from)
+{
+	php_libvirt_volume *res_volume=NULL;
+	php_libvirt_storagepool *pool=NULL;
+	zval *zpool;
+
+	php_libvirt_volume *pl_volume=NULL;
+	zval *zvolume;
+
+	virStorageVolPtr volume=NULL;
+	char *xml;
+	int xml_len;
+
+	if (zend_parse_parameters (ZEND_NUM_ARGS() TSRMLS_CC, "rsr", &zpool, &xml, &xml_len, &zvolume) == FAILURE)
+	{
+		RETURN_FALSE;
+	}
+
+	ZEND_FETCH_RESOURCE (pool, php_libvirt_storagepool*, &zpool, -1, PHP_LIBVIRT_STORAGEPOOL_RES_NAME, le_libvirt_storagepool);
+	if ((pool==NULL)||(pool->pool==NULL))RETURN_FALSE;
+	ZEND_FETCH_RESOURCE (pl_volume, php_libvirt_volume*, &zvolume, -1, PHP_LIBVIRT_VOLUME_RES_NAME, le_libvirt_volume);
+	if ((pl_volume==NULL)||(pl_volume->volume==NULL))RETURN_FALSE;
+
+	volume=virStorageVolCreateXMLFrom(pool->pool,xml, pl_volume->volume, 0);
+	if (volume==NULL)RETURN_FALSE;
 
 	res_volume= emalloc(sizeof(php_libvirt_volume));
 	res_volume->volume = volume;

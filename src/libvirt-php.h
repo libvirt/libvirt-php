@@ -173,6 +173,7 @@ PHP_FUNCTION(libvirt_storagevolume_get_path);
 PHP_FUNCTION(libvirt_storagevolume_get_info);
 PHP_FUNCTION(libvirt_storagevolume_get_xml_desc);
 PHP_FUNCTION(libvirt_storagevolume_create_xml);
+PHP_FUNCTION(libvirt_storagevolume_create_xml_from);
 PHP_FUNCTION(libvirt_storagepool_get_uuid_string);
 PHP_FUNCTION(libvirt_storagepool_get_name);
 PHP_FUNCTION(libvirt_storagepool_lookup_by_uuid_string);
