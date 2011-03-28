@@ -3058,7 +3058,7 @@ PHP_FUNCTION(libvirt_storagepool_refresh)
 	zval *zpool;
 	unsigned long flags = 0;
 
-	GET_STORAGEPOOL_FROM_ARGS ("rl", &zpool, &flags);
+	GET_STORAGEPOOL_FROM_ARGS ("r|l", &zpool, &flags);
 
 	if (virStoragePoolRefresh (pool->pool, flags) < 0)
 	{
