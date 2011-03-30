@@ -1646,25 +1646,38 @@ PHP_FUNCTION(libvirt_domain_get_id)
 
 /*
 	Function name:	libvirt_domain_get_xml_desc
-	Since version:	0.4.1(-1)
+	Since version:	0.4.1(-1), changed 0.4.2
 	Description:	Function is used to get the domain's XML description
 	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
-	Returns:	domain XML description string
+			@xpath [string]: optional xPath expression string to get just this entry, can be NULL
+	Returns:	domain XML description string or result of xPath expression
 */
 PHP_FUNCTION(libvirt_domain_get_xml_desc)
 {
 	php_libvirt_domain *domain=NULL;
 	zval *zdomain;
+	char *tmp = NULL;
 	char *xml;
 	char *xml_out;
+	char *xpath = NULL;
+	int xpath_len;
 	long flags=0;
+	int retval = -1;
 
-	GET_DOMAIN_FROM_ARGS("r|l",&zdomain,&flags);
+	GET_DOMAIN_FROM_ARGS("rs|l",&zdomain,&xpath,&xpath_len,&flags);
 
 	xml=virDomainGetXMLDesc(domain->domain,flags);
-	if (xml==NULL) RETURN_FALSE;
+	if (xml==NULL) {
+		set_error_if_unset("Cannot get the XML description");
+		RETURN_FALSE;
+	}
 
-	RECREATE_STRING_WITH_E(xml_out,xml);
+ 	tmp = get_string_from_xpath(xml, xpath, NULL, &retval);
+	if ((tmp == NULL) || (retval < 0)) {
+		RECREATE_STRING_WITH_E (xml_out, xml);
+	} else {
+		RECREATE_STRING_WITH_E (xml_out, tmp);
+	}
 
 	RETURN_STRING(xml_out,0);
 }
@@ -2872,25 +2885,38 @@ PHP_FUNCTION(libvirt_storagevolume_get_info)
 
 /*
 	Function name:	libvirt_storagevolume_get_xml_desc
-	Since version:	0.4.1(-1)
+	Since version:	0.4.1(-1), changed 0.4.2
 	Description:	Function is used to get the storage volume XML description
 	Arguments:	@res [resource]: libvirt storagevolume resource
-	Returns:	storagevolume XML description
+			@xpath [string]: optional xPath expression string to get just this entry, can be NULL
+	Returns:	storagevolume XML description or result of xPath expression
 */
 PHP_FUNCTION(libvirt_storagevolume_get_xml_desc)
 {
 	php_libvirt_volume *volume=NULL;
 	zval *zvolume;
+	char *tmp = NULL;
 	char *xml;
 	char *xml_out;
+	char *xpath = NULL;
+	int xpath_len;
 	long flags=0;
+	int retval = -1;
 
-	GET_VOLUME_FROM_ARGS("r|l",&zvolume,&flags);
+	GET_VOLUME_FROM_ARGS("rs|l",&zvolume,&xpath,&xpath_len,&flags);
 
 	xml=virStorageVolGetXMLDesc(volume->volume,flags);
-	if (xml==NULL) RETURN_FALSE;
+	if (xml==NULL) {
+		set_error_if_unset("Cannot get the XML description");
+		RETURN_FALSE;
+	}
 
-	RECREATE_STRING_WITH_E(xml_out,xml);
+	tmp = get_string_from_xpath(xml, xpath, NULL, &retval);
+	if ((tmp == NULL) || (retval < 0)) {
+		RECREATE_STRING_WITH_E (xml_out, xml);
+	} else {
+		RECREATE_STRING_WITH_E(xml_out, tmp);
+	}
 
 	RETURN_STRING(xml_out,0);
 }
@@ -3050,10 +3076,11 @@ PHP_FUNCTION(libvirt_storagepool_lookup_by_uuid_string)
 
 /*
 	Function name:	libvirt_storagepool_get_xml_desc
-	Since version:	0.4.1(-1)
+	Since version:	0.4.1(-1), changed 0.4.2
 	Description:	Function is used to get the XML description for the storage pool identified by res
 	Arguments:	@res [resource]: libvirt storagepool resource
-	Returns:	XML description
+			@xpath [string]: optional xPath expression string to get just this entry, can be NULL
+	Returns:	storagepool XML description string or result of xPath expression
 */
 PHP_FUNCTION(libvirt_storagepool_get_xml_desc)
 {
@@ -3061,18 +3088,29 @@ PHP_FUNCTION(libvirt_storagepool_get_xml_desc)
 	zval *zpool;
 	char *xml;
 	char *xml_out;
+	char *xpath = NULL;
+	char *tmp = NULL;
 	long flags = 0;
+	int xpath_len;
+	int retval = -1;
 
-	GET_STORAGEPOOL_FROM_ARGS("r|l", &zpool, &flags);
+	GET_STORAGEPOOL_FROM_ARGS("rs|l", &zpool, &xpath, &xpath_len, &flags);
 
 	xml = virStoragePoolGetXMLDesc (pool->pool, flags);
 	if (xml == NULL)
 	{
+		set_error_if_unset("Cannot get the XML description");
 		RETURN_FALSE;
 	}
 
-	RECREATE_STRING_WITH_E (xml_out, xml);
-	RETURN_STRING (xml_out, 1);
+	tmp = get_string_from_xpath(xml, xpath, NULL, &retval);
+	if ((tmp == NULL) || (retval < 0)) {
+		RECREATE_STRING_WITH_E (xml_out, xml);
+	} else {
+		RECREATE_STRING_WITH_E (xml_out, tmp);
+	}
+
+	RETURN_STRING (xml_out, 0);
 }
 
 /*
@@ -3830,18 +3868,24 @@ PHP_FUNCTION(libvirt_nodedev_capabilities)
 
 /*
 	Function name:	libvirt_nodedev_get_xml_desc
-	Since version:	0.4.1(-1)
+	Since version:	0.4.1(-1), changed 0.4.2
 	Description:	Function is used to get the node device's XML description
 	Arguments:	@res [resource]: libvirt nodedev resource
-	Returns:	nodedev XML description
+			@xpath [string]: optional xPath expression string to get just this entry, can be NULL
+	Returns:	nodedev XML description string or result of xPath expression
 */
 PHP_FUNCTION(libvirt_nodedev_get_xml_desc)
 {
 	php_libvirt_nodedev *nodedev=NULL;
 	zval *znodedev;
+	char *tmp = NULL;
 	char *xml = NULL;
+	char *xml_out = NULL;
+	char *xpath = NULL;
+	int xpath_len;
+	int retval = -1;
 
-	GET_NODEDEV_FROM_ARGS("r",&znodedev);
+	GET_NODEDEV_FROM_ARGS("r|s",&znodedev,&xpath,&xpath_len);
 
 	xml=virNodeDeviceGetXMLDesc(nodedev->device, 0);
 	if ( xml == NULL ) {
@@ -3849,7 +3893,14 @@ PHP_FUNCTION(libvirt_nodedev_get_xml_desc)
 		RETURN_FALSE;
 	}
 
-	RETURN_STRING(xml, 1);
+	tmp = get_string_from_xpath(xml, xpath, NULL, &retval);
+	if ((tmp == NULL) || (retval < 0)) {
+		RECREATE_STRING_WITH_E (xml_out, xml);
+	} else {
+		RECREATE_STRING_WITH_E (xml_out, tmp);
+	}
+
+	RETURN_STRING(xml_out, 0);
 }
 
 /*
@@ -4209,15 +4260,21 @@ PHP_FUNCTION(libvirt_network_set_active)
 	Since version:	0.4.1(-1)
 	Description:	Function is used to get the XML description for the network
 	Arguments:	@res [resource]: libvirt network resource
-	Returns:	network XML string
+			@xpath [string]: optional xPath expression string to get just this entry, can be NULL
+	Returns:	network XML string or result of xPath expression
 */
 PHP_FUNCTION(libvirt_network_get_xml_desc)
 {
 	php_libvirt_network *network;
 	zval *znetwork;
 	char *xml = NULL;
+	char *xml_out = NULL;
+	char *xpath = NULL;
+	char *tmp;
+	int xpath_len;
+	int retval = -1;
 
-	GET_NETWORK_FROM_ARGS("r",&znetwork);
+	GET_NETWORK_FROM_ARGS("r|s",&znetwork,&xpath,&xpath_len);
 
 	xml=virNetworkGetXMLDesc(network->network, 0);
 
@@ -4226,7 +4283,14 @@ PHP_FUNCTION(libvirt_network_get_xml_desc)
 		RETURN_FALSE;
 	}
 
-	RETURN_STRING(xml, 1);
+	tmp = get_string_from_xpath(xml, xpath, NULL, &retval);
+	if ((tmp == NULL) || (retval < 0)) {
+		RECREATE_STRING_WITH_E (xml_out, xml);
+	} else {
+		RECREATE_STRING_WITH_E (xml_out, tmp);
+	}
+
+	RETURN_STRING(xml_out, 0);
 }
 
 /*
