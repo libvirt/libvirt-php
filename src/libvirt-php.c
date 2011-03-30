@@ -4050,7 +4050,7 @@ PHP_FUNCTION(libvirt_network_define_xml)
 	php_libvirt_network *res_net = NULL;
 	virNetwork *net;
 	zval *zconn;
-	char *xml;
+	char *xml = NULL;
 	int xml_len;
 
 	GET_CONNECTION_FROM_ARGS("rs",&zconn,&xml,&xml_len);
@@ -4081,7 +4081,7 @@ PHP_FUNCTION(libvirt_network_undefine)
 
 	GET_NETWORK_FROM_ARGS("r",&znetwork);
 
-	if (virNetworkUndefine(network->network) == 0)
+	if (virNetworkUndefine(network->network) != 0)
 		RETURN_FALSE;
 
 	RETURN_TRUE;
