@@ -191,6 +191,8 @@ PHP_FUNCTION(libvirt_storagepool_refresh);
 PHP_FUNCTION(libvirt_storagepool_set_autostart);
 PHP_FUNCTION(libvirt_storagepool_get_autostart);
 /* Network functions */
+PHP_FUNCTION(libvirt_network_define_xml);
+PHP_FUNCTION(libvirt_network_undefine);
 PHP_FUNCTION(libvirt_network_get);
 PHP_FUNCTION(libvirt_network_get_xml_desc);
 PHP_FUNCTION(libvirt_network_get_bridge);

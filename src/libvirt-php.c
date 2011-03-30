@@ -127,6 +127,8 @@ static function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_storagepool_set_autostart, NULL)
 	PHP_FE(libvirt_storagepool_get_autostart, NULL)
 	/* Network functions */
+	PHP_FE(libvirt_network_define_xml, NULL)
+	PHP_FE(libvirt_network_undefine, NULL)
 	PHP_FE(libvirt_network_get, NULL)
 	PHP_FE(libvirt_network_get_xml_desc, NULL)
 	PHP_FE(libvirt_network_get_bridge, NULL)
@@ -4036,6 +4038,57 @@ PHP_FUNCTION(libvirt_nodedev_get_information)
 /* Network functions */
 
 /*
+	Function name:	libvirt_network_define_xml
+	Since version:	0.4.2
+	Description:	Function is used to define a new virtual network based on the XML description
+	Arguments:	@res [resource]: libvirt connection resource
+			@xml [string]: XML string definition of network to be defined
+	Returns:	libvirt network resource of newly defined network
+*/
+PHP_FUNCTION(libvirt_network_define_xml)
+{
+	php_libvirt_connection *conn = NULL;
+	php_libvirt_network *res_net = NULL;
+	virNetwork *net;
+	zval *zconn;
+	char *xml;
+	int xml_len;
+
+	GET_CONNECTION_FROM_ARGS("rs",&zconn,&xml,&xml_len);
+
+	if ((net = virNetworkDefineXML(conn->conn, xml)) == NULL) {
+		set_error_if_unset("Cannot define a new network");
+		RETURN_FALSE;
+	}
+
+	res_net = emalloc(sizeof(php_libvirt_network));
+	res_net->network = net;
+	res_net->conn = conn;
+
+	ZEND_REGISTER_RESOURCE(return_value, res_net, le_libvirt_network);
+}
+
+/*
+	Function name:	libvirt_network_undefine
+	Since version:	0.4.2
+	Description:	Function is used to undefine already defined network
+	Arguments:	@res [resource]: libvirt network resource
+	Returns:	TRUE for success, FALSE on error
+*/
+PHP_FUNCTION(libvirt_network_undefine)
+{
+	php_libvirt_network *network = NULL;
+	zval *znetwork;
+
+	GET_NETWORK_FROM_ARGS("r",&znetwork);
+
+	if (virNetworkUndefine(network->network) == 0)
+		RETURN_FALSE;
+
+	RETURN_TRUE;
+}
+
+/*
 	Function name:	libvirt_network_get
 	Since version:	0.4.1(-1)
 	Description:	Function is used to get the network resource from name
@@ -4055,7 +4108,7 @@ PHP_FUNCTION(libvirt_network_get)
 	GET_CONNECTION_FROM_ARGS("rs",&zconn,&name,&name_len);
 
 	if ((net = virNetworkLookupByName(conn->conn, name)) == NULL) {
-		set_error("Cannot get find requested network" TSRMLS_CC);
+		set_error_if_unset("Cannot get find requested network" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
@@ -4084,7 +4137,7 @@ PHP_FUNCTION(libvirt_network_get_bridge)
 	name = virNetworkGetBridgeName(network->network);
 
 	if (name == NULL) {
-		set_error("Cannot get network bridge name" TSRMLS_CC);
+		set_error_if_unset("Cannot get network bridge name" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
@@ -4109,7 +4162,7 @@ PHP_FUNCTION(libvirt_network_get_active)
 	res = virNetworkIsActive(network->network);
 
 	if (res == -1) {
-		set_error("Error getting virtual network state" TSRMLS_CC);
+		set_error_if_unset("Error getting virtual network state" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
@@ -4138,7 +4191,7 @@ PHP_FUNCTION(libvirt_network_get_information)
 	xml=virNetworkGetXMLDesc(network->network, 0);
 
 	if (xml==NULL) {
-		set_error("Cannot get network XML" TSRMLS_CC);
+		set_error_if_unset("Cannot get network XML" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
@@ -4280,7 +4333,7 @@ PHP_FUNCTION(libvirt_network_get_xml_desc)
 	xml=virNetworkGetXMLDesc(network->network, 0);
 
 	if (xml==NULL) {
-		set_error("Cannot get network XML" TSRMLS_CC);
+		set_error_if_unset("Cannot get network XML" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
