@@ -112,6 +112,7 @@ static function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_storagevolume_get_xml_desc,NULL)
 	PHP_FE(libvirt_storagevolume_create_xml,NULL)
 	PHP_FE(libvirt_storagevolume_create_xml_from,NULL)
+	PHP_FE(libvirt_storagevolume_delete,NULL)
 	PHP_FE(libvirt_storagepool_get_uuid_string, NULL)
 	PHP_FE(libvirt_storagepool_get_name, NULL)
 	PHP_FE(libvirt_storagepool_lookup_by_uuid_string, NULL)
