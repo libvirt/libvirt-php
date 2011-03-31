@@ -112,6 +112,7 @@ static function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_storagevolume_get_xml_desc,NULL)
 	PHP_FE(libvirt_storagevolume_create_xml,NULL)
 	PHP_FE(libvirt_storagevolume_create_xml_from,NULL)
+	PHP_FE(libvirt_storagevolume_delete,NULL)
 	PHP_FE(libvirt_storagepool_get_uuid_string, NULL)
 	PHP_FE(libvirt_storagepool_get_name, NULL)
 	PHP_FE(libvirt_storagepool_lookup_by_uuid_string, NULL)
@@ -2991,6 +2992,22 @@ PHP_FUNCTION(libvirt_storagevolume_create_xml_from)
 	res_volume->volume = volume;
 
 	ZEND_REGISTER_RESOURCE(return_value, res_volume, le_libvirt_volume);
+}
+
+PHP_FUNCTION(libvirt_storagevolume_delete)
+{
+	php_libvirt_volume *volume=NULL;
+	zval *zvolume;
+	int flags;
+
+	GET_VOLUME_FROM_ARGS("r|l",&zvolume,&flags);
+
+        if (virStorageVolDelete(volume->volume,flags) != 0) {
+		set_error_if_unset("Cannot delete storage volume");
+		RETURN_FALSE;
+	}
+
+	RETURN_TRUE;
 }
 
 /*
