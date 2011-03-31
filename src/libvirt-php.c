@@ -3484,7 +3484,7 @@ PHP_FUNCTION(libvirt_list_domains)
 	int *ids;
 	char **names;
 	const char *name;
-	int i;
+	int i, rv;
 	virDomainPtr domain=NULL;
 
 	GET_CONNECTION_FROM_ARGS("r",&zconn);
@@ -3504,6 +3504,11 @@ PHP_FUNCTION(libvirt_list_domains)
 			if (name==NULL) RETURN_FALSE;
 			add_next_index_string(return_value, name, 1);
 		}
+		rv = virDomainFree (domain);
+		if (rv != 0)
+			php_error_docref(NULL TSRMLS_CC, E_WARNING,"virDomainFree failed with %i on list_domain: %s",
+					rv, LIBVIRT_G (last_error));
+		domain = NULL;
 	}
   	efree(ids);
 
