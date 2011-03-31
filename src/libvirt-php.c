@@ -2994,11 +2994,19 @@ PHP_FUNCTION(libvirt_storagevolume_create_xml_from)
 	ZEND_REGISTER_RESOURCE(return_value, res_volume, le_libvirt_volume);
 }
 
+/*
+	Function name:	libvirt_storagevolume_delete
+	Since version:	0.4.2
+	Description:	Function is used to delete to volume identified by it's resource
+	Arguments:	@res [resource]: libvirt storagevolume resource
+			@flags [int]: optional flags for the storage volume deletion for virStorageVolDelete()
+	Returns:	TRUE for success, FALSE on error
+*/
 PHP_FUNCTION(libvirt_storagevolume_delete)
 {
 	php_libvirt_volume *volume=NULL;
 	zval *zvolume;
-	int flags;
+	int flags = 0;
 
 	GET_VOLUME_FROM_ARGS("r|l",&zvolume,&flags);
 
