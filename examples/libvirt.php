@@ -8,13 +8,16 @@
 				$this->connect($uri);
 		}
 
+		function _set_last_error()
+		{
+			$this->last_error = libvirt_get_last_error();
+			return false;
+		}
+
 		function connect($uri = 'null') {
 			$this->conn=libvirt_connect($uri, false);
 			if ($this->conn==false)
-			{
-				$this->last_error = libvirt_get_last_error();
-				return false;
-			}
+				return $this->_set_last_error();
 		}
 
 		function get_connection() {
@@ -22,14 +25,14 @@
 		}
 
 		function get_hostname() {
-			return libvirt_get_hostname($this->conn);
+			return libvirt_connect_get_hostname($this->conn);
 		}
 
 		function get_domain_object($nameRes) {
 			if (!is_resource($nameRes)) {
 				$dom=libvirt_domain_lookup_by_name($this->conn, $nameRes);
 				if (!$dom)
-					return false;
+					return $this->_set_last_error();
 			}
 			else
 				$dom=$nameRes;
@@ -43,7 +46,11 @@
 			if ($inactive)
 				$flags = VIR_DOMAIN_XML_INACTIVE;
 
-			return libvirt_domain_xml_xpath($dom, $xpath, $flags); 
+			$tmp = libvirt_domain_xml_xpath($dom, $xpath, $flags); 
+			if (!$tmp)
+				return $this->_set_last_error();
+
+			return $tmp;
 		}
 
 		function get_disk_stats($domain) {
@@ -58,7 +65,7 @@
 				if ($tmp)
 					$ret[] = $tmp;
 				else
-					echo libvirt_get_last_error().'<br />';
+					$this->_set_last_error();
 			}
 
 			return $ret;
@@ -69,7 +76,7 @@
 
                         $macs =  $this->get_xpath($dom, '//domain/devices/interface[@type="network"]/mac/@address', false);
 			if (!$macs)
-				return false;
+				return $this->_set_last_error();
 
 			$ret = array();
 			for ($i = 0; $i < $macs['num']; $i++) {
@@ -77,7 +84,7 @@
 				if ($tmp)
 					$ret[] = $tmp;
 				else
-					echo libvirt_get_last_error().'<br />';
+					$this->_set_last_error();
 			}
 
                         return $ret;
@@ -88,7 +95,7 @@
 
                         $tmp = $this->get_xpath($dom, '//domain/@type', false);
                         if ($tmp['num'] == 0)
-                            return false;
+                            return $this->_set_last_error();
 
                         $ret = $tmp[0];
                         unset($tmp);
@@ -101,7 +108,7 @@
 
                         $tmp =  $this->get_xpath($dom, '//domain/devices/emulator', false);
                         if ($tmp['num'] == 0)
-                            return false;
+                            return $this->_set_last_error();
 
                         $ret = $tmp[0];
                         unset($tmp);
@@ -114,7 +121,7 @@
 
 			$nics =  $this->get_xpath($dom, '//domain/devices/interface[@type="network"]', false);
 			if (!is_array($nics))
-				return false;
+				return $this->_set_last_error();
 
 			return $nics['num'];
 		}
@@ -178,36 +185,214 @@
 		}
 
 		function get_uri() {
-			return libvirt_get_uri($this->conn);
+			$tmp = libvirt_connect_get_uri($this->conn);
+			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 
 		function get_domain_count() {
-			$ac = libvirt_get_active_domain_count($this->conn);
-			$ic = libvirt_get_inactive_domain_count($this->conn);
-			$tc = libvirt_get_domain_count($this->conn);
+			$tmp = libvirt_domain_get_counts($this->conn);
+			return ($tmp) ? $tmp : $this->_set_last_error();
+		}
 
-			return array(
-					'active'   => $ac,
-					'inactive' => $ic,
-					'total'    => $tc
-				    );
+		function get_storagepools() {
+			$tmp = libvirt_list_storagepools($this->conn);
+			return ($tmp) ? $tmp : $this->_set_last_error();
+		}
+
+		function get_storagepool_res($res) {
+			if ($res == false)
+				return false;
+			if (is_resource($res))
+				return $res;
+
+			$tmp = libvirt_storagepool_lookup_by_name($this->conn, $res);
+			return ($tmp) ? $tmp : $this->_set_last_error();
+		}
+
+		function get_storagepool_info($name) {
+			if (!($res = $this->get_storagepool_res($name)))
+				return false;
+
+			$path = libvirt_storagepool_get_xml_desc($res, '/pool/target/path');
+			if (!$path)
+				return $this->_set_last_error();
+			$perms = libvirt_storagepool_get_xml_desc($res, '/pool/target/permissions/mode');
+			if (!$perms)
+				return $this->_set_last_error();
+			$otmp1 = libvirt_storagepool_get_xml_desc($res, '/pool/target/permissions/owner');
+			if (!is_string($otmp1))
+				return $this->_set_last_error();
+			$otmp2 = libvirt_storagepool_get_xml_desc($res, '/pool/target/permissions/group');
+			if (!is_string($otmp2))
+				return $this->_set_last_error();
+			$tmp = libvirt_storagepool_get_info($res);
+			$tmp['volume_count'] = sizeof( libvirt_storagepool_list_volumes($res) );
+			$tmp['active'] = libvirt_storagepool_is_active($res);
+			$tmp['path'] = $path;
+			$tmp['permissions'] = $perms;
+			$tmp['id_user'] = $otmp1;
+			$tmp['id_group'] = $otmp2;
+
+			return $tmp;
+		}
+
+		function storagepool_get_volume_information($pool, $name=false) {
+			if (!is_resource($pool))
+				$pool = $this->get_storagepool_res($pool);
+			if (!$pool)
+				return false;
+
+			$out = array();
+			$tmp = libvirt_storagepool_list_volumes($pool);
+			for ($i = 0; $i < sizeof($tmp); $i++) {
+				if (($tmp[$i] == $name) || ($name == false)) {
+					$r = libvirt_storagevolume_lookup_by_name($pool, $tmp[$i]);
+					$out[$tmp[$i]] = libvirt_storagevolume_get_info($r);
+					$out[$tmp[$i]]['path'] = libvirt_storagevolume_get_path($r);
+					unset($r);
+				}
+			}
+
+			return $out;
+		}
+
+		function storagevolume_delete($path) {
+			$vol = libvirt_storagevolume_lookup_by_path($this->conn, $path);
+			if (!libvirt_storagevolume_delete($vol))
+				return $this->_set_last_error();
+
+			return true;
+		}
+
+		function translate_volume_type($type) {
+			if ($type == 1)
+				return 'Block device';
+
+			return 'File image';
+		}
+
+		function translate_perms($mode) {
+			$mode = (string)((int)$mode);
+
+			$tmp = '---------';
+
+			for ($i = 0; $i < 3; $i++) {
+				$bits = (int)$mode[$i];
+				if ($bits & 4)
+					$tmp[ ($i * 3) ] = 'r';
+				if ($bits & 2)
+					$tmp[ ($i * 3) + 1 ] = 'w';
+				if ($bits & 1)
+					$tmp[ ($i * 3) + 2 ] = 'x';
+			}
+			
+
+			return $tmp;
+		}
+
+		function parse_size($size) {
+			$unit = $size[ strlen($size) - 1 ];
+
+			$size = (int)$size;
+			switch (strtoupper($unit)) {
+				case 'T': $size *= 1099511627776;
+					  break;
+				case 'G': $size *= 1073741824;
+					  break;
+				case 'M': $size *= 1048576;
+					  break;
+				case 'K': $size *= 1024;
+					  break;
+			}
+
+			return $size;
+		}
+
+		function storagevolume_create($pool, $name, $capacity, $allocation) {
+			$pool = $this->get_storagepool_res($pool);
+
+			$capacity = $this->parse_size($capacity);
+			$allocation = $this->parse_size($allocation);
+
+			$xml = "<volume>\n".
+                               "  <name>$name</name>\n".
+                               "  <capacity>$capacity</capacity>\n".
+                               "  <allocation>$allocation</allocation>\n".
+                               "</volume>";
+
+			$tmp = libvirt_storagevolume_create_xml($pool, $xml);
+			return ($tmp) ? $tmp : $this->_set_last_error();
+		}
+
+		function get_connect_information() {
+			$tmp = libvirt_connect_get_information($this->conn);
+			return ($tmp) ? $tmp : $this->_set_last_error();
+		}
+
+		function domain_change_xml($domain, $xml) {
+			$dom = $this->get_domain_object($domain);
+
+			if (!($old_xml = libvirt_domain_get_xml_desc($dom, NULL)))
+				return $this->_set_last_error();
+			if (!libvirt_domain_undefine($dom))
+				return $this->_set_last_error();
+			if (!libvirt_domain_define_xml($this->conn, $xml)) {
+				$this->last_error = libvirt_get_last_error();
+				libvirt_domain_define_xml($this->conn, $old_xml);
+				return false;
+			}
+
+			return true;
+		}
+
+		function network_change_xml($network, $xml) {
+			$net = $this->get_network_res($network);
+
+			if (!($old_xml = libvirt_network_get_xml_desc($net, NULL))) {
+				return $this->_set_last_error();
+			}
+			if (!libvirt_network_undefine($net)) {
+				return $this->_set_last_error();
+			}
+			if (!libvirt_network_define_xml($this->conn, $xml)) {
+				$this->last_error = libvirt_get_last_error();
+				libvirt_network_define_xml($this->conn, $old_xml);
+				return false;
+			}
+
+			return true;
+		}
+
+		function translate_storagepool_state($state) {
+			switch ($state) {
+				case 0: return 'Not running';
+					break;
+				case 1: return 'Building pool';
+					break;
+				case 2: return 'Running';
+					break;
+				case 3: return 'Running degraded';
+					break;
+				case 4: return 'Running but inaccessible';
+					break;
+			}
+
+			return 'Unknown';
 		}
 
 		function get_domains() {
-			$domNames = array();
+			$tmp = libvirt_list_domains($this->conn);
+			return ($tmp) ? $tmp : $this->_set_last_error();
+		}
 
-			$doms = libvirt_list_domains($this->conn);
-			foreach ($doms as $dom) {
-				$tmp = libvirt_domain_get_uuid_string($dom);
-				$domNames[$tmp] = libvirt_domain_get_name($dom);
-			}
-
-			ksort($domNames);
-			return $domNames;
+		function get_domain_by_name($name) {
+			$tmp = libvirt_domain_lookup_by_name($this->conn, $name);
+			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 
 		function get_networks($type = VIR_NETWORKS_ALL) {
-			return libvirt_list_networks($this->conn, $type);
+			$tmp = libvirt_list_networks($this->conn, $type);
+			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 
 		function get_network_res($network) {
@@ -216,7 +401,8 @@
 			if (is_resource($network))
 				return $network;
 
-			return libvirt_network_get($this->conn, $network);
+			$tmp = libvirt_network_get($this->conn, $network);
+			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 
 		function get_network_bridge($network) {
@@ -224,7 +410,8 @@
 			if ($res == false)
 				return false;
 
-			return libvirt_network_get_bridge($res);
+			$tmp = libvirt_network_get_bridge($res);
+			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 
 		function get_network_active($network) {
@@ -232,7 +419,8 @@
 			if ($res == false)
 				return false;
 
-			return libvirt_network_get_active($res);
+			$tmp = libvirt_network_get_active($res);
+			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 
 		function set_network_active($network, $active = true) {
@@ -240,10 +428,8 @@
 			if ($res == false)
 				return false;
 
-			if (!libvirt_network_set_active($res, $active ? 1 : 0)) {
-				$this->last_error = libvirt_get_last_error($this->conn);
-				return false;
-			}
+			if (!libvirt_network_set_active($res, $active ? 1 : 0))
+				return $this->_set_last_error();
 
 			return true;
 		}
@@ -254,6 +440,8 @@
 				return false;
 
 			$tmp = libvirt_network_get_information($res);
+			if (!$tmp)
+				return $this->_set_last_error();
 			$tmp['active'] = $this->get_network_active($res);
 			return $tmp;
 		}
@@ -263,11 +451,13 @@
 			if ($res == false)
 				return false;
 
-			return libvirt_network_get_xml($res);
+			$tmp = libvirt_network_get_xml_desc($res, NULL);
+			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 
 		function get_node_devices($dev = false) {
-			return ($dev == false) ? libvirt_list_nodedevs($this->conn) : libvirt_list_nodedevs($this->conn, $dev);
+			$tmp = ($dev == false) ? libvirt_list_nodedevs($this->conn) : libvirt_list_nodedevs($this->conn, $dev);
+			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 
 		function get_node_device_res($res) {
@@ -276,13 +466,15 @@
 			if (is_resource($res))
 				return $res;
 
-			return libvirt_nodedev_get($this->conn, $res);
+			$tmp = libvirt_nodedev_get($this->conn, $res);
+			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 
 		function get_node_device_caps($dev) {
 			$dev = $this->get_node_device_res($dev);
 
-			return libvirt_nodedev_capabilities($dev);
+			$tmp = libvirt_nodedev_capabilities($dev);
+			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 
 		function get_node_device_cap_options() {
@@ -303,13 +495,15 @@
 		function get_node_device_xml($dev) {
 			$dev = $this->get_node_device_res($dev);
 
-			return libvirt_nodedev_get_xml($dev);
+			$tmp = libvirt_nodedev_get_xml_desc($dev);
+			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 
 		function get_node_device_information($dev) {
 			$dev = $this->get_node_device_res($dev);
 
-			return libvirt_nodedev_get_information($dev);			
+			$tmp = libvirt_nodedev_get_information($dev);			
+			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 
 		function get_domain_info($name = false) {
@@ -343,7 +537,17 @@
 			if (!$dom)
 				return false;
 
-			return libvirt_domain_get_xml_desc($dom, $get_inactive ? VIR_DOMAIN_XML_INACTIVE : 0);
+			$tmp = libvirt_domain_get_xml_desc($dom, $get_inactive ? VIR_DOMAIN_XML_INACTIVE : 0);
+			return ($tmp) ? $tmp : $this->_set_last_error();
+		}
+
+		function network_get_xml($network) {
+			$net = $this->get_network_res($network);
+			if (!$net)
+				return false;
+
+			$tmp = libvirt_network_get_xml_desc($net, NULL);
+			return ($tmp) ? $tmp : $this->_set_last_error();;
 		}
 
 		function domain_get_id($domain) {
@@ -351,7 +555,8 @@
 			if ((!$dom) || (!$this->domain_is_running($dom)))
 				return false;
 
-			return libvirt_domain_get_id($dom);
+			$tmp = libvirt_domain_get_id($dom);
+			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 
 		function domain_get_interface_stats($nameRes, $iface) {
@@ -359,7 +564,8 @@
 			if (!$dom)
 				return false;
 
-			return libvirt_domain_interface_stats($dom, $iface);
+			$tmp = libvirt_domain_interface_stats($dom, $iface);
+			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 
 		function domain_get_memory_stats($domain) {
@@ -367,7 +573,8 @@
 			if (!$dom)
 				return false;
 
-			return libvirt_domain_memory_stats($dom);
+			$tmp = libvirt_domain_memory_stats($dom);
+			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 
 		function domain_start($nameOrXml) {
@@ -384,7 +591,8 @@
 		}
 
 		function domain_define($xml) {
-			return libvirt_domain_define_xml($this->conn, $xml);
+			$tmp = libvirt_domain_define_xml($this->conn, $xml);
+			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 
 		function domain_destroy($domain) {
@@ -392,7 +600,8 @@
 			if (!$dom)
 				return false;
 
-			return libvirt_domain_destroy($dom);
+			$tmp = libvirt_domain_destroy($dom);
+			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 
 		function domain_reboot($domain) {
@@ -400,7 +609,8 @@
 			if (!$dom)
 				return false;
 
-			return libvirt_domain_reboot($dom);
+			$tmp = libvirt_domain_reboot($dom);
+			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 
 		function domain_suspend($domain) {
@@ -408,7 +618,8 @@
 			if (!$dom)
 				return false;
 
-			return libvirt_domain_suspend($dom);
+			$tmp = libvirt_domain_suspend($dom);
+			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 
 		function domain_resume($domain) {
@@ -416,14 +627,16 @@
 			if (!$dom)
 				return false;
 
-			return libvirt_domain_resume($dom);
+			$tmp = libvirt_domain_resume($dom);
+			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 
 		function domain_get_name_by_uuid($uuid) {
 			$dom = libvirt_domain_lookup_by_uuid_string($this->conn, $uuid);
 			if (!$dom)
 				return false;
-			return libvirt_domain_get_name($dom);
+			$tmp = libvirt_domain_get_name($dom);
+			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 
 		function domain_shutdown($domain) {
@@ -431,7 +644,8 @@
 			if (!$dom)
 				return false;
 
-			return libvirt_domain_shutdown($dom);
+			$tmp = libvirt_domain_shutdown($dom);
+			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 
 		function domain_undefine($domain) {
@@ -439,7 +653,8 @@
 			if (!$dom)
 				return false;
 
-			return libvirt_domain_undefine($dom);
+			$tmp = libvirt_domain_undefine($dom);
+			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 
 		function domain_is_running($domain) {
@@ -448,6 +663,8 @@
 				return false;
 
 			$tmp = libvirt_domain_get_info($dom);
+			if (!$tmp)
+				return $this->_set_last_error();
 			$ret = ( ($tmp['state'] == VIR_DOMAIN_RUNNING) || ($tmp['state'] == VIR_DOMAIN_BLOCKED) );
 			unset($tmp);
 			return $ret;
@@ -484,7 +701,8 @@
 		}
 
 		function host_get_node_info() {
-			return libvirt_node_get_info($this->conn);
+			$tmp = libvirt_node_get_info($this->conn);
+			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 	}
 ?>
