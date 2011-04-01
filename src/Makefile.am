@@ -13,7 +13,7 @@ build:
 	$(ECHO) "Extension compiled as $(PACKAGE).so"
 
 install-exec-local:
-	$(INSTALL) -m 644 -D --strip $(PACKAGE).so $(DESTDIR)$(PHPEDIR)/$(PACKAGE).so
+	$(INSTALL) -m 644 -D $(PACKAGE).so $(DESTDIR)$(PHPEDIR)/$(PACKAGE).so
 	$(INSTALL) -m 755 -d $(DESTDIR)$(PHPCDIR)
 	$(ECHO) "extension=$(PACKAGE).so" > $(DESTDIR)$(PHPCDIR)/libvirt-php.ini
 
