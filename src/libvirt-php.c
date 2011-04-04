@@ -237,12 +237,16 @@ PHP_MINFO_FUNCTION(libvirt)
 */
 void set_error(char *msg TSRMLS_DC)
 {
-	if (msg == NULL) {
+	if (LIBVIRT_G (last_error) != NULL)
+	{
 		efree(LIBVIRT_G (last_error));
+	}
+
+	if (msg == NULL) {
+		LIBVIRT_G (last_error) = NULL;
 		return;
 	}
 	php_error_docref(NULL TSRMLS_CC, E_WARNING,"%s",msg);
-	if (LIBVIRT_G (last_error)!=NULL) efree(LIBVIRT_G (last_error));
 	LIBVIRT_G (last_error)=estrndup(msg,strlen(msg));
 }
 
