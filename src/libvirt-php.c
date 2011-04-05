@@ -61,6 +61,8 @@ static function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_domain_get_counts, NULL)
 	PHP_FE(libvirt_domain_lookup_by_name, NULL)
 	PHP_FE(libvirt_domain_get_xml_desc, NULL)
+	PHP_FE(libvirt_domain_disk_add, NULL)
+	PHP_FE(libvirt_domain_disk_remove, NULL)
 	PHP_FE(libvirt_domain_get_info, NULL)
 	PHP_FE(libvirt_domain_get_name, NULL)
 	PHP_FE(libvirt_domain_get_uuid, NULL)
@@ -1549,7 +1551,7 @@ PHP_FUNCTION(libvirt_domain_lookup_by_id)
 
 	GET_CONNECTION_FROM_ARGS("rl",&zconn,&id);
 
-	domain=virDomainLookupByID	(conn->conn,(int)id);
+	domain=virDomainLookupByID(conn->conn,(int)id);
 	if (domain==NULL) RETURN_FALSE;
 
 	res_domain= emalloc(sizeof(php_libvirt_domain));
@@ -1687,6 +1689,199 @@ PHP_FUNCTION(libvirt_domain_get_xml_desc)
 	}
 
 	RETURN_STRING(xml_out,0);
+}
+
+/*
+	Function name:	libvirt_domain_disk_add
+	Since version:	0.4.2
+	Description:	Function is used to add the disk to the virtual machine using set of API functions to make it as simple as possible for the user
+	Arguments:	@res [resource]: libvirt domain resource
+			@img [string]: string for the image file on the host system
+			@dev [string]: string for the device to be presented to the guest (e.g. hda)
+			@typ [string]: bus type for the device in the guest, usually 'ide' or 'scsi'
+			@flags [int]: flags for getting the XML description
+	Returns:	new domain resource
+*/
+PHP_FUNCTION(libvirt_domain_disk_add)
+{
+	php_libvirt_domain *domain=NULL;
+	zval *zdomain;
+	char *tmp1 = NULL;
+	char *tmp2 = NULL;
+	char *xml;
+	char *img = NULL;
+	int img_len;
+	char *dev = NULL;
+	int dev_len;
+	char *typ = NULL;
+	int typ_len;
+	char *new_xml = NULL;
+	int new_len;
+	char new[4096] = { 0 };
+	long xflags = 0;
+	int retval = -1;
+	int pos = -1;
+	php_libvirt_domain *res_domain = NULL;
+	php_libvirt_connection *conn   = NULL;
+	virDomainPtr dom=NULL;
+
+	GET_DOMAIN_FROM_ARGS("rsss|l",&zdomain,&img,&img_len,&dev,&dev_len,&typ,&typ_len,&xflags);
+
+	xml=virDomainGetXMLDesc(domain->domain,xflags);
+	if (xml==NULL) {
+		set_error_if_unset("Cannot get the XML description");
+		RETURN_FALSE;
+	}
+
+	snprintf(new, sizeof(new), "//domain/devices/disk/source[@file=\"%s\"]/./@file", img);
+	tmp1 = get_string_from_xpath(xml, new, NULL, &retval);
+	if (tmp1 != NULL) {
+		free(tmp1);
+		snprintf(new, sizeof(new), "Domain already has image <i>%s</i> connected", img);
+		set_error(new);
+		RETURN_FALSE;
+	}
+
+	snprintf(new, sizeof(new), "//domain/devices/disk/target[@dev='%s']/./@dev", dev);
+	tmp1 = get_string_from_xpath(xml, new, NULL, &retval);
+	if (tmp1 != NULL) {
+		free(tmp1);
+		snprintf(new, sizeof(new), "Domain already has device <i>%s</i> connected", dev);
+		set_error(new);
+		RETURN_FALSE;
+	}
+
+	if (access(img, R_OK) != 0) {
+		snprintf(new, sizeof(new), "Image file <i>%s</i> doesn't exist", img);
+		set_error(new);
+		RETURN_FALSE;
+	}
+
+	snprintf(new, sizeof(new), 
+	"    <disk type='file' device='disk'>\n"
+	"      <source file='%s'/>\n"
+	"      <target dev='%s' bus='%s'/>\n"
+	"    </disk>", img, dev, typ);
+	tmp1 = strstr(xml, "</emulator>") + strlen("</emulator>");
+	pos = strlen(xml) - strlen(tmp1);
+
+	tmp2 = emalloc( ( pos + 1 )* sizeof(char) );
+	memset(tmp2, 0, pos + 1);
+	memcpy(tmp2, xml, pos);
+
+	new_len = strlen(tmp1) + strlen(tmp2) + strlen(new) + 2;
+	new_xml = emalloc( new_len * sizeof(char) );
+	snprintf(new_xml, new_len, "%s\n%s%s", tmp2, new, tmp1);
+
+	conn = domain->conn;
+	
+	virDomainUndefine(domain->domain);
+	virDomainFree(domain->domain);
+	dom=virDomainDefineXML(conn->conn, new_xml);
+	if (dom==NULL) {
+		dom=virDomainDefineXML(conn->conn, xml);
+		if (dom == NULL)
+			RETURN_FALSE;
+	}
+
+	res_domain = emalloc(sizeof(php_libvirt_domain));
+	res_domain->domain = dom;
+	res_domain->conn = conn;
+
+	ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
+}
+
+/*
+	Function name:	libvirt_domain_disk_remove
+	Since version:	0.4.2
+	Description:	Function is used to remove the disk from the virtual machine using set of API functions to make it as simple as possible
+	Arguments:	@res [resource]: libvirt domain resource
+			@dev [string]: string for the device to be removed from the guest (e.g. 'hdb')
+			@flags [int]: flags for getting the XML description
+	Returns:	new domain resource
+*/
+PHP_FUNCTION(libvirt_domain_disk_remove)
+{
+	php_libvirt_domain *domain=NULL;
+	zval *zdomain;
+	char *tmp1 = NULL;
+	char *tmp2 = NULL;
+	char *xml;
+	char *dev = NULL;
+	int dev_len;
+	char *new_xml = NULL;
+	int new_len;
+	char new[4096] = { 0 };
+	long xflags = 0;
+	int retval = -1;
+	int pos = -1;
+	int i, idx = 0;
+	php_libvirt_domain *res_domain=NULL;
+	php_libvirt_connection *conn = NULL;
+	virDomainPtr dom = NULL;
+
+	GET_DOMAIN_FROM_ARGS("rs|l",&zdomain,&dev,&dev_len,&xflags);
+
+	xml=virDomainGetXMLDesc(domain->domain,xflags);
+	if (xml==NULL) {
+		set_error_if_unset("Cannot get the XML description");
+		RETURN_FALSE;
+	}
+
+	snprintf(new, sizeof(new), "//domain/devices/disk/target[@dev='%s']/./@dev", dev);
+	tmp1 = get_string_from_xpath(xml, new, NULL, &retval);
+	if (tmp1 == NULL) {
+		snprintf(new, sizeof(new), "Device <i>%s</i> is not connected to the guest", dev);
+		set_error(new);
+		RETURN_FALSE;
+	}
+
+	free(tmp1);
+	
+	snprintf(new, sizeof(new), "<target dev='%s'", dev);
+	tmp1 = strstr(xml, new) + strlen(new);
+	pos = strlen(xml) - strlen(tmp1);
+
+	tmp2 = emalloc( ( pos + 1 )* sizeof(char) );
+	memset(tmp2, 0, pos + 1);
+	memcpy(tmp2, xml, pos);
+	
+	for (i = strlen(tmp2) - 5; i > 0; i--)
+		if ((tmp2[i] == '<') && (tmp2[i+1] == 'd')
+			&& (tmp2[i+2] == 'i') && (tmp2[i+3] == 's')
+			&& (tmp2[i+4] == 'k')) {
+					tmp2[i-5] = 0;
+					break;
+				}
+
+	for (i = 0; i < strlen(tmp1) - 7; i++)
+		if ((tmp1[i] == '<') && (tmp1[i+1] == '/')
+			&& (tmp1[i+2] == 'd') && (tmp1[i+3] == 'i')
+			&& (tmp1[i+4] == 's') && (tmp1[i+5] == 'k')
+			&& (tmp1[i+6] == '>')) {
+					idx = i + 6;
+					break;
+				}
+
+	new_len = strlen(tmp2) + (strlen(tmp1) - idx);
+	new_xml = emalloc( new_len * sizeof(char) );
+	memset(new_xml, 0, new_len);
+	strcpy(new_xml, tmp2);
+	for (i = idx; i < strlen(tmp1) - 1; i++)
+		new_xml[ strlen(tmp2) + i - idx ] = tmp1[i];
+			
+	conn = domain->conn;
+	virDomainUndefine(domain->domain);
+	virDomainFree(domain->domain);
+
+	dom=virDomainDefineXML(conn->conn,new_xml);
+	if (dom==NULL) RETURN_FALSE;
+
+	res_domain = emalloc(sizeof(php_libvirt_domain));
+	res_domain->domain = dom;
+	res_domain->conn = conn;
+
+	ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
 }
 
 /*

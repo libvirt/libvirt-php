@@ -20,6 +20,20 @@
 				return $this->_set_last_error();
 		}
 
+                function domain_disk_add($domain, $img, $dev, $type='scsi') {
+                        $dom = $this->get_domain_object($domain);
+
+                        $tmp = libvirt_domain_disk_add($dom, $img, $dev, $type);
+                        return ($tmp) ? $tmp : $this->_set_last_error();
+                }
+
+		function domain_disk_remove($domain, $dev) {
+			$dom = $this->get_domain_object($domain);
+
+			$tmp = libvirt_domain_disk_remove($dom, $dev);
+			return ($tmp) ? $tmp : $this->_set_last_error();
+		}
+
 		function get_connection() {
 			return $this->conn;
 		}

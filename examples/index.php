@@ -361,12 +361,65 @@
 	}
         else
         if ($action == 'domain-information') {
+		$subaction = array_key_exists('subaction', $_GET) ? $_GET['subaction'] : false;
+		$ret = false;
+		$die = false;
 		$domName = $lv->domain_get_name_by_uuid($_GET['uuid']);
+
+		if ($subaction == 'disk-remove') {
+			if ((array_key_exists('confirm', $_GET)) && ($_GET['confirm'] == 'yes'))
+				$ret = $lv->domain_disk_remove($domName, $_GET['dev']) ? 'Disk has been removed successfully' : 'Cannot remove disk: '.$lv->get_last_error();
+			else {
+				$ret = '<table>
+					<tr>
+					<td colspan="2">
+						<b>Do you really want to delete disk <i>'.$_GET['dev'].' from the guest</i> ?</b><br />
+					</td>
+					</tr>
+					<tr align="center">
+					<td>
+						<a href="'.$_SERVER['REQUEST_URI'].'&amp;confirm=yes">Yes, delete it</a>
+					</td>
+					<td>
+						 <a href="?action='.$action.'&amp;uuid='.$_GET['uuid'].'">No, go back</a>
+					</td>
+					</tr>';
+				$die = true;
+			}
+		}
+		if ($subaction == 'disk-add') {
+			$img = array_key_exists('img', $_POST) ? $_POST['img'] : false;
+
+			if ($img)
+				$ret = $lv->domain_disk_add($domName, $_POST['img'], $_POST['dev']) ? 'Disk has been successfully added to the guest' :
+						'Cannot add disk to the guest: '.$lv->get_last_error();
+                        else
+				$ret = '<b>Add a new disk device</b>
+				<form method="POST">
+				<table>
+				<tr>
+					<td>Disk image: </td>
+					<td><input type="text" name="img" /></td>
+				</tr>
+				<tr>
+					<td>Disk device in the guest: </td>
+					<td><input type="text" name="dev" value="hdb" /></td>
+				</tr>
+				<tr align="center">
+					<td colspan="2"><input type="submit" value=" Add new disk " /></td>
+				</tr>
+				</table>
+				</form>';
+		}
 
 		echo "<h2>$domName - domain disk information</h2>";
 		echo "Domain type: ".$lv->get_domain_type($domName).'<br />';
 		echo "Domain emulator: ".$lv->get_domain_emulator($domName).'<br />';
 		echo '<br />';
+
+		echo $ret;
+		if ($die)
+			die('</body></html');
 
 		/* Disk information */
 		echo "<h3>Disk devices</h3>";
@@ -379,8 +432,9 @@
 	                        <th>$spaces Storage driver type $spaces</th>
         	                <th>$spaces Domain device $spaces</th>
                 	        <th>$spaces Disk capacity $spaces</th>
-							<th>$spaces Disk allocation $spaces</th>
-							<th>$spaces Physical disk size $spaces</th>
+				<th>$spaces Disk allocation $spaces</th>
+				<th>$spaces Physical disk size $spaces</th>
+				<th>$spaces Actions $spaces</th>
 			      </tr>";
 
 			for ($i = 0; $i < sizeof($tmp); $i++) {
@@ -396,12 +450,18 @@
                 	           <td align=\"center\">$spaces$capacity$spaces</td>
                         	   <td align=\"center\">$spaces$allocation$spaces</td>
 	                           <td align=\"center\">$spaces$physical$spaces</td>
+				   <td align=\"center\">$spaces
+							<a href=\"?action=$action&amp;uuid={$_GET['uuid']}&amp;subaction=disk-remove&amp;dev={$tmp[$i]['device']}\">
+								Remove disk device</a>
+							$spaces</td>
         	                  </tr>";
                 	}
 			echo "</table>";
 		}
 		else
 			echo "Domain doesn't have any disk devices";
+
+			echo "<br />$spaces<a href=\"?action=$action&amp;uuid={$_GET['uuid']}&amp;subaction=disk-add\">Add new disk</a>";
 
 			/* Network interface information */
 			echo "<h3>Network devices</h3>";
