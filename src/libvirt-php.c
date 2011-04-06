@@ -215,15 +215,14 @@ PHP_RSHUTDOWN_FUNCTION(libvirt)
 PHP_MINFO_FUNCTION(libvirt)
 {
 	unsigned long libVer;
-	char *version;
 	php_info_print_table_start();
 	php_info_print_table_row(2, "Libvirt support", "enabled");
 	php_info_print_table_row(2, "Extension version", PHP_LIBVIRT_WORLD_VERSION);
 
 	if (virGetVersion(&libVer,NULL,NULL)== 0)
 	{
-		version=emalloc(100);
-		snprintf(version, 100, "%i.%i.%i", (long)((libVer/1000000) % 1000),(long)((libVer/1000) % 1000),(long)(libVer % 1000));
+		char version[100];
+		snprintf(version, sizeof(version), "%i.%i.%i", (long)((libVer/1000000) % 1000),(long)((libVer/1000) % 1000),(long)(libVer % 1000));
 		php_info_print_table_row(2, "Libvirt version", version);
 	}
 
@@ -3883,10 +3882,12 @@ PHP_FUNCTION(libvirt_list_active_domains)
 			if (name==NULL)
 			{
 				efree (ids);
+				virDomainFree (domain);
 				RETURN_FALSE;
 			}
 
 			add_next_index_string(return_value, name, 1);
+			virDomainFree (domain);
 		}
 	}
 	efree(ids);
