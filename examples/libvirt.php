@@ -509,7 +509,7 @@
 		function get_node_device_xml($dev) {
 			$dev = $this->get_node_device_res($dev);
 
-			$tmp = libvirt_nodedev_get_xml_desc($dev);
+			$tmp = libvirt_nodedev_get_xml_desc($dev, NULL);
 			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 
