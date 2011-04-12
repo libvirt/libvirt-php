@@ -789,7 +789,11 @@ PHP_FUNCTION(libvirt_connect)
 		efree(creds);
 	}
 
-	if (conn->conn == NULL) RETURN_FALSE;
+	if (conn->conn == NULL)
+	{
+		efree (conn);
+		RETURN_FALSE;
+	}
 	ZEND_REGISTER_RESOURCE(return_value, conn, le_libvirt_connection);
 	conn->resource_id=Z_LVAL_P(return_value);
 } 
