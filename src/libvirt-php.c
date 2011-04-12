@@ -292,10 +292,17 @@ static void php_libvirt_connection_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 	php_libvirt_connection *conn = (php_libvirt_connection*)rsrc->ptr;
 	int rv;
 	
-	rv = virConnectClose(conn->conn);
-	if (rv!=0)
-		php_error_docref(NULL TSRMLS_CC, E_WARNING,"virConnectClose failed with %i on destructor: %s", rv, LIBVIRT_G (last_error));
-	conn->conn=NULL;
+	if (conn != NULL)
+	{
+		if (conn->conn != NULL)
+		{
+			rv = virConnectClose(conn->conn);
+			if (rv!=0)
+				php_error_docref(NULL TSRMLS_CC, E_WARNING,"virConnectClose failed with %i on destructor: %s", rv, LIBVIRT_G (last_error));
+			conn->conn=NULL;
+		}
+		efree (conn);
+	}
 }
 
 /* Destructor for domain resource */
@@ -304,10 +311,17 @@ static void php_libvirt_domain_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 	php_libvirt_domain *domain = (php_libvirt_domain*)rsrc->ptr;
 	int rv;
 	
-	rv = virDomainFree (domain->domain);
-	if (rv != 0)
-		php_error_docref(NULL TSRMLS_CC, E_WARNING,"virDomainFree failed with %i on destructor: %s", rv, LIBVIRT_G (last_error));
-	domain->domain=NULL;
+	if (domain != NULL)
+	{
+		if (domain->domain != NULL)
+		{
+			rv = virDomainFree (domain->domain);
+			if (rv != 0)
+				php_error_docref(NULL TSRMLS_CC, E_WARNING,"virDomainFree failed with %i on destructor: %s", rv, LIBVIRT_G (last_error));
+			domain->domain=NULL;
+		}
+		efree (domain);
+	}
 }
 
 /* Destructor for storagepool resource */
