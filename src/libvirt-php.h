@@ -11,6 +11,7 @@
 *   Lyre <liyong@skybility.com> (or <4179e1@gmail.com>)
 *   Daniel P. Berrange <berrange@redhat.com>
 *   Tiziano Mueller <dev-zero@gentoo.org>
+*   Yukihiro Kawada <warp.kawada@gmail.com>
 */
 #ifndef PHP_LIBVIRT_H
 #define PHP_LIBVIRT_H 1
