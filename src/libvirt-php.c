@@ -1206,6 +1206,11 @@ char *get_string_from_xpath(char *xml, char *xpath, zval **val, int *retVal)
 	int ret = 0, i;
 	char *value, key[8] = { 0 };
 
+	if ((xpath == NULL) || (xml == NULL))
+	{
+		return NULL;
+	}
+
 	xp = xmlCreateDocParserCtxt( (xmlChar *)xml );
 	if (!xp) {
 		if (retVal)
@@ -1692,6 +1697,10 @@ PHP_FUNCTION(libvirt_domain_get_xml_desc)
 	int retval = -1;
 
 	GET_DOMAIN_FROM_ARGS("rs|l",&zdomain,&xpath,&xpath_len,&flags);
+	if (xpath_len < 1)
+	{
+		xpath = NULL;
+	}
 
 	xml=virDomainGetXMLDesc(domain->domain,flags);
 	if (xml==NULL) {
@@ -3124,6 +3133,10 @@ PHP_FUNCTION(libvirt_storagevolume_get_xml_desc)
 	int retval = -1;
 
 	GET_VOLUME_FROM_ARGS("rs|l",&zvolume,&xpath,&xpath_len,&flags);
+	if (xpath_len < 1)
+	{
+		xpath = NULL;
+	}
 
 	xml=virStorageVolGetXMLDesc(volume->volume,flags);
 	if (xml==NULL) {
@@ -3339,6 +3352,10 @@ PHP_FUNCTION(libvirt_storagepool_get_xml_desc)
 	int retval = -1;
 
 	GET_STORAGEPOOL_FROM_ARGS("rs|l", &zpool, &xpath, &xpath_len, &flags);
+	if (xpath_len < 1)
+	{
+		xpath = NULL;
+	}
 
 	xml = virStoragePoolGetXMLDesc (pool->pool, flags);
 	if (xml == NULL)
@@ -4137,6 +4154,10 @@ PHP_FUNCTION(libvirt_nodedev_get_xml_desc)
 	int retval = -1;
 
 	GET_NODEDEV_FROM_ARGS("r|s",&znodedev,&xpath,&xpath_len);
+	if (xpath_len < 1)
+	{
+		xpath = NULL;
+	}
 
 	xml=virNodeDeviceGetXMLDesc(nodedev->device, 0);
 	if ( xml == NULL ) {
@@ -4577,6 +4598,10 @@ PHP_FUNCTION(libvirt_network_get_xml_desc)
 	int retval = -1;
 
 	GET_NETWORK_FROM_ARGS("r|s",&znetwork,&xpath,&xpath_len);
+	if (xpath_len < 1)
+	{
+		xpath = NULL;
+	}
 
 	xml=virNetworkGetXMLDesc(network->network, 0);
 
