@@ -1204,7 +1204,8 @@ char *get_string_from_xpath(char *xml, char *xpath, zval **val, int *retVal)
 	xmlXPathObjectPtr result;
 	xmlNodeSetPtr nodeset;
 	int ret = 0, i;
-	char *value, key[8] = { 0 };
+	char *value = NULL; 
+	char key[8] = { 0 };
 
 	if ((xpath == NULL) || (xml == NULL))
 	{
