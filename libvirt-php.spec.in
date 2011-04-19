@@ -46,6 +46,7 @@ For more details see: http://www.libvirt.org/php/
 %package -n libvirt-php-doc
 Summary:	Document of libvirt-php
 Group:		Development/Libraries/PHP
+BuildArch:	noarch
 Requires:	libvirt-php = %{version}
 
 %description -n libvirt-php-doc
