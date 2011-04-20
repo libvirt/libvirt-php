@@ -64,6 +64,8 @@ static function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_domain_get_xml_desc, NULL)
 	PHP_FE(libvirt_domain_disk_add, NULL)
 	PHP_FE(libvirt_domain_disk_remove, NULL)
+	PHP_FE(libvirt_domain_nic_add, NULL)
+	PHP_FE(libvirt_domain_nic_remove, NULL)
 	PHP_FE(libvirt_domain_get_info, NULL)
 	PHP_FE(libvirt_domain_get_name, NULL)
 	PHP_FE(libvirt_domain_get_uuid, NULL)
@@ -96,6 +98,7 @@ static function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_domain_get_autostart, NULL)
 	PHP_FE(libvirt_domain_set_autostart, NULL)
 	PHP_FE(libvirt_domain_is_active, NULL)
+	PHP_FE(libvirt_domain_get_next_dev_ids, NULL)
 	/* Domain snapshot functions */
 	PHP_FE(libvirt_domain_has_current_snapshot, NULL)
 	PHP_FE(libvirt_domain_snapshot_create, NULL)
@@ -277,6 +280,7 @@ void reset_error()
 {
 	set_error(NULL);
 }
+
 
 /* Error handler for receiving libvirt errors */
 static void catch_error(void *userData,
@@ -1385,6 +1389,53 @@ int get_subnet_bits(char *ip)
 	return i - skip;
 }
 
+/*
+	Private function name:	get_next_free_numeric_value
+	Since version:		0.4.2
+	Description:		Function is used to get the next free slot to be used for adding new NIC device or others
+	Arguments:		@res [virDomainPtr]: standard libvirt domain pointer identified by virDomainPtr
+				@xpath [string]: xPath expression of items to get the next free value of
+	Returns:		next free numeric value
+*/
+long get_next_free_numeric_value(virDomainPtr domain, char *xpath)
+{
+	zval *output = NULL;
+	char *xml;
+	int retval = -1, i;
+	HashTable *arr_hash;
+	HashPosition pointer;
+	int array_count;
+	zval **data;
+	char *key;
+	unsigned int key_len;
+	unsigned long index;
+	long max_slot = -1;
+
+	xml=virDomainGetXMLDesc(domain, VIR_DOMAIN_XML_INACTIVE);
+	output = emalloc( sizeof(zval) );
+	array_init(output);
+	free( get_string_from_xpath(xml, xpath, &output, &retval) );
+
+	arr_hash = Z_ARRVAL_P(output);
+	array_count = zend_hash_num_elements(arr_hash);
+	for (zend_hash_internal_pointer_reset_ex(arr_hash, &pointer);
+			zend_hash_get_current_data_ex(arr_hash, (void**) &data, &pointer) == SUCCESS;
+			zend_hash_move_forward_ex(arr_hash, &pointer)) {
+			if (Z_TYPE_PP(data) == IS_STRING) {
+				if (zend_hash_get_current_key_ex(arr_hash, &key, &key_len, &index, 0, &pointer) != HASH_KEY_IS_STRING) {
+					long num = -1;
+
+					sscanf(Z_STRVAL_PP(data), "%x", &num);
+					if (num > max_slot)
+						max_slot = num;
+				}
+		}
+	}
+
+	efree(output);
+	return max_slot + 1;
+}
+
 /* Domain functions */
 
 /*
@@ -1686,6 +1737,33 @@ PHP_FUNCTION(libvirt_domain_get_id)
 }
 
 /*
+	Function name:	libvirt_domain_get_next_dev_ids
+	Since version:	0.4.2
+	Description:	This functions can be used to get the next free slot if you intend to add a new device identified by slot to the domain, e.g. NIC device
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Returns:	next free slot number for the domain
+*/
+PHP_FUNCTION(libvirt_domain_get_next_dev_ids)
+{
+	long dom, bus, slot, func;
+        php_libvirt_domain *domain=NULL;
+        zval *zdomain;
+
+	GET_DOMAIN_FROM_ARGS("r",&zdomain);
+
+	dom = get_next_free_numeric_value(domain->domain, "//@domain");
+	bus = get_next_free_numeric_value(domain->domain, "//@bus");
+	slot = get_next_free_numeric_value(domain->domain, "//@slot");
+	func = get_next_free_numeric_value(domain->domain, "//@func");
+
+	array_init(return_value);
+	add_assoc_long(return_value, "next_domain", dom);
+	add_assoc_long(return_value, "next_bus", bus);
+	add_assoc_long(return_value, "next_slot", slot);
+	add_assoc_long(return_value, "next_func", func);
+}
+
+/*
 	Function name:	libvirt_domain_get_xml_desc
 	Since version:	0.4.1(-1), changed 0.4.2
 	Description:	Function is used to get the domain's XML description
@@ -1895,6 +1973,211 @@ PHP_FUNCTION(libvirt_domain_disk_remove)
 			&& (tmp1[i+2] == 'd') && (tmp1[i+3] == 'i')
 			&& (tmp1[i+4] == 's') && (tmp1[i+5] == 'k')
 			&& (tmp1[i+6] == '>')) {
+					idx = i + 6;
+					break;
+				}
+
+	new_len = strlen(tmp2) + (strlen(tmp1) - idx);
+	new_xml = emalloc( new_len * sizeof(char) );
+	memset(new_xml, 0, new_len);
+	strcpy(new_xml, tmp2);
+	for (i = idx; i < strlen(tmp1) - 1; i++)
+		new_xml[ strlen(tmp2) + i - idx ] = tmp1[i];
+			
+	conn = domain->conn;
+	virDomainUndefine(domain->domain);
+	virDomainFree(domain->domain);
+
+	dom=virDomainDefineXML(conn->conn,new_xml);
+	if (dom==NULL) RETURN_FALSE;
+
+	res_domain = emalloc(sizeof(php_libvirt_domain));
+	res_domain->domain = dom;
+	res_domain->conn = conn;
+
+	ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
+}
+
+/*
+	Function name:	libvirt_domain_nic_add
+	Since version:	0.4.2
+	Description:	Function is used to add the NIC card to the virtual machine using set of API functions to make it as simple as possible for the user
+	Arguments:	@res [resource]: libvirt domain resource
+			@mac [string]: MAC string interpretation to be used for the NIC device
+			@network [string]: network name where to connect this NIC
+			@model [string]: string of the NIC model
+			@flags [int]: flags for getting the XML description
+	Returns:	new domain resource
+*/
+PHP_FUNCTION(libvirt_domain_nic_add)
+{
+	php_libvirt_domain *domain=NULL;
+	zval *zdomain;
+	char *tmp1 = NULL;
+	char *tmp2 = NULL;
+	char *xml;
+	char *mac = NULL;
+	int mac_len;
+	char *net = NULL;
+	int net_len;
+	char *model = NULL;
+	int model_len;
+	char *new_xml = NULL;
+	int new_len;
+	char new[4096] = { 0 };
+	long xflags = 0;
+	int retval = -1;
+	int pos = -1;
+	php_libvirt_domain *res_domain = NULL;
+	php_libvirt_connection *conn   = NULL;
+	virDomainPtr dom=NULL;
+	long slot = -1;
+
+	GET_DOMAIN_FROM_ARGS("rsss|l",&zdomain,&mac,&mac_len,&net,&net_len,&model,&model_len,&xflags);
+	if (model_len < 1)
+		model = NULL;
+
+	xml=virDomainGetXMLDesc(domain->domain,xflags);
+	if (xml==NULL) {
+		set_error_if_unset("Cannot get the XML description");
+		RETURN_FALSE;
+	}
+
+	snprintf(new, sizeof(new), "//domain/devices/interface[@type='network']/mac[@address='%s']/./@mac", mac);
+	tmp1 = get_string_from_xpath(xml, new, NULL, &retval);
+	if (tmp1 != NULL) {
+		free(tmp1);
+		snprintf(new, sizeof(new), "Domain already has NIC device with MAC address <i>%s</i> connected", mac);
+		set_error(new);
+		RETURN_FALSE;
+	}
+
+	slot = get_next_free_numeric_value(domain->domain, "//@slot");
+	if (slot < 0) {
+		free(tmp1);
+		snprintf(new, sizeof(new), "Cannot find a free slot for domain");
+		set_error(new);		
+		RETURN_FALSE;
+	}
+	
+	if (model == NULL)
+		snprintf(new, sizeof(new), 
+		"	<interface type='network'>\n"
+		"		<mac address='%s' />\n"
+		"		<source network='%s' />\n"
+		"		<address type='pci' domain='0x0000' bus='0x00' slot='0x%02x' function='0x0' />\n"
+		"	</interface>", mac, net, slot);
+	else
+		snprintf(new, sizeof(new), 
+		"	<interface type='network'>\n"
+		"		<mac address='%s' />\n"
+		"		<source network='%s' />\n"
+		"		<model type='%s' />\n"
+		"		<address type='pci' domain='0x0000' bus='0x00' slot='0x%02x' function='0x0' />\n"
+		"	</interface>", mac, net, model, slot);
+		
+	tmp1 = strstr(xml, "</controller>") + strlen("</controller>");
+	pos = strlen(xml) - strlen(tmp1);
+
+	tmp2 = emalloc( ( pos + 1 )* sizeof(char) );
+	memset(tmp2, 0, pos + 1);
+	memcpy(tmp2, xml, pos);
+
+	new_len = strlen(tmp1) + strlen(tmp2) + strlen(new) + 2;
+	new_xml = emalloc( new_len * sizeof(char) );
+	snprintf(new_xml, new_len, "%s\n%s%s", tmp2, new, tmp1);
+
+	//RETURN_STRING(new_xml, 1);
+
+	conn = domain->conn;
+	
+	virDomainUndefine(domain->domain);
+	virDomainFree(domain->domain);
+	dom=virDomainDefineXML(conn->conn, new_xml);
+	if (dom==NULL) {
+		dom=virDomainDefineXML(conn->conn, xml);
+		if (dom == NULL)
+			RETURN_FALSE;
+	}
+
+	res_domain = emalloc(sizeof(php_libvirt_domain));
+	res_domain->domain = dom;
+	res_domain->conn = conn;
+
+	ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
+}
+
+/*
+	Function name:	libvirt_domain_nic_remove
+	Since version:	0.4.2
+	Description:	Function is used to remove the NIC from the virtual machine using set of API functions to make it as simple as possible
+	Arguments:	@res [resource]: libvirt domain resource
+			@dev [string]: string representation of the IP address to be removed (e.g. 54:52:00:xx:yy:zz)
+			@flags [int]: optional flags for getting the XML description
+	Returns:	new domain resource
+*/
+PHP_FUNCTION(libvirt_domain_nic_remove)
+{
+	php_libvirt_domain *domain=NULL;
+	zval *zdomain;
+	char *tmp1 = NULL;
+	char *tmp2 = NULL;
+	char *xml;
+	char *mac = NULL;
+	int mac_len;
+	char *new_xml = NULL;
+	int new_len;
+	char new[4096] = { 0 };
+	long xflags = 0;
+	int retval = -1;
+	int pos = -1;
+	int i, idx = 0;
+	php_libvirt_domain *res_domain=NULL;
+	php_libvirt_connection *conn = NULL;
+	virDomainPtr dom = NULL;
+
+	GET_DOMAIN_FROM_ARGS("rs|l",&zdomain,&mac,&mac_len,&xflags);
+
+	xml=virDomainGetXMLDesc(domain->domain,xflags);
+	if (xml==NULL) {
+		set_error_if_unset("Cannot get the XML description");
+		RETURN_FALSE;
+	}
+
+	snprintf(new, sizeof(new), "//domain/devices/interface[@type='network']/mac[@address='%s']/./@address", mac);
+	tmp1 = get_string_from_xpath(xml, new, NULL, &retval);
+	if (tmp1 == NULL) {
+		snprintf(new, sizeof(new), "Network card with IP address <i>%s</i> is not connected to the guest", mac);
+		set_error(new);
+		RETURN_FALSE;
+	}
+
+	free(tmp1);
+	
+	snprintf(new, sizeof(new), "<mac address='%s'", mac);
+	if (strstr(xml, new) == NULL)
+		snprintf(new, sizeof(new), "<mac address=\"%s\"", mac);
+		
+	tmp1 = strstr(xml, new) + strlen(new);
+	pos = strlen(xml) - strlen(tmp1);
+
+	tmp2 = emalloc( ( pos + 1 )* sizeof(char) );
+	memset(tmp2, 0, pos + 1);
+	memcpy(tmp2, xml, pos);
+	
+	for (i = strlen(tmp2) - 5; i > 0; i--)
+		if ((tmp2[i] == '<') && (tmp2[i+1] == 'i')
+			&& (tmp2[i+2] == 'n') && (tmp2[i+3] == 't')
+			&& (tmp2[i+4] == 'e')) {
+					tmp2[i-5] = 0;
+					break;
+				}
+
+	for (i = 0; i < strlen(tmp1) - 7; i++)
+		if ((tmp1[i] == '<') && (tmp1[i+1] == '/')
+			&& (tmp1[i+2] == 'i') && (tmp1[i+3] == 'n')
+			&& (tmp1[i+4] == 't') && (tmp1[i+5] == 'e')
+			&& (tmp1[i+6] == 'r')) {
 					idx = i + 6;
 					break;
 				}
@@ -2448,6 +2731,7 @@ PHP_FUNCTION(libvirt_domain_xml_xpath) {
 	zval *zdomain;
 	zval *zpath;
 	char *xml;
+	char *tmp = NULL;
 	long path_len=-1, flags = 0;
 	int rc = 0;
 
@@ -2458,9 +2742,12 @@ PHP_FUNCTION(libvirt_domain_xml_xpath) {
 
 	array_init(return_value);
 
-	if (get_string_from_xpath(xml, (char *)zpath, &return_value, &rc) == NULL)
+	if ((tmp = get_string_from_xpath(xml, (char *)zpath, &return_value, &rc)) == NULL) {
+		free(xml);
 		RETURN_FALSE;
+	}
 
+	free(tmp);
 	free(xml);
 
 	if (rc == 0)

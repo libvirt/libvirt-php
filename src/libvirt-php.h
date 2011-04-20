@@ -126,6 +126,8 @@ PHP_FUNCTION(libvirt_domain_lookup_by_name);
 PHP_FUNCTION(libvirt_domain_get_xml_desc);
 PHP_FUNCTION(libvirt_domain_disk_add);
 PHP_FUNCTION(libvirt_domain_disk_remove);
+PHP_FUNCTION(libvirt_domain_nic_add);
+PHP_FUNCTION(libvirt_domain_nic_remove);
 PHP_FUNCTION(libvirt_domain_get_info);
 PHP_FUNCTION(libvirt_domain_get_uuid);
 PHP_FUNCTION(libvirt_domain_get_uuid_string);
@@ -159,6 +161,7 @@ PHP_FUNCTION(libvirt_domain_migrate_to_uri);
 PHP_FUNCTION(libvirt_domain_get_autostart);
 PHP_FUNCTION(libvirt_domain_set_autostart);
 PHP_FUNCTION(libvirt_domain_is_active);
+PHP_FUNCTION(libvirt_domain_get_next_dev_ids);
 /* Domain snapshot functions */
 PHP_FUNCTION(libvirt_domain_has_current_snapshot);
 PHP_FUNCTION(libvirt_domain_snapshot_create);

@@ -34,6 +34,50 @@
 			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 
+		function macbyte($val) {
+			if ($val < 16)
+				return '0'.dechex($val);
+
+			return dechex($val);
+		}
+
+		function generate_random_mac_addr($seed=false) {
+			if (!$seed)
+				$seed = 1;
+
+			if ($this->get_hypervisor_name() == 'qemu')
+				$prefix = '52:54:00';
+			else
+			if ($this->get_hypervisor_name() == 'xen')
+				$prefix = '00:16:3e';
+			else
+				$prefix = $this->macbyte(($seed * rand()) % 256).':'.
+                                $this->macbyte(($seed * rand()) % 256).':'.
+                                $this->macbyte(($seed * rand()) % 256);
+
+			return $prefix.':'.
+				$this->macbyte(($seed * rand()) % 256).':'.
+				$this->macbyte(($seed * rand()) % 256).':'.
+				$this->macbyte(($seed * rand()) % 256);
+		}
+
+		function domain_nic_add($domain, $mac, $network, $model=false) {
+			$dom = $this->get_domain_object($domain);
+
+			if ($model == 'default')
+				$model = false;
+
+			$tmp = libvirt_domain_nic_add($dom, $mac, $network, $model);
+			return ($tmp) ? $tmp : $this->_set_last_error();
+		}
+
+		function domain_nic_remove($domain, $mac) {
+			$dom = $this->get_domain_object($domain);
+
+			$tmp = libvirt_domain_nic_remove($dom, $mac);
+			return ($tmp) ? $tmp : $this->_set_last_error();
+		}
+
 		function get_connection() {
 			return $this->conn;
 		}
@@ -338,6 +382,24 @@
 			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 
+		function get_hypervisor_name() {
+			$tmp = libvirt_connect_get_information($this->conn);
+			$hv = $tmp['hypervisor'];
+			unset($tmp);
+
+			switch (strtoupper($hv)) {
+				case 'QEMU': $type = 'qemu';
+					break;
+				case 'XEN': $type = 'xen';
+					break;
+
+				default:
+					$type = $hv;
+			}
+
+			return $type;
+		}
+
 		function get_connect_information() {
 			$tmp = libvirt_connect_get_information($this->conn);
 			return ($tmp) ? $tmp : $this->_set_last_error();
@@ -407,6 +469,10 @@
 		function get_networks($type = VIR_NETWORKS_ALL) {
 			$tmp = libvirt_list_networks($this->conn, $type);
 			return ($tmp) ? $tmp : $this->_set_last_error();
+		}
+
+		function get_nic_models() {
+			return array('default', 'rtl8139', 'e1000', 'pcnet', 'ne2k_pci', 'virtio');
 		}
 
 		function get_network_res($network) {

@@ -412,6 +412,77 @@
 				</form>';
 		}
 
+		if ($subaction == 'nic-remove') {
+			if ((array_key_exists('confirm', $_GET)) && ($_GET['confirm'] == 'yes'))
+				$ret = $lv->domain_nic_remove($domName, $_GET['mac']) ? 'Network card has been removed successfully' : 'Cannot remove network card: '.$lv->get_last_error();
+			else {
+				$ret = '<table>
+					<tr>
+					<td colspan="2">
+						<b>Do you really want to delete NIC with MAC address <i>'.$_GET['mac'].' from the guest</i> ?</b><br />
+					</td>
+					</tr>
+					<tr align="center">
+					<td>
+						<a href="'.$_SERVER['REQUEST_URI'].'&amp;confirm=yes">Yes, delete it</a>
+					</td>
+					<td>
+						 <a href="?action='.$action.'&amp;uuid='.$_GET['uuid'].'">No, go back</a>
+					</td>
+					</tr>';
+				$die = true;
+			}
+		}
+		if ($subaction == 'nic-add') {
+			$mac = array_key_exists('mac', $_POST) ? $_POST['mac'] : false;
+
+			if ($mac)
+				$ret = $lv->domain_nic_add($domName, $_POST['mac'], $_POST['network'], $_POST['model']) ? 'Network card has been successfully added to the guest' :
+						'Cannot add NIC to the guest: '.$lv->get_last_error();
+                        else {
+				$ret = '<b>Add a new NIC device</b>
+				<form method="POST">
+				<table>
+				<tr>
+					<td>Network card MAC address: </td>
+					<td><input type="text" name="mac" value="'.$lv->generate_random_mac_addr().'" /></td>
+				</tr>
+				<tr>
+					<td>Network: </td>
+					<td>
+						<select name="network">
+						';
+						
+				$nets = $lv->get_networks();
+				for ($i = 0; $i < sizeof($nets); $i++)
+						$ret .= '<option value="'.$nets[$i].'">'.$nets[$i].'</option>';
+				
+				$ret .= '
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<td>Card model: </td>
+					<td>
+						<select name="model">
+						';
+						
+				$models = $lv->get_nic_models();
+				for ($i = 0; $i < sizeof($models); $i++)
+						$ret .= '<option value="'.$models[$i].'">'.$models[$i].'</option>';
+				
+				$ret .= '
+						</select>
+					</td>
+				</tr>
+				<tr align="center">
+					<td colspan="2"><input type="submit" value=" Add new network card " /></td>
+				</tr>
+				</table>
+				</form>';
+				}
+		}
+
 		echo "<h2>$domName - domain disk information</h2>";
 		echo "Domain type: ".$lv->get_domain_type($domName).'<br />';
 		echo "Domain emulator: ".$lv->get_domain_emulator($domName).'<br />';
@@ -450,9 +521,9 @@
                 	           <td align=\"center\">$spaces$capacity$spaces</td>
                         	   <td align=\"center\">$spaces$allocation$spaces</td>
 	                           <td align=\"center\">$spaces$physical$spaces</td>
-				   <td align=\"center\">$spaces
-							<a href=\"?action=$action&amp;uuid={$_GET['uuid']}&amp;subaction=disk-remove&amp;dev={$tmp[$i]['device']}\">
-								Remove disk device</a>
+							   <td align=\"center\">$spaces
+									<a href=\"?action=$action&amp;uuid={$_GET['uuid']}&amp;subaction=disk-remove&amp;dev={$tmp[$i]['device']}\">
+										Remove disk device</a>
 							$spaces</td>
         	                  </tr>";
                 	}
@@ -475,6 +546,7 @@
         	               <th>$spaces NIC Type$spaces</th>
                 	       <th>$spaces Network$spaces</th>
         	               <th>$spaces Network active$spaces</th>
+				<th>$spaces Actions $spaces</th>
 	                      </tr>";
 
 				for ($i = 0; $i < sizeof($tmp); $i++) {
@@ -488,9 +560,15 @@
                         	   <td align=\"center\">$spaces{$tmp[$i]['nic_type']}$spaces</td>
 	                           <td align=\"center\">$spaces{$tmp[$i]['network']}$spaces</td>
         	                   <td align=\"center\">$spaces$netUp$spaces</td>
+							   <td align=\"center\">$spaces
+									<a href=\"?action=$action&amp;uuid={$_GET['uuid']}&amp;subaction=nic-remove&amp;mac={$tmp[$i]['mac']}\">
+										Remove network card</a>
+							$spaces</td>        	                   
                 	          </tr>";
 				}
 				echo "</table>";
+				
+				echo "<br />$spaces<a href=\"?action=$action&amp;uuid={$_GET['uuid']}&amp;subaction=nic-add\">Add new network card</a>";
 			}
 			else
 				echo 'Domain doesn\'t have any network devices';
@@ -609,6 +687,10 @@
 				  </tr>";
 		}
 		echo "</table>";
+
+		//$ret = $lv->domain_nic_add('wifi', '22:33:44:12:15:18', 'default');
+		//var_dump( $lv->domain_nic_remove('wifi', '22:33:44:12:15:18') );
+		//echo $lv->get_last_error();
 
 		echo "<br /><pre>$ret</pre>";
 	}
