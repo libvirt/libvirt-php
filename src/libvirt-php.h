@@ -193,6 +193,7 @@ PHP_FUNCTION(libvirt_storagepool_get_volume_count);
 PHP_FUNCTION(libvirt_storagepool_refresh);
 PHP_FUNCTION(libvirt_storagepool_set_autostart);
 PHP_FUNCTION(libvirt_storagepool_get_autostart);
+PHP_FUNCTION(libvirt_storagepool_build);
 /* Network functions */
 PHP_FUNCTION(libvirt_network_define_xml);
 PHP_FUNCTION(libvirt_network_undefine);

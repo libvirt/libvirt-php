@@ -129,6 +129,7 @@ static function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_storagepool_refresh, NULL)
 	PHP_FE(libvirt_storagepool_set_autostart, NULL)
 	PHP_FE(libvirt_storagepool_get_autostart, NULL)
+	PHP_FE(libvirt_storagepool_build, NULL)
 	/* Network functions */
 	PHP_FE(libvirt_network_define_xml, NULL)
 	PHP_FE(libvirt_network_undefine, NULL)
@@ -541,6 +542,13 @@ PHP_MINIT_FUNCTION(libvirt)
 	REGISTER_LONG_CONSTANT("VIR_DOMAIN_DEVICE_MODIFY_CONFIG",	2, CONST_CS | CONST_PERSISTENT);
 	/* Forcibly modify device (ex. force eject a cdrom) */
 	REGISTER_LONG_CONSTANT("VIR_DOMAIN_DEVICE_MODIFY_FORCE",	4, CONST_CS | CONST_PERSISTENT);
+
+	/* REGISTER_LONG_CONSTANT */
+	REGISTER_LONG_CONSTANT("VIR_STORAGE_POOL_BUILD_NEW",	 	0, CONST_CS | CONST_PERSISTENT);
+	/* Repair / reinitialize */
+	REGISTER_LONG_CONSTANT("VIR_STORAGE_POOL_BUILD_REPAIR",	 	1, CONST_CS | CONST_PERSISTENT); 
+	/* Extend existing pool */
+	REGISTER_LONG_CONSTANT("VIR_STORAGE_POOL_BUILD_RESIZE",		2, CONST_CS | CONST_PERSISTENT);
 
 	REGISTER_INI_ENTRIES();
 
@@ -3580,6 +3588,29 @@ PHP_FUNCTION(libvirt_storagepool_get_autostart)
 	{
 		RETURN_FALSE;
 	}
+}
+
+/*
+	Function name:	libvirt_storagepool_build
+	Since version:	0.4.2
+	Description:	Function is used to Build the underlying storage pool, e.g. create the destination directory for NFS
+	Arguments:	@res [resource]: libvirt storagepool resource
+	Returns:	TRUE if success, FALSE on error
+*/
+PHP_FUNCTION(libvirt_storagepool_build)
+{
+	php_libvirt_storagepool *pool = NULL;
+	zval *zpool;
+	int flags = 0;
+
+	GET_STORAGEPOOL_FROM_ARGS ("r", &zpool);
+
+	if (virStoragePoolBuild (pool->pool, flags) == 0)
+	{
+		RETURN_TRUE;
+	}
+	
+	RETURN_FALSE;
 }
 
 /* Listing functions */
