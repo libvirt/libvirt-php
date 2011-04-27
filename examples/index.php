@@ -1,19 +1,36 @@
-<html>
-<head><title>Virtual server management</title></head>
-<body>
 <?php
-	require('header.php');
 	require('libvirt.php');
-
-	$spaces = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-
 	$lv = new Libvirt('qemu:///system');
-	$action = array_key_exists('action', $_GET) ? $_GET['action'] : false;
-	$subaction = array_key_exists('subaction', $_GET) ? $_GET['subaction'] : false;
-
 	$hn = $lv->get_hostname();
 	if ($hn == false)
 		die('Cannot open connection to hypervisor</body></html>');
+
+	$action = array_key_exists('action', $_GET) ? $_GET['action'] : false;
+	$subaction = array_key_exists('subaction', $_GET) ? $_GET['subaction'] : false;
+
+	if (($action == 'get-screenshot') && (array_key_exists('uuid', $_GET))) {
+		if (array_key_exists('width', $_GET) && $_GET['width'])
+			$tmp = $lv->domain_get_screenshot_thumbnail($_GET['uuid'], $_GET['width']);
+		else
+			$tmp = $lv->domain_get_screenshot($_GET['uuid']);
+
+                if (!$tmp)
+			echo $lv->get_last_error().'<br />';
+		else {
+			Header('Content-Type: image/png');
+			die($tmp);
+		}
+	}
+?>
+<html>
+	<head>
+		<title>Virtual server management</title>
+	</head>
+<body>
+<?php
+	require('header.php');
+
+	$spaces = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 
 	$uri = $lv->get_uri();
 	$tmp = $lv->get_domain_count();
@@ -483,9 +500,29 @@
 				}
 		}
 
-		echo "<h2>$domName - domain disk information</h2>";
-		echo "Domain type: ".$lv->get_domain_type($domName).'<br />';
-		echo "Domain emulator: ".$lv->get_domain_emulator($domName).'<br />';
+		$dom = $lv->get_domain_info($domName);
+		$mem = number_format($dom[$domName]['memory'] / 1024, 2, '.', ' ').' MB';
+		$cpu = $dom[$domName]['nrVirtCpu'];
+		$state = $lv->domain_state_translate($dom[$domName]['state']);
+		$domr = $lv->get_domain_object($domName);
+		$id = $lv->domain_get_id($domr);
+		$arch = $lv->get_domain_arch($domr);
+		$vnc = $lv->get_domain_vnc_port($domr);
+
+		if (!$id)
+			$id = 'N/A';
+		if ($vnc <= 0)
+			$vnc = 'N/A';
+
+		echo "<h2>$domName - domain information</h2>";
+		echo "<b>Domain type: </b>".$lv->get_domain_type($domName).'<br />';
+		echo "<b>Domain emulator: </b>".$lv->get_domain_emulator($domName).'<br />';
+		echo "<b>Domain memory: </b>$mem<br />";
+		echo "<b>Number of vCPUs: </b>$cpu<br />";
+		echo "<b>Domain state: </b>$state<br />";
+		echo "<b>Domain architecture: </b>$arch<br />";
+		echo "<b>Domain ID: </b>$id<br />";
+		echo "<b>VNC Port: </b>$vnc<br />";
 		echo '<br />';
 
 		echo $ret;
@@ -572,6 +609,10 @@
 			}
 			else
 				echo 'Domain doesn\'t have any network devices';
+
+			if ( $dom[$domName]['state'] == 1 ) {
+				echo "<h3>Screenshot</h3><img src=\"?action=get-screenshot&uuid={$_GET['uuid']}&width=640\">";
+			}
         }
 	else {
 		echo "Hypervisor URI: <i>$uri</i>, hostname: <i>$hn</i><br />
@@ -621,6 +662,7 @@
 				<th>Arch</th>
 				<th>State</th>
 				<th>ID / VNC port</th>
+				<th>Domain screenshot</th>
 				<th>Action</th>
 			  </tr>";
 		for ($i = 0; $i < sizeof($doms); $i++) {
@@ -666,6 +708,7 @@
 					<td>$spaces$arch$spaces</td>
 					<td>$spaces$state$spaces</td>
 					<td align=\"center\">$spaces$id / $vnc$spaces</td>
+					<td align=\"center\"><img src=\"?action=get-screenshot&uuid=$uuid&width=120\"></td>
 					<td align=\"center\">$spaces
 				";
 
@@ -680,6 +723,8 @@
 
 			if (!$lv->domain_is_running($name))
 				echo "| <a href=\"?action=domain-edit&amp;uuid=$uuid\">Edit domain XML</a>";
+			else
+				echo "| <a href=\"?action=get-screenshot&amp;uuid=$uuid\">Get screenshot</a>";
 
 			echo "
 					$spaces
@@ -687,10 +732,6 @@
 				  </tr>";
 		}
 		echo "</table>";
-
-		//$ret = $lv->domain_nic_add('wifi', '22:33:44:12:15:18', 'default');
-		//var_dump( $lv->domain_nic_remove('wifi', '22:33:44:12:15:18') );
-		//echo $lv->get_last_error();
 
 		echo "<br /><pre>$ret</pre>";
 	}

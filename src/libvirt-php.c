@@ -19,6 +19,11 @@
 #include "standard/info.h"
 #include <libvirt/libvirt.h>
 #include <libvirt/virterror.h>
+/* Required for screenshot and socket (for VNC) functions */
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
 
 /* Network constants */
 #define VIR_NETWORKS_ACTIVE	1
@@ -99,6 +104,7 @@ static function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_domain_set_autostart, NULL)
 	PHP_FE(libvirt_domain_is_active, NULL)
 	PHP_FE(libvirt_domain_get_next_dev_ids, NULL)
+	PHP_FE(libvirt_domain_get_screenshot, NULL)
 	/* Domain snapshot functions */
 	PHP_FE(libvirt_domain_has_current_snapshot, NULL)
 	PHP_FE(libvirt_domain_snapshot_create, NULL)
@@ -1689,6 +1695,193 @@ PHP_FUNCTION(libvirt_domain_get_uuid_string)
 	if (retval!=0) RETURN_FALSE;
 
 	RETURN_STRING(uuid,0);
+}
+
+int vncRefreshScreen(char *port, int scancode)
+{
+	struct addrinfo hints;
+	struct addrinfo *result, *rp;
+	int sfd, s, j;
+	size_t len;
+	ssize_t nread;
+	char buf[1024] = { 0 };
+
+	memset(&hints, 0, sizeof(struct addrinfo));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags = 0;
+	hints.ai_protocol = 0;
+
+	s = getaddrinfo("localhost", port, &hints, &result);
+	if (s != 0)
+		return -1;
+
+	for (rp = result; rp != NULL; rp = rp->ai_next) {
+		sfd = socket(rp->ai_family, rp->ai_socktype,
+									rp->ai_protocol);
+		if (sfd == -1)
+			continue;
+
+		if (connect(sfd, rp->ai_addr, rp->ai_addrlen) != -1)
+			break;
+
+		close(sfd);
+	}
+
+	if (rp == NULL)
+		return -2;
+
+	freeaddrinfo(result);
+
+	read(sfd, buf, 10);
+	memset(buf, 0, 1024);
+	buf[0] = 0x52;
+	buf[1] = 0x46;
+	buf[2] = 0x42;
+	buf[3] = 0x20;
+	buf[4] = 0x30;
+	buf[5] = 0x30;
+	buf[6] = 0x33;
+	buf[7] = 0x2e;
+	buf[8] = 0x30;
+	buf[9] = 0x30;
+	buf[10] = 0x38;
+	buf[11] = 0x0a;
+	
+	if (write(sfd, buf, 12) < 0)
+		return -3;
+
+	read(sfd, buf, 1);
+	buf[0] = 0x01;
+
+	if (write(sfd, buf, 1) < 0)
+		return -4;
+
+	read(sfd, buf, 1);
+	buf[1] = 0x00;
+
+	if (write(sfd, buf, 1) < 0)
+		return -5;
+	
+	read(sfd, buf, 1);
+	memset(buf, 0, 1024);
+	
+	buf[0] = 0x04;
+	buf[1] = 0x01;
+	buf[2] = 0x00;
+	buf[3] = 0x00;
+	buf[4] = 0x00;
+	buf[5] = 0x00;
+	buf[6] = 0x00;
+	buf[7] = scancode;
+
+	if (write(sfd, buf, 8) < 0)
+		return -errno;
+	
+	read(sfd, buf, 2);
+	memset(buf, 0, 1024);
+	buf[0] = 0x04;
+	buf[1] = 0x00;
+	buf[2] = 0x00;
+	buf[3] = 0x00;
+	buf[4] = 0x00;
+	buf[5] = 0x00;
+	buf[6] = 0x00;
+	buf[7] = scancode;
+    
+	if (write(sfd, buf, 8) < 0)
+		return -errno;
+	
+	close(sfd);
+	return 0;
+}
+
+/*
+	Function name:	libvirt_domain_get_screenshot
+	Since version:	0.4.2
+	Description:	Function uses gvnccapture (if available) to get the screenshot of the running domain
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Returns:	PNG image binary data
+*/
+PHP_FUNCTION(libvirt_domain_get_screenshot)
+{
+	php_libvirt_domain *domain=NULL;
+	zval *zdomain;
+	pid_t childpid = -1;
+	pid_t w = -1;
+	int retval = -1;
+	int fd = -1, fsize = -1;
+	char file[] = "/tmp/libvirt-php-tmp-XXXXXX";
+	char *buf = NULL;
+	char *tmp = NULL;
+	char *xml = NULL;
+	int port = -1;
+	int scancode = 10;
+
+	if (access("/usr/bin/gvnccapture", X_OK) != 0) {
+		set_error("Cannot find gvnccapture binary");
+		RETURN_FALSE;
+	}
+	
+	GET_DOMAIN_FROM_ARGS("r|l",&zdomain, &scancode);
+
+	xml=virDomainGetXMLDesc(domain->domain, 0);
+	if (xml==NULL) {
+		set_error_if_unset("Cannot get the XML description");
+		RETURN_FALSE;
+	}
+
+ 	tmp = get_string_from_xpath(xml, "//domain/devices/graphics/@port", NULL, &retval);
+	if ((tmp == NULL) || (retval < 0)) {
+		set_error("Cannot get the VNC port");
+		RETURN_FALSE;
+	}
+	
+	vncRefreshScreen(tmp, scancode);
+
+	port = atoi(tmp)-5900;
+	
+	mkstemp(file);
+		
+	childpid = fork();
+	if (childpid == -1)
+		RETURN_FALSE;
+	
+	if (childpid == 0) {
+		char tmpp[8] = { 0 };
+		
+		snprintf(tmpp, sizeof(tmpp), ":%d", port);
+		retval = execlp("/usr/bin/gvnccapture", "gvnccapture", tmpp, file, NULL);
+		_exit( retval );
+	}
+	else {
+		do {
+			w = waitpid(childpid, &retval, 0);
+			if (w == -1)
+				RETURN_FALSE;
+		} while (!WIFEXITED(retval) && !WIFSIGNALED(retval));		
+	}
+	
+	if (WEXITSTATUS(retval) != 0) {
+		set_error("Cannot spawn gvnccapture utility");
+		RETURN_FALSE;
+	}
+	
+	fd = open(file, O_RDONLY);
+	fsize = lseek(fd, 0, SEEK_END);
+	lseek(fd, 0, SEEK_SET);
+	buf = emalloc( (fsize + 1) * sizeof(char) );
+	memset(buf, 0, fsize + 1);
+	read(fd, buf, fsize);
+	close(fd);
+	
+	if (access(file, F_OK) == 0)
+		unlink(file);
+
+	// Necessary to make the output binary safe
+	Z_STRLEN_P(return_value) = fsize;
+	Z_STRVAL_P(return_value) = buf;
+	Z_TYPE_P(return_value) = IS_STRING;
 }
 
 /*

@@ -124,6 +124,7 @@ PHP_FUNCTION(libvirt_node_get_info);
 PHP_FUNCTION(libvirt_domain_get_counts);
 PHP_FUNCTION(libvirt_domain_lookup_by_name);
 PHP_FUNCTION(libvirt_domain_get_xml_desc);
+PHP_FUNCTION(libvirt_domain_get_screenshot);
 PHP_FUNCTION(libvirt_domain_disk_add);
 PHP_FUNCTION(libvirt_domain_disk_remove);
 PHP_FUNCTION(libvirt_domain_nic_add);

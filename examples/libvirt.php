@@ -27,6 +27,52 @@
                         return ($tmp) ? $tmp : $this->_set_last_error();
                 }
 
+		function domain_get_screenshot($domain) {
+			$dom = $this->get_domain_object($domain);
+
+			$tmp = libvirt_domain_get_screenshot($dom);
+			return ($tmp) ? $tmp : $this->_set_last_error();
+		}
+
+		function domain_get_screenshot_thumbnail($domain, $w=120) {
+			$screen = $this->domain_get_screenshot($domain);
+			$imgFile = tempnam("/tmp", "libvirt-php-tmp-resize-XXXXXX");;
+
+			if ($screen) {
+				$fp = fopen($imgFile, "wb");
+				fwrite($fp, $screen);
+				fclose($fp);
+			}
+
+			if (file_exists($imgFile) && $screen) {
+				list($width, $height) = getimagesize($imgFile); 
+				$h = ($height / $width) * $w;
+			} else
+				$h = $w * (3 / 4.5);
+
+			$new = imagecreatetruecolor($w, $h);
+			if ($screen) {
+				$img = imagecreatefrompng($imgFile);
+				imagecopyresampled($new,$img,0,0,0,0, $w,$h,$width,$height);
+				imagedestroy($img);
+			}
+			else {
+				// White image? Good choice? Maybe we need to change to 1x1 px
+				$c = imagecolorallocate($new, 255, 255, 255);
+				imagefill($new, 1, 1, $c);
+			}
+
+			imagepng($new, $imgFile);
+			imagedestroy($new);
+
+			$fp = fopen($imgFile, "rb");
+			$data = fread($fp, filesize($imgFile));
+			fclose($fp);
+
+			unlink($imgFile);
+			return $data;
+		}
+
 		function domain_disk_remove($domain, $dev) {
 			$dom = $this->get_domain_object($domain);
 
@@ -87,13 +133,15 @@
 		}
 
 		function get_domain_object($nameRes) {
-			if (!is_resource($nameRes)) {
-				$dom=libvirt_domain_lookup_by_name($this->conn, $nameRes);
+			if (is_resource($nameRes))
+				return $nameRes;
+
+			$dom=libvirt_domain_lookup_by_name($this->conn, $nameRes);
+			if (!$dom) {
+				$dom=libvirt_domain_lookup_by_uuid_string($this->conn, $nameRes);
 				if (!$dom)
 					return $this->_set_last_error();
 			}
-			else
-				$dom=$nameRes;
 
 			return $dom;
 		}
