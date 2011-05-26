@@ -31,6 +31,12 @@
 #include "TSRM.h"
 #endif
 
+#define ARRAY_CARDINALITY(array)	(sizeof(array) / sizeof(array[0]))
+
+/* Additional binaries */
+char *features[] = { "screenshot", NULL };
+char *features_binaries[] = { "/usr/bin/gvnccapture", NULL };
+
 #include <libvirt/libvirt.h>
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
@@ -226,6 +232,7 @@ PHP_FUNCTION(libvirt_list_active_storagepools);
 PHP_FUNCTION(libvirt_list_inactive_storagepools);
 PHP_FUNCTION(libvirt_version);
 PHP_FUNCTION(libvirt_check_version);
+PHP_FUNCTION(libvirt_has_feature);
 
 extern zend_module_entry libvirt_module_entry;
 #define phpext_libvirt_ptr &libvirt_module_entry

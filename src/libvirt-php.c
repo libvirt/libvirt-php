@@ -171,6 +171,7 @@ static function_entry libvirt_functions[] = {
 	/* Version information function */
 	PHP_FE(libvirt_version, NULL)
 	PHP_FE(libvirt_check_version, NULL)
+	PHP_FE(libvirt_has_feature, NULL)
 	{NULL, NULL, NULL}
 };
 
@@ -273,6 +274,136 @@ void set_error_if_unset(char *msg TSRMLS_DC)
 {
 	if (LIBVIRT_G (last_error) == NULL)
 		set_error(msg);
+}
+
+/*
+	Private function name:	vnc_refresh_screen
+	Since version:		0.4.1(-3)
+	Description:		Function to send the key to VNC window to refresh the screen, accepts both port and key scancode
+	Arguments:		@port [string]: string version of port value to connect to
+				@scancode [int]: key scancode
+	Returns:		None
+*/
+int vnc_refresh_screen(char *port, int scancode)
+{
+	struct addrinfo hints;
+	struct addrinfo *result, *rp;
+	int sfd, s, j;
+	size_t len;
+	ssize_t nread;
+	char buf[1024] = { 0 };
+
+	memset(&hints, 0, sizeof(struct addrinfo));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags = 0;
+	hints.ai_protocol = 0;
+
+	s = getaddrinfo("localhost", port, &hints, &result);
+	if (s != 0)
+		return -1;
+
+	for (rp = result; rp != NULL; rp = rp->ai_next) {
+		sfd = socket(rp->ai_family, rp->ai_socktype,
+									rp->ai_protocol);
+		if (sfd == -1)
+			continue;
+
+		if (connect(sfd, rp->ai_addr, rp->ai_addrlen) != -1)
+			break;
+
+		close(sfd);
+	}
+
+	if (rp == NULL)
+		return -2;
+
+	freeaddrinfo(result);
+
+	read(sfd, buf, 10);
+	memset(buf, 0, 1024);
+	buf[0] = 0x52;
+	buf[1] = 0x46;
+	buf[2] = 0x42;
+	buf[3] = 0x20;
+	buf[4] = 0x30;
+	buf[5] = 0x30;
+	buf[6] = 0x33;
+	buf[7] = 0x2e;
+	buf[8] = 0x30;
+	buf[9] = 0x30;
+	buf[10] = 0x38;
+	buf[11] = 0x0a;
+	
+	if (write(sfd, buf, 12) < 0)
+		return -3;
+
+	read(sfd, buf, 1);
+	buf[0] = 0x01;
+
+	if (write(sfd, buf, 1) < 0)
+		return -4;
+
+	read(sfd, buf, 1);
+	buf[1] = 0x00;
+
+	if (write(sfd, buf, 1) < 0)
+		return -5;
+	
+	read(sfd, buf, 1);
+	memset(buf, 0, 1024);
+	
+	buf[0] = 0x04;
+	buf[1] = 0x01;
+	buf[2] = 0x00;
+	buf[3] = 0x00;
+	buf[4] = 0x00;
+	buf[5] = 0x00;
+	buf[6] = 0x00;
+	buf[7] = scancode;
+
+	if (write(sfd, buf, 8) < 0)
+		return -errno;
+	
+	read(sfd, buf, 2);
+	memset(buf, 0, 1024);
+	buf[0] = 0x04;
+	buf[1] = 0x00;
+	buf[2] = 0x00;
+	buf[3] = 0x00;
+	buf[4] = 0x00;
+	buf[5] = 0x00;
+	buf[6] = 0x00;
+	buf[7] = scancode;
+    
+	if (write(sfd, buf, 8) < 0)
+		return -errno;
+	
+	close(sfd);
+	return 0;
+}
+
+/*
+	Private function name:	get_feature_binary
+	Since version:		0.4.1(-3)
+	Description:		Function to get the existing feature binary for the specified feature, e.g. screenshot feature
+	Arguments:		@name [string]: name of the feature to check against
+	Returns:		Existing and executable binary name or NULL value
+*/
+char *get_feature_binary(char *name)
+{
+	int i, max;
+
+	max = (ARRAY_CARDINALITY(features) < ARRAY_CARDINALITY(features_binaries)) ?
+		ARRAY_CARDINALITY(features) : ARRAY_CARDINALITY(features_binaries);
+
+	for (i = 0; i < max; i++)
+		if ((features[i] != NULL) && (strcmp(features[i], name) == 0)) {
+			if (access(features_binaries[i], X_OK) == 0)
+				return strdup(features_binaries[i]);
+		}
+
+	return NULL;
 }
 
 /*
@@ -1697,105 +1828,6 @@ PHP_FUNCTION(libvirt_domain_get_uuid_string)
 	RETURN_STRING(uuid,0);
 }
 
-int vncRefreshScreen(char *port, int scancode)
-{
-	struct addrinfo hints;
-	struct addrinfo *result, *rp;
-	int sfd, s, j;
-	size_t len;
-	ssize_t nread;
-	char buf[1024] = { 0 };
-
-	memset(&hints, 0, sizeof(struct addrinfo));
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_flags = 0;
-	hints.ai_protocol = 0;
-
-	s = getaddrinfo("localhost", port, &hints, &result);
-	if (s != 0)
-		return -1;
-
-	for (rp = result; rp != NULL; rp = rp->ai_next) {
-		sfd = socket(rp->ai_family, rp->ai_socktype,
-									rp->ai_protocol);
-		if (sfd == -1)
-			continue;
-
-		if (connect(sfd, rp->ai_addr, rp->ai_addrlen) != -1)
-			break;
-
-		close(sfd);
-	}
-
-	if (rp == NULL)
-		return -2;
-
-	freeaddrinfo(result);
-
-	read(sfd, buf, 10);
-	memset(buf, 0, 1024);
-	buf[0] = 0x52;
-	buf[1] = 0x46;
-	buf[2] = 0x42;
-	buf[3] = 0x20;
-	buf[4] = 0x30;
-	buf[5] = 0x30;
-	buf[6] = 0x33;
-	buf[7] = 0x2e;
-	buf[8] = 0x30;
-	buf[9] = 0x30;
-	buf[10] = 0x38;
-	buf[11] = 0x0a;
-	
-	if (write(sfd, buf, 12) < 0)
-		return -3;
-
-	read(sfd, buf, 1);
-	buf[0] = 0x01;
-
-	if (write(sfd, buf, 1) < 0)
-		return -4;
-
-	read(sfd, buf, 1);
-	buf[1] = 0x00;
-
-	if (write(sfd, buf, 1) < 0)
-		return -5;
-	
-	read(sfd, buf, 1);
-	memset(buf, 0, 1024);
-	
-	buf[0] = 0x04;
-	buf[1] = 0x01;
-	buf[2] = 0x00;
-	buf[3] = 0x00;
-	buf[4] = 0x00;
-	buf[5] = 0x00;
-	buf[6] = 0x00;
-	buf[7] = scancode;
-
-	if (write(sfd, buf, 8) < 0)
-		return -errno;
-	
-	read(sfd, buf, 2);
-	memset(buf, 0, 1024);
-	buf[0] = 0x04;
-	buf[1] = 0x00;
-	buf[2] = 0x00;
-	buf[3] = 0x00;
-	buf[4] = 0x00;
-	buf[5] = 0x00;
-	buf[6] = 0x00;
-	buf[7] = scancode;
-    
-	if (write(sfd, buf, 8) < 0)
-		return -errno;
-	
-	close(sfd);
-	return 0;
-}
-
 /*
 	Function name:	libvirt_domain_get_screenshot
 	Since version:	0.4.2
@@ -1817,8 +1849,10 @@ PHP_FUNCTION(libvirt_domain_get_screenshot)
 	char *xml = NULL;
 	int port = -1;
 	int scancode = 10;
+	char *path;
 
-	if (access("/usr/bin/gvnccapture", X_OK) != 0) {
+	path = get_feature_binary("screenshot");
+	if (access(path, X_OK) != 0) {
 		set_error("Cannot find gvnccapture binary");
 		RETURN_FALSE;
 	}
@@ -1837,7 +1871,7 @@ PHP_FUNCTION(libvirt_domain_get_screenshot)
 		RETURN_FALSE;
 	}
 	
-	vncRefreshScreen(tmp, scancode);
+	vnc_refresh_screen(tmp, scancode);
 
 	port = atoi(tmp)-5900;
 	
@@ -1851,7 +1885,7 @@ PHP_FUNCTION(libvirt_domain_get_screenshot)
 		char tmpp[8] = { 0 };
 		
 		snprintf(tmpp, sizeof(tmpp), ":%d", port);
-		retval = execlp("/usr/bin/gvnccapture", "gvnccapture", tmpp, file, NULL);
+		retval = execlp(path, basename(path), tmpp, file, NULL);
 		_exit( retval );
 	}
 	else {
@@ -1863,7 +1897,7 @@ PHP_FUNCTION(libvirt_domain_get_screenshot)
 	}
 	
 	if (WEXITSTATUS(retval) != 0) {
-		set_error("Cannot spawn gvnccapture utility");
+		set_error("Cannot spawn utility to get screenshot");
 		RETURN_FALSE;
 	}
 	
@@ -1878,7 +1912,7 @@ PHP_FUNCTION(libvirt_domain_get_screenshot)
 	if (access(file, F_OK) == 0)
 		unlink(file);
 
-	// Necessary to make the output binary safe
+	/* This is necessary to make the output binary safe */
 	Z_STRLEN_P(return_value) = fsize;
 	Z_STRVAL_P(return_value) = buf;
 	Z_TYPE_P(return_value) = IS_STRING;
@@ -5200,12 +5234,6 @@ PHP_FUNCTION(libvirt_check_version)
 	if (virGetVersion(&libVer,NULL,NULL) != 0)
 		RETURN_FALSE;
 
-	array_init(return_value);
-	add_assoc_long(return_value, "major", major);
-	add_assoc_long(return_value, "minor", minor);
-	add_assoc_long(return_value, "micro", micro);
-	add_assoc_long(return_value, "type",  type);
-	
 	if (type == VIR_VERSION_BINDING) {
 		if ((VERSION_MAJOR > major) ||
 			((VERSION_MAJOR == major) && (VERSION_MINOR > minor)) ||
@@ -5223,6 +5251,35 @@ PHP_FUNCTION(libvirt_check_version)
 	}
 	else
 		set_error("Invalid version type" TSRMLS_CC);
+
+	RETURN_FALSE;
+}
+
+/*
+	Function name:		libvirt_has_feature
+	Since version:		0.4.1(-3)
+	Description:		Function to check for feature existence for working libvirt instance
+	Arguments:		@name [string]: feature name
+	Returns:		TRUE if feature is supported, FALSE otherwise
+*/
+PHP_FUNCTION(libvirt_has_feature)
+{
+	char *name = NULL;
+	int name_len = 0;
+	char *binary = NULL;
+	int ret = 0;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &name, &name_len) == FAILURE) {
+		set_error("Invalid argument");
+		RETURN_FALSE;
+	}
+
+	binary = get_feature_binary(name);
+	ret = (binary != NULL);
+	free(binary);
+
+	if (ret)
+		RETURN_TRUE;
 
 	RETURN_FALSE;
 }

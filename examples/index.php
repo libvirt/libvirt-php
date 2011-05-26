@@ -610,7 +610,7 @@
 			else
 				echo 'Domain doesn\'t have any network devices';
 
-			if ( $dom[$domName]['state'] == 1 ) {
+			if (( $dom[$domName]['state'] == 1 ) && ($lv->supports('screenshot'))) {
 				echo "<h3>Screenshot</h3><img src=\"?action=get-screenshot&uuid={$_GET['uuid']}&width=640\">";
 			}
         }
@@ -661,10 +661,18 @@
 				<th>NICs</th>
 				<th>Arch</th>
 				<th>State</th>
-				<th>ID / VNC port</th>
+				<th>ID / VNC port</th>";
+
+		if (($tmp['active'] > 0) && ($lv->supports('screenshot')))
+			echo "
 				<th>Domain screenshot</th>
+				";
+
+		echo "
 				<th>Action</th>
 			  </tr>";
+
+		$active = $tmp['active'];
 		for ($i = 0; $i < sizeof($doms); $i++) {
 			$res = $lv->get_domain_by_name($doms[$i]);
 			$uuid = libvirt_domain_get_uuid_string($res);
@@ -708,7 +716,14 @@
 					<td>$spaces$arch$spaces</td>
 					<td>$spaces$state$spaces</td>
 					<td align=\"center\">$spaces$id / $vnc$spaces</td>
-					<td align=\"center\"><img src=\"?action=get-screenshot&uuid=$uuid&width=120\"></td>
+				";
+
+			if (($active > 0) && ($lv->supports('screenshot')))
+				echo "
+					<td align=\"center\"><img src=\"?action=get-screenshot&uuid=$uuid&width=120\" id=\"screenshot$i\"></td>
+				";
+
+			echo "
 					<td align=\"center\">$spaces
 				";
 
@@ -724,6 +739,7 @@
 			if (!$lv->domain_is_running($name))
 				echo "| <a href=\"?action=domain-edit&amp;uuid=$uuid\">Edit domain XML</a>";
 			else
+			if (($active > 0) && ($lv->supports('screenshot')))
 				echo "| <a href=\"?action=get-screenshot&amp;uuid=$uuid\">Get screenshot</a>";
 
 			echo "

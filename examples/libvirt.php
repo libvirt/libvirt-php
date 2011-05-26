@@ -4,6 +4,7 @@
 		private $last_error;
 
 		function Libvirt($uri = false) {
+			$this->features = array();
 			if ($uri != false)
 				$this->connect($uri);
 		}
@@ -47,8 +48,10 @@
 			if (file_exists($imgFile) && $screen) {
 				list($width, $height) = getimagesize($imgFile); 
 				$h = ($height / $width) * $w;
-			} else
-				$h = $w * (3 / 4.5);
+			} else {
+				$w = $h = 1;
+				//$h = $w * (3 / 4.5);
+			}
 
 			$new = imagecreatetruecolor($w, $h);
 			if ($screen) {
@@ -57,9 +60,8 @@
 				imagedestroy($img);
 			}
 			else {
-				// White image? Good choice? Maybe we need to change to 1x1 px
 				$c = imagecolorallocate($new, 255, 255, 255);
-				imagefill($new, 1, 1, $c);
+				imagefill($new, 0, 0, $c);
 			}
 
 			imagepng($new, $imgFile);
@@ -78,6 +80,14 @@
 
 			$tmp = libvirt_domain_disk_remove($dom, $dev);
 			return ($tmp) ? $tmp : $this->_set_last_error();
+		}
+
+		function supports($name) {
+			if (array_key_exists($name, $this->features))
+				return $this->features[$name];
+
+			$this->features[$name] = libvirt_has_feature($name);
+			return $this->features[$name];
 		}
 
 		function macbyte($val) {
