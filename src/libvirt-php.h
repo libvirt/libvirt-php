@@ -40,10 +40,13 @@ char *features_binaries[] = { "/usr/bin/gvnccapture", NULL };
 #include <libvirt/libvirt.h>
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
+#include <dirent.h>
+#include <strings.h>
 
 ZEND_BEGIN_MODULE_GLOBALS(libvirt)
 	char *last_error;
 	zend_bool longlong_to_string_ini;
+	char *iso_path_ini;
 ZEND_END_MODULE_GLOBALS(libvirt)
 
 #ifdef ZTS
@@ -233,6 +236,7 @@ PHP_FUNCTION(libvirt_list_inactive_storagepools);
 PHP_FUNCTION(libvirt_version);
 PHP_FUNCTION(libvirt_check_version);
 PHP_FUNCTION(libvirt_has_feature);
+PHP_FUNCTION(libvirt_get_iso_images);
 
 extern zend_module_entry libvirt_module_entry;
 #define phpext_libvirt_ptr &libvirt_module_entry

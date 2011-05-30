@@ -172,6 +172,7 @@ static function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_version, NULL)
 	PHP_FE(libvirt_check_version, NULL)
 	PHP_FE(libvirt_has_feature, NULL)
+	PHP_FE(libvirt_get_iso_images, NULL)
 	{NULL, NULL, NULL}
 };
 
@@ -201,12 +202,14 @@ ZEND_GET_MODULE(libvirt)
 /* PHP init options */
 PHP_INI_BEGIN()
 	STD_PHP_INI_ENTRY("libvirt.longlong_to_string", "1", PHP_INI_ALL, OnUpdateBool, longlong_to_string_ini, zend_libvirt_globals, libvirt_globals)
+	STD_PHP_INI_ENTRY("libvirt.iso_path", "/var/lib/libvirt/images/iso", PHP_INI_ALL, OnUpdateString, iso_path_ini, zend_libvirt_globals, libvirt_globals)
 PHP_INI_END()
 
 /* PHP requires to have this function defined */
 static void php_libvirt_init_globals(zend_libvirt_globals *libvirt_globals)
 {
 	libvirt_globals->longlong_to_string_ini = 1;
+	libvirt_globals->iso_path_ini = "/var/lib/libvirt/images/iso";
 }
 
 /* PHP request initialization */
@@ -223,9 +226,34 @@ PHP_RSHUTDOWN_FUNCTION(libvirt)
 	return SUCCESS;
 }
 
+/*
+	Private function name:	get_feature_binary
+	Since version:		0.4.1(-3)
+	Description:		Function to get the existing feature binary for the specified feature, e.g. screenshot feature
+	Arguments:		@name [string]: name of the feature to check against
+	Returns:		Existing and executable binary name or NULL value
+*/
+char *get_feature_binary(char *name)
+{
+	int i, max;
+
+	max = (ARRAY_CARDINALITY(features) < ARRAY_CARDINALITY(features_binaries)) ?
+		ARRAY_CARDINALITY(features) : ARRAY_CARDINALITY(features_binaries);
+
+	for (i = 0; i < max; i++)
+		if ((features[i] != NULL) && (strcmp(features[i], name) == 0)) {
+			if (access(features_binaries[i], X_OK) == 0)
+				return strdup(features_binaries[i]);
+		}
+
+	return NULL;
+}
+
 /* Information function for phpinfo() */
 PHP_MINFO_FUNCTION(libvirt)
 {
+	int i;
+	char path[1024];
 	unsigned long libVer;
 	php_info_print_table_start();
 	php_info_print_table_row(2, "Libvirt support", "enabled");
@@ -236,6 +264,31 @@ PHP_MINFO_FUNCTION(libvirt)
 		char version[100];
 		snprintf(version, sizeof(version), "%i.%i.%i", (long)((libVer/1000000) % 1000),(long)((libVer/1000) % 1000),(long)(libVer % 1000));
 		php_info_print_table_row(2, "Libvirt version", version);
+	}
+
+	php_info_print_table_row(2, "Convertion of long long values to strings",
+				(LIBVIRT_G(longlong_to_string_ini)) ? "True" : "False");
+	if (!access(LIBVIRT_G(iso_path_ini), F_OK) == 0)
+		snprintf(path, sizeof(path), "%s - path is invalid!", LIBVIRT_G(iso_path_ini));
+	else
+		snprintf(path, sizeof(path), "%s (path is valid)", LIBVIRT_G(iso_path_ini));
+
+	php_info_print_table_row(2, "ISO Image path", path);
+
+	/* Iterate all the features supported */
+	char features_supported[4096] = { 0 };
+	for (i = 0; i < ARRAY_CARDINALITY(features); i++) {
+		char *tmp;
+		if ((features[i] != NULL) && (tmp = get_feature_binary(features[i]))) {
+			free(tmp);
+			strcat(features_supported, features[i]);
+			strcat(features_supported, ", ");
+		}
+	}
+
+	if (strlen(features_supported) > 0) {
+		features_supported[ strlen(features_supported) - 2 ] = 0;
+		php_info_print_table_row(2, "Features supported", features_supported);
 	}
 
 	php_info_print_table_end();
@@ -381,29 +434,6 @@ int vnc_refresh_screen(char *port, int scancode)
 	
 	close(sfd);
 	return 0;
-}
-
-/*
-	Private function name:	get_feature_binary
-	Since version:		0.4.1(-3)
-	Description:		Function to get the existing feature binary for the specified feature, e.g. screenshot feature
-	Arguments:		@name [string]: name of the feature to check against
-	Returns:		Existing and executable binary name or NULL value
-*/
-char *get_feature_binary(char *name)
-{
-	int i, max;
-
-	max = (ARRAY_CARDINALITY(features) < ARRAY_CARDINALITY(features_binaries)) ?
-		ARRAY_CARDINALITY(features) : ARRAY_CARDINALITY(features_binaries);
-
-	for (i = 0; i < max; i++)
-		if ((features[i] != NULL) && (strcmp(features[i], name) == 0)) {
-			if (access(features_binaries[i], X_OK) == 0)
-				return strdup(features_binaries[i]);
-		}
-
-	return NULL;
 }
 
 /*
@@ -5282,5 +5312,48 @@ PHP_FUNCTION(libvirt_has_feature)
 		RETURN_TRUE;
 
 	RETURN_FALSE;
+}
+
+/*
+	Function name:		libvirt_get_iso_images
+	Since version:		0.4.1(-3)
+	Description:		Function to get the ISO images on path and return them in the array
+	Arguments:		@path [string]: string of path where to look for the ISO images
+	Returns:		ISO image array on success, FALSE otherwise
+*/
+PHP_FUNCTION(libvirt_get_iso_images)
+{
+	char *path = NULL;
+	int path_len = 0;
+	struct dirent *entry;
+	DIR *d = NULL;
+	int num = 0;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &path, &path_len) == FAILURE) {
+		set_error("Invalid argument");
+		RETURN_FALSE;
+	}
+
+	if (LIBVIRT_G(iso_path_ini))
+		path = strdup( LIBVIRT_G(iso_path_ini) );
+
+	if ((path == NULL) || (path[0] != '/')) {
+		set_error("Invalid argument, path must be set and absolute (start by slash character [/])");
+		RETURN_FALSE;
+	}
+
+        if ((d = opendir(path)) != NULL) {
+		array_init(return_value);
+		while ((entry = readdir(d)) != NULL) {
+			if (strcasecmp(entry->d_name + strlen(entry->d_name) - 4, ".iso") == 0) {
+				add_next_index_string(return_value, entry->d_name, 1);
+				num++;
+			}
+		}
+		closedir(d);
+	}
+
+	if (num == 0)
+		RETURN_FALSE;
 }
 
