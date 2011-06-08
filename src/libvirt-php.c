@@ -885,7 +885,6 @@ static int libvirt_virConnectCredType[] = {
 	Function name:	libvirt_get_last_error
 	Since version:	0.4.1(-1)
 	Description:	This function is used to get the last error coming either from libvirt or the PHP extension itself
-	Arguments:	None
 	Returns:	last error string
 */
 PHP_FUNCTION(libvirt_get_last_error)
