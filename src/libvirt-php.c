@@ -67,6 +67,9 @@ static function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_domain_get_counts, NULL)
 	PHP_FE(libvirt_domain_lookup_by_name, NULL)
 	PHP_FE(libvirt_domain_get_xml_desc, NULL)
+	PHP_FE(libvirt_domain_change_vcpus, NULL)
+	PHP_FE(libvirt_domain_change_memory, NULL)
+	PHP_FE(libvirt_domain_change_boot_devices, NULL)
 	PHP_FE(libvirt_domain_disk_add, NULL)
 	PHP_FE(libvirt_domain_disk_remove, NULL)
 	PHP_FE(libvirt_domain_nic_add, NULL)
@@ -269,9 +272,10 @@ PHP_MINFO_FUNCTION(libvirt)
 	php_info_print_table_row(2, "Convertion of long long values to strings",
 				(LIBVIRT_G(longlong_to_string_ini)) ? "True" : "False");
 	if (!access(LIBVIRT_G(iso_path_ini), F_OK) == 0)
-		snprintf(path, sizeof(path), "%s - path is invalid!", LIBVIRT_G(iso_path_ini));
+		snprintf(path, sizeof(path), "%s - path is invalid. To set the valid path modify the libvirt.iso_path in your php.ini configuration!",
+					LIBVIRT_G(iso_path_ini));
 	else
-		snprintf(path, sizeof(path), "%s (path is valid)", LIBVIRT_G(iso_path_ini));
+		snprintf(path, sizeof(path), "%s", LIBVIRT_G(iso_path_ini));
 
 	php_info_print_table_row(2, "ISO Image path", path);
 
@@ -2063,6 +2067,225 @@ PHP_FUNCTION(libvirt_domain_get_xml_desc)
 }
 
 /*
+	Function name:	libvirt_domain_change_vcpus
+	Since version:	0.4.2
+	Description:	Function is used to change the VCPU count for the domain
+	Arguments:	@res [resource]: libvirt domain resource
+			@numCpus [int]: number of VCPUs to be set for the guest
+	Returns:	new domain resource
+*/
+PHP_FUNCTION(libvirt_domain_change_vcpus)
+{
+	php_libvirt_domain *domain=NULL;
+	zval *zdomain;
+	char *tmp1 = NULL;
+	char *tmp2 = NULL;
+	char *xml;
+	int typ_len;
+	char *new_xml = NULL;
+	int new_len;
+	char new[4096] = { 0 };
+	long xflags = 0;
+	long numCpus = 1;
+	int retval = -1;
+	int pos = -1;
+	php_libvirt_domain *res_domain = NULL;
+	php_libvirt_connection *conn   = NULL;
+	virDomainPtr dom=NULL;
+
+	GET_DOMAIN_FROM_ARGS("rl|l",&zdomain,&numCpus,&xflags);
+
+	xml=virDomainGetXMLDesc(domain->domain,xflags);
+	if (xml==NULL) {
+		set_error_if_unset("Cannot get the XML description");
+		RETURN_FALSE;
+	}
+
+	snprintf(new, sizeof(new), "  <vcpu>%d</vcpu>\n", numCpus);
+	tmp1 = strstr(xml, "</vcpu>") + strlen("</vcpu>");
+	pos = strlen(xml) - strlen(tmp1);
+
+	tmp2 = emalloc( ( pos + 1 )* sizeof(char) );
+	memset(tmp2, 0, pos + 1);
+	memcpy(tmp2, xml, pos - 15);
+
+	new_len = strlen(tmp1) + strlen(tmp2) + strlen(new) + 2;
+	new_xml = emalloc( new_len * sizeof(char) );
+	snprintf(new_xml, new_len, "%s\n%s%s", tmp2, new, tmp1);
+
+	conn = domain->conn;
+	
+	virDomainUndefine(domain->domain);
+	virDomainFree(domain->domain);
+	dom=virDomainDefineXML(conn->conn, new_xml);
+	if (dom==NULL) {
+		dom=virDomainDefineXML(conn->conn, xml);
+		if (dom == NULL)
+			RETURN_FALSE;
+	}
+
+	res_domain = emalloc(sizeof(php_libvirt_domain));
+	res_domain->domain = dom;
+	res_domain->conn = conn;
+
+	ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
+}
+
+/*
+	Function name:	libvirt_domain_change_memory
+	Since version:	0.4.2
+	Description:	Function is used to change the domain memory allocation
+	Arguments:	@res [resource]: libvirt domain resource
+			@allocMem [int]: number of MiBs to be set as immediate memory value
+			@allocMax [int]: number of MiBs to be set as the maximum allocation
+	Returns:	new domain resource
+*/
+PHP_FUNCTION(libvirt_domain_change_memory)
+{
+	php_libvirt_domain *domain=NULL;
+	zval *zdomain;
+	char *tmpA = NULL;
+	char *tmp1 = NULL;
+	char *tmp2 = NULL;
+	char *xml;
+	int typ_len;
+	char *new_xml = NULL;
+	int new_len;
+	char new[4096] = { 0 };
+	long xflags = 0;
+	long allocMem = 0;
+	long allocMax = 0;
+	int retval = -1;
+	int pos = -1;
+	int len = 0;
+	php_libvirt_domain *res_domain = NULL;
+	php_libvirt_connection *conn   = NULL;
+	virDomainPtr dom = NULL;
+
+	GET_DOMAIN_FROM_ARGS("rll|l",&zdomain,&allocMem, &allocMax, &xflags);
+
+	allocMem *= 1024;
+	allocMax *= 1024;
+
+	if (allocMem > allocMax)
+		allocMem = allocMax;
+
+	xml=virDomainGetXMLDesc(domain->domain,xflags);
+	if (xml==NULL) {
+		set_error_if_unset("Cannot get the XML description");
+		RETURN_FALSE;
+	}
+
+	snprintf(new, sizeof(new), "  <memory>%d</memory>\n  <currentMemory>%d</currentMemory>\n", allocMax, allocMem);
+	tmpA = strstr(xml, "<memory>");
+	tmp1 = strstr(xml, "</currentMemory>") + strlen("</currentMemory>");
+	pos = strlen(xml) - strlen(tmp1);
+	len = strlen(xml) - strlen(tmpA);
+
+	tmp2 = emalloc( ( len + 1 )* sizeof(char) );
+	memset(tmp2, 0, len + 1);
+	memcpy(tmp2, xml, len);
+
+	new_len = strlen(tmp1) + strlen(tmp2) + strlen(new) + 2;
+	new_xml = emalloc( new_len * sizeof(char) );
+	snprintf(new_xml, new_len, "%s\n%s%s", tmp2, new, tmp1);
+
+	conn = domain->conn;
+	
+	virDomainUndefine(domain->domain);
+	virDomainFree(domain->domain);
+	dom=virDomainDefineXML(conn->conn, new_xml);
+	if (dom==NULL) {
+		dom=virDomainDefineXML(conn->conn, xml);
+		if (dom == NULL)
+			RETURN_FALSE;
+	}
+
+	res_domain = emalloc(sizeof(php_libvirt_domain));
+	res_domain->domain = dom;
+	res_domain->conn = conn;
+
+	ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
+}
+
+/*
+	Function name:	libvirt_domain_change_boot_devices
+	Since version:	0.4.2
+	Description:	Function is used to change the domain boot devices
+	Arguments:	@res [resource]: libvirt domain resource
+			@first [string]: first boot device to be set
+			@second [string]: second boot device to be set
+	Returns:	new domain resource
+*/
+PHP_FUNCTION(libvirt_domain_change_boot_devices)
+{
+	php_libvirt_domain *domain=NULL;
+	zval *zdomain;
+	char *tmpA = NULL;
+	char *tmp1 = NULL;
+	char *tmp2 = NULL;
+	char *xml;
+	int typ_len;
+	char *new_xml = NULL;
+	int new_len;
+	char new[4096] = { 0 };
+	long xflags = 0;
+	char *first = NULL;
+	int first_len;
+	char *second = NULL;
+	int second_len;
+	int retval = -1;
+	int pos = -1;
+	int len = 0;
+	php_libvirt_domain *res_domain = NULL;
+	php_libvirt_connection *conn   = NULL;
+	virDomainPtr dom = NULL;
+
+	GET_DOMAIN_FROM_ARGS("rss|l",&zdomain,&first, &first_len, &second, &second_len, &xflags);
+
+	xml=virDomainGetXMLDesc(domain->domain,xflags);
+	if (xml==NULL) {
+		set_error_if_unset("Cannot get the XML description");
+		RETURN_FALSE;
+	}
+
+	if (!second || (strcmp(second, "-") == 0))
+		snprintf(new, sizeof(new), "    <boot dev='%s'/>\n", first);
+	else
+		snprintf(new, sizeof(new), "    <boot dev='%s'/>\n    <boot dev='%s'/>\n", first, second);
+
+	tmpA = strstr(xml, "</type>") + strlen("</type>");
+	tmp1 = strstr(xml, "</os>");
+	pos = strlen(xml) - strlen(tmp1);
+	len = strlen(xml) - strlen(tmpA);
+
+	tmp2 = emalloc( ( len + 1 )* sizeof(char) );
+	memset(tmp2, 0, len + 1);
+	memcpy(tmp2, xml, len);
+
+	new_len = strlen(tmp1) + strlen(tmp2) + strlen(new) + 2;
+	new_xml = emalloc( new_len * sizeof(char) );
+	snprintf(new_xml, new_len, "%s\n%s%s", tmp2, new, tmp1);
+
+	conn = domain->conn;
+	
+	virDomainUndefine(domain->domain);
+	virDomainFree(domain->domain);
+	dom=virDomainDefineXML(conn->conn, new_xml);
+	if (dom==NULL) {
+		dom=virDomainDefineXML(conn->conn, xml);
+		if (dom == NULL)
+			RETURN_FALSE;
+	}
+
+	res_domain = emalloc(sizeof(php_libvirt_domain));
+	res_domain->domain = dom;
+	res_domain->conn = conn;
+
+	ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
+}
+
+/*
 	Function name:	libvirt_domain_disk_add
 	Since version:	0.4.2
 	Description:	Function is used to add the disk to the virtual machine using set of API functions to make it as simple as possible for the user
@@ -2070,6 +2293,7 @@ PHP_FUNCTION(libvirt_domain_get_xml_desc)
 			@img [string]: string for the image file on the host system
 			@dev [string]: string for the device to be presented to the guest (e.g. hda)
 			@typ [string]: bus type for the device in the guest, usually 'ide' or 'scsi'
+                        @driver [string]: driver type to be specified, like 'raw' or 'qcow2'
 			@flags [int]: flags for getting the XML description
 	Returns:	new domain resource
 */
@@ -2084,6 +2308,8 @@ PHP_FUNCTION(libvirt_domain_disk_add)
 	int img_len;
 	char *dev = NULL;
 	int dev_len;
+	char *driver = NULL;
+	int driver_len;
 	char *typ = NULL;
 	int typ_len;
 	char *new_xml = NULL;
@@ -2096,7 +2322,7 @@ PHP_FUNCTION(libvirt_domain_disk_add)
 	php_libvirt_connection *conn   = NULL;
 	virDomainPtr dom=NULL;
 
-	GET_DOMAIN_FROM_ARGS("rsss|l",&zdomain,&img,&img_len,&dev,&dev_len,&typ,&typ_len,&xflags);
+	GET_DOMAIN_FROM_ARGS("rssss|l",&zdomain,&img,&img_len,&dev,&dev_len,&typ,&typ_len,&driver,&driver_len,&xflags);
 
 	xml=virDomainGetXMLDesc(domain->domain,xflags);
 	if (xml==NULL) {
@@ -2130,9 +2356,10 @@ PHP_FUNCTION(libvirt_domain_disk_add)
 
 	snprintf(new, sizeof(new), 
 	"    <disk type='file' device='disk'>\n"
+	"      <driver name='qemu' type='%s'/>\n"
 	"      <source file='%s'/>\n"
 	"      <target dev='%s' bus='%s'/>\n"
-	"    </disk>", img, dev, typ);
+	"    </disk>", driver, img, dev, typ);
 	tmp1 = strstr(xml, "</emulator>") + strlen("</emulator>");
 	pos = strlen(xml) - strlen(tmp1);
 

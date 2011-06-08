@@ -14,6 +14,14 @@ libvirt-php is essentially a module to be loaded to your PHP module/binary.
 You need to define it to be loaded in /etc/php.ini and/or for newer PHP to
 /etc/php.d/*
 
+Settings
+--------
+
+Settings can be altered in /etc/php.ini file to use or not to use the longlong
+values converted into the string values using the libvirt.longlong_to_string
+boolean setting and the ISO path (used by the libvirt_get_iso_images() function)
+can be altered using the libvirt.iso_path path setting.
+
 Terminology
 -----------
 
