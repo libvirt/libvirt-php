@@ -500,14 +500,14 @@
 				}
 		}
 
-		$dom = $lv->get_domain_info($domName);
+		$dom = $lv->domain_get_info($domName);
 		$mem = number_format($dom[$domName]['memory'] / 1024, 2, '.', ' ').' MB';
 		$cpu = $dom[$domName]['nrVirtCpu'];
 		$state = $lv->domain_state_translate($dom[$domName]['state']);
 		$domr = $lv->get_domain_object($domName);
 		$id = $lv->domain_get_id($domr);
-		$arch = $lv->get_domain_arch($domr);
-		$vnc = $lv->get_domain_vnc_port($domr);
+		$arch = $lv->domain_get_arch($domr);
+		$vnc = $lv->domain_get_vnc_port($domr);
 
 		if (!$id)
 			$id = 'N/A';
@@ -610,7 +610,7 @@
 			else
 				echo 'Domain doesn\'t have any network devices';
 
-			if (( $dom[$domName]['state'] == 1 ) && ($lv->supports('screenshot'))) {
+			if ( $dom[$domName]['state'] == 1 ) {
 				echo "<h3>Screenshot</h3><img src=\"?action=get-screenshot&uuid={$_GET['uuid']}&width=640\">";
 			}
         }
@@ -678,13 +678,13 @@
 			$uuid = libvirt_domain_get_uuid_string($res);
 			$name = $doms[$i];
 			$domr= $lv->get_domain_object($name);
-			$dom = $lv->get_domain_info($name);
+			$dom = $lv->domain_get_info($name);
 			$mem = number_format($dom[$name]['memory'] / 1024, 2, '.', ' ').' MB';
 			$cpu = $dom[$name]['nrVirtCpu'];
 			$state = $lv->domain_state_translate($dom[$name]['state']);
 			$id = $lv->domain_get_id($domr);
-			$arch = $lv->get_domain_arch($domr);
-			$vnc = $lv->get_domain_vnc_port($domr);
+			$arch = $lv->domain_get_arch($domr);
+			$vnc = $lv->domain_get_vnc_port($domr);
 			$nics = $lv->get_network_cards($domr);
 			if (($diskcnt = $lv->get_disk_count($domr)) > 0) {
 				$disks = $diskcnt.' / '.$lv->get_disk_capacity($domr);
@@ -739,7 +739,7 @@
 			if (!$lv->domain_is_running($name))
 				echo "| <a href=\"?action=domain-edit&amp;uuid=$uuid\">Edit domain XML</a>";
 			else
-			if (($active > 0) && ($lv->supports('screenshot')))
+			if ($active > 0)
 				echo "| <a href=\"?action=get-screenshot&amp;uuid=$uuid\">Get screenshot</a>";
 
 			echo "

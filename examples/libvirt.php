@@ -4,7 +4,6 @@
 		private $last_error;
 
 		function Libvirt($uri = false) {
-			$this->features = array();
 			if ($uri != false)
 				$this->connect($uri);
 		}
@@ -21,12 +20,33 @@
 				return $this->_set_last_error();
 		}
 
-                function domain_disk_add($domain, $img, $dev, $type='scsi') {
+                function domain_disk_add($domain, $img, $dev, $type='scsi', $driver='raw') {
                         $dom = $this->get_domain_object($domain);
 
-                        $tmp = libvirt_domain_disk_add($dom, $img, $dev, $type);
+                        $tmp = libvirt_domain_disk_add($dom, $img, $dev, $type, $driver);
                         return ($tmp) ? $tmp : $this->_set_last_error();
                 }
+
+		function domain_change_numVCpus($domain, $num) {
+			$dom = $this->get_domain_object($domain);
+
+			$tmp = libvirt_domain_change_vcpus($dom, $num);
+			return ($tmp) ? $tmp : $this->_set_last_error();
+		}
+
+		function domain_change_memory_allocation($domain, $memory, $maxmem) {
+			$dom = $this->get_domain_object($domain);
+
+			$tmp = libvirt_domain_change_memory($dom, $memory, $maxmem);
+			return ($tmp) ? $tmp : $this->_set_last_error();
+		}
+
+		function domain_change_boot_devices($domain, $first, $second) {
+			$dom = $this->get_domain_object($domain);
+
+			$tmp = libvirt_domain_change_boot_devices($dom, $first, $second);
+			return ($tmp) ? $tmp : $this->_set_last_error();
+		}
 
 		function domain_get_screenshot($domain) {
 			$dom = $this->get_domain_object($domain);
@@ -83,11 +103,7 @@
 		}
 
 		function supports($name) {
-			if (array_key_exists($name, $this->features))
-				return $this->features[$name];
-
-			$this->features[$name] = libvirt_has_feature($name);
-			return $this->features[$name];
+			return libvirt_has_feature($name);
 		}
 
 		function macbyte($val) {
@@ -169,20 +185,49 @@
 			return $tmp;
 		}
 
+		function get_cdrom_stats($domain) {
+			$dom = $this->get_domain_object($domain);
+
+			$buses =  $this->get_xpath($dom, '//domain/devices/disk[@device="cdrom"]/target/@bus', false);
+			$disks =  $this->get_xpath($dom, '//domain/devices/disk[@device="cdrom"]/target/@dev', false);
+
+			$ret = array();
+			for ($i = 0; $i < $disks['num']; $i++) {
+				$tmp = libvirt_domain_get_block_info($dom, $disks[$i]);
+				if ($tmp) {
+					$tmp['bus'] = $buses[$i];
+					$ret[] = $tmp;
+				}
+				else
+					$this->_set_last_error();
+			}
+
+			unset($buses);
+			unset($disks);
+
+			return $ret;
+		}
+
 		function get_disk_stats($domain) {
 			$dom = $this->get_domain_object($domain);
 
+			$buses =  $this->get_xpath($dom, '//domain/devices/disk[@device="disk"]/target/@bus', false);
 			$disks =  $this->get_xpath($dom, '//domain/devices/disk[@device="disk"]/target/@dev', false);
 			// create image as: qemu-img create -f qcow2 -o backing_file=RAW_IMG OUT_QCOW_IMG SIZE[K,M,G suffixed]
 
 			$ret = array();
 			for ($i = 0; $i < $disks['num']; $i++) {
 				$tmp = libvirt_domain_get_block_info($dom, $disks[$i]);
-				if ($tmp)
+				if ($tmp) {
+					$tmp['bus'] = $buses[$i];
 					$ret[] = $tmp;
+				}
 				else
 					$this->_set_last_error();
 			}
+
+			unset($buses);
+			unset($disks);
 
 			return $ret;
 		}
@@ -644,7 +689,7 @@
 			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 
-		function get_domain_info($name = false) {
+		function domain_get_info($name = false) {
 			$ret = array();
 
 			if ($name != false) {
@@ -822,7 +867,7 @@
 			return 'unknown';
 		}
 
-		function get_domain_vnc_port($domain) {
+		function domain_get_vnc_port($domain) {
 			$tmp = $this->get_xpath($domain, '//domain/devices/graphics/@port', false);
 			$var = (int)$tmp[0];
 			unset($tmp);
@@ -830,12 +875,228 @@
 			return $var;
 		}
 
-		function get_domain_arch($domain) {
+		function domain_get_arch($domain) {
 			$tmp = $this->get_xpath($domain, '//domain/os/type/@arch', false);
 			$var = $tmp[0];
 			unset($tmp);
 
 			return $var;
+		}
+
+		function domain_get_description($domain) {
+			$tmp = $this->get_xpath($domain, '//domain/description', false);
+			$var = $tmp[0];
+			unset($tmp);
+
+			return $var;
+		}
+
+		function domain_get_clock_offset($domain) {
+			$tmp = $this->get_xpath($domain, '//domain/clock/@offset', false);
+			$var = $tmp[0];
+			unset($tmp);
+
+			return $var;
+		}
+
+		function domain_get_feature($domain, $feature) {
+			$tmp = $this->get_xpath($domain, '//domain/features/'.$feature.'/..', false);
+			$ret = ($tmp != false);
+			unset($tmp);
+
+			return $ret;
+		}
+
+		function domain_get_boot_devices($domain) {
+			$tmp = $this->get_xpath($domain, '//domain/os/boot/@dev', false);
+			if (!$tmp)
+				return false;
+
+			$devs = array();
+			for ($i = 0; $i < $tmp['num']; $i++)
+				$devs[] = $tmp[$i];
+
+			return $devs;
+		}
+
+		function _get_single_xpath_result($domain, $xpath) {
+			$tmp = $this->get_xpath($domain, $xpath, false);
+			if (!$tmp)
+				return false;
+
+			if ($tmp['num'] == 0)
+				return false;
+
+			return $tmp[0];
+		}
+
+		function domain_get_multimedia_device($domain, $type, $display=false) {
+			$domain = $this->get_domain_object($domain);
+
+			if ($type == 'console') {
+				$type = $this->_get_single_xpath_result($domain, '//domain/devices/console/@type');
+				$targetType = $this->_get_single_xpath_result($domain, '//domain/devices/console/target/@type');
+				$targetPort = $this->_get_single_xpath_result($domain, '//domain/devices/console/target/@port');
+
+				if ($display)
+					return $type.' ('.$targetType.' on port '.$targetPort.')';
+				else
+					return array('type' => $type, 'targetType' => $targetType, 'targetPort' => $targetPort);
+			}
+			else
+			if ($type == 'input') {
+				$type = $this->_get_single_xpath_result($domain, '//domain/devices/input/@type');
+				$bus  = $this->_get_single_xpath_result($domain, '//domain/devices/input/@bus');
+
+				if ($display)
+					return $type.' on '.$bus;
+				else
+					return array('type' => $type, 'bus' => $bus);
+			}
+			else
+			if ($type == 'graphics') {
+				$type = $this->_get_single_xpath_result($domain, '//domain/devices/graphics/@type');
+				$port = $this->_get_single_xpath_result($domain, '//domain/devices/graphics/@port');
+				$autoport = $this->_get_single_xpath_result($domain, '//domain/devices/graphics/@autoport');
+
+				if ($display)
+					return $type.' on port '.$port.' with'.($autoport ? '' : 'out').' autoport enabled';
+				else
+					return array('type' => $type, 'port' => $port, 'autoport' => $autoport);
+			}
+			else
+			if ($type == 'video') {
+				$type  = $this->_get_single_xpath_result($domain, '//domain/devices/video/model/@type');
+				$vram  = $this->_get_single_xpath_result($domain, '//domain/devices/video/model/@vram');
+				$heads = $this->_get_single_xpath_result($domain, '//domain/devices/video/model/@heads');
+
+				if ($display)
+					return $type.' with '.($vram / 1024).' MB VRAM, '.$heads.' head(s)';
+				else
+					return array('type' => $type, 'vram' => $vram, 'heads' => $heads);
+			}
+			else
+				return false;
+		}
+
+		function domain_get_host_devices_pci($domain) {
+			$xpath = '//domain/devices/hostdev[@type="pci"]/source/address/@';
+
+			$dom  = $this->get_xpath($domain, $xpath.'domain', false);
+			$bus  = $this->get_xpath($domain, $xpath.'bus', false);
+			$slot = $this->get_xpath($domain, $xpath.'slot', false);
+			$func = $this->get_xpath($domain, $xpath.'function', false);
+
+			$devs = array();
+			for ($i = 0; $i < $bus['num']; $i++) {
+				$d = str_replace('0x', '', $dom[$i]);
+				$b = str_replace('0x', '', $bus[$i]);
+				$s = str_replace('0x', '', $slot[$i]);
+				$f = str_replace('0x', '', $func[$i]);
+				$devid = 'pci_'.$d.'_'.$b.'_'.$s.'_'.$f;
+				$tmp2 = $this->get_node_device_information($devid);
+				$devs[] = array('domain' => $dom[$i], 'bus' => $bus[$i],
+						'slot' => $slot[$i], 'func' => $func[$i],
+						'vendor' => $tmp2['vendor_name'],
+						'vendor_id' => $tmp2['vendor_id'],
+						'product' => $tmp2['product_name'],
+						'product_id' => $tmp2['product_id']);
+			}
+
+			return $devs;
+		}
+
+		function _lookup_device_usb($vendor_id, $product_id) {
+			$tmp = $this->get_node_devices(false);
+			for ($i = 0; $i < sizeof($tmp); $i++) {
+				$tmp2 = $this->get_node_device_information($tmp[$i]);
+				if (array_key_exists('product_id', $tmp2)) {
+					if (($tmp2['product_id'] == $product_id)
+						&& ($tmp2['vendor_id'] == $vendor_id))
+							return $tmp2;
+				}
+			}
+
+			return false;
+		}
+
+		function domain_get_host_devices_usb($domain) {
+			$xpath = '//domain/devices/hostdev[@type="usb"]/source/';
+
+			$vid = $this->get_xpath($domain, $xpath.'vendor/@id', false);
+			$pid = $this->get_xpath($domain, $xpath.'product/@id', false);
+
+			$devs = array();
+			for ($i = 0; $i < $vid['num']; $i++) {
+				$dev = $this->_lookup_device_usb($vid[$i], $pid[$i]);
+				$devs[] = array('vendor_id' => $vid[$i], 'product_id' => $pid[$i],
+						'product' => $dev['product_name'],
+						'vendor' => $dev['vendor_name']);
+			}
+
+			return $devs;
+		}
+
+		function domain_get_host_devices($domain) {
+			$domain = $this->get_domain_object($domain);
+
+			$devs_pci = $this->domain_get_host_devices_pci($domain);
+			$devs_usb = $this->domain_get_host_devices_usb($domain);
+
+			return array('pci' => $devs_pci, 'usb' => $devs_usb);
+		}
+
+		function domain_set_feature($domain, $feature, $val) {
+			$domain = $this->get_domain_object($domain);
+
+			if ($this->domain_get_feature($domain, $feature) == $val)
+				return true;
+
+			$xml = $this->domain_get_xml($domain, true);
+			if ($val) {
+				if (strpos('features', $xml))
+					$xml = str_replace('<features>', "<features>\n<$feature/>", $xml);
+				else
+					$xml = str_replace('</os>', "</os><features>\n<$feature/></features>", $xml);
+			}
+			else
+				$xml = str_replace("<$feature/>\n", '', $xml);
+
+			return $this->domain_change_xml($domain, $xml);
+		}
+
+		function domain_set_clock_offset($domain, $offset) {
+			$domain = $this->get_domain_object($domain);
+
+			if (($old_offset = $this->domain_get_clock_offset($domain)) == $offset)
+				return true;
+
+			$xml = $this->domain_get_xml($domain, true);
+			$xml = str_replace("<clock offset='$old_offset'/>", "<clock offset='$offset'/>", $xml);
+
+			return $this->domain_change_xml($domain, $xml);
+		}
+
+		function domain_set_description($domain, $desc) {
+			$domain = $this->get_domain_object($domain);
+
+			$description = $this->domain_get_description($domain);
+			if ($description == $desc)
+				return true;
+
+			$xml = $this->domain_get_xml($domain, true);
+			if (!$description)
+				$xml = str_replace("</uuid>", "</uuid><description>$desc</description>", $xml);
+			else {
+				$tmp = explode("\n", $xml);
+				for ($i = 0; $i < sizeof($tmp); $i++)
+					if (strpos('.'.$tmp[$i], '<description'))
+						$tmp[$i] = "<description>$desc</description>";
+
+				$xml = join("\n", $tmp);
+			}
+
+			return $this->domain_change_xml($domain, $xml);
 		}
 
 		function host_get_node_info() {
