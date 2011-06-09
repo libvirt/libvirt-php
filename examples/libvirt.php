@@ -51,7 +51,7 @@
 		function domain_get_screenshot($domain) {
 			$dom = $this->get_domain_object($domain);
 
-			$tmp = libvirt_domain_get_screenshot($dom);
+			$tmp = libvirt_domain_get_screenshot($dom, $this->get_hostname() );
 			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 
@@ -93,6 +93,33 @@
 
 			unlink($imgFile);
 			return $data;
+		}
+
+                function domain_get_screen_dimensions($domain) {
+			$screen = $this->domain_get_screenshot($domain);
+			$imgFile = tempnam("/tmp", "libvirt-php-tmp-resize-XXXXXX");;
+
+			$width = false;
+			$height = false;
+
+			if ($screen) {
+                                $fp = fopen($imgFile, "wb");
+				fwrite($fp, $screen);
+				fclose($fp);
+			}
+			if (file_exists($imgFile) && $screen)
+				list($width, $height) = getimagesize($imgFile);
+
+			unlink($imgFile);
+
+			return array('height' => $height, 'width' => $width);
+		}
+
+		function domain_send_keys($domain, $keys) {
+			$dom = $this->get_domain_object($domain);
+
+			$tmp = libvirt_domain_send_keys($dom, $this->get_hostname(), $keys);
+			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 
 		function domain_disk_remove($domain, $dev) {
