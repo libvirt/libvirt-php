@@ -13,9 +13,25 @@
 *   Tiziano Mueller <dev-zero@gentoo.org>
 *   Yukihiro Kawada <warp.kawada@gmail.com>
 */
+
 #ifndef PHP_LIBVIRT_H
 #define PHP_LIBVIRT_H 1
 
+#define ARRAY_CARDINALITY(array)	(sizeof(array) / sizeof(array[0]))
+
+/* Maximum number of authentication attempts */
+#define VNC_MAX_AUTH_ATTEMPTS		10
+
+/* Network constants */
+#define	VIR_NETWORKS_ACTIVE		1
+#define	VIR_NETWORKS_INACTIVE		2
+
+/* Version constants */
+#define	VIR_VERSION_BINDING		1
+#define	VIR_VERSION_LIBVIRT		2
+
+#ifdef COMPILE_DL_LIBVIRT
+#include "php.h"
 #undef PACKAGE_BUGREPORT
 #undef PACKAGE_NAME
 #undef PACKAGE_STRING
@@ -23,25 +39,28 @@
 #undef PACKAGE_URL
 #undef PACKAGE_VERSION
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
-
 #ifdef ZTS
 #include "TSRM.h"
 #endif
 
-#define ARRAY_CARDINALITY(array)	(sizeof(array) / sizeof(array[0]))
+#include "php_ini.h"
+#include "standard/info.h"
+#endif
 
-/* Additional binaries */
-char *features[] = { "screenshot", NULL };
-char *features_binaries[] = { "/usr/bin/gvnccapture", NULL };
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
 
 #include <libvirt/libvirt.h>
+#include <libvirt/virterror.h>
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
 #include <dirent.h>
 #include <strings.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
 
 ZEND_BEGIN_MODULE_GLOBALS(libvirt)
 	char *last_error;
@@ -176,6 +195,7 @@ PHP_FUNCTION(libvirt_domain_set_autostart);
 PHP_FUNCTION(libvirt_domain_is_active);
 PHP_FUNCTION(libvirt_domain_get_next_dev_ids);
 PHP_FUNCTION(libvirt_domain_send_keys);
+PHP_FUNCTION(libvirt_domain_send_pointer_event);
 /* Domain snapshot functions */
 PHP_FUNCTION(libvirt_domain_has_current_snapshot);
 PHP_FUNCTION(libvirt_domain_snapshot_create);

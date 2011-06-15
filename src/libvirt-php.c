@@ -13,25 +13,12 @@
 *   Tiziano Mueller <dev-zero@gentoo.org>
 *   Yukihiro Kawada <warp.kawada@gmail.com>
 */
-#include "php.h"
-#include "php_ini.h"
+
 #include "libvirt-php.h"
-#include "standard/info.h"
-#include <libvirt/libvirt.h>
-#include <libvirt/virterror.h>
-/* Required for screenshot and socket (for VNC) functions */
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
 
-/* Network constants */
-#define VIR_NETWORKS_ACTIVE	1
-#define VIR_NETWORKS_INACTIVE	2
-
-/* Version constants */
-#define VIR_VERSION_BINDING		1
-#define VIR_VERSION_LIBVIRT		2
+/* Additional binaries */
+char *features[] = { "screenshot", NULL };
+char *features_binaries[] = { "/usr/bin/gvnccapture", NULL };
 
 /* ZEND thread safe per request globals definition */
 int le_libvirt_connection;
@@ -109,6 +96,7 @@ static function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_domain_get_next_dev_ids, NULL)
 	PHP_FE(libvirt_domain_get_screenshot, NULL)
 	PHP_FE(libvirt_domain_send_keys, NULL)
+	PHP_FE(libvirt_domain_send_pointer_event, NULL)
 	/* Domain snapshot functions */
 	PHP_FE(libvirt_domain_has_current_snapshot, NULL)
 	PHP_FE(libvirt_domain_snapshot_create, NULL)
@@ -332,288 +320,6 @@ void set_error_if_unset(char *msg TSRMLS_DC)
 {
 	if (LIBVIRT_G (last_error) == NULL)
 		set_error(msg);
-}
-
-/*
-	Private function name:	vnc_refresh_screen
-	Since version:		0.4.1(-3)
-	Description:		Function to send the key to VNC window to refresh the screen, accepts both port and key scancode
-	Arguments:		@server [string]: server string to connect to, allows VNC access
-				@port [string]: string version of port value to connect to
-				@scancode [int]: key scancode
-	Returns:		0 on success, -errno otherwise
-*/
-int vnc_refresh_screen(char *server, char *port, int scancode)
-{
-	struct addrinfo hints;
-	struct addrinfo *result, *rp;
-	int sfd, s, j;
-	size_t len;
-	ssize_t nread;
-	char buf[1024] = { 0 };
-	char name[1024] = { 0 };
-
-	memset(&hints, 0, sizeof(struct addrinfo));
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_flags = 0;
-	hints.ai_protocol = 0;
-
-	/* Get the current hostname and override to localhost if local machine */
-	gethostname(name, 1024);
-	if (strcmp(name, server) == 0)
-		server = strdup("localhost");
-
-	s = getaddrinfo(server, port, &hints, &result);
-	if (s != 0)
-		return -errno;
-
-	for (rp = result; rp != NULL; rp = rp->ai_next) {
-		sfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
-		if (sfd == -1)
-			continue;
-
-		if (connect(sfd, rp->ai_addr, rp->ai_addrlen) != -1)
-			break;
-
-		close(sfd);
-	}
-
-	if (rp == NULL)
-		return -errno;
-
-	freeaddrinfo(result);
-
-	read(sfd, buf, 10);
-	memset(buf, 0, 1024);
-	buf[0] = 0x52;
-	buf[1] = 0x46;
-	buf[2] = 0x42;
-	buf[3] = 0x20;
-	buf[4] = 0x30;
-	buf[5] = 0x30;
-	buf[6] = 0x33;
-	buf[7] = 0x2e;
-	buf[8] = 0x30;
-	buf[9] = 0x30;
-	buf[10] = 0x38;
-	buf[11] = 0x0a;
-	
-	if (write(sfd, buf, 12) < 0) {
-		close(sfd);
-		return -errno;
-	}
-
-	read(sfd, buf, 1);
-	buf[0] = 0x01;
-
-	if (write(sfd, buf, 1) < 0) {
-		close(sfd);
-		return -errno;
-	}
-
-	read(sfd, buf, 1);
-	buf[1] = 0x00;
-
-	if (write(sfd, buf, 1) < 0) {
-		close(sfd);
-		return -errno;
-	}
-	
-	read(sfd, buf, 1);
-	memset(buf, 0, 1024);
-	
-	buf[0] = 0x04;
-	buf[1] = 0x01;
-	buf[2] = 0x00;
-	buf[3] = 0x00;
-	buf[4] = 0x00;
-	buf[5] = 0x00;
-	buf[6] = 0x00;
-	buf[7] = scancode;
-
-	if (write(sfd, buf, 8) < 0) {
-		close(sfd);
-		return -errno;
-	}
-	
-	read(sfd, buf, 2);
-	memset(buf, 0, 1024);
-	buf[0] = 0x04;
-	buf[1] = 0x00;
-	buf[2] = 0x00;
-	buf[3] = 0x00;
-	buf[4] = 0x00;
-	buf[5] = 0x00;
-	buf[6] = 0x00;
-	buf[7] = scancode;
-    
-	if (write(sfd, buf, 8) < 0) {
-		close(sfd);
-		return -errno;
-	}
-	
-	close(sfd);
-	return 0;
-}
-
-/*
-	Private function name:	vnc_send_keys
-	Since version:		0.4.2
-	Description:		Function to send the key to VNC window
-	Arguments:		@server [string]: server string to specify VNC server
-				@port [string]: string version of port value to connect to
-				@keys [string]: string to be send to the guest's VNC window
-	Returns:		0 on success, -errno otherwise
-*/
-int vnc_send_keys(char *server, char *port, char *keys)
-{
-	struct addrinfo hints;
-	struct addrinfo *result, *rp;
-	int sfd, s, j;
-	size_t len;
-	ssize_t nread;
-	char name[1024] = { 0 };
-	char buf[1024] = { 0 };
-	int i, skip_next = 0;
-
-	memset(&hints, 0, sizeof(struct addrinfo));
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_flags = 0;
-	hints.ai_protocol = 0;
-
-	gethostname(name, 1024);
-	if (strcmp(name, server) == 0)
-		server = strdup("localhost");
-
-	s = getaddrinfo(server, port, &hints, &result);
-	if (s != 0)
-		return -errno;
-
-	for (rp = result; rp != NULL; rp = rp->ai_next) {
-		sfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
-		if (sfd == -1)
-			continue;
-
-		if (connect(sfd, rp->ai_addr, rp->ai_addrlen) != -1)
-			break;
-
-		close(sfd);
-	}
-
-	if (rp == NULL)
-		return -errno;
-
-	freeaddrinfo(result);
-
-	read(sfd, buf, 10);
-	memset(buf, 0, 1024);
-	buf[0] = 0x52;
-	buf[1] = 0x46;
-	buf[2] = 0x42;
-	buf[3] = 0x20;
-	buf[4] = 0x30;
-	buf[5] = 0x30;
-	buf[6] = 0x33;
-	buf[7] = 0x2e;
-	buf[8] = 0x30;
-	buf[9] = 0x30;
-	buf[10] = 0x38;
-	buf[11] = 0x0a;
-
-	if (write(sfd, buf, 12) < 0) {
-		close(sfd);
-		return -errno;
-	}
-
-	read(sfd, buf, 1);
-	buf[0] = 0x01;
-
-	if (write(sfd, buf, 1) < 0) {
-		close(sfd);
-		return -errno;
-	}
-
-	read(sfd, buf, 1);
-	buf[1] = 0x00;
-
-	if (write(sfd, buf, 1) < 0) {
-		close(sfd);
-		return -errno;
-	}
-
-	for (i = 0; i < strlen(keys); i++) {
-		if (skip_next) {
-			skip_next = 0;
-			continue;
-		}
-		/* Handling for escape characters */
-		if ((keys[i] == '\\') && (strlen(keys) > i + 1)) {
-			if (keys[i + 1] == 'n')
-				keys[i] = 13;
-			if (keys[i + 1] == 'r')
-				keys[i] = 10;
-
-			skip_next = 1;
-		}
-
-		read(sfd, buf, 10);
-		memset(buf, 0, 1024);
-		buf[0] = 0x04;
-		buf[1] = 0x01;
-		buf[2] = 0x00;
-		buf[3] = 0x00;
-		buf[4] = 0x00;
-		buf[5] = 0x00;
-		buf[6] = skip_next ? 0xff : 0x00;
-		buf[7] = keys[i];
-
-		if (write(sfd, buf, 8) < 0) {
-			close(sfd);
-			return -errno;
-		}
-
-		read(sfd, buf, 1);
-		memset(buf, 0, 1024);
-		buf[0] = 0x03;
-		buf[1] = 0x01;
-		buf[2] = 0x00;
-		buf[3] = 0x00;
-		buf[4] = 0x00;
-		buf[5] = 0x00;
-		buf[6] = 0x02;
-		buf[7] = 0xd0;
-		buf[8] = 0x01;
-		buf[9] = 0x90;
-
-		if (write(sfd, buf, 10) < 0) {
-			close(sfd);
-			return -errno;
-		}
-
-		memset(buf, 0, 1024);
-	
-		buf[0] = 0x04;
-		buf[1] = 0x00;
-		buf[2] = 0x00;
-		buf[3] = 0x00;
-		buf[4] = 0x00;
-		buf[5] = 0x00;
-		buf[6] = skip_next ? 0xff : 0x00;
-		buf[7] = keys[i];
-
-		if (write(sfd, buf, 8) < 0) {
-			close(sfd);
-			return -errno;
-		}
-
-		/* Sleep for 50 ms, required to make VNC accept the keystroke emulation */
-		usleep(50000);
-	}
-	
-	close(sfd);
-	return 0;
 }
 
 /*
@@ -1154,7 +860,7 @@ PHP_FUNCTION(libvirt_connect)
 				}
 		}
 		creds[0].count=j;
-		libvirt_virConnectAuth.cbdata= (void*)creds ;
+		libvirt_virConnectAuth.cbdata= (void*)creds;
 		conn->conn= virConnectOpenAuth (url, &libvirt_virConnectAuth, readonly ? VIR_CONNECT_RO : 0);
 		for (i=0;i<creds[0].count;i++)
 			efree(creds[i].result);
@@ -1166,6 +872,7 @@ PHP_FUNCTION(libvirt_connect)
 		efree (conn);
 		RETURN_FALSE;
 	}
+
 	ZEND_REGISTER_RESOURCE(return_value, conn, le_libvirt_connection);
 	conn->resource_id=Z_LVAL_P(return_value);
 } 
@@ -1217,13 +924,7 @@ PHP_FUNCTION(libvirt_connect_get_information)
 	int iTmp = -1;
 	php_libvirt_connection *conn = NULL;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zconn) == FAILURE) {
-		set_error("Invalid connection resource");
-		RETURN_FALSE;
-	}
-
-	ZEND_FETCH_RESOURCE(conn, php_libvirt_connection*, &zconn, -1, PHP_LIBVIRT_CONNECTION_RES_NAME, le_libvirt_connection);
-	if ((conn == NULL) || (conn->conn == NULL)) RETURN_FALSE;
+	GET_CONNECTION_FROM_ARGS("r",&zconn);
 	
 	tmp = virConnectGetURI(conn->conn);
 	array_init(return_value);
@@ -1294,13 +995,7 @@ PHP_FUNCTION(libvirt_connect_get_uri)
 	char *uri_out;
 	php_libvirt_connection *conn = NULL;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zconn) == FAILURE) {
-		set_error("Invalid connection resource");
-		RETURN_FALSE;
-	}
-
-	ZEND_FETCH_RESOURCE(conn, php_libvirt_connection*, &zconn, -1, PHP_LIBVIRT_CONNECTION_RES_NAME, le_libvirt_connection);
-	if ((conn == NULL) || (conn->conn == NULL)) RETURN_FALSE;
+	GET_CONNECTION_FROM_ARGS("r",&zconn);
 	uri = virConnectGetURI(conn->conn);
 	if (uri == NULL) RETURN_FALSE;
 
@@ -1322,16 +1017,7 @@ PHP_FUNCTION(libvirt_connect_get_hostname)
 	char *hostname;
 	char *hostname_out;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zconn) == FAILURE) {
-		set_error("Invalid connection resource");
-		RETURN_FALSE;
-	}
-
-	ZEND_FETCH_RESOURCE(conn, php_libvirt_connection*, &zconn, -1, PHP_LIBVIRT_CONNECTION_RES_NAME, le_libvirt_connection);
-	if ((conn==NULL) || (conn->conn==NULL)) RETURN_FALSE;
-
-	if (conn==NULL) RETURN_FALSE;
-	if (conn->conn==NULL) RETURN_FALSE;
+	GET_CONNECTION_FROM_ARGS("r",&zconn);
 
 	hostname=virConnectGetHostname(conn->conn);
 	if (hostname==NULL) RETURN_FALSE;
@@ -1356,16 +1042,7 @@ PHP_FUNCTION(libvirt_connect_get_hypervisor)
 	const char *type = NULL;
 	char hvStr[64] = { 0 };
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zconn) == FAILURE) {
-		set_error("Invalid connection resource");
-		RETURN_FALSE;
-	}
-
-	ZEND_FETCH_RESOURCE(conn, php_libvirt_connection*, &zconn, -1, PHP_LIBVIRT_CONNECTION_RES_NAME, le_libvirt_connection);
-	if ((conn==NULL) || (conn->conn==NULL)) RETURN_FALSE;
-
-	if (conn==NULL) RETURN_FALSE;
-	if (conn->conn==NULL) RETURN_FALSE;
+	GET_CONNECTION_FROM_ARGS("r",&zconn);
 
 	if (virConnectGetVersion(conn->conn, &hvVer) != 0)
 		RETURN_FALSE;
@@ -1397,16 +1074,7 @@ PHP_FUNCTION(libvirt_connect_get_encrypted)
 	php_libvirt_connection *conn=NULL;
 	zval *zconn;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zconn) == FAILURE) {
-		set_error("Invalid connection resource");
-		RETURN_FALSE;
-	}
-
-	ZEND_FETCH_RESOURCE(conn, php_libvirt_connection*, &zconn, -1, PHP_LIBVIRT_CONNECTION_RES_NAME, le_libvirt_connection);
-	if ((conn==NULL) || (conn->conn==NULL)) RETURN_FALSE;
-
-	if (conn==NULL) RETURN_FALSE;
-	if (conn->conn==NULL) RETURN_FALSE;
+	GET_CONNECTION_FROM_ARGS("r",&zconn);
 
 	RETURN_LONG( virConnectIsEncrypted(conn->conn) );
 }
@@ -1424,16 +1092,7 @@ PHP_FUNCTION(libvirt_connect_get_secure)
 	php_libvirt_connection *conn=NULL;
 	zval *zconn;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zconn) == FAILURE) {
-		set_error("Invalid connection resource");
-		RETURN_FALSE;
-	}
-
-	ZEND_FETCH_RESOURCE(conn, php_libvirt_connection*, &zconn, -1, PHP_LIBVIRT_CONNECTION_RES_NAME, le_libvirt_connection);
-	if ((conn==NULL) || (conn->conn==NULL)) RETURN_FALSE;
-
-	if (conn==NULL) RETURN_FALSE;
-	if (conn->conn==NULL) RETURN_FALSE;
+	GET_CONNECTION_FROM_ARGS("r",&zconn);
 
 	RETURN_LONG( virConnectIsSecure(conn->conn) );
 }
@@ -1451,16 +1110,7 @@ PHP_FUNCTION(libvirt_connect_get_maxvcpus)
 	zval *zconn;
 	const char *type = NULL;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zconn) == FAILURE) {
-		set_error("Invalid connection resource");
-		RETURN_FALSE;
-	}
-
-	ZEND_FETCH_RESOURCE(conn, php_libvirt_connection*, &zconn, -1, PHP_LIBVIRT_CONNECTION_RES_NAME, le_libvirt_connection);
-	if ((conn==NULL) || (conn->conn==NULL)) RETURN_FALSE;
-
-	if (conn==NULL) RETURN_FALSE;
-	if (conn->conn==NULL) RETURN_FALSE;
+	GET_CONNECTION_FROM_ARGS("r",&zconn);
 
 	type = virConnectGetType(conn->conn);
 	if (type == NULL)
@@ -1483,16 +1133,7 @@ PHP_FUNCTION(libvirt_connect_get_capabilities)
 	char *caps;
 	char *caps_out;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zconn) == FAILURE) {
-		set_error("Invalid connection resource");
-		RETURN_FALSE;
-	}
-
-	ZEND_FETCH_RESOURCE(conn, php_libvirt_connection*, &zconn, -1, PHP_LIBVIRT_CONNECTION_RES_NAME, le_libvirt_connection);
-	if ((conn==NULL) || (conn->conn==NULL)) RETURN_FALSE;
-
-	if (conn==NULL) RETURN_FALSE;
-	if (conn->conn==NULL) RETURN_FALSE;
+	GET_CONNECTION_FROM_ARGS("r",&zconn);
 
 	caps = virConnectGetCapabilities(conn->conn);
 	if (caps == NULL)
@@ -1518,16 +1159,7 @@ PHP_FUNCTION(libvirt_connect_get_sysinfo)
 	char *sysinfo;
 	char *sysinfo_out;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zconn) == FAILURE) {
-		set_error("Invalid connection resource");
-		RETURN_FALSE;
-	}
-
-	ZEND_FETCH_RESOURCE(conn, php_libvirt_connection*, &zconn, -1, PHP_LIBVIRT_CONNECTION_RES_NAME, le_libvirt_connection);
-	if ((conn==NULL) || (conn->conn==NULL)) RETURN_FALSE;
-
-	if (conn==NULL) RETURN_FALSE;
-	if (conn->conn==NULL) RETURN_FALSE;
+	GET_CONNECTION_FROM_ARGS("r",&zconn);
 
 	sysinfo=virConnectGetSysinfo(conn->conn, 0);
 	if (sysinfo==NULL) RETURN_FALSE;
@@ -2085,7 +1717,7 @@ PHP_FUNCTION(libvirt_domain_get_screenshot)
 		RETURN_FALSE;
 	}
 	
-	vnc_refresh_screen(hostname, tmp, scancode);
+	//vnc_refresh_screen(hostname, tmp, scancode);
 
 	port = atoi(tmp)-5900;
 	
@@ -2209,6 +1841,65 @@ PHP_FUNCTION(libvirt_domain_send_keys)
 }
 
 /*
+	Function name:	libvirt_domain_send_pointer_event
+	Since version:	0.4.2
+	Description:	Function sends keys to the domain's VNC window
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+			@server [string]: server string of the host machine
+			@pos_x [int]: position on x-axis
+			@pos_y [int]: position on y-axis
+			@clicked [int]: mask of clicked buttons (0 for none, bit 1 for button #1, bit 8 for button #8)
+			@release [int]: boolean value (0 or 1) whether to release the buttons automatically once pressed
+	Returns:	TRUE on success, FALSE otherwise
+*/
+PHP_FUNCTION(libvirt_domain_send_pointer_event)
+{
+	php_libvirt_domain *domain=NULL;
+	zval *zdomain;
+	pid_t childpid = -1;
+	pid_t w = -1;
+	int retval = -1;
+	int fd = -1, fsize = -1;
+	char *buf = NULL;
+	char *tmp = NULL;
+	char *xml = NULL;
+	int port = -1;
+	char *hostname = NULL;
+	int hostname_len;
+	int pos_x = 0;
+	int pos_y = 0;
+	int clicked = 0;
+	int release = 1;
+	char *path;
+	int i, ret;
+
+	GET_DOMAIN_FROM_ARGS("rslll|b",&zdomain, &hostname, &hostname_len, &pos_x, &pos_y, &clicked, &release);
+
+	xml=virDomainGetXMLDesc(domain->domain, 0);
+	if (xml==NULL) {
+		set_error_if_unset("Cannot get the XML description");
+		RETURN_FALSE;
+	}
+
+ 	tmp = get_string_from_xpath(xml, "//domain/devices/graphics/@port", NULL, &retval);
+	if ((tmp == NULL) || (retval < 0)) {
+		set_error("Cannot get the VNC port");
+		RETURN_FALSE;
+	}
+
+	ret = vnc_send_pointer_event(hostname, tmp, pos_x, pos_y, clicked, release);
+	if (ret == 0) {
+		RETURN_TRUE
+	}
+	else {
+		char error[1024] = { 0 };
+		snprintf(error, sizeof(error), "Cannot send pointer event, error code = %d (%s)", ret, strerror(-ret));
+		set_error(error);
+		RETURN_FALSE;
+	}
+}
+
+/*
 	Function name:	libvirt_domain_get_uuid
 	Since version:	0.4.1(-1)
 	Description:	Function is used to get the domain's UUID in binary format
@@ -2235,7 +1926,7 @@ PHP_FUNCTION(libvirt_domain_get_uuid)
 /*
 	Function name:	libvirt_domain_get_id
 	Since version:	0.4.1(-1)
-	Description:	Function is used to get the domain's ID, applicable to running guests
+	Description:	Function is used to get the domain's ID, applicable to running guests only
 	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
 	Returns:	running domain ID or -1 if not running
 */
