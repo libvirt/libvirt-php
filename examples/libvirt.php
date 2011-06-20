@@ -3,7 +3,9 @@
 		private $conn;
 		private $last_error;
 
-		function Libvirt($uri = false) {
+		function Libvirt($uri = false, $debug=false) {
+			if ($debug)
+				$this->set_logfile($debug);
 			if ($uri != false)
 				$this->connect($uri);
 		}
@@ -12,6 +14,14 @@
 		{
 			$this->last_error = libvirt_get_last_error();
 			return false;
+		}
+
+		function set_logfile($filename)
+		{
+			if (!libvirt_logfile_set($filename))
+				return $this->_set_last_error();
+
+			return true;
 		}
 
 		function connect($uri = 'null') {
@@ -122,6 +132,13 @@
 			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 
+		function domain_send_pointer_event($domain, $x, $y, $clicked = 1) {
+			$dom = $this->get_domain_object($domain);
+
+			$tmp = libvirt_domain_send_pointer_event($dom, $this->get_hostname(), $x, $y, $clicked, true);
+			return ($tmp) ? $tmp : $this->_set_last_error();
+		}
+
 		function domain_disk_remove($domain, $dev) {
 			$dom = $this->get_domain_object($domain);
 
@@ -212,7 +229,7 @@
 			return $tmp;
 		}
 
-		function get_cdrom_stats($domain) {
+		function get_cdrom_stats($domain, $sort=true) {
 			$dom = $this->get_domain_object($domain);
 
 			$buses =  $this->get_xpath($dom, '//domain/devices/disk[@device="cdrom"]/target/@bus', false);
@@ -229,13 +246,25 @@
 					$this->_set_last_error();
 			}
 
+			if ($sort) {
+				for ($i = 0; $i < sizeof($ret); $i++) {
+					for ($ii = 0; $ii < sizeof($ret); $ii++) {
+						if (strcmp($ret[$i]['device'], $ret[$ii]['device']) < 0) {
+							$tmp = $ret[$i];
+							$ret[$i] = $ret[$ii];
+							$ret[$ii] = $tmp;
+						}
+					}
+				}
+			}
+
 			unset($buses);
 			unset($disks);
 
 			return $ret;
 		}
 
-		function get_disk_stats($domain) {
+		function get_disk_stats($domain, $sort=true) {
 			$dom = $this->get_domain_object($domain);
 
 			$buses =  $this->get_xpath($dom, '//domain/devices/disk[@device="disk"]/target/@bus', false);
@@ -251,6 +280,18 @@
 				}
 				else
 					$this->_set_last_error();
+			}
+
+			if ($sort) {
+				for ($i = 0; $i < sizeof($ret); $i++) {
+					for ($ii = 0; $ii < sizeof($ret); $ii++) {
+						if (strcmp($ret[$i]['device'], $ret[$ii]['device']) < 0) {
+							$tmp = $ret[$i];
+							$ret[$i] = $ret[$ii];
+							$ret[$ii] = $tmp;
+						}
+					}
+				}
 			}
 
 			unset($buses);

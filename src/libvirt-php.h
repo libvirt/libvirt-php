@@ -17,10 +17,20 @@
 #ifndef PHP_LIBVIRT_H
 #define PHP_LIBVIRT_H 1
 
+#define DEBUG_SUPPORT
+
+#ifdef DEBUG_SUPPORT
+#define DEBUG_CORE
+#define DEBUG_VNC
+#endif
+
 #define ARRAY_CARDINALITY(array)	(sizeof(array) / sizeof(array[0]))
 
 /* Maximum number of authentication attempts */
 #define VNC_MAX_AUTH_ATTEMPTS		10
+
+/* Maximum size (in KiB) of log file when DEBUG_SUPPORT is enabled */
+#define	DEFAULT_LOG_MAXSIZE		1024
 
 /* Network constants */
 #define	VIR_NETWORKS_ACTIVE		1
@@ -60,12 +70,16 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/wait.h>
 #include <netdb.h>
 
 ZEND_BEGIN_MODULE_GLOBALS(libvirt)
 	char *last_error;
 	zend_bool longlong_to_string_ini;
 	char *iso_path_ini;
+	#ifdef DEBUG_SUPPORT
+	int debug;
+	#endif
 ZEND_END_MODULE_GLOBALS(libvirt)
 
 #ifdef ZTS
@@ -74,7 +88,7 @@ ZEND_END_MODULE_GLOBALS(libvirt)
 #define LIBVIRT_G(v) (libvirt_globals.v)
 #endif
 
-#define PHP_LIBVIRT_WORLD_VERSION "0.4.1"
+#define PHP_LIBVIRT_WORLD_VERSION "0.4.2"
 #define PHP_LIBVIRT_WORLD_EXTNAME "libvirt"
 
 typedef struct _php_libvirt_connection {
@@ -118,6 +132,16 @@ typedef struct _php_libvirt_cred_value {
 	unsigned int	resultlen;
 } php_libvirt_cred_value;
 
+/* Private definitions */
+void vnc_refresh_screen(char *server, char *port);
+int vnc_send_keys(char *server, char *port, char *keys);
+int vnc_send_pointer_event(char *server, char *port, int pos_x, int pos_y, int clicked, int release);
+
+int set_logfile(char *filename, long maxsize);
+char *get_datetime(void);
+#ifdef DEBUG_SUPPORT
+int gdebug;
+#endif
 
 #define PHP_LIBVIRT_CONNECTION_RES_NAME "Libvirt connection"
 #define PHP_LIBVIRT_DOMAIN_RES_NAME "Libvirt domain"
@@ -262,6 +286,7 @@ PHP_FUNCTION(libvirt_version);
 PHP_FUNCTION(libvirt_check_version);
 PHP_FUNCTION(libvirt_has_feature);
 PHP_FUNCTION(libvirt_get_iso_images);
+PHP_FUNCTION(libvirt_logfile_set);
 
 extern zend_module_entry libvirt_module_entry;
 #define phpext_libvirt_ptr &libvirt_module_entry
