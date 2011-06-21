@@ -11,14 +11,14 @@
      phpinfo() output when a module is loaded. In your PHP script you can do it using following
      syntax:</p>
      <pre>&lt;&#63;php
-     $conn = libvirt_version();
+     print_r ( libvirt_version() );
 &#63;&gt;</pre>
 
-      <p>The <i>var</i> variable will be having information about major, minor and release versions
-      of the hypervisor and libvirt available and also there will be version number of libvirt-php
+      <p>The output will be having information about major, minor and release versions of the hypervisor
+      (if connected and applicable) and libvirt available and also there will be version number of libvirt-php
       connector in form of <i>major.minor.release</i>.</p>
 
-     <h2><a name="connecting">Connecting to libvirt daemon</a></h2>
+     <h2><a name="connecting">Connecting to libvirt daemon with debugging</a></h2>
 
      <p>
        For connecting to libvirt daemon the <i>libvirt_connect()</i> API function has been introduced.
@@ -31,10 +31,27 @@
 
      <p>Hypervisor URI could be also string <i>null</i> to make libvirt probe the hypervisor driver
         that is applicable to the host machine.</p>
+     <p>To turn on the debugging you need to call <i>libvirt_logfile_set()</i> API function to tell
+        libvirt-php to enable logging to file. Logging is disabled by default.</p>
 
      <pre>&lt;&#63;php
-     $conn = libvirt_connect('null', false);
+    $logfile = 'test.log';
+
+    unlink($logfile);
+    if (!libvirt_logfile_set($logfile))
+         die('Cannot set the log file');
+
+    $conn = libvirt_connect('null', false);
+    unset($conn);
+
+    $fp = fopen($logfile, 'r');
+    $str = fread($fp, filesize($logfile));
+    fclose($fp);
+
+    echo $str;
 &#63;&gt;</pre>
+
+    <p>This will print the connection result as logged into the <i>test.log</i> file.</p>
 
      <h2><a name="listing-domains">Getting list of domains</a></h2>
 
@@ -46,13 +63,10 @@
      <pre>&lt;&#63;php
      $conn = libvirt_connect('null', false);
      $doms = libvirt_list_domains($conn);
-     $domNames = array();
-     foreach ($doms as $dom)
-         $domNames[] = libvirt_domain_get_name($dom);
-     print_r($domNames);
+     print_r($doms);
 &#63;&gt;</pre>
 
-     <p>This script will output all the domain names available on this connection (all of them are temporarily stored in <i>$domNames</i> array).</p>
+     <p>This script will output all the domain names available on this connection (all of them are temporarily stored in <i>$doms</i> array).</p>
 
   </body>
 </html>
