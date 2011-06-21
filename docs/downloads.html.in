@@ -6,10 +6,16 @@
     <h2>Official Releases</h2>
 
     <p>
-      You can download the first official release, release 0.4.1, from:
+      You can download the second official release, release 0.4.2, from:
     </p>
 
-      <pre><a href="http://libvirt.org/sources/php/libvirt-php-0.4.1.tar.gz">http://libvirt.org/sources/php/libvirt-php-0.4.1.tar.gz</a></pre>
+<pre><a href="http://libvirt.org/sources/php/libvirt-php-0.4.2.tar.gz">http://libvirt.org/sources/php/libvirt-php-0.4.2.tar.gz</a></pre>
+
+    <p>
+      However if you prefer to download the first official release, release 0.4.1, please click here:
+    </p>
+
+<a href="http://libvirt.org/sources/php/libvirt-php-0.4.1.tar.gz">http://libvirt.org/sources/php/libvirt-php-0.4.1.tar.gz</a>
 
     <h2>GIT source repository</h2>
 

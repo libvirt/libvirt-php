@@ -2,6 +2,8 @@
 	class Libvirt {
 		private $conn;
 		private $last_error;
+		private $allow_cached = true;
+		private $dominfos = array();
 
 		function Libvirt($uri = false, $debug=false) {
 			if ($debug)
@@ -22,6 +24,10 @@
 				return $this->_set_last_error();
 
 			return true;
+		}
+
+		function print_resources() {
+			return libvirt_print_binding_resources();
 		}
 
 		function connect($uri = 'null') {
@@ -757,26 +763,48 @@
 			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 
-		function domain_get_info($name = false) {
+		function domain_get_name($res) {
+			return libvirt_domain_get_name($res);
+		}
+
+		function domain_get_info_call($name = false, $name_override = false) {
 			$ret = array();
 
 			if ($name != false) {
-				$dom=libvirt_domain_lookup_by_name($this->conn, $name);
+				$dom = $this->get_domain_object($name);
 				if (!$dom)
 					return false;
+
+				if ($name_override)
+					$name = $name_override;
 
 				$ret[$name] = libvirt_domain_get_info($dom);
 				return $ret;
 			}
-
-			$doms = libvirt_list_domains($this->conn);
-			foreach ($doms as $dom) {
-				$tmp = libvirt_domain_get_name($dom);
-				$ret[$tmp] = libvirt_domain_get_info($dom);
+			else {
+				$doms = libvirt_list_domains($this->conn);
+				foreach ($doms as $dom) {
+					$tmp = $this->domain_get_name($dom);
+					$ret[$tmp] = libvirt_domain_get_info($dom);
+				}
 			}
 
 			ksort($ret);
 			return $ret;
+		}
+
+		function domain_get_info($name = false, $name_override = false) {
+			if (!$this->allow_cached)
+				return $this->domain_get_info_call($name, $name_override);
+
+			$domname = $name_override ? $name_override : $name;
+			$domkey  = $name_override ? $name_override : $this->domain_get_name($name);
+			if (!array_key_exists($domkey, $this->dominfos)) {
+				$tmp = $this->domain_get_info_call($name, $name_override);
+				$this->dominfos[$domkey] = $tmp[$domname];
+			}
+
+			return $this->dominfos[$domkey];
 		}
 
 		function get_last_error() {
@@ -801,9 +829,9 @@
 			return ($tmp) ? $tmp : $this->_set_last_error();;
 		}
 
-		function domain_get_id($domain) {
+		function domain_get_id($domain, $name = false) {
 			$dom = $this->get_domain_object($domain);
-			if ((!$dom) || (!$this->domain_is_running($dom)))
+			if ((!$dom) || (!$this->domain_is_running($dom, $name)))
 				return false;
 
 			$tmp = libvirt_domain_get_id($dom);
@@ -828,15 +856,15 @@
 			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 
-		function domain_start($nameOrXml) {
-			$dom=libvirt_domain_lookup_by_name($this->conn, $nameOrXml);
+		function domain_start($dom) {
+			$dom=$this->get_domain_object($dom);
 			if ($dom) {
 				$ret = libvirt_domain_create($dom);
 				$this->last_error = libvirt_get_last_error();
 				return $ret;
 			}
 
-			$ret = libvirt_domain_create_xml($this->conn, $nameOrXml);
+			$ret = libvirt_domain_create_xml($this->conn, $dom);
 			$this->last_error = libvirt_get_last_error();
 			return $ret;
 		}
@@ -908,12 +936,12 @@
 			return ($tmp) ? $tmp : $this->_set_last_error();
 		}
 
-		function domain_is_running($domain) {
+		function domain_is_running($domain, $name = false) {
 			$dom = $this->get_domain_object($domain);
 			if (!$dom)
 				return false;
 
-			$tmp = libvirt_domain_get_info($dom);
+			$tmp = $this->domain_get_info( $domain, $name );
 			if (!$tmp)
 				return $this->_set_last_error();
 			$ret = ( ($tmp['state'] == VIR_DOMAIN_RUNNING) || ($tmp['state'] == VIR_DOMAIN_BLOCKED) );
@@ -944,6 +972,8 @@
 		}
 
 		function domain_get_arch($domain) {
+			$domain = $this->get_domain_object($domain);
+
 			$tmp = $this->get_xpath($domain, '//domain/os/type/@arch', false);
 			$var = $tmp[0];
 			unset($tmp);

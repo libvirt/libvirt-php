@@ -73,6 +73,13 @@
 #include <sys/wait.h>
 #include <netdb.h>
 
+typedef struct _resource_info {
+	int type;
+	virConnectPtr conn;
+	uint64_t mem;
+	int overwrite;
+} resource_info;
+
 ZEND_BEGIN_MODULE_GLOBALS(libvirt)
 	char *last_error;
 	zend_bool longlong_to_string_ini;
@@ -80,6 +87,8 @@ ZEND_BEGIN_MODULE_GLOBALS(libvirt)
 	#ifdef DEBUG_SUPPORT
 	int debug;
 	#endif
+	resource_info *binding_resources;
+	int binding_resources_count;
 ZEND_END_MODULE_GLOBALS(libvirt)
 
 #ifdef ZTS
@@ -91,6 +100,22 @@ ZEND_END_MODULE_GLOBALS(libvirt)
 #define PHP_LIBVIRT_WORLD_VERSION "0.4.2"
 #define PHP_LIBVIRT_WORLD_EXTNAME "libvirt"
 
+/* Internal resource identifier objects */
+#define INT_RESOURCE_CONNECTION		0x01
+#define INT_RESOURCE_DOMAIN		0x02
+#define INT_RESOURCE_NETWORK		0x04
+#define INT_RESOURCE_NODEDEV		0x08
+#define INT_RESOURCE_STORAGEPOOL	0x10
+#define INT_RESOURCE_VOLUME		0x20
+#define INT_RESOURCE_SNAPSHOT		0x40
+
+#ifdef __i386__
+typedef uint32_t arch_uint;
+#else
+typedef uint64_t arch_uint;
+#endif
+
+/* Libvirt-php types */
 typedef struct _php_libvirt_connection {
 	virConnectPtr conn;
 	long resource_id;
@@ -118,12 +143,13 @@ typedef struct _php_libvirt_nodedev {
 
 typedef struct _php_libvirt_storagepool {
 	virStoragePoolPtr pool;
+	php_libvirt_connection* conn;
 } php_libvirt_storagepool;
 
 typedef struct _php_libvirt_volume {
 	virStorageVolPtr volume;
+	php_libvirt_connection* conn;
 } php_libvirt_volume;
-
 
 typedef struct _php_libvirt_cred_value {
 	int count;
@@ -286,7 +312,9 @@ PHP_FUNCTION(libvirt_version);
 PHP_FUNCTION(libvirt_check_version);
 PHP_FUNCTION(libvirt_has_feature);
 PHP_FUNCTION(libvirt_get_iso_images);
+/* Debugging functions */
 PHP_FUNCTION(libvirt_logfile_set);
+PHP_FUNCTION(libvirt_print_binding_resources);
 
 extern zend_module_entry libvirt_module_entry;
 #define phpext_libvirt_ptr &libvirt_module_entry

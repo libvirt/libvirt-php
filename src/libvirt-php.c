@@ -177,7 +177,9 @@ static function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_check_version, NULL)
 	PHP_FE(libvirt_has_feature, NULL)
 	PHP_FE(libvirt_get_iso_images, NULL)
+	/* Debugging functions */
 	PHP_FE(libvirt_logfile_set, NULL)
+	PHP_FE(libvirt_print_binding_resources, NULL)
 	{NULL, NULL, NULL}
 };
 
@@ -221,6 +223,8 @@ static void php_libvirt_init_globals(zend_libvirt_globals *libvirt_globals)
 {
 	libvirt_globals->longlong_to_string_ini = 1;
 	libvirt_globals->iso_path_ini = "/var/lib/libvirt/images/iso";
+	libvirt_globals->binding_resources_count = 0;
+	libvirt_globals->binding_resources = NULL;
 	#ifdef DEBUG_SUPPORT
 	libvirt_globals->debug = 0;
 	change_debug(0);
@@ -298,6 +302,104 @@ int set_logfile(char *filename, long maxsize)
 	if (res == 0)
 		change_debug(1);
 	return res;
+}
+
+/*
+	Private function name:	translate_counter_type
+	Since version:		0.4.2
+	Description:		Function to translate the counter type into the string format
+	Arguments:		@type [int]: integer identifier of the counter type
+	Returns:		string interpretation of the counter type
+*/
+char *translate_counter_type(int type)
+{
+	switch (type) {
+		case INT_RESOURCE_CONNECTION:	return "connection";
+						break;
+		case INT_RESOURCE_DOMAIN:	return "domain";
+						break;
+		case INT_RESOURCE_NETWORK:	return "network";
+						break;
+		case INT_RESOURCE_NODEDEV:	return "node device";
+						break;
+		case INT_RESOURCE_STORAGEPOOL:	return "storage pool";
+						break;
+		case INT_RESOURCE_VOLUME:	return "storage volume";
+						break;
+		case INT_RESOURCE_SNAPSHOT:	return "snapshot";
+						break;
+	}
+
+	return "unknown";
+}
+
+/*
+	Private function name:	resource_change_counter
+	Since version:		0.4.2
+	Description:		Function to increment (inc = 1) / decrement (inc = 0) the resource pointers count including the memory location
+	Arguments:		@type [int]: type of resource (INT_RESOURCE_x defines where x can be { CONNECTION | DOMAIN | NETWORK | NODEDEV | STORAGEPOOL | VOLUME | SNAPSHOT })
+				@conn [virConnectPtr]: libvirt connection pointer associated with the resource, NULL for libvirt connection objects
+				@mem [pointer]: Pointer to memory location for the resource. Will be converted to appropriate uint for the arch.
+				@inc [int/bool]: Increment the counter (1 = add memory location) or decrement the counter (0 = remove memory location) from entries.
+	Returns:		0 on success, -errno otherwise
+*/
+int resource_change_counter(int type, virConnectPtr conn, void *memp, int inc)
+{
+	int i;
+	int pos = -1;
+	int binding_resources_count;
+	char tmp[64] = { 0 };
+	arch_uint mem = 0;
+	resource_info *binding_resources = NULL;
+
+	snprintf(tmp, sizeof(tmp), "%p", memp);
+	sscanf(tmp, "%x", &mem);
+
+	binding_resources_count = LIBVIRT_G(binding_resources_count);
+	binding_resources = LIBVIRT_G(binding_resources);
+
+	if (inc) {
+		for (i = 0; i < binding_resources_count; i++) {
+			if (binding_resources[i].overwrite) {
+				pos = i;
+				break;
+			}
+			if ((binding_resources[i].type == type) || (binding_resources[i].mem == mem))
+				return -EEXIST;
+		}
+
+		if (pos == -1) {
+			if (binding_resources == NULL) {
+				binding_resources_count = 1;
+				binding_resources = (resource_info *)malloc( sizeof(resource_info) );
+			}
+			else {
+				binding_resources_count++;
+				binding_resources = (resource_info *)realloc( binding_resources, binding_resources_count * sizeof(resource_info) );
+			}
+
+			if (binding_resources == NULL)
+				return -ENOMEM;
+
+			pos = binding_resources_count - 1;
+		}
+
+		binding_resources[pos].type = type;
+		binding_resources[pos].mem  = mem;
+		binding_resources[pos].conn = conn;
+		binding_resources[pos].overwrite = 0;
+	}
+	else {
+		for (i = 0; i < binding_resources_count; i++) {
+			if ((binding_resources[i].type == type) && (binding_resources[i].mem == mem))
+				binding_resources[i].overwrite = 1;
+		}
+	}
+
+	LIBVIRT_G(binding_resources_count) = binding_resources_count;
+	LIBVIRT_G(binding_resources) = binding_resources;
+
+	return 0;
 }
 
 /*
@@ -432,6 +534,152 @@ static void catch_error(void *userData,
 	set_error(error->message TSRMLS_CC);
 }
 
+/*
+	Private function name:	free_resource
+	Since version:		0.4.2
+	Description:		Function is used to free the the internal libvirt-php resource identified by it's type and memory location
+	Arguments:		@type [int]: type of the resource to be freed, INT_RESOURCE_x where x can be { CONNECTION | DOMAIN | NETWORK | NODEDEV | STORAGEPOOL | VOLUME | SNAPSHOT }
+				@mem [uint]: memory location of the resource to be freed
+	Returns:		None
+*/
+void free_resource(int type, arch_uint mem)
+{
+	int rv;
+
+	DPRINTF("Freeing libvirt %s resource at 0x%llx\n", translate_counter_type(type), mem);
+
+	if (type == INT_RESOURCE_DOMAIN) {
+		rv = virDomainFree( (virDomainPtr)mem );
+		if (rv != 0) {
+			DPRINTF("%s: virDomainFree(%p) returned %d (%s)\n", __FUNCTION__, (virDomainPtr)mem, rv, LIBVIRT_G (last_error));
+			php_error_docref(NULL TSRMLS_CC, E_WARNING,"virDomainFree failed with %i on destructor: %s", rv, LIBVIRT_G (last_error));
+		}
+		else {
+			DPRINTF("%s: virDomainFree(%p) completed successfully\n", __FUNCTION__, (virDomainPtr)mem);
+			resource_change_counter(INT_RESOURCE_DOMAIN, NULL, (virDomainPtr)mem, 0);
+		}
+	}
+
+	if (type == INT_RESOURCE_NETWORK) {
+		rv = virNetworkFree( (virNetworkPtr)mem );
+		if (rv != 0) {
+			DPRINTF("%s: virNetworkFree(%p) returned %d (%s)\n", __FUNCTION__, (virNetworkPtr)mem, rv, LIBVIRT_G (last_error));
+			php_error_docref(NULL TSRMLS_CC, E_WARNING,"virNetworkFree failed with %i on destructor: %s", rv, LIBVIRT_G (last_error));
+		}
+		else {
+			DPRINTF("%s: virNetworkFree(%p) completed successfully\n", __FUNCTION__, (virNetworkPtr)mem);
+			resource_change_counter(INT_RESOURCE_NETWORK, NULL, (virNetworkPtr)mem, 0);
+		}
+	}
+
+	if (type == INT_RESOURCE_NODEDEV) {
+		rv = virNodeDeviceFree( (virNodeDevicePtr)mem );
+		if (rv != 0) {
+			DPRINTF("%s: virNodeDeviceFree(%p) returned %d (%s)\n", __FUNCTION__, (virNodeDevicePtr)mem, rv, LIBVIRT_G (last_error));
+			php_error_docref(NULL TSRMLS_CC, E_WARNING,"virNodeDeviceFree failed with %i on destructor: %s", rv, LIBVIRT_G (last_error));
+		}
+		else {
+			DPRINTF("%s: virNodeDeviceFree(%p) completed successfully\n", __FUNCTION__, (virNodeDevicePtr)mem);
+			resource_change_counter(INT_RESOURCE_NODEDEV, NULL, (virNodeDevicePtr)mem, 0);
+		}
+	}
+
+	if (type == INT_RESOURCE_STORAGEPOOL) {
+		rv = virStoragePoolFree( (virStoragePoolPtr)mem );
+		if (rv != 0) {
+			DPRINTF("%s: virStoragePoolFree(%p) returned %d (%s)\n", __FUNCTION__, (virStoragePoolPtr)mem, rv, LIBVIRT_G (last_error));
+			php_error_docref(NULL TSRMLS_CC, E_WARNING,"virStoragePoolFree failed with %i on destructor: %s", rv, LIBVIRT_G (last_error));
+		}
+		else {
+			DPRINTF("%s: virStoragePoolFree(%p) completed successfully\n", __FUNCTION__, (virStoragePoolPtr)mem);
+			resource_change_counter(INT_RESOURCE_STORAGEPOOL, NULL, (virStoragePoolPtr)mem, 0);
+		}
+	}
+
+	if (type == INT_RESOURCE_VOLUME) {
+		rv = virStorageVolFree( (virStorageVolPtr)mem );
+		if (rv != 0) {
+			DPRINTF("%s: virStorageVolFree(%p) returned %d (%s)\n", __FUNCTION__, (virStorageVolPtr)mem, rv, LIBVIRT_G (last_error));
+			php_error_docref(NULL TSRMLS_CC, E_WARNING,"virStorageVolFree failed with %i on destructor: %s", rv, LIBVIRT_G (last_error));
+		}
+		else {
+			DPRINTF("%s: virStorageVolFree(%p) completed successfully\n", __FUNCTION__, (virStorageVolPtr)mem);
+			resource_change_counter(INT_RESOURCE_VOLUME, NULL, (virStorageVolPtr)mem, 0);
+		}
+	}
+
+	if (type == INT_RESOURCE_SNAPSHOT) {
+		rv = virDomainSnapshotFree( (virDomainSnapshotPtr)mem );
+		if (rv != 0) {
+			DPRINTF("%s: virDomainSnapshotFree(%p) returned %d (%s)\n", __FUNCTION__, (virDomainSnapshotPtr)mem, rv, LIBVIRT_G (last_error));
+			php_error_docref(NULL TSRMLS_CC, E_WARNING,"virDomainSnapshotFree failed with %i on destructor: %s", rv, LIBVIRT_G (last_error));
+		}
+		else {
+			DPRINTF("%s: virDomainSnapshotFree(%p) completed successfully\n", __FUNCTION__, (virDomainSnapshotPtr)mem);
+			resource_change_counter(INT_RESOURCE_SNAPSHOT, NULL, (virDomainSnapshotPtr)mem, 0);
+		}
+	}
+}
+
+/*
+	Private function name:	free_resources_on_connection
+	Since version:		0.4.2
+	Description:		Function is used to free all the resources assigned to the connection identified by conn
+	Arguments:		@conn [virConnectPtr]: libvirt connection pointer
+	Returns:		None
+*/
+void free_resources_on_connection(virConnectPtr conn)
+{
+	int binding_resources_count = 0;
+	resource_info *binding_resources;
+	int i;
+
+	binding_resources_count = LIBVIRT_G(binding_resources_count);
+	binding_resources = LIBVIRT_G(binding_resources);
+
+	for (i = 0; i < binding_resources_count; i++) {
+		if ((binding_resources[i].conn == conn) && (binding_resources[i].overwrite == 0))
+			free_resource(binding_resources[i].type, binding_resources[i].mem);
+	}
+}
+
+/*
+	Private function name:	check_resource_allocation
+	Since version:		0.4.2
+	Description:		Function is used to check whether the resource identified by type and memory is allocated for connection conn or not
+	Arguments:		@conn [virConnectPtr]: libvirt connection pointer
+				@type [int]: type of the counter to be checked, please see free_resource() API for possible values
+				@memp [pointer]: pointer to the memory
+	Returns:		1 if resource is allocated, 0 otherwise
+*/
+int check_resource_allocation(virConnectPtr conn, int type, void *memp)
+{
+	int binding_resources_count = 0;
+	resource_info *binding_resources = NULL;
+	int i, allocated = 0;
+	char tmp[64] = { 0 };
+	arch_uint mem = 0;
+
+	snprintf(tmp, sizeof(tmp), "%p", memp);
+	sscanf(tmp, "%x", &mem);
+
+	binding_resources_count = LIBVIRT_G(binding_resources_count);
+	binding_resources = LIBVIRT_G(binding_resources);
+
+	if (binding_resources == NULL)
+		return 0;
+
+	for (i = 0; i < binding_resources_count; i++) {
+		if ((((conn != NULL) && (binding_resources[i].conn == conn)) || (conn == NULL))
+			&& (binding_resources[i].type == type) && (binding_resources[i].mem == mem)
+			&& (binding_resources[i].overwrite == 0))
+				allocated = 1;
+	}
+
+	DPRINTF("%s: libvirt %s resource (conn %p) is%s allocated\n", __FUNCTION__, translate_counter_type(type),
+		memp, !allocated ? " not" : "");
+	return allocated;
+}
 
 /* Destructor for connection resource */
 static void php_libvirt_connection_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
@@ -443,10 +691,17 @@ static void php_libvirt_connection_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 	{
 		if (conn->conn != NULL)
 		{
+			free_resources_on_connection(conn->conn);
+
 			rv = virConnectClose(conn->conn);
-			DPRINTF("%s: virConnectClose(%p) returned %d (%s)\n", __FUNCTION__, conn->conn, rv, LIBVIRT_G (last_error));
-			if (rv!=0)
+			if (rv!=0) {
+				DPRINTF("%s: virConnectClose(%p) returned %d (%s)\n", __FUNCTION__, conn->conn, rv, LIBVIRT_G (last_error));
 				php_error_docref(NULL TSRMLS_CC, E_WARNING,"virConnectClose failed with %i on destructor: %s", rv, LIBVIRT_G (last_error));
+			}
+			else {
+				DPRINTF("%s: virConnectClose(%p) completed successfully\n", __FUNCTION__, conn->conn);
+				resource_change_counter(INT_RESOURCE_CONNECTION, NULL, conn->conn, 0);
+			}
 			conn->conn=NULL;
 		}
 		efree (conn);
@@ -463,10 +718,21 @@ static void php_libvirt_domain_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 	{
 		if (domain->domain != NULL)
 		{
+			if (!check_resource_allocation(domain->conn->conn, INT_RESOURCE_DOMAIN, domain->domain)) {
+				domain->domain=NULL;
+				efree (domain);
+				return;
+			}
+
 			rv = virDomainFree(domain->domain);
-			DPRINTF("%s: virDomainFree(%p) returned %d (%s)\n", __FUNCTION__, domain->domain, rv, LIBVIRT_G (last_error));
-			if (rv != 0)
+			if (rv != 0) {
+				DPRINTF("%s: virDomainFree(%p) returned %d (%s)\n", __FUNCTION__, domain->domain, rv, LIBVIRT_G (last_error));
 				php_error_docref(NULL TSRMLS_CC, E_WARNING,"virDomainFree failed with %i on destructor: %s", rv, LIBVIRT_G (last_error));
+			}
+			else {
+				DPRINTF("%s: virDomainFree(%p) completed successfully\n", __FUNCTION__, domain->domain);
+				resource_change_counter(INT_RESOURCE_DOMAIN, domain->conn->conn, domain->domain, 0);
+			}
 			domain->domain=NULL;
 		}
 		efree (domain);
@@ -483,10 +749,20 @@ static void php_libvirt_storagepool_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 	{
 		if (pool->pool != NULL)
 		{
+			if (!check_resource_allocation(NULL, INT_RESOURCE_STORAGEPOOL, pool->pool)) {
+				pool->pool=NULL;
+				efree(pool);
+				return;
+			}
 			rv = virStoragePoolFree(pool->pool);
-			DPRINTF("%s: virStoragePoolFree(%p) returned %d (%s)\n", __FUNCTION__, pool->pool, rv, LIBVIRT_G (last_error));
-			if (rv!=0)
+			if (rv!=0) {
+				DPRINTF("%s: virStoragePoolFree(%p) returned %d (%s)\n", __FUNCTION__, pool->pool, rv, LIBVIRT_G (last_error));
 				php_error_docref(NULL TSRMLS_CC, E_WARNING,"virStoragePoolFree failed with %i on destructor: %s", rv, LIBVIRT_G (last_error));
+			}
+			else {
+				DPRINTF("%s: virStoragePoolFree(%p) completed successfully\n", __FUNCTION__, pool->pool);
+				resource_change_counter(INT_RESOURCE_STORAGEPOOL, NULL, pool->pool, 0);
+			}
 			pool->pool=NULL;
 		}
 		efree(pool);
@@ -503,10 +779,20 @@ static void php_libvirt_volume_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 	{
 		if (volume->volume != NULL)
 		{
+			if (!check_resource_allocation(NULL, INT_RESOURCE_VOLUME, volume->volume)) {
+				volume->volume=NULL;
+				efree(volume);
+				return;
+			}
 			rv = virStorageVolFree (volume->volume);
-			DPRINTF("%s: virStorageVolFree(%p) returned %d (%s)\n", __FUNCTION__, volume->volume, rv, LIBVIRT_G (last_error));
-			if (rv!=0)
+			if (rv!=0) {
+				DPRINTF("%s: virStorageVolFree(%p) returned %d (%s)\n", __FUNCTION__, volume->volume, rv, LIBVIRT_G (last_error));
 				php_error_docref(NULL TSRMLS_CC, E_WARNING,"virStorageVolFree failed with %i on destructor: %s", rv, LIBVIRT_G (last_error));
+			}
+			else {
+				DPRINTF("%s: virStorageVolFree(%p) completed successfully\n", __FUNCTION__, volume->volume);
+				resource_change_counter(INT_RESOURCE_VOLUME, NULL, volume->volume, 0);
+			}
 			volume->volume=NULL;
 		}
 		efree(volume);
@@ -523,10 +809,20 @@ static void php_libvirt_network_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 	{
 		if (network->network != NULL)
 		{
+			if (!check_resource_allocation(NULL, INT_RESOURCE_CONNECTION, network->network)) {
+				network->network=NULL;
+				efree(network);
+				return;
+			}
 			rv = virNetworkFree(network->network);
-			DPRINTF("%s: virNetworkFree(%p) returned %d (%s)\n", __FUNCTION__, network->network, rv, LIBVIRT_G (last_error));
-			if (rv!=0)
+			if (rv!=0) {
+				DPRINTF("%s: virNetworkFree(%p) returned %d (%s)\n", __FUNCTION__, network->network, rv, LIBVIRT_G (last_error));
 				php_error_docref(NULL TSRMLS_CC, E_WARNING,"virStorageVolFree failed with %i on destructor: %s", rv, LIBVIRT_G (last_error));
+			}
+			else {
+				DPRINTF("%s: virNetworkFree(%p) completed successfully\n", __FUNCTION__, network->network);
+				resource_change_counter(INT_RESOURCE_NETWORK, NULL, network->network, 0);
+			}
 			network->network=NULL;
 		}
 		efree(network);
@@ -543,10 +839,20 @@ static void php_libvirt_nodedev_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 	{
 		if (nodedev->device != NULL)
 		{
+			if (!check_resource_allocation(nodedev->conn->conn, INT_RESOURCE_NODEDEV, nodedev->device)) {
+				nodedev->device=NULL;
+				efree(nodedev);
+				return;
+			}
 			rv = virNodeDeviceFree(nodedev->device);
-			DPRINTF("%s: virNodeDeviceFree(%p) returned %d (%s)\n", __FUNCTION__, nodedev->device, rv, LIBVIRT_G (last_error));
-			if (rv!=0)
+			if (rv!=0) {
+				DPRINTF("%s: virNodeDeviceFree(%p) returned %d (%s)\n", __FUNCTION__, nodedev->device, rv, LIBVIRT_G (last_error));
 				php_error_docref(NULL TSRMLS_CC, E_WARNING,"virStorageVolFree failed with %i on destructor: %s", rv, LIBVIRT_G (last_error));
+			}
+			else {
+				DPRINTF("%s: virNodeDeviceFree(%p) completed successfully\n", __FUNCTION__, nodedev->device);
+				resource_change_counter(INT_RESOURCE_NODEDEV, nodedev->conn->conn, nodedev->device, 0);
+			}
 			nodedev->device=NULL;
 		}
 		efree(nodedev);
@@ -563,10 +869,20 @@ static void php_libvirt_snapshot_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 	{
 		if (snapshot->snapshot != NULL)
 		{
+			if (!check_resource_allocation(snapshot->domain->conn->conn, INT_RESOURCE_SNAPSHOT, snapshot->snapshot)) {
+				snapshot->snapshot=NULL;
+				efree(snapshot);
+				return;
+			}
 			rv = virDomainSnapshotFree(snapshot->snapshot);
-			DPRINTF("%s: virDomainSnapshotFree(%p) returned %d\n", PHPFUNC, snapshot, rv);
-			if (rv!=0)
+			if (rv!=0) {
+				DPRINTF("%s: virDomainSnapshotFree(%p) returned %d\n", __FUNCTION__, snapshot->snapshot, rv);
 				php_error_docref(NULL TSRMLS_CC, E_WARNING,"virStorageVolFree failed with %i on destructor: %s", rv, LIBVIRT_G (last_error));
+			}
+			else {
+				DPRINTF("%s: virDomainSnapshotFree(%p) completed successfully\n", __FUNCTION__, snapshot->snapshot);
+				resource_change_counter(INT_RESOURCE_SNAPSHOT, snapshot->domain->conn->conn, snapshot->snapshot, 0);
+			}
 			snapshot->snapshot=NULL;
 		}
 		efree(snapshot);
@@ -971,6 +1287,7 @@ PHP_FUNCTION(libvirt_connect)
 		RETURN_FALSE;
 	}
 
+	resource_change_counter(INT_RESOURCE_CONNECTION, NULL, conn->conn, 1);
 	DPRINTF("%s: Connection to %s established, returning %p\n", PHPFUNC, url, conn->conn);
 
 	ZEND_REGISTER_RESOURCE(return_value, conn, le_libvirt_connection);
@@ -1627,17 +1944,16 @@ PHP_FUNCTION(libvirt_domain_lookup_by_name)
 	php_libvirt_domain *res_domain;
 
 	GET_CONNECTION_FROM_ARGS("rs",&zconn,&name,&name_len);
-
 	if ( (name == NULL) || (name_len<1)) RETURN_FALSE;
 	domain=virDomainLookupByName(conn->conn,name);
-	DPRINTF("%s: virDomainLookupByName(%p, %s) returned %p\n", PHPFUNC, conn->conn, name, domain);
 	if (domain==NULL) RETURN_FALSE;
 
 	res_domain= emalloc(sizeof(php_libvirt_domain));
 	res_domain->domain = domain;
 	res_domain->conn = conn;
 
-	DPRINTF("%s: returning %p\n", PHPFUNC, res_domain->domain);
+	DPRINTF("%s: domain name = '%s', returning %p\n", PHPFUNC, name, res_domain->domain);
+	resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1);
 	ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
 }
 
@@ -1662,14 +1978,14 @@ PHP_FUNCTION(libvirt_domain_lookup_by_uuid)
 
 	if ( (uuid == NULL) || (uuid_len<1)) RETURN_FALSE;
 	domain=virDomainLookupByUUID(conn->conn,uuid);
-	DPRINTF("%s: virDomainLookupByUUID(%p, %s) returned %p\n", PHPFUNC, conn->conn, uuid, domain);
 	if (domain==NULL) RETURN_FALSE;
 
 	res_domain= emalloc(sizeof(php_libvirt_domain));
 	res_domain->domain = domain;
 	res_domain->conn=conn;
 
-	DPRINTF("%s: returning %p\n", PHPFUNC, res_domain->domain);
+	DPRINTF("%s: domain UUID = '%s', returning %p\n", PHPFUNC, uuid, res_domain->domain);
+	resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1);
 	ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
 }
 
@@ -1694,7 +2010,6 @@ PHP_FUNCTION(libvirt_domain_lookup_by_uuid_string)
 
 	if ( (uuid == NULL) || (uuid_len<1)) RETURN_FALSE;
 	domain=virDomainLookupByUUIDString(conn->conn,uuid);
-	DPRINTF("%s: virDomainLookupByUUIDString(%p, %s) returned %p\n", PHPFUNC, conn->conn, uuid, domain);
 	if (domain==NULL) RETURN_FALSE;
 
 	res_domain= emalloc(sizeof(php_libvirt_domain));
@@ -1702,7 +2017,8 @@ PHP_FUNCTION(libvirt_domain_lookup_by_uuid_string)
 
 	res_domain->conn=conn;
 
-	DPRINTF("%s: returning %p\n", PHPFUNC, res_domain->domain);
+	DPRINTF("%s: domain UUID string = '%s', returning %p\n", PHPFUNC, uuid, res_domain->domain);
+	resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1);
 	ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
 }
 
@@ -1725,14 +2041,14 @@ PHP_FUNCTION(libvirt_domain_lookup_by_id)
 	GET_CONNECTION_FROM_ARGS("rl",&zconn,&id);
 
 	domain=virDomainLookupByID(conn->conn,(int)id);
-	DPRINTF("%s: virDomainLookupByID(%p, %d) returned %p\n", PHPFUNC, conn->conn, (int)id, domain);
 	if (domain==NULL) RETURN_FALSE;
 
 	res_domain= emalloc(sizeof(php_libvirt_domain));
 	res_domain->domain = domain;
 	res_domain->conn=conn;
 
-	DPRINTF("%s: returning %p\n", PHPFUNC, res_domain->domain);
+	DPRINTF("%s: domain id = '%d', returning %p\n", PHPFUNC, (int)id, res_domain->domain);
+	resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1);
 	ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
 }
 
@@ -2194,6 +2510,7 @@ PHP_FUNCTION(libvirt_domain_change_vcpus)
 		DPRINTF("%s: Cannot free domain %p, error code = %d (%s)\n", PHPFUNC, domain->domain, retval, LIBVIRT_G(last_error));
 	}
 	else {
+		resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, domain->domain, 0);
 		DPRINTF("%s: Domain %p freed\n", PHPFUNC, domain->domain);
 	}
 
@@ -2210,6 +2527,7 @@ PHP_FUNCTION(libvirt_domain_change_vcpus)
 	res_domain->conn = conn;
 
 	DPRINTF("%s: returning %p\n", PHPFUNC, res_domain->domain);
+	resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1);
 	ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
 }
 
@@ -2283,6 +2601,7 @@ PHP_FUNCTION(libvirt_domain_change_memory)
 		DPRINTF("%s: Cannot free domain %p, error code = %d (%s)\n", PHPFUNC, domain->domain, retval, LIBVIRT_G(last_error));
 	}
 	else {
+		resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, domain->domain, 0);
 		DPRINTF("%s: Domain %p freed\n", PHPFUNC, domain->domain);
 	}
 
@@ -2299,6 +2618,7 @@ PHP_FUNCTION(libvirt_domain_change_memory)
 	res_domain->conn = conn;
 
 	DPRINTF("%s: returning %p\n", PHPFUNC, res_domain->domain);
+	resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1);
 	ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
 }
 
@@ -2371,6 +2691,7 @@ PHP_FUNCTION(libvirt_domain_change_boot_devices)
 		DPRINTF("%s: Cannot free domain %p, error code = %d (%s)\n", PHPFUNC, domain->domain, retval, LIBVIRT_G(last_error));
 	}
 	else {
+		resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, domain->domain, 0);
 		DPRINTF("%s: Domain %p freed\n", PHPFUNC, domain->domain);
 	}
 
@@ -2387,6 +2708,7 @@ PHP_FUNCTION(libvirt_domain_change_boot_devices)
 	res_domain->conn = conn;
 
 	DPRINTF("%s: returning %p\n", PHPFUNC, res_domain->domain);
+	resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1);
 	ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
 }
 
@@ -2489,6 +2811,7 @@ PHP_FUNCTION(libvirt_domain_disk_add)
 		DPRINTF("%s: Cannot free domain %p, error code = %d (%s)\n", PHPFUNC, domain->domain, retval, LIBVIRT_G(last_error));
 	}
 	else {
+		resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, domain->domain, 0);
 		DPRINTF("%s: Domain %p freed\n", PHPFUNC, domain->domain);
 	}
 
@@ -2505,6 +2828,7 @@ PHP_FUNCTION(libvirt_domain_disk_add)
 	res_domain->conn = conn;
 
 	DPRINTF("%s: returning %p\n", PHPFUNC, res_domain->domain);
+	resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1);
 	ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
 }
 
@@ -2597,6 +2921,7 @@ PHP_FUNCTION(libvirt_domain_disk_remove)
 		DPRINTF("%s: Cannot free domain %p, error code = %d (%s)\n", PHPFUNC, domain->domain, retval, LIBVIRT_G(last_error));
 	}
 	else {
+		resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, domain->domain, 0);
 		DPRINTF("%s: Domain %p freed\n", PHPFUNC, domain->domain);
 	}
 
@@ -2608,6 +2933,7 @@ PHP_FUNCTION(libvirt_domain_disk_remove)
 	res_domain->conn = conn;
 
 	DPRINTF("%s: returning %p\n", PHPFUNC, res_domain->domain);
+	resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1);
 	ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
 }
 
@@ -2711,6 +3037,7 @@ PHP_FUNCTION(libvirt_domain_nic_add)
 		DPRINTF("%s: Cannot free domain %p, error code = %d (%s)\n", PHPFUNC, domain->domain, retval, LIBVIRT_G(last_error));
 	}
 	else {
+		resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, domain->domain, 0);
 		DPRINTF("%s: Domain %p freed\n", PHPFUNC, domain->domain);
 	}
 
@@ -2727,6 +3054,7 @@ PHP_FUNCTION(libvirt_domain_nic_add)
 	res_domain->conn = conn;
 
 	DPRINTF("%s: returning %p\n", PHPFUNC, res_domain->domain);
+	resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1);
 	ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
 }
 
@@ -2822,6 +3150,7 @@ PHP_FUNCTION(libvirt_domain_nic_remove)
                 DPRINTF("%s: Cannot free domain %p, error code = %d (%s)\n", PHPFUNC, domain->domain, retval, LIBVIRT_G(last_error));
 	}
         else {
+		resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, domain->domain, 0);
                 DPRINTF("%s: Domain %p freed\n", PHPFUNC, domain->domain);
 	}
 
@@ -2833,6 +3162,7 @@ PHP_FUNCTION(libvirt_domain_nic_remove)
 	res_domain->conn = conn;
 
 	DPRINTF("%s: returning %p\n", PHPFUNC, res_domain->domain);
+	resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1);
 	ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
 }
 
@@ -3063,6 +3393,7 @@ PHP_FUNCTION(libvirt_domain_define_xml)
         res_domain->conn=conn;
 
 	DPRINTF("%s: returning %p\n", PHPFUNC, res_domain->domain);
+	resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1);
 	ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
 }
 
@@ -3095,6 +3426,7 @@ PHP_FUNCTION(libvirt_domain_create_xml)
 	res_domain->conn=conn;
 
 	DPRINTF("%s: returning %p\n", PHPFUNC, res_domain->domain);
+	resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1);
 	ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
 }
 
@@ -3545,6 +3877,7 @@ PHP_FUNCTION(libvirt_domain_migrate)
         res_domain->conn=dconn;
 
 	DPRINTF("%s: returning %p\n", PHPFUNC, res_domain->domain);
+	resource_change_counter(INT_RESOURCE_DOMAIN, dconn->conn, res_domain->domain, 1);
  	ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain); 	 
 }
 
@@ -3641,6 +3974,7 @@ PHP_FUNCTION(libvirt_domain_snapshot_lookup_by_name)
 	res_snapshot->snapshot = snapshot;
 
 	DPRINTF("%s: returning %p\n", PHPFUNC, res_snapshot->snapshot);
+	resource_change_counter(INT_RESOURCE_SNAPSHOT, domain->conn->conn, res_snapshot->snapshot, 1);
  	ZEND_REGISTER_RESOURCE(return_value, res_snapshot, le_libvirt_snapshot);
 }
 
@@ -3669,6 +4003,7 @@ PHP_FUNCTION(libvirt_domain_snapshot_create)
 	res_snapshot->snapshot = snapshot;
 
 	DPRINTF("%s: returning %p\n", PHPFUNC, res_snapshot->snapshot);
+	resource_change_counter(INT_RESOURCE_SNAPSHOT, domain->conn->conn, res_snapshot->snapshot, 1);
  	ZEND_REGISTER_RESOURCE(return_value, res_snapshot, le_libvirt_snapshot); 	 
 }
 
@@ -3844,8 +4179,10 @@ PHP_FUNCTION(libvirt_storagepool_lookup_by_name)
 
 	res_pool = emalloc(sizeof(php_libvirt_storagepool));
 	res_pool->pool = pool;
+	res_pool->conn = conn;
 
 	DPRINTF("%s: returning %p\n", PHPFUNC, res_pool->pool);
+	resource_change_counter(INT_RESOURCE_STORAGEPOOL, conn->conn, res_pool->pool, 1);
 	ZEND_REGISTER_RESOURCE(return_value, res_pool, le_libvirt_storagepool);
 }
 
@@ -3874,8 +4211,10 @@ PHP_FUNCTION(libvirt_storagepool_lookup_by_volume)
 
 	res_pool = emalloc(sizeof(php_libvirt_storagepool));
 	res_pool->pool = pool;
+	res_pool->conn = volume->conn;
 
 	DPRINTF("%s: returning %p\n", PHPFUNC, res_pool->pool);
+	resource_change_counter(INT_RESOURCE_STORAGEPOOL, res_pool->conn->conn, res_pool->pool, 1);
 	ZEND_REGISTER_RESOURCE(return_value, res_pool, le_libvirt_storagepool);
 }
 
@@ -3971,8 +4310,10 @@ PHP_FUNCTION(libvirt_storagevolume_lookup_by_name)
 
 	res_volume = emalloc(sizeof(php_libvirt_volume));
 	res_volume->volume = volume;
+	res_volume->conn   = pool->conn;
 
 	DPRINTF("%s: returning %p\n", PHPFUNC, res_volume->volume);
+	resource_change_counter(INT_RESOURCE_VOLUME, pool->conn->conn, res_volume->volume, 1);
 	ZEND_REGISTER_RESOURCE(return_value, res_volume, le_libvirt_volume);
 }
 
@@ -4006,8 +4347,10 @@ PHP_FUNCTION(libvirt_storagevolume_lookup_by_path)
 
 	res_volume = emalloc(sizeof(php_libvirt_volume));
 	res_volume->volume = volume;
+	res_volume->conn   = conn;
 
 	DPRINTF("%s: returning %p\n", PHPFUNC, res_volume->volume);
+	resource_change_counter(INT_RESOURCE_VOLUME, conn->conn, res_volume->volume, 1);
 	ZEND_REGISTER_RESOURCE(return_value, res_volume, le_libvirt_volume);
 }
 
@@ -4149,8 +4492,10 @@ PHP_FUNCTION(libvirt_storagevolume_create_xml)
 
 	res_volume= emalloc(sizeof(php_libvirt_volume));
 	res_volume->volume = volume;
+	res_volume->conn   = pool->conn;
 
 	DPRINTF("%s: returning %p\n", PHPFUNC, res_volume->volume);
+	resource_change_counter(INT_RESOURCE_VOLUME, pool->conn->conn, res_volume->volume, 1);
 	ZEND_REGISTER_RESOURCE(return_value, res_volume, le_libvirt_volume);
 }
 
@@ -4186,6 +4531,7 @@ PHP_FUNCTION(libvirt_storagevolume_create_xml_from)
 	if ((pool==NULL)||(pool->pool==NULL))RETURN_FALSE;
 	ZEND_FETCH_RESOURCE (pl_volume, php_libvirt_volume*, &zvolume, -1, PHP_LIBVIRT_VOLUME_RES_NAME, le_libvirt_volume);
 	if ((pl_volume==NULL)||(pl_volume->volume==NULL))RETURN_FALSE;
+	resource_change_counter(INT_RESOURCE_VOLUME, NULL, pl_volume->volume, 1);
 
 	volume=virStorageVolCreateXMLFrom(pool->pool,xml, pl_volume->volume, 0);
 	DPRINTF("%s: virStorageVolCreateXMLFrom(%p, <xml>, %p, 0) returned %p\n", PHPFUNC, pool->pool, pl_volume->volume, volume);
@@ -4193,8 +4539,10 @@ PHP_FUNCTION(libvirt_storagevolume_create_xml_from)
 
 	res_volume= emalloc(sizeof(php_libvirt_volume));
 	res_volume->volume = volume;
+	res_volume->conn   = pool->conn;
 
 	DPRINTF("%s: returning %p\n", PHPFUNC, res_volume->volume);
+	resource_change_counter(INT_RESOURCE_VOLUME, pool->conn->conn, res_volume->volume, 1);
 	ZEND_REGISTER_RESOURCE(return_value, res_volume, le_libvirt_volume);
 }
 
@@ -4302,8 +4650,10 @@ PHP_FUNCTION(libvirt_storagepool_lookup_by_uuid_string)
 
 	res_pool = emalloc (sizeof (php_libvirt_storagepool));
 	res_pool->pool = storage;
+	res_pool->conn = conn;
 
 	DPRINTF("%s: returning %p\n", PHPFUNC, res_pool->pool);
+	resource_change_counter(INT_RESOURCE_STORAGEPOOL, conn->conn, res_pool->pool, 1);
 	ZEND_REGISTER_RESOURCE (return_value, res_pool, le_libvirt_storagepool);
 }
 
@@ -4379,8 +4729,10 @@ PHP_FUNCTION(libvirt_storagepool_define_xml)
 
 	res_pool = emalloc (sizeof (php_libvirt_storagepool));
 	res_pool->pool = pool;
+	res_pool->conn = conn;
 
 	DPRINTF("%s: returning %p\n", PHPFUNC, res_pool->pool);
+	resource_change_counter(INT_RESOURCE_STORAGEPOOL, conn->conn, res_pool->pool, 1);
 	ZEND_REGISTER_RESOURCE (return_value, res_pool, le_libvirt_storagepool);
 }
 
@@ -4746,6 +5098,7 @@ PHP_FUNCTION(libvirt_list_domains)
 	for (i=0;i<count;i++)
 	{
 		domain=virDomainLookupByID(conn->conn,ids[i]);
+		resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, domain, 1);
 		if (domain!=NULL) 
 		{
 			name=virDomainGetName(domain);
@@ -4753,9 +5106,13 @@ PHP_FUNCTION(libvirt_list_domains)
 			add_next_index_string(return_value, name, 1);
 		}
 		rv = virDomainFree (domain);
-		if (rv != 0)
+		if (rv != 0) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING,"virDomainFree failed with %i on list_domain: %s",
 					rv, LIBVIRT_G (last_error));
+		}
+		else {
+			resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, domain, 0);
+		}
 		domain = NULL;
 	}
   	efree(ids);
@@ -4816,6 +5173,7 @@ PHP_FUNCTION(libvirt_list_domain_resources)
 			ALLOC_INIT_ZVAL(zdomain);
 			res_domain->conn=conn;
 
+			resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1);
 			ZEND_REGISTER_RESOURCE(zdomain, res_domain, le_libvirt_domain);
 			add_next_index_zval(return_value,  zdomain);
 		}
@@ -4842,6 +5200,7 @@ PHP_FUNCTION(libvirt_list_domain_resources)
 		        res_domain->conn=conn;
 
 			ZEND_REGISTER_RESOURCE(zdomain, res_domain, le_libvirt_domain);
+			resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1);
 			add_next_index_zval(return_value,  zdomain);
 		}
 		free(names[i]);
@@ -4920,16 +5279,19 @@ PHP_FUNCTION(libvirt_list_active_domains)
 		domain=virDomainLookupByID(conn->conn,ids[i]);
 		if (domain!=NULL) 
 		{
+			resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, domain, 1);
 			name=virDomainGetName(domain);
 			if (name==NULL)
 			{
 				efree (ids);
-				virDomainFree (domain);
+				if (virDomainFree (domain))
+					resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, domain, 0);
 				RETURN_FALSE;
 			}
 
 			add_next_index_string(return_value, name, 1);
-			virDomainFree (domain);
+			if (virDomainFree (domain))
+				resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, domain, 0);
 		}
 	}
 	efree(ids);
@@ -5105,6 +5467,7 @@ PHP_FUNCTION(libvirt_nodedev_get)
 	res_dev->conn = conn;
 
 	DPRINTF("%s: returning %p\n", PHPFUNC, res_dev->device);
+	resource_change_counter(INT_RESOURCE_NODEDEV, conn->conn, res_dev->device, 1);
 	ZEND_REGISTER_RESOURCE(return_value, res_dev, le_libvirt_nodedev);
 }
 
@@ -5342,6 +5705,7 @@ PHP_FUNCTION(libvirt_network_define_xml)
 	res_net->conn = conn;
 
 	DPRINTF("%s: returning %p\n", PHPFUNC, res_net->network);
+	resource_change_counter(INT_RESOURCE_NETWORK, conn->conn, res_net->network, 1);
 	ZEND_REGISTER_RESOURCE(return_value, res_net, le_libvirt_network);
 }
 
@@ -5394,6 +5758,7 @@ PHP_FUNCTION(libvirt_network_get)
 	res_net->conn = conn;
 
 	DPRINTF("%s: returning %p\n", PHPFUNC, res_net->network);
+	resource_change_counter(INT_RESOURCE_NETWORK, conn->conn, res_net->network, 1);
 	ZEND_REGISTER_RESOURCE(return_value, res_net, le_libvirt_network);
 }
 
@@ -5793,6 +6158,40 @@ PHP_FUNCTION(libvirt_get_iso_images)
 	}
 
 	if (num == 0)
+		RETURN_FALSE;
+}
+
+/*
+	Function name:		libvirt_print_binding_resources
+	Since version:		0.4.2
+	Description:		Function to print the binding resources, although the resource information are printed, they are returned in the return_value
+	Arguments:		None
+	Returns:		bindings resource information
+*/
+PHP_FUNCTION(libvirt_print_binding_resources)
+{
+	int binding_resources_count = 0;
+	resource_info *binding_resources;
+	char tmp[256] = { 0 };
+	int i;
+
+	binding_resources_count = LIBVIRT_G(binding_resources_count);
+	binding_resources = LIBVIRT_G(binding_resources);
+
+	array_init(return_value);
+	for (i = 0; i < binding_resources_count; i++) {
+		if (binding_resources[i].overwrite == 0) {
+			if (binding_resources[i].conn != NULL)
+				snprintf(tmp, sizeof(tmp), "Libvirt %s resource at 0x%llx (connection %p)", translate_counter_type(binding_resources[i].type),
+						binding_resources[i].mem, binding_resources[i].conn);
+			else
+				snprintf(tmp, sizeof(tmp), "Libvirt %s resource at 0x%llx", translate_counter_type(binding_resources[i].type),
+						binding_resources[i].mem);
+			add_next_index_string(return_value, tmp, 1);
+		}
+	}
+
+	if (binding_resources_count == 0)
 		RETURN_FALSE;
 }
 

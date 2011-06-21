@@ -500,14 +500,14 @@
 				}
 		}
 
-		$dom = $lv->domain_get_info($domName);
-		$mem = number_format($dom[$domName]['memory'] / 1024, 2, '.', ' ').' MB';
-		$cpu = $dom[$domName]['nrVirtCpu'];
-		$state = $lv->domain_state_translate($dom[$domName]['state']);
-		$domr = $lv->get_domain_object($domName);
-		$id = $lv->domain_get_id($domr);
-		$arch = $lv->domain_get_arch($domr);
-		$vnc = $lv->domain_get_vnc_port($domr);
+		$res = $lv->get_domain_object($domName);
+		$dom = $lv->domain_get_info($res);
+		$mem = number_format($dom['memory'] / 1024, 2, '.', ' ').' MB';
+		$cpu = $dom['nrVirtCpu'];
+		$state = $lv->domain_state_translate($dom['state']);
+		$id = $lv->domain_get_id($res);
+		$arch = $lv->domain_get_arch($res);
+		$vnc = $lv->domain_get_vnc_port($res);
 
 		if (!$id)
 			$id = 'N/A';
@@ -610,7 +610,7 @@
 			else
 				echo 'Domain doesn\'t have any network devices';
 
-			if ( $dom[$domName]['state'] == 1 ) {
+			if ( $dom['state'] == 1 ) {
 				echo "<h3>Screenshot</h3><img src=\"?action=get-screenshot&uuid={$_GET['uuid']}&width=640\">";
 			}
         }
@@ -674,21 +674,20 @@
 
 		$active = $tmp['active'];
 		for ($i = 0; $i < sizeof($doms); $i++) {
-			$res = $lv->get_domain_by_name($doms[$i]);
-			$uuid = libvirt_domain_get_uuid_string($res);
 			$name = $doms[$i];
-			$domr= $lv->get_domain_object($name);
+			$res = $lv->get_domain_by_name($name);
+			$uuid = libvirt_domain_get_uuid_string($res);
 			$dom = $lv->domain_get_info($name);
-			$mem = number_format($dom[$name]['memory'] / 1024, 2, '.', ' ').' MB';
-			$cpu = $dom[$name]['nrVirtCpu'];
-			$state = $lv->domain_state_translate($dom[$name]['state']);
-			$id = $lv->domain_get_id($domr);
-			$arch = $lv->domain_get_arch($domr);
-			$vnc = $lv->domain_get_vnc_port($domr);
-			$nics = $lv->get_network_cards($domr);
-			if (($diskcnt = $lv->get_disk_count($domr)) > 0) {
-				$disks = $diskcnt.' / '.$lv->get_disk_capacity($domr);
-				$diskdesc = 'Current physical size: '.$lv->get_disk_capacity($domr, true);
+			$mem = number_format($dom['memory'] / 1024, 2, '.', ' ').' MB';
+			$cpu = $dom['nrVirtCpu'];
+			$state = $lv->domain_state_translate($dom['state']);
+			$id = $lv->domain_get_id($res);
+			$arch = $lv->domain_get_arch($res);
+			$vnc = $lv->domain_get_vnc_port($res);
+			$nics = $lv->get_network_cards($res);
+			if (($diskcnt = $lv->get_disk_count($res)) > 0) {
+				$disks = $diskcnt.' / '.$lv->get_disk_capacity($res);
+				$diskdesc = 'Current physical size: '.$lv->get_disk_capacity($res, true);
 			}
 			else {
 				$disks = '-';
