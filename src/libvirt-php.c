@@ -499,9 +499,10 @@ void set_error(char *msg TSRMLS_DC)
 	if (LIBVIRT_G (last_error) != NULL)
 		efree(LIBVIRT_G (last_error));
 
-	if (msg == NULL)
+	if (msg == NULL) {
 		LIBVIRT_G (last_error) = NULL;
 		return;
+	}
 
 	php_error_docref(NULL TSRMLS_CC, E_WARNING,"%s",msg);
 	LIBVIRT_G (last_error)=estrndup(msg,strlen(msg));
