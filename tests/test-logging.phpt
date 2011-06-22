@@ -55,7 +55,7 @@
 	$log = fread($fp, filesize($logfile));
 	fclose($fp);
 
-	$ok = ((strpos($log, 'libvirt_connect: Connecting to')) &&
+	$ok = ((strpos($log, 'libvirt_connect: Connection')) &&
 		(strpos($log, 'libvirt_connection_dtor: virConnectClose')));
 
 	unlink($logfile);

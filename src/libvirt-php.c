@@ -210,6 +210,7 @@ ZEND_GET_MODULE(libvirt)
 PHP_INI_BEGIN()
 	STD_PHP_INI_ENTRY("libvirt.longlong_to_string", "1", PHP_INI_ALL, OnUpdateBool, longlong_to_string_ini, zend_libvirt_globals, libvirt_globals)
 	STD_PHP_INI_ENTRY("libvirt.iso_path", "/var/lib/libvirt/images/iso", PHP_INI_ALL, OnUpdateString, iso_path_ini, zend_libvirt_globals, libvirt_globals)
+	STD_PHP_INI_ENTRY("libvirt.max_connections", "5", PHP_INI_ALL, OnUpdateString, max_connections_ini, zend_libvirt_globals, libvirt_globals)
 PHP_INI_END()
 
 void change_debug(int val)
@@ -223,6 +224,7 @@ static void php_libvirt_init_globals(zend_libvirt_globals *libvirt_globals)
 {
 	libvirt_globals->longlong_to_string_ini = 1;
 	libvirt_globals->iso_path_ini = "/var/lib/libvirt/images/iso";
+	libvirt_globals->max_connections_ini = "5";
 	libvirt_globals->binding_resources_count = 0;
 	libvirt_globals->binding_resources = NULL;
 	#ifdef DEBUG_SUPPORT
@@ -353,7 +355,7 @@ int resource_change_counter(int type, virConnectPtr conn, void *memp, int inc)
 	resource_info *binding_resources = NULL;
 
 	snprintf(tmp, sizeof(tmp), "%p", memp);
-	sscanf(tmp, "%x", &mem);
+	sscanf(tmp, "%"UINTx, &mem);
 
 	binding_resources_count = LIBVIRT_G(binding_resources_count);
 	binding_resources = LIBVIRT_G(binding_resources);
@@ -364,8 +366,13 @@ int resource_change_counter(int type, virConnectPtr conn, void *memp, int inc)
 				pos = i;
 				break;
 			}
-			if ((binding_resources[i].type == type) || (binding_resources[i].mem == mem))
+			if (pos > -1)
+				DPRINTF("%s: Found match on position %d\n", __FUNCTION__, pos);
+			if ((binding_resources[i].type == type) && (binding_resources[i].mem == mem)
+				&& (binding_resources[i].overwrite == 0)) {
+				DPRINTF("%s: Pointer exists at position %d\n", __FUNCTION__, i);
 				return -EEXIST;
+			}
 		}
 
 		if (pos == -1) {
@@ -451,8 +458,8 @@ PHP_MINFO_FUNCTION(libvirt)
 		php_info_print_table_row(2, "Libvirt version", version);
 	}
 
-	php_info_print_table_row(2, "Convertion of long long values to strings",
-				(LIBVIRT_G(longlong_to_string_ini)) ? "True" : "False");
+	php_info_print_table_row(2, "Max. connections", LIBVIRT_G(max_connections_ini));
+
 	if (!access(LIBVIRT_G(iso_path_ini), F_OK) == 0)
 		snprintf(path, sizeof(path), "%s - path is invalid. To set the valid path modify the libvirt.iso_path in your php.ini configuration!",
 					LIBVIRT_G(iso_path_ini));
@@ -546,7 +553,7 @@ void free_resource(int type, arch_uint mem)
 {
 	int rv;
 
-	DPRINTF("Freeing libvirt %s resource at 0x%llx\n", translate_counter_type(type), mem);
+	DPRINTF("%s: Freeing libvirt %s resource at 0x%"UINTx"\n", __FUNCTION__, translate_counter_type(type), mem);
 
 	if (type == INT_RESOURCE_DOMAIN) {
 		rv = virDomainFree( (virDomainPtr)mem );
@@ -638,7 +645,7 @@ void free_resources_on_connection(virConnectPtr conn)
 	binding_resources = LIBVIRT_G(binding_resources);
 
 	for (i = 0; i < binding_resources_count; i++) {
-		if ((binding_resources[i].conn == conn) && (binding_resources[i].overwrite == 0))
+		if ((binding_resources[i].overwrite == 0) && (binding_resources[i].conn == conn))
 			free_resource(binding_resources[i].type, binding_resources[i].mem);
 	}
 }
@@ -661,7 +668,7 @@ int check_resource_allocation(virConnectPtr conn, int type, void *memp)
 	arch_uint mem = 0;
 
 	snprintf(tmp, sizeof(tmp), "%p", memp);
-	sscanf(tmp, "%x", &mem);
+	sscanf(tmp, "%"UINTx, &mem);
 
 	binding_resources_count = LIBVIRT_G(binding_resources_count);
 	binding_resources = LIBVIRT_G(binding_resources);
@@ -676,9 +683,36 @@ int check_resource_allocation(virConnectPtr conn, int type, void *memp)
 				allocated = 1;
 	}
 
-	DPRINTF("%s: libvirt %s resource (conn %p) is%s allocated\n", __FUNCTION__, translate_counter_type(type),
-		memp, !allocated ? " not" : "");
+	DPRINTF("%s: libvirt %s resource 0x%"UINTx" (conn %p) is%s allocated\n", __FUNCTION__, translate_counter_type(type),
+		mem, conn, !allocated ? " not" : "");
 	return allocated;
+}
+
+/*
+	Private function name:	count_resources
+	Since version:		0.4.2
+	Description:		Function counts the internal resources of module instance
+	Arguments:		@type [int]: integer interpretation of the type, see free_resource() API function for possible values
+	Returns:		number of resources already used
+*/
+int count_resources(int type)
+{
+	int binding_resources_count = 0;
+	resource_info *binding_resources = NULL;
+	int i, count = 0;
+
+	binding_resources_count = LIBVIRT_G(binding_resources_count);
+	binding_resources = LIBVIRT_G(binding_resources);
+
+	if (binding_resources == NULL)
+		return 0;
+
+	for (i = 0; i < binding_resources_count; i++) {
+		if (binding_resources[i].type == type)
+			count++;
+	}
+
+	return count;
 }
 
 /* Destructor for connection resource */
@@ -1235,11 +1269,15 @@ PHP_FUNCTION(libvirt_connect)
 		RETURN_FALSE;
 	}
 
+	if ((count_resources(INT_RESOURCE_CONNECTION) + 1) > atoi(LIBVIRT_G(max_connections_ini))) {
+		DPRINTF("%s: maximum number of connections allowed exceeded (max %s)\n",PHPFUNC, LIBVIRT_G(max_connections_ini));
+		set_error("Maximum number of connections allowed exceeded" TSRMLS_CC);
+		RETURN_FALSE;
+	}
+
 	/* If 'null' value has been passed as URL override url to NULL value to autodetect the hypervisor */
 	if (strcasecmp(url, "NULL") == 0)
 		url = NULL;
-
-	DPRINTF("%s: Connecting to %s ...\n", PHPFUNC, url);
 
 	conn=emalloc(sizeof(php_libvirt_connection));
 	if (zcreds==NULL)
@@ -1283,6 +1321,7 @@ PHP_FUNCTION(libvirt_connect)
 
 	if (conn->conn == NULL)
 	{
+		DPRINTF("%s: Cannot establish connection to %s\n", __FUNCTION__, url);
 		efree (conn);
 		RETURN_FALSE;
 	}
@@ -6182,10 +6221,10 @@ PHP_FUNCTION(libvirt_print_binding_resources)
 	for (i = 0; i < binding_resources_count; i++) {
 		if (binding_resources[i].overwrite == 0) {
 			if (binding_resources[i].conn != NULL)
-				snprintf(tmp, sizeof(tmp), "Libvirt %s resource at 0x%llx (connection %p)", translate_counter_type(binding_resources[i].type),
+				snprintf(tmp, sizeof(tmp), "Libvirt %s resource at 0x%"UINTx" (connection %p)", translate_counter_type(binding_resources[i].type),
 						binding_resources[i].mem, binding_resources[i].conn);
 			else
-				snprintf(tmp, sizeof(tmp), "Libvirt %s resource at 0x%llx", translate_counter_type(binding_resources[i].type),
+				snprintf(tmp, sizeof(tmp), "Libvirt %s resource at 0x%"UINTx, translate_counter_type(binding_resources[i].type),
 						binding_resources[i].mem);
 			add_next_index_string(return_value, tmp, 1);
 		}

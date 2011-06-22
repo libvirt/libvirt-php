@@ -72,11 +72,20 @@
 #include <sys/socket.h>
 #include <sys/wait.h>
 #include <netdb.h>
+#include <inttypes.h>
+
+#ifdef __i386__
+typedef uint32_t arch_uint;
+#define UINTx PRIx32
+#else
+typedef uint64_t arch_uint;
+#define UINTx PRIx64
+#endif
 
 typedef struct _resource_info {
 	int type;
 	virConnectPtr conn;
-	uint64_t mem;
+	arch_uint mem;
 	int overwrite;
 } resource_info;
 
@@ -84,6 +93,7 @@ ZEND_BEGIN_MODULE_GLOBALS(libvirt)
 	char *last_error;
 	zend_bool longlong_to_string_ini;
 	char *iso_path_ini;
+	char *max_connections_ini;
 	#ifdef DEBUG_SUPPORT
 	int debug;
 	#endif
@@ -108,12 +118,6 @@ ZEND_END_MODULE_GLOBALS(libvirt)
 #define INT_RESOURCE_STORAGEPOOL	0x10
 #define INT_RESOURCE_VOLUME		0x20
 #define INT_RESOURCE_SNAPSHOT		0x40
-
-#ifdef __i386__
-typedef uint32_t arch_uint;
-#else
-typedef uint64_t arch_uint;
-#endif
 
 /* Libvirt-php types */
 typedef struct _php_libvirt_connection {
