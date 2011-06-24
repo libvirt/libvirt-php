@@ -75,20 +75,14 @@ int connect_socket(char *server, char *port)
 
 /*
 	Private function name:	vnc_refresh_screen
-	Since version:		0.4.1(-3), changed 0.4.2
+	Since version:		0.4.1(-3)
 	Description:		Function to send the key to VNC window to refresh the screen
 	Arguments:		@server [string]: server string to connect to
 				@port [string]: string version of port value to connect to
-	Returns:		None
+				@scancode [int]: scancode to be sent to the guest's VNC window
+	Returns:		0 on success, -errno otherwise
 */
-void vnc_refresh_screen(char *server, char *port)
-{
-	vnc_send_pointer_event(server, port, 0, 0, 0, 0);
-	vnc_send_pointer_event(server, port, 1, 1, 0, 0);
-}
-
-/* Obsolete version
-int vnc_refresh_screen_old(char *server, char *port, int scancode)
+int vnc_refresh_screen(char *server, char *port, int scancode)
 {
 	int sfd;
 	char buf[1024] = { 0 };
@@ -169,7 +163,6 @@ int vnc_refresh_screen_old(char *server, char *port, int scancode)
 	close(sfd);
 	return 0;
 }
-*/
 
 /*
 	Private function name:	vnc_send_keys

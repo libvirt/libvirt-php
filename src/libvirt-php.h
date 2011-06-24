@@ -163,7 +163,7 @@ typedef struct _php_libvirt_cred_value {
 } php_libvirt_cred_value;
 
 /* Private definitions */
-void vnc_refresh_screen(char *server, char *port);
+int vnc_refresh_screen(char *server, char *port, int scancode);
 int vnc_send_keys(char *server, char *port, char *keys);
 int vnc_send_pointer_event(char *server, char *port, int pos_x, int pos_y, int clicked, int release);
 

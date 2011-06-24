@@ -1322,7 +1322,7 @@ PHP_FUNCTION(libvirt_connect)
 
 	if (conn->conn == NULL)
 	{
-		DPRINTF("%s: Cannot establish connection to %s\n", __FUNCTION__, url);
+		DPRINTF("%s: Cannot establish connection to %s\n", PHPFUNC, url);
 		efree (conn);
 		RETURN_FALSE;
 	}
@@ -2191,7 +2191,7 @@ PHP_FUNCTION(libvirt_domain_get_screenshot)
 		RETURN_FALSE;
 	}
 	
-	vnc_refresh_screen(hostname, tmp);
+	vnc_refresh_screen(hostname, tmp, scancode);
 
 	port = atoi(tmp)-5900;
 	
@@ -5130,9 +5130,11 @@ PHP_FUNCTION(libvirt_list_domains)
 	GET_CONNECTION_FROM_ARGS("r",&zconn);
 
 	expectedcount=virConnectNumOfDomains (conn->conn);
+	DPRINTF("%s: Found %d domains\n", PHPFUNC, expectedcount);
 
 	ids=emalloc(sizeof(int)*expectedcount);
 	count=virConnectListDomains (conn->conn,ids,expectedcount);
+	DPRINTF("%s: virConnectListDomains returned %d domains\n", PHPFUNC, count);
 
 	array_init(return_value);
 	for (i=0;i<count;i++)
@@ -5142,8 +5144,12 @@ PHP_FUNCTION(libvirt_list_domains)
 		if (domain!=NULL) 
 		{
 			name=virDomainGetName(domain);
-			if (name==NULL) RETURN_FALSE;
-			add_next_index_string(return_value, name, 1);
+			if (name != NULL) {
+				DPRINTF("%s: Found running domain %s with ID = %d\n", PHPFUNC, name, ids[i]);
+				add_next_index_string(return_value, name, 1);
+			}
+			else
+				DPRINTF("%s: Cannot get ID for running domain %d\n", PHPFUNC, ids[i]);
 		}
 		rv = virDomainFree (domain);
 		if (rv != 0) {
@@ -5158,12 +5164,24 @@ PHP_FUNCTION(libvirt_list_domains)
   	efree(ids);
 
 	expectedcount=virConnectNumOfDefinedDomains (conn->conn);
+	DPRINTF("%s: virConnectNumOfDefinedDomains returned %d domains\n", PHPFUNC, expectedcount);
+	if (expectedcount < 0) {
+		DPRINTF("%s: virConnectNumOfDefinedDomains failed with error code %d\n", PHPFUNC, expectedcount);
+		RETURN_FALSE;
+	}
+
 	names=emalloc(expectedcount*sizeof(char *));
-	count=virConnectListDefinedDomains (conn->conn,names	,expectedcount);
-	if ((count != expectedcount) || (count<0)) RETURN_FALSE;
+	count=virConnectListDefinedDomains (conn->conn,names,expectedcount);
+	DPRINTF("%s: virConnectListDefinedDomains returned %d domains\n", PHPFUNC, count);
+	if (count < 0) {
+		DPRINTF("%s: virConnectListDefinedDomains failed with error code %d\n", PHPFUNC, count);
+		RETURN_FALSE;
+	}
+
 	for (i=0;i<count;i++)
 	{
 		add_next_index_string(return_value, names[i], 1);
+		DPRINTF("%s: Found inactive domain %s\n", PHPFUNC, names[i]);
 		free(names[i]);
 	}
 	efree(names);
