@@ -9,7 +9,19 @@
       libvirt-php guys using the <i>[libvirt-php]</i> subject prefix.<br />
       <br />
       If you would like to have your entry on this page please let us know your name and the company that's
-      using libvirt-php and optionally a purpose of pages/PHP application where you are using the project.
-    </p>
+      using libvirt-php and optionally a purpose of pages/PHP application where you are using the project.</p>
+     <p>References table:</p>
+      <table id="ref-table">
+	<tr>
+		<th>Name</th>
+		<th>Company</th>
+		<th>Purpose</th>
+	</tr>
+	<tr>
+		<td>Koen Calliauw</td>
+		<td><a href="http://www.layer7.be/">Layer7</a></td>
+		<td>Management of internal ESXi servers and the KVM cluster. Planning to extend existing cloud management platform using PHP with libvirt-php.</td>
+	</tr>
+      </table>
   </body>
 </html>

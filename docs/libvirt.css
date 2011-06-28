@@ -214,6 +214,16 @@ p.image {
     text-align: center;
 }
 
+#ref-table {
+    margin-left:auto;
+    margin-right:auto;
+}
+
+#ref-table td {
+    padding: 0 25px 0 25px;
+    text-align: center;
+}
+
 .top_table {
     border-collapse: collapse;
 }
