@@ -39,7 +39,9 @@ int le_libvirt_storagepool;
 int le_libvirt_volume;
 int le_libvirt_network;
 int le_libvirt_nodedev;
+#if LIBVIR_VERSION_NUMBER>=8000
 int le_libvirt_snapshot;
+#endif
 
 ZEND_DECLARE_MODULE_GLOBALS(libvirt)
 
@@ -616,6 +618,7 @@ void free_resource(int type, arch_uint mem)
 		}
 	}
 
+#if LIBVIR_VERSION_NUMBER>=8000
 	if (type == INT_RESOURCE_SNAPSHOT) {
 		rv = virDomainSnapshotFree( (virDomainSnapshotPtr)mem );
 		if (rv != 0) {
@@ -627,6 +630,7 @@ void free_resource(int type, arch_uint mem)
 			resource_change_counter(INT_RESOURCE_SNAPSHOT, NULL, (virDomainSnapshotPtr)mem, 0);
 		}
 	}
+#endif
 }
 
 /*
@@ -894,6 +898,7 @@ static void php_libvirt_nodedev_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 	}
 }
 
+#if LIBVIR_VERSION_NUMBER>=8000
 /* Destructor for snapshot resource */
 static void php_libvirt_snapshot_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 {
@@ -923,6 +928,7 @@ static void php_libvirt_snapshot_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 		efree(snapshot);
 	}
 }
+#endif
 
 /* ZEND Module inicialization function */
 PHP_MINIT_FUNCTION(libvirt)
@@ -934,7 +940,9 @@ PHP_MINIT_FUNCTION(libvirt)
 	le_libvirt_volume = zend_register_list_destructors_ex(php_libvirt_volume_dtor, NULL, PHP_LIBVIRT_VOLUME_RES_NAME, module_number);
 	le_libvirt_network = zend_register_list_destructors_ex(php_libvirt_network_dtor, NULL, PHP_LIBVIRT_NETWORK_RES_NAME, module_number);
 	le_libvirt_nodedev = zend_register_list_destructors_ex(php_libvirt_nodedev_dtor, NULL, PHP_LIBVIRT_NODEDEV_RES_NAME, module_number);
+	#if LIBVIR_VERSION_NUMBER>=8000
 	le_libvirt_snapshot = zend_register_list_destructors_ex(php_libvirt_snapshot_dtor, NULL, PHP_LIBVIRT_SNAPSHOT_RES_NAME, module_number);
+	#endif
 
 	ZEND_INIT_MODULE_GLOBALS(libvirt, php_libvirt_init_globals, NULL);
 
@@ -953,8 +961,10 @@ PHP_MINIT_FUNCTION(libvirt)
 	REGISTER_LONG_CONSTANT("VIR_DOMAIN_SHUTOFF", 		5, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("VIR_DOMAIN_CRASHED", 		6, CONST_CS | CONST_PERSISTENT);
 
+	#if LIBVIR_VERSION_NUMBER>=8000
 	/* Domain snapshot constants */
 	REGISTER_LONG_CONSTANT("VIR_SNAPSHOT_DELETE_CHILDREN",	 VIR_DOMAIN_SNAPSHOT_DELETE_CHILDREN,	CONST_CS | CONST_PERSISTENT);
+	#endif
 
 	/* Memory constants */
 	REGISTER_LONG_CONSTANT("VIR_MEMORY_VIRTUAL",		1, CONST_CS | CONST_PERSISTENT);
@@ -1137,6 +1147,8 @@ PHP_MSHUTDOWN_FUNCTION(libvirt)
 	ZEND_FETCH_RESOURCE(volume, php_libvirt_volume*, &zvolume, -1, PHP_LIBVIRT_VOLUME_RES_NAME, le_libvirt_volume);\
 	if ((volume==NULL) || (volume->volume==NULL)) RETURN_FALSE;\
 
+#if LIBVIR_VERSION_NUMBER>=8000
+
 #define GET_SNAPSHOT_FROM_ARGS(args, ...) \
 	reset_error();	\
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, args, __VA_ARGS__) == FAILURE) {\
@@ -1146,6 +1158,8 @@ PHP_MSHUTDOWN_FUNCTION(libvirt)
 \
 	ZEND_FETCH_RESOURCE(snapshot, php_libvirt_snapshot*, &zsnapshot, -1, PHP_LIBVIRT_SNAPSHOT_RES_NAME, le_libvirt_snapshot);\
 	if ((snapshot==NULL) || (snapshot->snapshot==NULL)) RETURN_FALSE;\
+
+#endif
 
 /* Macro to "recreate" string with emalloc and free the original one */
 #define RECREATE_STRING_WITH_E(str_out, str_in) \
