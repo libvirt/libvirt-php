@@ -1196,18 +1196,19 @@ static int libvirt_virConnectAuthCallback(virConnectCredentialPtr cred,  unsigne
 	php_libvirt_cred_value *creds=(php_libvirt_cred_value*) cbdata;
 	for(i=0;i<ncred;i++)
 	{
-		//printf ("Cred %i: type %i, prompt %s challenge %s\n",i,cred[i].type,cred[i].prompt,cred[i].challenge);
+		DPRINTF("%s: cred %d, type %d, prompt %s challenge %s\n ", __FUNCTION__, i, cred[i].type, cred[i].prompt, cred[i].challenge);
 		if (creds != NULL)
 			for (j=0;j<creds[0].count;j++)
 			{
 				if (creds[j].type==cred[i].type)
 				{
 					cred[i].resultlen=creds[j].resultlen;
-					cred[i].result=malloc(creds[j].resultlen);
+					cred[i].result=malloc(creds[j].resultlen + 1);
+					memset(cred[i].result, 0, creds[j].resultlen + 1);
 					strncpy(cred[i].result,creds[j].result,creds[j].resultlen);
 				}
 			}
-			//printf ("Result: %s (%i)\n",cred[i].result,cred[i].resultlen);
+			DPRINTF("%s: result %s (%d)\n", __FUNCTION__, cred[i].result, cred[i].resultlen);
 	}
 
 	return 0;
@@ -1318,14 +1319,17 @@ PHP_FUNCTION(libvirt_connect)
 					if (zend_hash_get_current_key_ex(arr_hash, &key, &key_len, &index, 0, &pointer) == HASH_KEY_IS_STRING) {
 						PHPWRITE(key, key_len);
 					} else {
+						DPRINTF("%s: credentials index %d\n", PHPFUNC, index);
 						creds[j].type=index;
-						creds[j].result=emalloc(Z_STRLEN_PP(data));
+						creds[j].result=emalloc( Z_STRLEN_PP(data) + 1 );
+						memset(creds[j].result, 0, Z_STRLEN_PP(data) + 1);
 						creds[j].resultlen=Z_STRLEN_PP(data);
 						strncpy(creds[j].result,Z_STRVAL_PP(data),Z_STRLEN_PP(data));
 						j++;
 					}
 				}
 		}
+		DPRINTF("%s: Found %d elements for credentials\n", PHPFUNC, j);
 		creds[0].count=j;
 		libvirt_virConnectAuth.cbdata = (void*)creds;
 		conn->conn = virConnectOpenAuth (url, &libvirt_virConnectAuth, readonly ? VIR_CONNECT_RO : 0);
