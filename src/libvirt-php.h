@@ -93,6 +93,7 @@ ZEND_BEGIN_MODULE_GLOBALS(libvirt)
 	char *last_error;
 	zend_bool longlong_to_string_ini;
 	char *iso_path_ini;
+	char *image_path_ini;
 	char *max_connections_ini;
 	#ifdef DEBUG_SUPPORT
 	int debug;
@@ -320,6 +321,7 @@ PHP_FUNCTION(libvirt_version);
 PHP_FUNCTION(libvirt_check_version);
 PHP_FUNCTION(libvirt_has_feature);
 PHP_FUNCTION(libvirt_get_iso_images);
+PHP_FUNCTION(libvirt_image_create);
 /* Debugging functions */
 PHP_FUNCTION(libvirt_logfile_set);
 PHP_FUNCTION(libvirt_print_binding_resources);

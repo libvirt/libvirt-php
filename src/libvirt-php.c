@@ -174,11 +174,12 @@ static function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_list_active_domains, NULL)
 	PHP_FE(libvirt_list_active_domain_ids, NULL)
 	PHP_FE(libvirt_list_inactive_domains, NULL)
-	/* Version information function */
+	/* Version information and common function */
 	PHP_FE(libvirt_version, NULL)
 	PHP_FE(libvirt_check_version, NULL)
 	PHP_FE(libvirt_has_feature, NULL)
 	PHP_FE(libvirt_get_iso_images, NULL)
+	PHP_FE(libvirt_image_create, NULL)
 	/* Debugging functions */
 	PHP_FE(libvirt_logfile_set, NULL)
 	PHP_FE(libvirt_print_binding_resources, NULL)
@@ -212,6 +213,7 @@ ZEND_GET_MODULE(libvirt)
 PHP_INI_BEGIN()
 	STD_PHP_INI_ENTRY("libvirt.longlong_to_string", "1", PHP_INI_ALL, OnUpdateBool, longlong_to_string_ini, zend_libvirt_globals, libvirt_globals)
 	STD_PHP_INI_ENTRY("libvirt.iso_path", "/var/lib/libvirt/images/iso", PHP_INI_ALL, OnUpdateString, iso_path_ini, zend_libvirt_globals, libvirt_globals)
+	STD_PHP_INI_ENTRY("libvirt.image_path", "/var/lib/libvirt/images", PHP_INI_ALL, OnUpdateString, image_path_ini, zend_libvirt_globals, libvirt_globals)
 	STD_PHP_INI_ENTRY("libvirt.max_connections", "5", PHP_INI_ALL, OnUpdateString, max_connections_ini, zend_libvirt_globals, libvirt_globals)
 PHP_INI_END()
 
@@ -226,6 +228,7 @@ static void php_libvirt_init_globals(zend_libvirt_globals *libvirt_globals)
 {
 	libvirt_globals->longlong_to_string_ini = 1;
 	libvirt_globals->iso_path_ini = "/var/lib/libvirt/images/iso";
+	libvirt_globals->image_path_ini = "/var/lib/libvirt/images";
 	libvirt_globals->max_connections_ini = "5";
 	libvirt_globals->binding_resources_count = 0;
 	libvirt_globals->binding_resources = NULL;
@@ -469,6 +472,14 @@ PHP_MINFO_FUNCTION(libvirt)
 		snprintf(path, sizeof(path), "%s", LIBVIRT_G(iso_path_ini));
 
 	php_info_print_table_row(2, "ISO Image path", path);
+
+	if (!access(LIBVIRT_G(image_path_ini), F_OK) == 0)
+		snprintf(path, sizeof(path), "%s - path is invalid. To set the valid path modify the libvirt.image_path in your php.ini configuration!",
+					LIBVIRT_G(image_path_ini));
+	else
+		snprintf(path, sizeof(path), "%s", LIBVIRT_G(image_path_ini));
+
+	php_info_print_table_row(2, "Path for images", path);
 
 	/* Iterate all the features supported */
 	char features_supported[4096] = { 0 };
@@ -1504,6 +1515,66 @@ PHP_FUNCTION(libvirt_connect_get_hostname)
 	RECREATE_STRING_WITH_E(hostname_out,hostname);
 
 	RETURN_STRING(hostname_out,0);
+}
+
+/*
+	Function name:	libvirt_image_create
+	Since version:	0.4.1(-3)
+	Description:	Function is used to create the image of desired name, size and format. The image will be created in the image path (libvirt.image_path INI variable). Works only on local systems!
+	Arguments:	@conn [resource]: libvirt connection resource
+			@name [string]: name of the image file that will be created in the libvirt.image_path directory
+			@size [int]: size of the image in MiBs
+			@format [string]: format of the image, may be raw, qcow or qcow2
+	Returns:	hostname of the host node or FALSE for error
+*/
+PHP_FUNCTION(libvirt_image_create)
+{
+	php_libvirt_connection *conn=NULL;
+	zval *zconn;
+	char *hostname;
+	char name[1024];
+	char msg[1024];
+	char cmd[4096] = { 0 };
+	char *path;
+	char fpath[4096] = { 0 };
+	char *image = NULL;
+	int image_len;
+	char *format;
+	int format_len;
+	int size;
+
+	if (LIBVIRT_G(image_path_ini))
+		path = strdup( LIBVIRT_G(image_path_ini) );
+
+	if ((path == NULL) || (path[0] != '/')) {
+		set_error("Invalid argument, path must be set and absolute (start by slash character [/])");
+		RETURN_FALSE;
+	}
+
+	GET_CONNECTION_FROM_ARGS("rsls",&zconn,&image,&image_len,&size,&format,&format_len);
+
+	hostname=virConnectGetHostname(conn->conn);
+	
+	/* Get the current hostname to check if we're on local machine */
+	gethostname(name, 1024);
+	if (strcmp(name, hostname) != 0) {
+		snprintf(msg, sizeof(msg), "%s works only on local systems!", PHPFUNC);
+		set_error(msg);
+		RETURN_FALSE;
+	}
+
+	snprintf(fpath, sizeof(fpath), "%s/%s", path, image);
+
+	snprintf(cmd, sizeof(cmd), "qemu-img create -f %s %s %dM > /dev/null", format, fpath, size);
+	DPRINTF("%s: Invoking '%s'...\n", PHPFUNC, cmd);
+	system(cmd);
+
+	if (access(fpath, F_OK) == 0) {
+		RETURN_TRUE;
+	}
+	else {
+		RETURN_FALSE;
+	}
 }
 
 /*
