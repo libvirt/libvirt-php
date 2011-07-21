@@ -1601,31 +1601,6 @@ PHP_FUNCTION(libvirt_connect_get_maxvcpus)
 }
 
 /*
-	Function name:	libvirt_connect_get_capabilities
-	Since version:	0.4.1(-2)
-	Description:	Function is used to get the capabilities information from the connection
-	Arguments:	@conn [resource]: resource for connection
-	Returns:	capabilities XML from the connection or FALSE for error
-*/
-PHP_FUNCTION(libvirt_connect_get_capabilities)
-{
-	php_libvirt_connection *conn=NULL;
-	zval *zconn;
-	char *caps;
-	char *caps_out;
-
-	GET_CONNECTION_FROM_ARGS("r",&zconn);
-
-	caps = virConnectGetCapabilities(conn->conn);
-	if (caps == NULL)
-		RETURN_FALSE;
-
-	RECREATE_STRING_WITH_E(caps_out, caps);
-
-	RETURN_STRING(caps_out,0);
-}
-
-/*
 	Function name:	libvirt_connect_get_sysinfo
 	Since version:	0.4.1(-2)
 	Description:	Function is used to get the system information from connection if available
@@ -2468,6 +2443,41 @@ PHP_FUNCTION(libvirt_domain_get_next_dev_ids)
 	add_assoc_long(return_value, "next_bus", bus);
 	add_assoc_long(return_value, "next_slot", slot);
 	add_assoc_long(return_value, "next_func", func);
+}
+
+/*
+	Function name:	libvirt_connect_get_capabilities
+	Since version:	0.4.1(-2)
+	Description:	Function is used to get the capabilities information from the connection
+	Arguments:	@conn [resource]: resource for connection
+			@xpath [string]: optional xPath query to be applied on the result
+	Returns:	capabilities XML from the connection or FALSE for error
+*/
+PHP_FUNCTION(libvirt_connect_get_capabilities)
+{
+	php_libvirt_connection *conn=NULL;
+	zval *zconn;
+	char *caps;
+	char *caps_out;
+	char *xpath = NULL;
+	int xpath_len;
+	char *tmp = NULL;
+	int retval = -1;
+
+	GET_CONNECTION_FROM_ARGS("r|s",&zconn,&xpath,&xpath_len);
+
+	caps = virConnectGetCapabilities(conn->conn);
+	if (caps == NULL)
+		RETURN_FALSE;
+
+	tmp = get_string_from_xpath(caps, xpath, NULL, &retval);
+	if ((tmp == NULL) || (retval < 0)) {
+		RECREATE_STRING_WITH_E (caps_out, caps);
+	} else {
+		RECREATE_STRING_WITH_E (caps_out, tmp);
+	}
+
+	RETURN_STRING(caps_out,0);
 }
 
 /*
