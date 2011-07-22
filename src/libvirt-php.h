@@ -322,6 +322,7 @@ PHP_FUNCTION(libvirt_check_version);
 PHP_FUNCTION(libvirt_has_feature);
 PHP_FUNCTION(libvirt_get_iso_images);
 PHP_FUNCTION(libvirt_image_create);
+PHP_FUNCTION(libvirt_image_remove);
 /* Debugging functions */
 PHP_FUNCTION(libvirt_logfile_set);
 PHP_FUNCTION(libvirt_print_binding_resources);

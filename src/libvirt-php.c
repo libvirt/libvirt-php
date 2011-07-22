@@ -180,6 +180,7 @@ static function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_has_feature, NULL)
 	PHP_FE(libvirt_get_iso_images, NULL)
 	PHP_FE(libvirt_image_create, NULL)
+	PHP_FE(libvirt_image_remove, NULL)
 	/* Debugging functions */
 	PHP_FE(libvirt_logfile_set, NULL)
 	PHP_FE(libvirt_print_binding_resources, NULL)
@@ -1519,14 +1520,15 @@ PHP_FUNCTION(libvirt_connect_get_hostname)
 
 /*
 	Function name:	libvirt_image_create
-	Since version:	0.4.1(-3)
-	Description:	Function is used to create the image of desired name, size and format. The image will be created in the image path (libvirt.image_path INI variable). Works only on local systems!
-	Arguments:	@conn [resource]: libvirt connection resource
-			@name [string]: name of the image file that will be created in the libvirt.image_path directory
-			@size [int]: size of the image in MiBs
-			@format [string]: format of the image, may be raw, qcow or qcow2
+	Since version:	0.4.2
+	Description:	Function is used to create the image of desired name, size and format. The image will be created in the image path (libvirt.image_path INI variable). Works only o
+	Arguments:		@conn [resource]: libvirt connection resource
+				@name [string]: name of the image file that will be created in the libvirt.image_path directory
+				@size [int]: size of the image in MiBs
+				@format [string]: format of the image, may be raw, qcow or qcow2
 	Returns:	hostname of the host node or FALSE for error
 */
+
 PHP_FUNCTION(libvirt_image_create)
 {
 	php_libvirt_connection *conn=NULL;
@@ -1558,6 +1560,10 @@ PHP_FUNCTION(libvirt_image_create)
 	/* Get the current hostname to check if we're on local machine */
 	gethostname(name, 1024);
 	if (strcmp(name, hostname) != 0) {
+	    // maybe try something like:
+	    //   ssh root@hostname "qemu-img create -f fmt /path/to/file sizeM; ls -al /path/to/file"
+	    // possible issue with different libvirt.image_path settings!
+	    // Better use NFS shares instead!
 		snprintf(msg, sizeof(msg), "%s works only on local systems!", PHPFUNC);
 		set_error(msg);
 		RETURN_FALSE;
@@ -1573,7 +1579,49 @@ PHP_FUNCTION(libvirt_image_create)
 		RETURN_TRUE;
 	}
 	else {
+		snprintf(msg, sizeof(msg), "Cannot create image: %s", fpath);
+		set_error(msg);
 		RETURN_FALSE;
+	}
+}
+       
+/*
+	Function name:	libvirt_image_remove
+	Since version:	0.4.2
+	Description:	Function is used to create the image of desired name, size and format. The image will be created in the image path (libvirt.image_path INI variable). Works only on local systems!
+	Arguments:	@conn [resource]: libvirt connection resource
+			@image [string]: name of the image file that should be deleted
+	Returns:	hostname of the host node or FALSE for error
+*/
+PHP_FUNCTION(libvirt_image_remove)
+{
+	php_libvirt_connection *conn=NULL;
+	zval *zconn;
+	char *hostname;
+	char name[1024];
+	char msg[4096] = { 0 };
+	char *image = NULL;
+	int image_len;
+
+	GET_CONNECTION_FROM_ARGS("rs",&zconn,&image,&image_len);
+
+	hostname=virConnectGetHostname(conn->conn);
+	
+	/* Get the current hostname to check if we're on local machine */
+	gethostname(name, 1024);
+	if (strcmp(name, hostname) != 0) {
+		snprintf(msg, sizeof(msg), "%s works only on local systems!", PHPFUNC);
+		set_error(msg);
+		RETURN_FALSE;
+	}
+
+	if (unlink(image) != 0) {
+		snprintf(msg, sizeof(msg), "An error occured while unlinking %s: %d (%s)", image, errno, strerror(errno));
+		set_error(msg);
+		RETURN_FALSE;
+	}
+	else {
+		RETURN_TRUE;
 	}
 }
 
