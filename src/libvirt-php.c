@@ -3159,6 +3159,8 @@ PHP_FUNCTION(libvirt_domain_nic_add)
 	virDomainPtr dom=NULL;
 	long slot = -1;
 
+	DPRINTF("%s: Entering\n", PHPFUNC);
+
 	GET_DOMAIN_FROM_ARGS("rsss|l",&zdomain,&mac,&mac_len,&net,&net_len,&model,&model_len,&xflags);
 	if (model_len < 1)
 		model = NULL;
@@ -3180,10 +3182,10 @@ PHP_FUNCTION(libvirt_domain_nic_add)
 		RETURN_FALSE;
 	}
 
-	slot = get_next_free_numeric_value(domain->domain, "//@slot");
+	slot = get_next_free_numeric_value(domain->domain, "//@function");
 	if (slot < 0) {
 		free(tmp1);
-		snprintf(new, sizeof(new), "Cannot find a free slot for domain");
+		snprintf(new, sizeof(new), "Cannot find a free function slot for domain");
 		set_error(new);		
 		RETURN_FALSE;
 	}
@@ -3193,16 +3195,16 @@ PHP_FUNCTION(libvirt_domain_nic_add)
 		"	<interface type='network'>\n"
 		"		<mac address='%s' />\n"
 		"		<source network='%s' />\n"
-		"		<address type='pci' domain='0x0000' bus='0x00' slot='0x%02x' function='0x0' />\n"
-		"	</interface>", mac, net, slot);
+		"		<address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x%02x' />\n"
+		"	</interface>", mac, net, slot+1);
 	else
 		snprintf(new, sizeof(new), 
 		"	<interface type='network'>\n"
 		"		<mac address='%s' />\n"
 		"		<source network='%s' />\n"
 		"		<model type='%s' />\n"
-		"		<address type='pci' domain='0x0000' bus='0x00' slot='0x%02x' function='0x0' />\n"
-		"	</interface>", mac, net, model, slot);
+		"		<address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x%02x' />\n"
+		"	</interface>", mac, net, model, slot+1);
 		
 	tmp1 = strstr(xml, "</controller>") + strlen("</controller>");
 	pos = strlen(xml) - strlen(tmp1);
@@ -3230,10 +3232,9 @@ PHP_FUNCTION(libvirt_domain_nic_add)
 
 	dom=virDomainDefineXML(conn->conn, new_xml);
 	if (dom==NULL) {
-		DPRINTF("%s: Function failed, restoring original XML\n", PHPFUNC);
-		dom=virDomainDefineXML(conn->conn, xml);
-		if (dom == NULL)
-			RETURN_FALSE;
+		DPRINTF("%s: Function failed, restoring original XML, new XML data: %s\n", PHPFUNC, new_xml);
+		virDomainDefineXML(conn->conn, xml);
+		RETURN_FALSE;
 	}
 
 	res_domain = emalloc(sizeof(php_libvirt_domain));
