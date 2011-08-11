@@ -34,5 +34,5 @@ then
   rpmbuild --nodeps \
      --define "extra_release $EXTRA_RELEASE" \
      --define "_sourcedir `pwd`" \
-     -ba --clean libvirt-php.spec
+     -ba --clean php-libvirt.spec
 fi

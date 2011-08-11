@@ -1,3 +1,3 @@
 SUBDIRS = tools src docs tests
 
-EXTRA_DIST = libvirt-php.spec.in
+EXTRA_DIST = php-libvirt.spec.in
