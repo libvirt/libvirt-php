@@ -73,6 +73,7 @@
 #include <sys/wait.h>
 #include <netdb.h>
 #include <inttypes.h>
+#include <linux/tcp.h>
 
 #ifdef __i386__
 typedef uint32_t arch_uint;
@@ -167,7 +168,7 @@ typedef struct _php_libvirt_cred_value {
 
 /* Private definitions */
 int vnc_refresh_screen(char *server, char *port, int scancode);
-int vnc_send_keys(char *server, char *port, char *keys);
+int vnc_send_keys(char *server, char *port, unsigned char *keys);
 int vnc_send_pointer_event(char *server, char *port, int pos_x, int pos_y, int clicked, int release);
 
 int set_logfile(char *filename, long maxsize);
@@ -212,6 +213,7 @@ PHP_FUNCTION(libvirt_domain_get_counts);
 PHP_FUNCTION(libvirt_domain_lookup_by_name);
 PHP_FUNCTION(libvirt_domain_get_xml_desc);
 PHP_FUNCTION(libvirt_domain_get_screenshot);
+PHP_FUNCTION(libvirt_domain_get_screen_dimensions);
 PHP_FUNCTION(libvirt_domain_change_vcpus);
 PHP_FUNCTION(libvirt_domain_change_memory);
 PHP_FUNCTION(libvirt_domain_change_boot_devices);

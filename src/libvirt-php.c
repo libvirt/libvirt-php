@@ -109,6 +109,7 @@ static function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_domain_is_active, NULL)
 	PHP_FE(libvirt_domain_get_next_dev_ids, NULL)
 	PHP_FE(libvirt_domain_get_screenshot, NULL)
+	PHP_FE(libvirt_domain_get_screen_dimensions, NULL)
 	PHP_FE(libvirt_domain_send_keys, NULL)
 	PHP_FE(libvirt_domain_send_pointer_event, NULL)
 	/* Domain snapshot functions */
@@ -860,7 +861,7 @@ static void php_libvirt_network_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 	{
 		if (network->network != NULL)
 		{
-			if (!check_resource_allocation(NULL, INT_RESOURCE_CONNECTION, network->network)) {
+			if (!check_resource_allocation(network->conn->conn, INT_RESOURCE_NETWORK, network->network)) {
 				network->network=NULL;
 				efree(network);
 				return;
@@ -2365,6 +2366,60 @@ PHP_FUNCTION(libvirt_domain_get_screenshot)
 }
 
 /*
+	Function name:	libvirt_domain_get_screen_dimensions
+	Since version:	0.4.3
+	Description:	Function get screen dimensions of the VNC window
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+			@server [string]: server string of the host machine
+	Returns:	array of height and width on success, FALSE otherwise
+*/
+PHP_FUNCTION(libvirt_domain_get_screen_dimensions)
+{
+	php_libvirt_domain *domain=NULL;
+	zval *zdomain;
+	int retval = -1;
+	char *tmp = NULL;
+	char *xml = NULL;
+	char *hostname = NULL;
+	int hostname_len;
+	int ret;
+	int width;
+	int height;
+
+	GET_DOMAIN_FROM_ARGS("rs",&zdomain, &hostname, &hostname_len);
+
+	xml=virDomainGetXMLDesc(domain->domain, 0);
+	if (xml==NULL) {
+		set_error_if_unset("Cannot get the XML description");
+		RETURN_FALSE;
+	}
+
+ 	tmp = get_string_from_xpath(xml, "//domain/devices/graphics/@port", NULL, &retval);
+	if ((tmp == NULL) || (retval < 0)) {
+		set_error("Cannot get the VNC port");
+		RETURN_FALSE;
+	}
+
+	DPRINTF("%s: hostname = %s, port = %s\n", PHPFUNC, hostname, tmp);
+	ret = vnc_get_dimensions(hostname, tmp, &width, &height);
+	free(tmp);
+	if (ret != 0) {
+		char error[1024] = { 0 };
+		if (ret == -9)
+			snprintf(error, sizeof(error), "Cannot connect to VNC server. Please make sure domain is running and VNC graphics are set");
+		else
+			snprintf(error, sizeof(error), "Cannot get screen dimensions, error code = %d (%s)", ret, strerror(-ret));
+
+		set_error(error);
+		RETURN_FALSE;
+	}
+	
+	array_init(return_value);
+	add_assoc_long(return_value, "width", (long)width);
+	add_assoc_long(return_value, "height", (long)height);
+}
+
+/*
 	Function name:	libvirt_domain_send_keys
 	Since version:	0.4.2
 	Description:	Function sends keys to the domain's VNC window
@@ -2384,7 +2439,7 @@ PHP_FUNCTION(libvirt_domain_send_keys)
 	int hostname_len;
 	char *keys = NULL;
 	int keys_len;
-	int i, ret = 0;
+	int ret = 0;
 
 	GET_DOMAIN_FROM_ARGS("rss",&zdomain, &hostname, &hostname_len, &keys, &keys_len);
 
@@ -2404,23 +2459,8 @@ PHP_FUNCTION(libvirt_domain_send_keys)
 
 	DPRINTF("%s: About to send string '%s' (%d keys) to %s:%s\n", PHPFUNC, keys, strlen(keys), hostname, tmp);
 
-	for (i = 0; i < strlen(keys); i += 4) {
-		char keyseq[5] = { 0 };
-
-		keyseq[0] = keys[i];
-		keyseq[1] = strlen(keys) >= i + 1 ? keys[i + 1] : 0;
-		keyseq[2] = strlen(keys) >= i + 2 ? keys[i + 2] : 0;
-		keyseq[3] = strlen(keys) >= i + 3 ? keys[i + 3] : 0;
-		keyseq[4] = 0;
-
-		if (keyseq[3] == '\\') {
-			i--;
-			keyseq[3] = 0;
-		}
-
-		ret = vnc_send_keys(hostname, tmp, keyseq);
-		DPRINTF("%s: Sequence sending result is %d\n", PHPFUNC, ret);
-	}
+	ret = vnc_send_keys(hostname, tmp, keys);
+	DPRINTF("%s: Sequence sending result is %d\n", PHPFUNC, ret);
 
 	if (ret == 0) {
 		RETURN_TRUE
@@ -2482,7 +2522,11 @@ PHP_FUNCTION(libvirt_domain_send_pointer_event)
 	}
 	else {
 		char error[1024] = { 0 };
-		snprintf(error, sizeof(error), "Cannot send pointer event, error code = %d (%s)", ret, strerror(-ret));
+		if (ret == -9)
+			snprintf(error, sizeof(error), "Cannot connect to VNC server. Please make sure domain is running and VNC graphics are set");
+		else
+			snprintf(error, sizeof(error), "Cannot send pointer event, error code = %d (%s)", ret, strerror(-ret));
+
 		set_error(error);
 		RETURN_FALSE;
 	}
