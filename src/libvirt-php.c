@@ -19,7 +19,7 @@
 #ifdef DEBUG_CORE
 #define DPRINTF(fmt, ...) \
 if (LIBVIRT_G(debug)) \
-do { fprintf(stderr, "[%s ", get_datetime()); fprintf(stderr, "libvirt-php/core]: " fmt , ## __VA_ARGS__); fflush(stderr); } while (0)
+do { fprintf(stderr, "[%s ", get_datetime()); fprintf(stderr, "libvirt-php/core   ]: " fmt , ## __VA_ARGS__); fflush(stderr); } while (0)
 #else
 #define DPRINTF(fmt, ...) \
 do {} while(0)
