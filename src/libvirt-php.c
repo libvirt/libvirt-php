@@ -2727,7 +2727,7 @@ PHP_FUNCTION(libvirt_domain_get_disk_devices)
 	Since version:	0.4.4
 	Description:	Function is used to get network interface devices for the domain
 	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
-	Returns:	list of domain disk devices
+	Returns:	list of domain interface devices
 */
 PHP_FUNCTION(libvirt_domain_get_interface_devices)
 {
