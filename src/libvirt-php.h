@@ -109,7 +109,7 @@ ZEND_END_MODULE_GLOBALS(libvirt)
 #define LIBVIRT_G(v) (libvirt_globals.v)
 #endif
 
-#define PHP_LIBVIRT_WORLD_VERSION "0.4.3"
+#define PHP_LIBVIRT_WORLD_VERSION "0.4.4"
 #define PHP_LIBVIRT_WORLD_EXTNAME "libvirt"
 
 /* Internal resource identifier objects */

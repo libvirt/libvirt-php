@@ -10,7 +10,7 @@
 
 Name:		php-libvirt
 Version:	@VERSION@
-Release:	3%{?dist}%{?extra_release}
+Release:	1%{?dist}%{?extra_release}
 Summary:	PHP language binding for Libvirt
 
 %if 0%{?suse_version}  
@@ -20,7 +20,7 @@ Group:		Development/Libraries
 %endif
 License:	PHP
 URL:		http://libvirt.org/php
-Source0:	http://libvirt.org/sources/php/libvirt-php-%{version}.tar.gz
+Source0:	http://libvirt.org/sources/php/php-libvirt-%{version}.tar.gz
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root
 
 BuildRequires:	php-devel
@@ -43,20 +43,20 @@ Requires:	php
 PHP language bindings for Libvirt API. 
 For more details see: http://www.libvirt.org/php/
 
-%package -n libvirt-php-doc
-Summary:	Document of libvirt-php
+%package -n php-libvirt-doc
+Summary:	Document of php-libvirt
 Group:		Development/Libraries/PHP
 BuildArch:	noarch
-Requires:	libvirt-php = %{version}
+Requires:	php-libvirt = %{version}
 
-%description -n libvirt-php-doc
+%description -n php-libvirt-doc
 PHP language bindings for Libvirt API. 
 For more details see: http://www.libvirt.org/php/ http://www.php.net/
 
-This package contain the document for libvirt-php.
+This package contain the document for php-libvirt.
 
 %prep
-%setup -q -n libvirt-php-%{version}
+%setup -q -n php-libvirt-%{version}
 
 %build
 %configure
@@ -72,15 +72,18 @@ rm -rf %{buildroot}
 
 %files
 %defattr(-,root,root,-)
-%{php_extdir}/libvirt-php.so
-%config(noreplace) %{php_confdir}/libvirt-php.ini
+%{php_extdir}/php-libvirt.so
+%config(noreplace) %{php_confdir}/php-libvirt.ini
 
-%files -n libvirt-php-doc
+%files -n php-libvirt-doc
 %defattr(-,root,root,-)
 %doc
 %dir %{_datadir}/doc/%{name}-%{version}
 %{_datadir}/doc/%{name}-%{version}/html
 
 %changelog
+* Mon Aug 22 2011 Michal Novotny <minovotn@redhat.com> - 0.4.4
+- Several bugfixes and updated SPEC file and codes not to require open tags
+
 * Tue Feb 8 2011 Michal Novotny <minovotn@redhat.com> - 0.4.1
 - Initial commit (from github)
