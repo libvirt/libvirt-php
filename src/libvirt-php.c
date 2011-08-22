@@ -2209,7 +2209,7 @@ PHP_FUNCTION(libvirt_domain_lookup_by_id)
 	Function name:	libvirt_domain_get_name
 	Since version:	0.4.1(-1)
 	Description:	Function is used to get domain name from it's resource
-	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
 	Returns:	domain name string
 */
 PHP_FUNCTION(libvirt_domain_get_name)
@@ -2234,7 +2234,7 @@ PHP_FUNCTION(libvirt_domain_get_name)
 	Function name:	libvirt_domain_get_uuid_string
 	Since version:	0.4.1(-1)
 	Description:	Function is used to get the domain's UUID in string format
-	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
 	Returns:	domain UUID string
 */
 PHP_FUNCTION(libvirt_domain_get_uuid_string)
@@ -2258,7 +2258,7 @@ PHP_FUNCTION(libvirt_domain_get_uuid_string)
 	Function name:	libvirt_domain_get_screenshot
 	Since version:	0.4.2
 	Description:	Function uses gvnccapture (if available) to get the screenshot of the running domain
-	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
 			@server [string]: server string for the host machine
 			@scancode [int]: integer value of the scancode to be send to refresh screen
 	Returns:	PNG image binary data
@@ -2369,7 +2369,7 @@ PHP_FUNCTION(libvirt_domain_get_screenshot)
 	Function name:	libvirt_domain_get_screen_dimensions
 	Since version:	0.4.3
 	Description:	Function get screen dimensions of the VNC window
-	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
 			@server [string]: server string of the host machine
 	Returns:	array of height and width on success, FALSE otherwise
 */
@@ -2423,7 +2423,7 @@ PHP_FUNCTION(libvirt_domain_get_screen_dimensions)
 	Function name:	libvirt_domain_send_keys
 	Since version:	0.4.2
 	Description:	Function sends keys to the domain's VNC window
-	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
 			@server [string]: server string of the host machine
 			@scancode [int]: integer scancode to be sent to VNC window
 	Returns:	TRUE on success, FALSE otherwise
@@ -2477,7 +2477,7 @@ PHP_FUNCTION(libvirt_domain_send_keys)
 	Function name:	libvirt_domain_send_pointer_event
 	Since version:	0.4.2
 	Description:	Function sends keys to the domain's VNC window
-	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
 			@server [string]: server string of the host machine
 			@pos_x [int]: position on x-axis
 			@pos_y [int]: position on y-axis
@@ -2536,7 +2536,7 @@ PHP_FUNCTION(libvirt_domain_send_pointer_event)
 	Function name:	libvirt_domain_get_uuid
 	Since version:	0.4.1(-1)
 	Description:	Function is used to get the domain's UUID in binary format
-	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
 	Returns:	domain UUID in binary format
 */
 PHP_FUNCTION(libvirt_domain_get_uuid)
@@ -2561,7 +2561,7 @@ PHP_FUNCTION(libvirt_domain_get_uuid)
 	Function name:	libvirt_domain_get_id
 	Since version:	0.4.1(-1)
 	Description:	Function is used to get the domain's ID, applicable to running guests only
-	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
 	Returns:	running domain ID or -1 if not running
 */
 PHP_FUNCTION(libvirt_domain_get_id)
@@ -2583,7 +2583,7 @@ PHP_FUNCTION(libvirt_domain_get_id)
 	Function name:	libvirt_domain_get_next_dev_ids
 	Since version:	0.4.2
 	Description:	This functions can be used to get the next free slot if you intend to add a new device identified by slot to the domain, e.g. NIC device
-	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
 	Returns:	next free slot number for the domain
 */
 PHP_FUNCTION(libvirt_domain_get_next_dev_ids)
@@ -2647,7 +2647,7 @@ PHP_FUNCTION(libvirt_connect_get_capabilities)
 	Function name:	libvirt_domain_get_xml_desc
 	Since version:	0.4.1(-1), changed 0.4.2
 	Description:	Function is used to get the domain's XML description
-	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
 			@xpath [string]: optional xPath expression string to get just this entry, can be NULL
 	Returns:	domain XML description string or result of xPath expression
 */
@@ -3402,7 +3402,7 @@ PHP_FUNCTION(libvirt_domain_nic_remove)
 	Function name:	libvirt_domain_get_info
 	Since version:	0.4.1(-1)
 	Description:	Function is used to get the domain's information
-	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
 	Returns:	domain information array
 */
 PHP_FUNCTION(libvirt_domain_get_info)
@@ -3430,7 +3430,7 @@ PHP_FUNCTION(libvirt_domain_get_info)
 	Function name:	libvirt_domain_create
 	Since version:	0.4.1(-1)
 	Description:	Function is used to create the domain identified by it's resource
-	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
 	Returns:	result of domain creation (startup)
 */
 PHP_FUNCTION(libvirt_domain_create)
@@ -3451,7 +3451,7 @@ PHP_FUNCTION(libvirt_domain_create)
 	Function name:	libvirt_domain_destroy
 	Since version:	0.4.1(-1)
 	Description:	Function is used to destroy the domain identified by it's resource
-	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
 	Returns:	result of domain destroy
 */
 PHP_FUNCTION(libvirt_domain_destroy)
@@ -3472,7 +3472,7 @@ PHP_FUNCTION(libvirt_domain_destroy)
 	Function name:	libvirt_domain_resume
 	Since version:	0.4.1(-1)
 	Description:	Function is used to resume the domain identified by it's resource
-	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
 	Returns:	result of domain resume
 */
 PHP_FUNCTION(libvirt_domain_resume)
@@ -3493,7 +3493,7 @@ PHP_FUNCTION(libvirt_domain_resume)
 	Function name:	libvirt_domain_core_dump
 	Since version:	0.4.1(-2)
 	Description:	Function is used to dump core of the domain identified by it's resource
-	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
 	Returns:	TRUE for success, FALSE on error
 */
 PHP_FUNCTION(libvirt_domain_core_dump)
@@ -3516,7 +3516,7 @@ PHP_FUNCTION(libvirt_domain_core_dump)
 	Function name:	libvirt_domain_shutdown
 	Since version:	0.4.1(-1)
 	Description:	Function is used to shutdown the domain identified by it's resource
-	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
 	Returns:	TRUE for success, FALSE on error
 */
 PHP_FUNCTION(libvirt_domain_shutdown)
@@ -3537,7 +3537,7 @@ PHP_FUNCTION(libvirt_domain_shutdown)
 	Function name:	libvirt_domain_suspend
 	Since version:	0.4.1(-1)
 	Description:	Function is used to suspend the domain identified by it's resource
-	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
 	Returns:	TRUE for success, FALSE on error
 */
 PHP_FUNCTION(libvirt_domain_suspend)
@@ -3558,7 +3558,7 @@ PHP_FUNCTION(libvirt_domain_suspend)
 	Function name:	libvirt_domain_undefine
 	Since version:	0.4.1(-1)
 	Description:	Function is used to undefine the domain identified by it's resource
-	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
 	Returns:	TRUE for success, FALSE on error
 */
 PHP_FUNCTION(libvirt_domain_undefine)
@@ -3579,7 +3579,7 @@ PHP_FUNCTION(libvirt_domain_undefine)
 	Function name:	libvirt_domain_reboot
 	Since version:	0.4.1(-1)
 	Description:	Function is used to reboot the domain identified by it's resource
-	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
 	Returns:	TRUE for success, FALSE on error
 */
 PHP_FUNCTION(libvirt_domain_reboot)
@@ -3666,7 +3666,7 @@ PHP_FUNCTION(libvirt_domain_create_xml)
 	Function name:	libvirt_domain_memory_peek
 	Since version:	0.4.1(-1)
 	Description:	Function is used to get the domain's memory peek value
-	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
 	Returns:	domain memory peek
 */
 PHP_FUNCTION(libvirt_domain_memory_peek)
@@ -3690,7 +3690,7 @@ PHP_FUNCTION(libvirt_domain_memory_peek)
 	Function name:	libvirt_domain_memory_stats
 	Since version:	0.4.1(-1)
 	Description:	Function is used to get the domain's memory stats
-	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
 	Returns:	domain memory stats array (same fields as virDomainMemoryStats, please see libvirt documentation)
 */
 #if LIBVIR_VERSION_NUMBER>=7005
@@ -3727,7 +3727,7 @@ PHP_FUNCTION(libvirt_domain_memory_stats)
 	Function name:	libvirt_domain_update_device
 	Since version:	0.4.1(-1)
 	Description:	Function is used to update the domain's devices from the XML string
-	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
 			@xml [string]: XML string for the update
 			@flags [int]: Flags to update the device (VIR_DOMAIN_DEVICE_MODIFY_CURRENT, VIR_DOMAIN_DEVICE_MODIFY_LIVE, VIR_DOMAIN_DEVICE_MODIFY_CONFIG, VIR_DOMAIN_DEVICE_MODIFY_FORCE)
 	Returns:	TRUE for success, FALSE on error
@@ -3762,7 +3762,7 @@ PHP_FUNCTION(libvirt_domain_update_device)
 	Function name:	libvirt_domain_block_stats
 	Since version:	0.4.1(-1)
 	Description:	Function is used to get the domain's block stats
-	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
 			@path [string]: device path to get statistics about
 	Returns:	domain block stats array, fields are rd_req, rd_bytes, wr_req, wr_bytes and errs
 */
@@ -3795,7 +3795,7 @@ PHP_FUNCTION(libvirt_domain_block_stats)
 	Function name:	libvirt_domain_get_network_info
 	Since version:	0.4.1(-1)
 	Description:	Function is used to get the domain's network information
-	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
 			@mac [string]: mac address of the network device
 	Returns:	domain network info array of MAC address, network name and type of NIC card
 */
@@ -3847,7 +3847,7 @@ PHP_FUNCTION(libvirt_domain_get_network_info) {
 	Function name:	libvirt_domain_get_block_info
 	Since version:	0.4.1(-1)
 	Description:	Function is used to get the domain's block device information
-	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
 			@dev [string]: device to get block information about
 	Returns: domain block device information array of device, file or partition, capacity, allocation and physical size
 */
@@ -3934,7 +3934,7 @@ PHP_FUNCTION(libvirt_domain_get_block_info)
 	Function name:	libvirt_domain_xml_xpath
 	Since version:	0.4.1(-1)
 	Description:	Function is used to get the result of xPath expression that's run against the domain
-	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
 			@xpath [string]: xPath expression to parse against the domain
 	Returns:	result of the expression in an array
 */
@@ -3974,7 +3974,7 @@ PHP_FUNCTION(libvirt_domain_xml_xpath) {
 	Function name:	libvirt_domain_interface_stats
 	Since version:	0.4.1(-1)
 	Description:	Function is used to get the domain's interface stats
-	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
 			@path [string]: path to interface device
 	Returns:	interface stats array of {tx|rx}_{bytes|packets|errs|drop} fields
 */
@@ -4010,7 +4010,7 @@ PHP_FUNCTION(libvirt_domain_interface_stats)
 	Function name:	libvirt_domain_get_connect
 	Since version:	0.4.1(-1)
 	Description:	Function is used to get the domain's connection resource. This function should *not* be used!
-	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
 	Returns:	libvirt connection resource
 */
 PHP_FUNCTION(libvirt_domain_get_connect)
@@ -4032,7 +4032,7 @@ PHP_FUNCTION(libvirt_domain_get_connect)
 	Function name:	libvirt_domain_migrate_to_uri
 	Since version:	0.4.1(-1)
 	Description:	Function is used migrate domain to another libvirt daemon specified by it's URI
-	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
 			@dest_uri [string]: destination URI to migrate to
 			@flags [int]: migration flags
 			@dname [string]: domain name to rename domain to on destination side
@@ -4068,7 +4068,7 @@ PHP_FUNCTION(libvirt_domain_migrate_to_uri)
 	Function name:	libvirt_domain_migrate
 	Since version:	0.4.1(-1)
 	Description:	Function is used migrate domain to another domain
-	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
 			@dest_conn [string]: destination host connection object
 			@flags [int]: migration flags
 			@dname [string]: domain name to rename domain to on destination side
@@ -4117,7 +4117,7 @@ PHP_FUNCTION(libvirt_domain_migrate)
 	Function name:	libvirt_domain_get_job_info
 	Since version:	0.4.1(-1)
 	Description:	Function is used get job information for the domain
-	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
 	Returns:	job information array of type, time, data, mem and file fields
 */
 #if LIBVIR_VERSION_NUMBER>=7007
