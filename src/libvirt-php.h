@@ -212,6 +212,8 @@ PHP_FUNCTION(libvirt_node_get_info);
 PHP_FUNCTION(libvirt_domain_get_counts);
 PHP_FUNCTION(libvirt_domain_lookup_by_name);
 PHP_FUNCTION(libvirt_domain_get_xml_desc);
+PHP_FUNCTION(libvirt_domain_get_disk_devices);
+PHP_FUNCTION(libvirt_domain_get_interface_devices);
 PHP_FUNCTION(libvirt_domain_get_screenshot);
 PHP_FUNCTION(libvirt_domain_get_screen_dimensions);
 PHP_FUNCTION(libvirt_domain_change_vcpus);

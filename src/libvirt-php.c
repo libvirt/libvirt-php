@@ -68,6 +68,8 @@ static function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_domain_get_counts, NULL)
 	PHP_FE(libvirt_domain_lookup_by_name, NULL)
 	PHP_FE(libvirt_domain_get_xml_desc, NULL)
+	PHP_FE(libvirt_domain_get_disk_devices, NULL)
+	PHP_FE(libvirt_domain_get_interface_devices, NULL)
 	PHP_FE(libvirt_domain_change_vcpus, NULL)
 	PHP_FE(libvirt_domain_change_memory, NULL)
 	PHP_FE(libvirt_domain_change_boot_devices, NULL)
@@ -2684,6 +2686,74 @@ PHP_FUNCTION(libvirt_domain_get_xml_desc)
 
 	RETURN_STRING(xml_out,0);
 }
+
+/*
+	Function name:	libvirt_domain_get_disk_devices
+	Since version:	0.4.4
+	Description:	Function is used to get disk devices for the domain
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
+	Returns:	list of domain disk devices
+*/
+PHP_FUNCTION(libvirt_domain_get_disk_devices)
+{
+	php_libvirt_domain *domain=NULL;
+	zval *zdomain;
+	char *xml;
+	int retval = -1;
+
+	GET_DOMAIN_FROM_ARGS("r",&zdomain);
+
+	DPRINTF("%s: Getting disk device list for domain %p\n", PHPFUNC, domain->domain);
+
+	xml=virDomainGetXMLDesc(domain->domain, 0);
+	if (xml == NULL) {
+		set_error_if_unset("Cannot get the XML description");
+		RETURN_FALSE;
+	}
+
+	array_init(return_value);
+
+	free( get_string_from_xpath(xml, "//domain/devices/disk/target/@dev", &return_value, &retval) );
+	free(xml);
+
+	if (retval < 0)
+		add_assoc_long(return_value, "error_code", (long)retval);
+	else
+		add_assoc_long(return_value, "num", (long)retval);
+}
+
+/*
+	Function name:	libvirt_domain_get_interface_devices
+	Since version:	0.4.4
+	Description:	Function is used to get network interface devices for the domain
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
+	Returns:	list of domain disk devices
+*/
+PHP_FUNCTION(libvirt_domain_get_interface_devices)
+{
+	php_libvirt_domain *domain=NULL;
+	zval *zdomain;
+	char *xml;
+	int retval = -1;
+
+	GET_DOMAIN_FROM_ARGS("r",&zdomain);
+
+	DPRINTF("%s: Getting interface device list for domain %p\n", PHPFUNC, domain->domain);
+
+	xml=virDomainGetXMLDesc(domain->domain, 0);
+	if (xml==NULL) {
+		set_error_if_unset("Cannot get the XML description");
+		RETURN_FALSE;
+	}
+
+	array_init(return_value);
+
+	free( get_string_from_xpath(xml, "//domain/devices/interface/target/@dev", &return_value, &retval) );
+
+	if (retval < 0)
+		add_assoc_long(return_value, "error_code", (long)retval);
+	else
+		add_assoc_long(return_value, "num", (long)retval);}
 
 /*
 	Function name:	libvirt_domain_change_vcpus
