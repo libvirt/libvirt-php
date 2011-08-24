@@ -66,6 +66,7 @@ make %{?_smp_mflags}
 %install
 rm -rf %{buildroot}
 make install DESTDIR=%{buildroot}
+chmod +x %{buildroot}%{php_extdir}/libvirt-php.so
 
 %clean
 rm -rf %{buildroot}
