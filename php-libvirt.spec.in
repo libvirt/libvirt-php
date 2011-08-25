@@ -10,7 +10,7 @@
 
 Name:		php-libvirt
 Version:	@VERSION@
-Release:	1%{?dist}%{?extra_release}
+Release:	2%{?dist}%{?extra_release}
 Summary:	PHP language binding for Libvirt
 
 %if 0%{?suse_version}  
@@ -83,6 +83,9 @@ rm -rf %{buildroot}
 %{_datadir}/doc/%{name}-%{version}/html
 
 %changelog
+* Wed Aug 24 2011 Michal Novotny <minovotn@redhta.com> - 0.4.4-1
+- Fix debuginfo package
+
 * Mon Aug 22 2011 Michal Novotny <minovotn@redhat.com> - 0.4.4
 - Several bugfixes for VNC and updated SPEC file
 
