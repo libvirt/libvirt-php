@@ -23,5 +23,7 @@
 	if (!libvirt_check_version($bind_major, $bind_minor, $bind_micro, VIR_VERSION_BINDING))
 		bail("Checking against currently installed libvirt-php version failed");
 
-	success( basename(__FILE__) );
+        if (libvirt_check_version($bind_major, $bind_minor, $bind_micro))
+        	success( basename(__FILE__) );
+        else    bail("Bad parameters analyse");
 ?>
