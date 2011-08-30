@@ -6372,7 +6372,7 @@ PHP_FUNCTION(libvirt_version)
 PHP_FUNCTION(libvirt_check_version)
 {
 	unsigned long libVer;
-	long major = -1, minor = -1, micro = -1, type = VIR_VERSION_BINDING;
+	int major = -1, minor = -1, micro = -1, type = VIR_VERSION_BINDING;
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "lll|l", &major, &minor, &micro, &type) == FAILURE) {
 		set_error("Invalid arguments");
@@ -6527,7 +6527,7 @@ PHP_FUNCTION(libvirt_print_binding_resources)
 PHP_FUNCTION(libvirt_logfile_set)
 {
 	char *filename = NULL;
-	long maxsize = DEFAULT_LOG_MAXSIZE;
+	int maxsize = DEFAULT_LOG_MAXSIZE;
 	int filename_len = 0;
 	int err;
 
