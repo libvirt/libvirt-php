@@ -42,7 +42,7 @@ rm -f /tmp/example-test.qcow2
 if [ "x$error" == "x0" ]; then
 	echo "All tests passed successfully"
 else
-	echo "Some of the tests have failed"
+	echo "Some (or all) of the tests have failed"
 fi
 
 exit $error
