@@ -1,2 +1,2 @@
 check:
-	./runtests.sh
+	./runtests-report.sh

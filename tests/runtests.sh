@@ -1,19 +1,48 @@
 #!/bin/bash
 
-php test-connect.phpt				|| exit 1
-php test-version-check.phpt			|| exit 1
-php test-version-get.phpt			|| exit 1
-php test-domain-define-undefine.phpt		|| exit 1
-php test-domain-define-create-destroy.phpt	|| exit 1
-php test-domain-create.phpt			|| exit 1
-php test-domain-create-and-get-xpath.phpt	|| exit 1
-php test-domain-create-and-coredump.phpt	|| exit 1
-php test-logging.phpt				|| exit 1
-php test-conn-limit.phpt			|| exit 1
+nf=$1
+tests=( "test-connect" "test-version-check" "test-version-get" "test-domain-define-undefine" "test-domain-define-create-destroy" "test-domain-create"
+	"test-domain-create-and-get-xpath" "test-domain-create-and-coredump" "test-logging" "test-conn-limit" )
+
+run_test()
+{
+	local name=$1
+	local nf=$2
+	ret=0
+
+	php $name.phpt
+	if [ "x$?" != "x0" ]; then
+		if [ "x$nf" == 'x1' ]; then
+			ret=1
+		else
+			exit 1
+		fi
+	fi
+
+	return $ret
+}
+
+error=0
+for atest in ${tests[@]}
+do
+	run_test $atest $nf; ret="$?"
+
+	if [ "x$ret" == "x1" ]; then
+		error=1
+	fi
+done
 
 qemu-img create -f qcow2 /tmp/example-test.qcow2 1M > /dev/null
-php test-domain-snapshot.phpt			|| exit 1
+run_test "test-domain-snapshot" $nf; ret="$?"
+if [ "x$ret" == "x1" ]; then
+	error=1
+fi
 rm -f /tmp/example-test.qcow2
 
-echo "All tests passed successfully"
-exit 0
+if [ "x$error" == "x0" ]; then
+	echo "All tests passed successfully"
+else
+	echo "Some of the tests have failed"
+fi
+
+exit $error
