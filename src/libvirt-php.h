@@ -92,6 +92,7 @@ typedef struct _resource_info {
 
 ZEND_BEGIN_MODULE_GLOBALS(libvirt)
 	char *last_error;
+	char *vnc_location;
 	zend_bool longlong_to_string_ini;
 	char *iso_path_ini;
 	char *image_path_ini;
@@ -112,6 +113,19 @@ ZEND_END_MODULE_GLOBALS(libvirt)
 #define PHP_LIBVIRT_WORLD_VERSION "0.4.3"
 #define PHP_LIBVIRT_WORLD_EXTNAME "libvirt"
 
+/* Domain flags */
+#define DOMAIN_FLAG_FEATURE_ACPI	0x01
+#define DOMAIN_FLAG_FEATURE_APIC	0x02
+#define DOMAIN_FLAG_FEATURE_PAE 	0x04
+#define DOMAIN_FLAG_CLOCK_LOCALTIME	0x08
+#define DOMAIN_FLAG_TEST_LOCAL_VNC	0x10
+#define DOMAIN_FLAG_SOUND_AC97		0x20
+
+/* Domain disk flags */
+#define DOMAIN_DISK_FILE		0x01
+#define DOMAIN_DISK_BLOCK		0x02
+#define DOMAIN_DISK_ACCESS_ALL		0x04
+
 /* Internal resource identifier objects */
 #define INT_RESOURCE_CONNECTION		0x01
 #define INT_RESOURCE_DOMAIN		0x02
@@ -120,6 +134,21 @@ ZEND_END_MODULE_GLOBALS(libvirt)
 #define INT_RESOURCE_STORAGEPOOL	0x10
 #define INT_RESOURCE_VOLUME		0x20
 #define INT_RESOURCE_SNAPSHOT		0x40
+
+typedef struct tVMDisk {
+	char *path;
+	char *driver;
+	char *bus;
+	char *dev;
+	unsigned long long size;
+	int flags;
+} tVMDisk;
+
+typedef struct tVMNetwork {
+	char *mac;
+	char *network;
+	char *model;
+} tVMNetwork;
 
 /* Libvirt-php types */
 typedef struct _php_libvirt_connection {
@@ -201,6 +230,7 @@ PHP_FUNCTION(libvirt_connect_get_uri);
 PHP_FUNCTION(libvirt_connect_get_hostname);
 PHP_FUNCTION(libvirt_connect_get_hypervisor);
 PHP_FUNCTION(libvirt_connect_get_capabilities);
+PHP_FUNCTION(libvirt_connect_get_emulator);
 PHP_FUNCTION(libvirt_connect_get_maxvcpus);
 PHP_FUNCTION(libvirt_connect_get_sysinfo);
 PHP_FUNCTION(libvirt_connect_get_encrypted);
@@ -209,6 +239,8 @@ PHP_FUNCTION(libvirt_connect_get_information);
 /* Node functions */
 PHP_FUNCTION(libvirt_node_get_info);
 /* Domain functions */
+PHP_FUNCTION(libvirt_domain_new);
+PHP_FUNCTION(libvirt_domain_new_get_vnc);
 PHP_FUNCTION(libvirt_domain_get_counts);
 PHP_FUNCTION(libvirt_domain_lookup_by_name);
 PHP_FUNCTION(libvirt_domain_get_xml_desc);

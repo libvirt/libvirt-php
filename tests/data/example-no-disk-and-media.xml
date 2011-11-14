@@ -1,11 +1,11 @@
 <domain type='kvm'>
   <name>test-guest-no-disk-and-media</name>
   <uuid>28a15e00-9c40-ddc1-b6df-9a08921b93f0</uuid>
-  <memory>262144</memory>
-  <currentMemory>262144</currentMemory>
+  <memory>65535</memory>
+  <currentMemory>65535</currentMemory>
   <vcpu>1</vcpu>
   <os>
-    <type arch='i686' machine='pc-0.13'>hvm</type>
+    <type arch='i686'>hvm</type>
     <boot dev='cdrom'/>
   </os>
   <features>

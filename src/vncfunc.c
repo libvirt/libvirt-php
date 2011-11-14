@@ -435,7 +435,7 @@ int vnc_connect(char *server, char *port, int share)
 	int sfd, err;
 	unsigned char buf[1024] = { 0 };
 	
-	sfd = connect_socket(server, port, 1, 1);
+	sfd = connect_socket(server, port, 1, 1, 1);
 	if (sfd < 0)
 		return sfd;
 

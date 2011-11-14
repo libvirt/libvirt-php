@@ -1,11 +1,11 @@
 <domain type='kvm'>
   <name>test-guest-qcow</name>
   <uuid>e0cccc71-1a93-d008-15c0-60155feecb01</uuid>
-  <memory>256000</memory>
-  <currentMemory>250000</currentMemory>
+  <memory>65565</memory>
+  <currentMemory>65535</currentMemory>
   <vcpu>1</vcpu>
   <os>
-    <type arch='i686' machine='pc-0.13'>hvm</type>
+    <type arch='i686'>hvm</type>
     <boot dev='hd'/>
   </os>
   <features>

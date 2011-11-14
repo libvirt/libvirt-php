@@ -29,8 +29,8 @@ do {} while(0)
 #define	PHPFUNC	(__FUNCTION__ + 4)
 
 /* Additional binaries */
-char *features[] = { "screenshot", NULL };
-char *features_binaries[] = { "/usr/bin/gvnccapture", NULL };
+char *features[] = { "screenshot", "create-image", NULL };
+char *features_binaries[] = { "/usr/bin/gvnccapture", "/usr/bin/qemu-img", NULL };
 
 /* ZEND thread safe per request globals definition */
 int le_libvirt_connection;
@@ -58,6 +58,7 @@ static function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_connect_get_uri, NULL)
 	PHP_FE(libvirt_connect_get_hostname, NULL)
 	PHP_FE(libvirt_connect_get_capabilities, NULL)
+	PHP_FE(libvirt_connect_get_emulator, NULL)
 	PHP_FE(libvirt_connect_get_information, NULL)
 	PHP_FE(libvirt_connect_get_hypervisor, NULL)
 	PHP_FE(libvirt_connect_get_sysinfo, NULL)
@@ -65,6 +66,8 @@ static function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_connect_get_encrypted, NULL)
 	PHP_FE(libvirt_connect_get_secure, NULL)
 	/* Domain functions */
+	PHP_FE(libvirt_domain_new, NULL)
+	PHP_FE(libvirt_domain_new_get_vnc, NULL)
 	PHP_FE(libvirt_domain_get_counts, NULL)
 	PHP_FE(libvirt_domain_lookup_by_name, NULL)
 	PHP_FE(libvirt_domain_get_xml_desc, NULL)
@@ -246,6 +249,7 @@ static void php_libvirt_init_globals(zend_libvirt_globals *libvirt_globals)
 PHP_RINIT_FUNCTION(libvirt)
 {
 	LIBVIRT_G(last_error) = NULL;
+	LIBVIRT_G(vnc_location) = NULL;
 	change_debug(0);
 	return SUCCESS;
 }
@@ -254,6 +258,7 @@ PHP_RINIT_FUNCTION(libvirt)
 PHP_RSHUTDOWN_FUNCTION(libvirt)
 {
 	if (LIBVIRT_G (last_error)!=NULL) efree(LIBVIRT_G (last_error));
+	if (LIBVIRT_G (vnc_location)!=NULL) efree(LIBVIRT_G (vnc_location));
 	return SUCCESS;
 }
 
@@ -526,6 +531,26 @@ void set_error(char *msg TSRMLS_DC)
 }
 
 /*
+	Private function name:	set_vnc_location
+	Since version:		0.4.5
+	Description:		This private function is used to set the VNC location for the newly started installation
+	Arguments:		@msg [string]: vnc location string
+	Returns:		None
+*/
+void set_vnc_location(char *msg TSRMLS_DC)
+{
+	if (LIBVIRT_G (vnc_location) != NULL)
+		efree(LIBVIRT_G (vnc_location));
+
+	if (msg == NULL) {
+		LIBVIRT_G (vnc_location) = NULL;
+		return;
+	}
+
+	LIBVIRT_G (vnc_location)=estrndup(msg,strlen(msg));
+}
+
+/*
 	Private function name:	set_error_if_unset
 	Since version:		0.4.2
 	Description:		Function to set the error only if no other error is set yet
@@ -733,6 +758,55 @@ int count_resources(int type)
 	}
 
 	return count;
+}
+
+/*
+	Private function name:	size_def_to_mbytes
+	Since version:		0.4.5
+	Description:		Function is used to translate the string size representation to the number of MBytes, used e.g. for domain installation
+	Arguments:		@arg [string]: input string to be converted
+	Returns:		number of megabytes extracted from the input string
+*/
+unsigned long long size_def_to_mbytes(char *arg)
+{
+	int unit, multiplicator = 1, nodel = 0;
+
+	if ((arg == NULL) || (strlen(arg) == 0))
+		return 0;
+
+	unit = arg[strlen(arg)-1];
+	switch (arg[strlen(arg)-1]) {
+		case 'G':
+			multiplicator = 1 << 10;
+			break;
+		case 'T':
+			multiplicator = 1 << 20;
+			break;
+		default:
+			nodel = 1;
+	}
+
+	if (nodel == 0)
+		arg[strlen(arg) - 1] = 0;
+
+	return atoi(arg) * multiplicator;
+}
+
+/*
+	Private function name:	is_local_connection
+	Since version:		0.4.5
+	Description:		Function is used to check whether the connection is the connection to the local hypervisor or to remote hypervisor
+	Arguments:		@conn [virConnectPtr]: libvirt connection pointer
+	Returns:		TRUE for local connection, FALSE for remote connection
+*/
+int is_local_connection(virConnectPtr conn)
+{
+	char *hostname;
+	char name[1024];
+
+	hostname=virConnectGetHostname(conn);
+	gethostname(name, 1024);
+	return (strcmp(name, hostname) == 0);
 }
 
 /* Destructor for connection resource */
@@ -1079,6 +1153,17 @@ PHP_MINIT_FUNCTION(libvirt)
 	/* Extend existing pool */
 	REGISTER_LONG_CONSTANT("VIR_STORAGE_POOL_BUILD_RESIZE",		2, CONST_CS | CONST_PERSISTENT);
 
+	/* Domain flags */
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_FLAG_FEATURE_ACPI",		DOMAIN_FLAG_FEATURE_ACPI, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_FLAG_FEATURE_APIC",		DOMAIN_FLAG_FEATURE_APIC, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_FLAG_FEATURE_PAE",		DOMAIN_FLAG_FEATURE_PAE, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_FLAG_CLOCK_LOCALTIME",	DOMAIN_FLAG_CLOCK_LOCALTIME, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_FLAG_TEST_LOCAL_VNC",	DOMAIN_FLAG_TEST_LOCAL_VNC, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_FLAG_SOUND_AC97",		DOMAIN_FLAG_SOUND_AC97, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_DISK_FILE",			DOMAIN_DISK_FILE, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_DISK_BLOCK",			DOMAIN_DISK_BLOCK, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_DISK_ACCESS_ALL",		DOMAIN_DISK_ACCESS_ALL, CONST_CS | CONST_PERSISTENT);
+
 	REGISTER_INI_ENTRIES();
 
 	/* Initialize libvirt and set up error callback */
@@ -1307,7 +1392,7 @@ PHP_FUNCTION(libvirt_connect)
 	}
 
 	/* If 'null' value has been passed as URL override url to NULL value to autodetect the hypervisor */
-	if (strcasecmp(url, "NULL") == 0)
+	if ((url == NULL) || (strcasecmp(url, "NULL") == 0))
 		url = NULL;
 
 	conn=emalloc(sizeof(php_libvirt_connection));
@@ -1536,8 +1621,6 @@ PHP_FUNCTION(libvirt_image_create)
 {
 	php_libvirt_connection *conn=NULL;
 	zval *zconn;
-	char *hostname;
-	char name[1024];
 	char msg[1024];
 	char cmd[4096] = { 0 };
 	char *path;
@@ -1546,7 +1629,9 @@ PHP_FUNCTION(libvirt_image_create)
 	int image_len;
 	char *format;
 	int format_len;
-	int size;
+	long size;
+	char *size_str;
+	int size_str_len;
 
 	if (LIBVIRT_G(image_path_ini))
 		path = strdup( LIBVIRT_G(image_path_ini) );
@@ -1556,17 +1641,15 @@ PHP_FUNCTION(libvirt_image_create)
 		RETURN_FALSE;
 	}
 
-	GET_CONNECTION_FROM_ARGS("rsls",&zconn,&image,&image_len,&size,&format,&format_len);
+	GET_CONNECTION_FROM_ARGS("rsss",&zconn,&image,&image_len,&size_str,&size_str_len,&format,&format_len);
 
-	hostname=virConnectGetHostname(conn->conn);
-	
-	/* Get the current hostname to check if we're on local machine */
-	gethostname(name, 1024);
-	if (strcmp(name, hostname) != 0) {
-	    // maybe try something like:
-	    //   ssh root@hostname "qemu-img create -f fmt /path/to/file sizeM; ls -al /path/to/file"
-	    // possible issue with different libvirt.image_path settings!
-	    // Better use NFS shares instead!
+	if (size_str == NULL)
+		RETURN_FALSE;
+		
+	size = size_def_to_mbytes(size_str);
+
+	if (!is_local_connection(conn->conn)) {
+	    // TODO: Try to implement remote connection somehow. Maybe using SSH tunneling
 		snprintf(msg, sizeof(msg), "%s works only on local systems!", PHPFUNC);
 		set_error(msg);
 		RETURN_FALSE;
@@ -1574,8 +1657,15 @@ PHP_FUNCTION(libvirt_image_create)
 
 	snprintf(fpath, sizeof(fpath), "%s/%s", path, image);
 
-	snprintf(cmd, sizeof(cmd), "qemu-img create -f %s %s %dM > /dev/null", format, fpath, size);
-	DPRINTF("%s: Invoking '%s'...\n", PHPFUNC, cmd);
+	char *qemu_img_cmd = get_feature_binary("create-image");
+	if (qemu_img_cmd == NULL) {
+		set_error("Feature 'create-image' is not supported");
+		RETURN_FALSE;
+	}
+
+	snprintf(cmd, sizeof(cmd), "%s create -f %s %s %dM > /dev/null", qemu_img_cmd, format, fpath, size);
+	free(qemu_img_cmd);
+	DPRINTF("%s: Running '%s'...\n", PHPFUNC, cmd);
 	system(cmd);
 
 	if (access(fpath, F_OK) == 0) {
@@ -1990,6 +2080,449 @@ long get_next_free_numeric_value(virDomainPtr domain, char *xpath)
 
 	efree(output);
 	return max_slot + 1;
+}
+
+/*
+	Private function name:	connection_get_domain_type
+	Since version:		0.4.5
+	Description:		Function is required for functions that get the emulator for specific libvirt connection
+	Arguments:		@conn [virConnectPtr]: libvirt connection pointer of connection to get emulator for
+				@arch [string]: optional architecture string, can be NULL to get default
+	Returns:		path to the emulator
+*/
+char *connection_get_domain_type(virConnectPtr conn, char *arch)
+{
+	int retval = -1;
+	char *tmp = NULL;
+	char *caps = NULL;
+	char xpath[1024] = { 0 };
+
+	caps = virConnectGetCapabilities(conn);
+	if (caps == NULL)
+		return NULL;
+
+	if (arch == NULL) {
+		arch = get_string_from_xpath(caps, "//capabilities/host/cpu/arch", NULL, &retval);
+		DPRINTF("%s: No architecture defined, got '%s' from capabilities XML\n", __FUNCTION__, arch);
+		if ((arch == NULL) || (retval < 0))
+			return NULL;
+	}
+
+	DPRINTF("%s: Requested domain type for arch '%s'\n",  __FUNCTION__, arch);
+
+	snprintf(xpath, sizeof(xpath), "//capabilities/guest/arch[@name='%s']/domain/emulator/../@type", arch);
+	DPRINTF("%s: Applying xPath '%s' to capabilities XML output\n", __FUNCTION__, xpath);
+	tmp = get_string_from_xpath(caps, xpath, NULL, &retval);
+	if ((tmp == NULL) || (retval < 0)) {
+		DPRINTF("%s: No domain type found in XML...\n", __FUNCTION__);
+		return NULL;
+	}
+
+	DPRINTF("%s: Domain type is '%s'\n",  __FUNCTION__, tmp);
+
+	return tmp;
+}
+
+/*
+	Private function name:	connection_get_emulator
+	Since version:		0.4.5
+	Description:		Function is required for functions that get the emulator for specific libvirt connection
+	Arguments:		@conn [virConnectPtr]: libvirt connection pointer of connection to get emulator for
+				@arch [string]: optional architecture string, can be NULL to get default
+	Returns:		path to the emulator
+*/
+char *connection_get_emulator(virConnectPtr conn, char *arch)
+{
+	int retval = -1;
+	char *tmp = NULL;
+	char *caps = NULL;
+	char xpath[1024] = { 0 };
+
+	caps = virConnectGetCapabilities(conn);
+	if (caps == NULL)
+		return NULL;
+
+	if (arch == NULL) {
+		arch = get_string_from_xpath(caps, "//capabilities/host/cpu/arch", NULL, &retval);
+		DPRINTF("%s: No architecture defined, got '%s' from capabilities XML\n", __FUNCTION__, arch);
+		if ((arch == NULL) || (retval < 0))
+			return NULL;
+	}
+
+	DPRINTF("%s: Requested emulator for arch '%s'\n",  __FUNCTION__, arch);
+
+	snprintf(xpath, sizeof(xpath), "//capabilities/guest/arch[@name='%s']/domain/emulator", arch);
+	DPRINTF("%s: Applying xPath '%s' to capabilities XML output\n", __FUNCTION__, xpath);
+	tmp = get_string_from_xpath(caps, xpath, NULL, &retval);
+	if ((tmp == NULL) || (retval < 0)) {
+		DPRINTF("%s: No emulator found. Trying next location ...\n", __FUNCTION__);
+		snprintf(xpath, sizeof(xpath), "//capabilities/guest/arch[@name='%s']/emulator", arch);
+	}
+	else {
+		DPRINTF("%s: Emulator is '%s'\n",  __FUNCTION__, tmp);
+		return tmp;
+	}
+
+	DPRINTF("%s: Applying xPath '%s' to capabilities XML output\n",  __FUNCTION__, xpath);
+
+	tmp = get_string_from_xpath(caps, xpath, NULL, &retval);
+	if ((tmp == NULL) || (retval < 0)) {
+		DPRINTF("%s: Emulator is '%s'\n",  __FUNCTION__, tmp);
+		return NULL;
+	}
+
+	DPRINTF("%s: Emulator is '%s'\n",  __FUNCTION__, tmp);
+
+	return tmp;
+}
+
+/*
+	Private function name:	connection_get_arch
+	Since version:		0.4.5
+	Description:		Function is required for functions that get the architecture for specific libvirt connection
+	Arguments:		@conn [virConnectPtr]: libvirt connection pointer of connection to get architecture for
+	Returns:		path to the emulator
+*/
+char *connection_get_arch(virConnectPtr conn)
+{
+	int retval = -1;
+	char *tmp = NULL;
+	char *caps = NULL;
+	char xpath[1024] = { 0 };
+
+	caps = virConnectGetCapabilities(conn);
+	if (caps == NULL)
+		return NULL;
+
+	tmp = get_string_from_xpath(caps, "//capabilities/host/cpu/arch", NULL, &retval);
+	free(caps);
+	
+	if ((tmp == NULL) || (retval < 0)) {
+		DPRINTF("%s: Cannot get host CPU architecture from capabilities XML\n", __FUNCTION__);
+		return NULL;
+	}
+
+	DPRINTF("%s: Host CPU architecture is '%s'\n",  __FUNCTION__, tmp);
+
+	return tmp;
+}
+
+/*
+	Private function name:	generate_uuid_any
+	Since version:		0.4.5
+	Description:		Function is used to generate a new random UUID string
+	Arguments:		None
+	Returns:		a new random UUID string
+*/
+char *generate_uuid_any()
+{
+	int i;
+	char a[37] = { 0 };
+	char hexa[] = "0123456789abcdef";
+	virDomainPtr domain=NULL;
+	
+	srand(time(NULL));
+	for (i = 0; i < 36; i++) {
+		if ((i == 8) || (i == 13) || (i == 18) || (i == 23))
+			a[i] = '-';
+		else
+			a[i] = hexa[ rand() % strlen(hexa) ];
+	}
+
+	return strdup( a );
+}
+
+/*
+	Private function name:	generate_uuid
+	Since version:		0.4.5
+	Description:		Function is used to generate a new unused UUID string
+	Arguments:		@conn [virConnectPtr]: libvirt connection pointer
+	Returns:		a new unused random UUID string
+*/
+char *generate_uuid(virConnectPtr conn)
+{
+	virDomainPtr domain=NULL;
+	char *uuid = NULL;
+	
+	uuid = generate_uuid_any();
+	domain = virDomainLookupByUUIDString(conn, uuid);
+	if (domain != NULL) {
+		virDomainFree(domain);
+		while ((domain = virDomainLookupByUUIDString(conn, uuid)) != NULL) {
+			virDomainFree(domain);
+			uuid = generate_uuid_any();
+		}
+	}
+
+	DPRINTF("%s: Generated new UUID '%s'\n", __FUNCTION__, uuid);
+	return uuid;
+}
+
+/*
+	Private function name:	get_disk_xml
+	Since version:		0.4.5
+	Description:		Function is used to format single disk XML
+	Arguments:		@size [unsigned long long]: size of disk for generating a new one (can be -1 not to generate even if it doesn't exist)
+				@path [string]: path to the storage on the host system
+				@driver [string]: driver to be used to access the disk
+				@dev [string]: device to be presented to the guest
+				@disk_flags [int]: disk type, VIR_DOMAIN_DISK_FILE or VIR_DOMAIN_DISK_BLOCK
+	Returns:		XML output for the disk
+*/
+char *get_disk_xml(unsigned long long size, char *path, char *driver, char *bus, char *dev, int disk_flags)
+{
+	char xml[4096] = { 0 };
+	
+	if ((path == NULL) || (driver == NULL) || (bus == NULL))
+		return NULL;
+		
+	if (access(path, R_OK) != 0) {
+		if (disk_flags & DOMAIN_DISK_BLOCK) {
+			DPRINTF("%s: Cannot access block device %s\n", __FUNCTION__, path);
+			return NULL;
+		}
+
+		int ret = 0;
+		char cmd[4096] = { 0 };
+		DPRINTF("%s: Cannot access disk image %s\n", __FUNCTION__, path);
+
+		if (size == -1) {
+			DPRINTF("%s: Invalid size. Cannot create image\n", __FUNCTION__);
+			return NULL;
+		}
+
+		char *qemu_img_cmd = get_feature_binary("create-image");
+		if (qemu_img_cmd == NULL) {
+			DPRINTF("%s: Binary for creating disk images doesn't exist", __FUNCTION__);
+			return NULL;
+		}
+
+		// TODO: implement backing file handling: -o backing_file=RAW_IMG_FILE QCOW_IMG
+		snprintf(cmd, sizeof(cmd), "%s create -f %s %s %ldM > /dev/null &2>/dev/null", qemu_img_cmd, driver, path, size);
+		free(qemu_img_cmd);
+
+		ret = WEXITSTATUS(system(cmd));
+		DPRINTF("%s: Command '%s' finished with error code %d\n", __FUNCTION__, cmd, ret);
+		if (ret != 0) {
+			DPRINTF("%s: File creation failed\n");
+			return NULL;
+		}
+		
+		if (disk_flags & DOMAIN_DISK_ACCESS_ALL) {
+			DPRINTF("%s: Disk flag for all user access found, setting up %s' permissions to 0666\n", __FUNCTION__, path);
+			chmod(path, 0666);
+		}
+	}
+	
+	snprintf(xml, sizeof(xml), "\t\t<disk type='%s' device='disk'>\n"
+								"\t\t\t<driver name='qemu' type='%s' />\n"
+								"\t\t\t<source file='%s'/>\n"
+								"\t\t\t<target bus='%s' dev='%s' />\n"
+								"\t\t</disk>\n",
+								(disk_flags & DOMAIN_DISK_FILE) ? "file" :
+								((disk_flags & DOMAIN_DISK_BLOCK) ? "block" : ""),
+								driver, path, bus, dev);
+	return strdup( xml );
+}
+/*
+	Private function name:	get_network_xml
+	Since version:		0.4.5
+	Description:		Function is used to format single network interface XML
+	Arguments:		@mac [string]: MAC address of the new interface
+				@network [string]: network name
+				@model [string]: optional model name
+	Returns:		XML output for the network interface
+*/
+char *get_network_xml(char *mac, char *network, char *model)
+{
+	char xml[4096] = { 0 };
+	
+	if ((mac == NULL) || (network == NULL))
+		return NULL;
+	
+	if (model == NULL)
+		snprintf(xml, sizeof(xml), "\t\t<interface type='network'>\n"
+									"\t\t\t<mac address='%s'/>\n"
+									"\t\t\t<source network='%s'/>\n"
+									"\t\t</interface>\n",
+									mac, network);
+	else
+		snprintf(xml, sizeof(xml), "\t\t<interface type='network'>\n"
+									"\t\t\t<mac address='%s'/>\n"
+									"\t\t\t<source network='%s'/>\n"
+									"\t\t\t<model type='%s'/>\n"
+									"\t\t</interface>\n",
+									mac, network, model);
+
+	return strdup( xml );
+}
+
+/*
+	Private function name:	installation_get_xml
+	Since version:		0.4.5
+	Description:		Function is used to generate the installation XML description to install a new domain
+	Arguments:		@step [int]: number of step for XML output (1 or 2)
+				@conn [virConnectPtr]: libvirt connection pointer
+				@name [string]: name of the new virtual machine
+				@memMB [int]: memory in Megabytes
+				@maxmemMB [int]: maximum memory in Megabytes
+				@arch [string]: architecture to be used for the new domain, may be NULL to use the hypervisor default
+				@uuid [string]: UUID to be used or NULL to generate a new one
+				@vCpus [int]: number of virtual CPUs for the domain
+				@iso_image [string]: ISO image for the installation
+				@disks [tVMDisk]: disk structure with all the disks defined
+				@numDisks [int]: number of disks in the disk structure
+				@networks [tVMNetwork]: network structure with all the networks defined
+				@numNetworks [int]: number of networks in the network structure
+				@domain_flags [int]: flags for the domain installation
+	Returns:		full XML output for installation
+*/
+char *installation_get_xml(int step, virConnectPtr conn, char *name, int memMB, int maxmemMB, char *arch, char *uuid, int vCpus, char *iso_image,
+							tVMDisk *disks, int numDisks, tVMNetwork *networks, int numNetworks, int domain_flags)
+{
+	int i;
+	char xml[32768] = { 0 };
+	char disks_xml[16384] = { 0 };
+	char networks_xml[16384] = { 0 };
+	char features[128] = { 0 };
+	char *tmp = NULL;
+	char type[64] = { 0 };
+	virDomainPtr domain=NULL;
+	
+	if (conn == NULL) {
+		DPRINTF("%s: Invalid libvirt connection pointer\n", __FUNCTION__);
+		return NULL;
+	}
+	
+	if (uuid == NULL)
+		uuid = generate_uuid(conn);
+		
+	if (domain_flags & DOMAIN_FLAG_FEATURE_ACPI)
+		strcat(features, "<acpi/>");
+	if (domain_flags & DOMAIN_FLAG_FEATURE_APIC)
+		strcat(features, "<apic/>");
+	if (domain_flags & DOMAIN_FLAG_FEATURE_PAE)
+		strcat(features, "<pae/>");
+
+	if (arch == NULL) {
+		arch = connection_get_arch(conn);
+		DPRINTF("%s: No architecture defined, got host arch of '%s'\n", __FUNCTION__, arch);
+	}
+	
+	if (access(iso_image, R_OK) != 0) {
+		DPRINTF("%s: Installation image %s doesn't exist\n", __FUNCTION__, iso_image);
+		return NULL;
+	}
+	
+	tmp = connection_get_domain_type(conn, arch);
+	if (tmp != NULL)
+		snprintf(type, sizeof(type), " type='%s'", tmp);
+
+	for (i = 0; i < numDisks; i++) {
+		char *disk = get_disk_xml(disks[i].size, disks[i].path, disks[i].driver, disks[i].bus, disks[i].dev, disks[i].flags);
+
+		if (disk != NULL)
+			strcat(disks_xml, disk);
+
+		free(disk);
+	}
+
+	for (i = 0; i < numNetworks; i++) {
+		char *network = get_network_xml(networks[i].mac, networks[i].network, networks[i].model);
+
+		if (network != NULL)
+			strcat(networks_xml, network);
+
+		free(network);
+	}
+
+	if (step == 1)
+		snprintf(xml, sizeof(xml), "<domain%s>\n"
+								"\t<name>%s</name>\n"
+								"\t<currentMemory>%d</currentMemory>\n"
+								"\t<memory>%d</memory>\n"
+								"\t<uuid>%s</uuid>\n"
+								"\t<os>\n"
+								"\t\t<type arch='%s'>hvm</type>\n"
+								"\t\t<boot dev='cdrom'/>\n"
+								"\t\t<boot dev='hd'/>\n"
+								"\t</os>\n"
+								"\t<features>\n"
+								"\t\t%s\n"
+								"\t</features>\n"
+								"\t<clock offset=\"%s\"/>\n"
+								"\t<on_poweroff>destroy</on_poweroff>\n"
+								"\t<on_reboot>destroy</on_reboot>\n"
+								"\t<on_crash>destroy</on_crash>\n"
+								"\t<vcpu>%d</vcpu>\n"
+								"\t<devices>\n"
+								"\t\t<emulator>%s</emulator>\n"
+								"%s"
+								"\t\t<disk type='file' device='cdrom'>\n"
+								"\t\t\t<driver name='qemu' type='raw' />\n"
+								"\t\t\t<source file='%s' />\n"
+								"\t\t\t<target dev='hdc' bus='ide' />\n"
+								"\t\t\t<readonly />\n"
+								"\t\t</disk>\n"
+								"%s"
+								"\t\t<input type='mouse' bus='ps2' />\n"
+								"\t\t<graphics type='vnc' port='-1' />\n"
+								"\t\t<console type='pty' />\n"
+								"%s"
+								"\t\t<video>\n"
+								"\t\t\t<model type='cirrus' />\n"
+								"\t\t</video>\n"
+								"\t</devices>\n"
+								"</domain>",
+								type, name, memMB * 1024, maxmemMB * 1024, uuid, arch, features,
+								(domain_flags & DOMAIN_FLAG_CLOCK_LOCALTIME ? "localtime" : "utc"),
+								vCpus, connection_get_emulator(conn, arch), disks_xml, iso_image, networks_xml,
+								(domain_flags & DOMAIN_FLAG_SOUND_AC97 ? "\t\t<sound model='ac97'/>\n" : "")
+								);
+	else
+	if (step == 2)
+    		snprintf(xml, sizeof(xml), "<domain%s>\n"
+								"\t<name>%s</name>\n"
+								"\t<currentMemory>%d</currentMemory>\n"
+								"\t<memory>%d</memory>\n"
+								"\t<uuid>%s</uuid>\n"
+								"\t<os>\n"
+								"\t\t<type arch='%s'>hvm</type>\n"
+								"\t\t<boot dev='hd'/>\n"
+								"\t</os>\n"
+								"\t<features>\n"
+								"\t\t%s\n"
+								"\t</features>\n"
+								"\t<clock offset=\"%s\"/>\n"
+								"\t<on_poweroff>destroy</on_poweroff>\n"
+								"\t<on_reboot>destroy</on_reboot>\n"
+								"\t<on_crash>destroy</on_crash>\n"
+								"\t<vcpu>%d</vcpu>\n"
+								"\t<devices>\n"
+								"\t\t<emulator>%s</emulator>\n"
+								"%s"
+								"\t\t<disk type='file' device='cdrom'>\n"
+								"\t\t\t<driver name='qemu' type='raw' />\n"
+								"\t\t\t<target dev='hdc' bus='ide' />\n"
+								"\t\t\t<readonly />\n"
+								"\t\t</disk>\n"
+								"%s"
+								"\t\t<input type='mouse' bus='ps2' />\n"
+								"\t\t<graphics type='vnc' port='-1' />\n"
+								"\t\t<console type='pty' />\n"
+								"%s"
+								"\t\t<video>\n"
+								"\t\t\t<model type='cirrus' />\n"
+								"\t\t</video>\n"
+								"\t</devices>\n"
+								"</domain>",
+								type, name, memMB * 1024, maxmemMB * 1024, uuid, arch, features,
+								(domain_flags & DOMAIN_FLAG_CLOCK_LOCALTIME ? "localtime" : "utc"),
+								vCpus, connection_get_emulator(conn, arch), disks_xml, networks_xml,
+								(domain_flags & DOMAIN_FLAG_SOUND_AC97 ? "\t\t<sound model='ac97'/>\n" : "")
+								);
+								
+	return (strlen(xml) > 0) ? strdup(xml) : NULL;
 }
 
 /* Domain functions */
@@ -2643,6 +3176,294 @@ PHP_FUNCTION(libvirt_connect_get_capabilities)
 	}
 
 	RETURN_STRING(caps_out,0);
+}
+
+/*
+	Function name:	libvirt_connect_get_emulator
+	Since version:	0.4.5
+	Description:	Function is used to get the emulator for requested connection/architecture
+	Arguments:	@conn [resource]: libvirt connection resource
+			@arch [string]: optional architecture string, can be NULL to get default
+	Returns:	path to the emulator
+*/
+PHP_FUNCTION(libvirt_connect_get_emulator)
+{
+	php_libvirt_connection *conn=NULL;
+	zval *zconn;
+	char *arch = NULL;
+	int arch_len;
+	char *tmp;
+	char *emulator;
+
+	GET_CONNECTION_FROM_ARGS("r|s",&zconn,&arch,&arch_len);
+
+	if ((arch == NULL) || (arch_len == 0))
+		arch = NULL;
+		
+	tmp = connection_get_emulator(conn->conn, arch);
+	if (tmp == NULL) {
+		set_error("Cannot get emulator");
+		RETURN_FALSE;
+	}
+
+	RECREATE_STRING_WITH_E(emulator, tmp);
+
+	RETURN_STRING(emulator, 0);
+}
+
+void parse_array(zval *arr, tVMDisk *disk, tVMNetwork *network)
+{
+	HashTable *arr_hash;
+	int array_count;
+	zval **zvalue, **data;
+	HashPosition pointer;
+	char *key;
+	unsigned int key_len;
+	unsigned long index;
+
+	arr_hash = Z_ARRVAL_P(arr);
+	array_count = zend_hash_num_elements(arr_hash);
+
+	if (disk != NULL)
+		memset(disk, 0, sizeof(tVMDisk));
+	if (network != NULL)
+		memset(network, 0, sizeof(tVMNetwork));
+
+	for (zend_hash_internal_pointer_reset_ex(arr_hash, &pointer);
+			zend_hash_get_current_data_ex(arr_hash, (void**) &data, &pointer) == SUCCESS;
+			zend_hash_move_forward_ex(arr_hash, &pointer)) {
+					if ((Z_TYPE_PP(data) == IS_STRING) || (Z_TYPE_PP(data) == IS_LONG)) {
+						if (zend_hash_get_current_key_ex(arr_hash, &key, &key_len, &index, 0, &pointer) == HASH_KEY_IS_STRING || HASH_KEY_IS_LONG) {
+							if (zend_hash_get_current_data_ex(arr_hash, (void**) &data, &pointer) == SUCCESS) {
+								//DPRINTF("%s: array { key: '%s', val: '%s' }\n", __FUNCTION__, key, Z_STRVAL_PP(data));
+								if (disk != NULL) {
+									if (strcmp(key, "path") == 0)
+										disk->path = strdup( Z_STRVAL_PP(data) );
+									if (strcmp(key, "driver") == 0)
+										disk->driver = strdup( Z_STRVAL_PP(data) );
+									if (strcmp(key, "bus") == 0)
+										disk->bus = strdup( Z_STRVAL_PP(data) );
+									if (strcmp(key, "dev") == 0)
+										disk->dev = strdup( Z_STRVAL_PP(data) );
+									if (strcmp(key, "size") == 0) {
+										if (Z_TYPE_PP(data) == IS_LONG)
+											disk->size = Z_LVAL_PP(data);
+										else
+											disk->size = size_def_to_mbytes(Z_STRVAL_PP(data));
+									}
+									if (strcmp(key, "flags") == 0)
+										disk->flags = Z_LVAL_PP(data);
+								}
+								else
+								if (network != NULL) {
+									if (strcmp(key, "mac") == 0)
+										network->mac = strdup( Z_STRVAL_PP(data) );
+									if (strcmp(key, "network") == 0)
+										network->network = strdup( Z_STRVAL_PP(data) );
+									if (strcmp(key, "model") == 0)
+										network->model = strdup( Z_STRVAL_PP(data) );
+								}
+							}
+						}
+					}
+	}
+}
+
+/*
+	Function name:	libvirt_domain_new
+	Since version:	0.4.5
+	Description:	Function is used to install a new virtual machine to the machine
+	Arguments:	@conn [resource]: libvirt connection resource
+			@name [string]: name of the new domain
+			@arch [string]: optional architecture string, can be NULL to get default (or false)
+			@memMB [int]: number of megabytes of RAM to be allocated for domain
+			@maxmemMB [int]: maximum number of megabytes of RAM to be allocated for domain
+			@vcpus [int]: number of VCPUs to be allocated to domain
+			@iso_image [string]: installation ISO image for domain
+			@disks [array]: array of disk devices for domain, consist of keys as 'path' (storage location), 'driver' (image type, e.g. 'raw' or 'qcow2'), 'bus' (e.g. 'ide', 'scsi'), 'dev' (device to be presented to the guest - e.g. 'hda'), 'size' (with 'M' or 'G' suffixes, like '10G' for 10 gigabytes image etc.) and 'flags' (VIR_DOMAIN_DISK_FILE or VIR_DOMAIN_DISK_BLOCK, optionally VIR_DOMAIN_DISK_ACCESS_ALL to allow access to the disk for all users on the host system)
+			@networks [array]: array of network devices for domain, consists of keys as 'mac' (for MAC address), 'network' (for network name) and optional 'model' for model of NIC device
+			@flags [int]: bit array of flags
+	Returns:	a new domain resource
+*/
+PHP_FUNCTION(libvirt_domain_new)
+{
+	php_libvirt_connection *conn=NULL;
+	php_libvirt_domain *res_domain=NULL;
+	virDomainPtr domain2=NULL;
+	virDomainPtr domain=NULL;
+	zval *zconn;
+	char *arch = NULL;
+	int arch_len;
+	char *tmp;
+	char *name;
+	char name_len=0;
+	char *emulator;
+	char *iso_image = NULL;
+	int iso_image_len;
+	int vcpus = -1;
+	int memMB = -1;
+	zval *disks, *networks;
+	tVMDisk *vmDisks = NULL;
+	tVMNetwork *vmNetworks = NULL;
+	int maxmemMB = -1;
+	HashTable *arr_hash;
+	int numDisks, numNets, i;
+	zval **zvalue, **data;
+	HashPosition pointer;
+	char vncl[2048] = { 0 };
+	char tmpname[1024] = { 0 };
+	char *xml = NULL;
+	int retval = 0;
+	char *uuid = NULL;
+	long flags = 0;
+	int fd = -1;
+
+	GET_CONNECTION_FROM_ARGS("rsslllsaa|l",&zconn,&name,&name_len,&arch,&arch_len,&memMB,&maxmemMB,&vcpus,&iso_image,&iso_image_len,&disks,&networks,&flags);
+
+	if (iso_image == NULL) {
+		DPRINTF("%s: Iso image is not defined\n", PHPFUNC);
+		RETURN_FALSE;
+	}
+
+	if ((arch == NULL) || (arch_len == 0))
+		arch = NULL;
+		
+	//DPRINTF("%s = { name: %s, arch: %s, memMB: %d, maxmemMB: %d, vcpus: %d, iso_image: %s  }\n", PHPFUNC, name, arch, memMB, maxmemMB, vcpus, iso_image);                
+
+	/* Parse all disks from array */    
+	arr_hash = Z_ARRVAL_P(disks);
+	numDisks = zend_hash_num_elements(arr_hash);
+	vmDisks = (tVMDisk *)malloc( numDisks * sizeof(tVMDisk) );
+	memset(vmDisks, 0, numDisks * sizeof(tVMDisk));
+	i = 0;
+	for(zend_hash_internal_pointer_reset_ex(arr_hash, &pointer);
+		zend_hash_get_current_data_ex(arr_hash, (void**) &data, &pointer) == SUCCESS;
+		zend_hash_move_forward_ex(arr_hash, &pointer)) {
+		if (Z_TYPE_PP(data) == IS_ARRAY) {
+			tVMDisk disk;
+			parse_array(*data, &disk, NULL);
+
+			if (disk.path != NULL) {
+				//DPRINTF("Disk => path = '%s', driver = '%s', bus = '%s', dev = '%s', size = %ld MB, flags = %d\n",
+				//	disk.path, disk.driver, disk.bus, disk.dev, disk.size, disk.flags);
+				vmDisks[i++] = disk;
+			}
+		}
+	}
+	numDisks = i;
+
+	/* Parse all networks from array */    
+	arr_hash = Z_ARRVAL_P(networks);
+	numNets = zend_hash_num_elements(arr_hash);
+	vmNetworks = (tVMNetwork *)malloc( numNets * sizeof(tVMNetwork) );
+	memset(vmNetworks, 0, numNets * sizeof(tVMNetwork));
+	i = 0;
+	for(zend_hash_internal_pointer_reset_ex(arr_hash, &pointer);
+		zend_hash_get_current_data_ex(arr_hash, (void**) &data, &pointer) == SUCCESS;
+		zend_hash_move_forward_ex(arr_hash, &pointer)) {
+		if (Z_TYPE_PP(data) == IS_ARRAY) {
+			tVMNetwork network;
+			parse_array(*data, NULL, &network);
+
+			if (network.mac != NULL) {
+				//DPRINTF("Network => mac = '%s', network = '%s', model = '%s'\n", network.mac, network.network, network.model);
+				vmNetworks[i++] = network;
+			}
+		}
+	}
+	numNets = i;
+
+	snprintf(tmpname, sizeof(tmpname), "%s-install", name);
+	tmp = installation_get_xml(1, 
+			conn->conn, tmpname, memMB, maxmemMB, NULL /* arch */, NULL, vcpus, iso_image,
+			vmDisks, numDisks, vmNetworks, numNets,
+			flags);
+	if (tmp == NULL) {
+		DPRINTF("%s: Cannot get installation XML\n", PHPFUNC);
+		set_error("Cannot get installation XML");
+		RETURN_FALSE;
+	}
+
+	domain = virDomainCreateXML(conn->conn, tmp, 0);
+	if (domain == NULL) {
+		set_error_if_unset("Cannot create installation domain from the XML description");
+		DPRINTF("%s: Cannot create installation domain from the XML description (%s)\n", PHPFUNC, LIBVIRT_G(last_error));
+		RETURN_FALSE;
+	}
+	
+	xml = virDomainGetXMLDesc(domain, 0);
+	if (xml == NULL) {
+		DPRINTF("%s: Cannot get the XML description\n", PHPFUNC);
+		set_error_if_unset("Cannot get the XML description");
+		RETURN_FALSE;
+	}
+
+ 	tmp = get_string_from_xpath(xml, "//domain/devices/graphics[@type='vnc']/@port", NULL, &retval);
+ 	if (retval < 0) {
+		DPRINTF("%s: Cannot get port from XML description\n", PHPFUNC);
+		set_error_if_unset("Cannot get port from XML description");
+		RETURN_FALSE;
+ 	}
+
+	snprintf(vncl, sizeof(vncl), "%s:%s", virConnectGetHostname(conn->conn), tmp);
+	DPRINTF("%s: Trying to connect to '%s'\n", PHPFUNC, vncl);
+	
+	if ((fd = connect_socket(virConnectGetHostname(conn->conn), tmp, 0, 0, flags & DOMAIN_FLAG_TEST_LOCAL_VNC)) < 0) {
+		DPRINTF("%s: Cannot connect to '%s'\n", PHPFUNC, vncl);
+		snprintf(vncl, sizeof(vncl), "Connection failed, port %s is most likely forbidden on firewall (iptables) on the host (%s)"
+				" or the emulator VNC server is bound to localhost address only.",
+				tmp, virConnectGetHostname(conn->conn));
+		set_vnc_location(vncl);
+	}
+	else {
+		close(fd);
+		DPRINTF("%s: Connection to '%s' successfull (%s local connection)\n", PHPFUNC, vncl,
+				(flags & DOMAIN_FLAG_TEST_LOCAL_VNC) ? "using" : "not using");
+		set_vnc_location(vncl);
+		DPRINTF("%s: VNC server location set to '%s'\n", PHPFUNC, vncl);
+	}
+	
+	tmp = installation_get_xml(2, 
+			conn->conn, name, memMB, maxmemMB, NULL /* arch */, NULL, vcpus, iso_image,
+			vmDisks, numDisks, vmNetworks, numNets,
+			flags);
+	if (tmp == NULL) {
+		DPRINTF("%s: Cannot get installation XML, step 2\n", PHPFUNC);
+		set_error("Cannot get installation XML, step 2");
+		virDomainFree(domain);
+		RETURN_FALSE;
+	}
+	
+	domain2 = virDomainDefineXML(conn->conn, tmp);
+	if (domain2 == NULL) {
+		set_error_if_unset("Cannot define domain from the XML description");
+		DPRINTF("%s: Cannot define domain from the XML description (name = '%s', uuid = '%s', error = '%s')\n", PHPFUNC, name, uuid, LIBVIRT_G(last_error));
+		RETURN_FALSE;
+	}
+	virDomainFree(domain2);
+
+	res_domain = emalloc(sizeof(php_libvirt_domain));
+	res_domain->domain = domain;
+	res_domain->conn = conn;
+
+	DPRINTF("%s: returning %p\n", PHPFUNC, res_domain->domain);
+	resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1);
+	ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
+}
+
+/*
+	Function name:	libvirt_domain_new_get_vnc
+	Since version:	0.4.5
+	Description:	Function is used to get the VNC server location for the newly created domain (newly started installation)
+	Arguments:	None
+	Returns:	a VNC server for a newly created domain resource (if any)
+*/
+PHP_FUNCTION(libvirt_domain_new_get_vnc)
+{
+	if (LIBVIRT_G(vnc_location))
+		RETURN_STRING(LIBVIRT_G(vnc_location),0);
+		
+	RETURN_NULL();
 }
 
 /*

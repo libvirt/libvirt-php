@@ -2,7 +2,7 @@
 
 nf=$1
 tests=( "test-connect" "test-version-check" "test-version-get" "test-domain-define-undefine" "test-domain-define-create-destroy" "test-domain-create"
-	"test-domain-create-and-get-xpath" "test-domain-create-and-coredump" "test-logging" "test-conn-limit" )
+	"test-domain-create-and-get-xpath" "test-domain-create-and-coredump" "test-logging" "test-conn-limit" "test-get-emulator" "test-install" )
 
 run_test()
 {
@@ -21,6 +21,8 @@ run_test()
 
 	return $ret
 }
+
+touch /tmp/test-libvirt-php.tmp
 
 error=0
 for atest in ${tests[@]}
@@ -45,4 +47,5 @@ else
 	echo "Some (or all) of the tests have failed"
 fi
 
+rm -f /tmp/test-libvirt-php.tmp
 exit $error

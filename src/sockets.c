@@ -29,9 +29,10 @@ do {} while(0)
 				@port [string]: string version of port value to connect to
 				@keepalive [bool]: determines whether to create keepalive socket or not
 				@nodelay [bool]: determines whether to set no-delay option on socket
+				@allow_server_override [bool]: allows function to override server to localhost if server equals local hostname
 	Returns:		socket descriptor on success, -errno otherwise
 */
-int connect_socket(char *server, char *port, int keepalive, int nodelay)
+int connect_socket(char *server, char *port, int keepalive, int nodelay, int allow_server_override)
 {
 	struct addrinfo hints;
 	struct addrinfo *result, *rp;
@@ -44,10 +45,12 @@ int connect_socket(char *server, char *port, int keepalive, int nodelay)
 	hints.ai_flags = 0;
 	hints.ai_protocol = 0;
 
-	/* Get the current hostname and override to localhost if local machine */
-	gethostname(name, 1024);
-	if (strcmp(name, server) == 0)
-		server = strdup("localhost");
+	if (allow_server_override) {
+		/* Get the current hostname and override to localhost if local machine */
+		gethostname(name, 1024);
+		if (strcmp(name, server) == 0)
+			server = strdup("localhost");
+	}
 
 	DPRINTF("%s: Connecting to %s:%s\n", PHPFUNC, server, port);
 
