@@ -256,6 +256,11 @@ PHP_RINIT_FUNCTION(libvirt)
 	LIBVIRT_G(last_error) = NULL;
 	LIBVIRT_G(vnc_location) = NULL;
 	change_debug(0);
+	#if __BYTE_ORDER == __BIG_ENDIAN
+	_is_bigendian = 1;
+	#elif __BYTE_ORDER == __LITTLE_ENDIAN
+	_is_bigendian = 0;
+	#endif
 	return SUCCESS;
 }
 
@@ -2977,13 +2982,13 @@ PHP_FUNCTION(libvirt_domain_send_keys)
 	char *xml = NULL;
 	char *hostname = NULL;
 	int hostname_len;
-	char *keys = NULL;
+	unsigned char *keys = NULL;
 	int keys_len;
 	int ret = 0;
 
 	GET_DOMAIN_FROM_ARGS("rss",&zdomain, &hostname, &hostname_len, &keys, &keys_len);
 
-	DPRINTF("%s: Sending %d VNC keys to %s...\n", PHPFUNC, (int)strlen(keys), hostname);
+	DPRINTF("%s: Sending %d VNC keys to %s...\n", PHPFUNC, (int)strlen((const char *)keys), hostname);
 
 	xml=virDomainGetXMLDesc(domain->domain, 0);
 	if (xml==NULL) {
@@ -2997,7 +3002,7 @@ PHP_FUNCTION(libvirt_domain_send_keys)
 		RETURN_FALSE;
 	}
 
-	DPRINTF("%s: About to send string '%s' (%d keys) to %s:%s\n", PHPFUNC, keys, (int)strlen(keys), hostname, tmp);
+	DPRINTF("%s: About to send string '%s' (%d keys) to %s:%s\n", PHPFUNC, keys, (int)strlen((const char *)keys), hostname, tmp);
 
 	ret = vnc_send_keys(hostname, tmp, keys);
 	DPRINTF("%s: Sequence sending result is %d\n", PHPFUNC, ret);
@@ -3333,7 +3338,9 @@ PHP_FUNCTION(libvirt_domain_new)
 	if ((arch == NULL) || (arch_len == 0))
 		arch = NULL;
 		
-	//DPRINTF("%s = { name: %s, arch: %s, memMB: %d, maxmemMB: %d, vcpus: %d, iso_image: %s  }\n", PHPFUNC, name, arch, memMB, maxmemMB, vcpus, iso_image);                
+	//DPRINTF("%s: name: %s, arch: %s, memMB: %d, maxmemMB: %d, vcpus: %d, iso_image: %s\n", PHPFUNC, name, arch, memMB, maxmemMB, vcpus, iso_image);
+	if (memMB == 0)
+		memMB = maxmemMB;
 
 	/* Parse all disks from array */    
 	arr_hash = Z_ARRVAL_P(disks);
@@ -3379,6 +3386,7 @@ PHP_FUNCTION(libvirt_domain_new)
 	numNets = i;
 
 	snprintf(tmpname, sizeof(tmpname), "%s-install", name);
+	DPRINTF("%s: Name is '%s', memMB is %d, maxmemMB is %d\n", PHPFUNC, tmpname, memMB, maxmemMB);
 	tmp = installation_get_xml(1, 
 			conn->conn, tmpname, memMB, maxmemMB, NULL /* arch */, NULL, vcpus, iso_image,
 			vmDisks, numDisks, vmNetworks, numNets,
@@ -3392,7 +3400,7 @@ PHP_FUNCTION(libvirt_domain_new)
 	domain = virDomainCreateXML(conn->conn, tmp, 0);
 	if (domain == NULL) {
 		set_error_if_unset("Cannot create installation domain from the XML description");
-		DPRINTF("%s: Cannot create installation domain from the XML description (%s)\n", PHPFUNC, LIBVIRT_G(last_error));
+		DPRINTF("%s: Cannot create installation domain from the XML description (%s): %s\n", PHPFUNC, LIBVIRT_G(last_error), tmp);
 		RETURN_FALSE;
 	}
 	
@@ -7362,7 +7370,7 @@ PHP_FUNCTION(libvirt_logfile_set)
 		RETURN_FALSE;
 	}
 
-	if ((filename == NULL) || (filename_len < 1) || (strcasecmp(filename, "null") == 0))
+	if ((filename == NULL) || (strcasecmp(filename, "null") == 0))
 		err = set_logfile(NULL, 0);
 	else
 		err = set_logfile(filename, maxsize);

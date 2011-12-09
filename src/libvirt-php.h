@@ -83,6 +83,14 @@ typedef uint64_t arch_uint;
 #define UINTx PRIx64
 #endif
 
+int connect_socket(char *server, char *port, int keepalive, int nodelay, int allow_server_override);
+int socket_has_data(int sfd, long maxtime, int ignoremsg);
+void socket_read(int sfd, long length);
+
+int _is_bigendian;
+
+#define SWAP2_BY_ENDIAN(le, v1, v2) (((le && _is_bigendian) || (!le && !_is_bigendian)) ? ((v2 << 8) + v1) : ((v1 << 8) + v2))
+
 typedef struct _resource_info {
 	int type;
 	virConnectPtr conn;

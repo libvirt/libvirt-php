@@ -115,7 +115,7 @@ int socket_has_data(int sfd, long maxtime, int ignoremsg)
 {
 	fd_set fds;
 	struct timeval timeout;
-	int rc, result;
+	int rc;
 
 	timeout.tv_sec = maxtime / 1000000;
 	timeout.tv_usec = (maxtime % 1000000);

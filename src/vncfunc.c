@@ -87,21 +87,45 @@ int vnc_write_client_version(int sfd)
 int vnc_authorize(int sfd)
 {
 	unsigned char buf[4] = { 0 };
-	int i;
+	unsigned char buf2[32] = { 0 };
+	int i, ok, num = -1;
 	
-	/* Read security types supported */
-	if (read(sfd, buf, 2) < 0) {
+	/* Read number security types supported */
+	if ((num = read(sfd, buf, 1)) < 0) {
+		int err = errno;
+		DPRINTF("%s: Cannot read number of security types, error code %d (%s)\n", PHPFUNC, err, strerror(err));
+		close(sfd);
+		return -err;
+	}
+
+	/* Read all the security types */
+	if (read(sfd, buf2, num) < 0) {
 		int err = errno;
 		DPRINTF("%s: Read function failed with error code %d (%s)\n", PHPFUNC, err, strerror(err));
 		close(sfd);
 		return -err;
 	}
 
+	/* Check whether there's a security type None supported */
+	ok = 0;
+	for (i = 0; i < num; i++) {
+		if (buf2[i] == 0x01)
+			ok = 1;
+	}
+
+	/* Bail if security type None is not supported */
+	if (ok == 0) {
+		close(sfd);
+		DPRINTF("%s: Security type None is not supported\n", PHPFUNC);
+		return -ENOTSUP;
+	}
+
 	/* Just security type None is supported */
 	buf[0] = 0x01;
 	if (write(sfd, buf, 1) < 0) {
+		int err = errno;
 		close(sfd);
-		return -errno;
+		return -err;
 	}
 
 	DPRINTF("%s: Security None selected\n", PHPFUNC);
@@ -136,9 +160,8 @@ int vnc_authorize(int sfd)
 */
 tServerFBParams vnc_parse_fb_params(unsigned char *buf, int len)
 {
-	int i, nlen;
+	int nlen, little_endian = 0;
 	int w1, w2, h1, h2, h, w;
-	unsigned char *name;
 	tServerFBParams params;
 
 	w1 = buf[0];
@@ -146,36 +169,36 @@ tServerFBParams vnc_parse_fb_params(unsigned char *buf, int len)
 	h1 = buf[2];
 	h2 = buf[3];
 
-	DPRINTF("%s: Read dimension bytes: width = { 0x%02x, 0x%02x }, height = { 0x%02x, 0x%02x }, %s endian\n", PHPFUNC,
-		w1, w2, h1, h2, (buf[6] == 0) ? "little" : "big");
+	little_endian = (buf[6] == 0);
 
-	if (buf[6] == 0) {
-		h = (h1 << 8) + h2;
-		w = (w1 << 8) + w2;
-	}
-	else {
-		h = (h2 << 8) + h1;
-		w = (w2 << 8) + w1;
-	}
+	DPRINTF("%s: Read dimension bytes: width = { 0x%02x, 0x%02x }, height = { 0x%02x, 0x%02x }, %s endian\n", PHPFUNC,
+		w1, w2, h1, h2, little_endian ? "little" : "big");
+
+	h = SWAP2_BY_ENDIAN(little_endian, h1, h2);
+	w = SWAP2_BY_ENDIAN(little_endian, w1, w2);
 
 	DPRINTF("%s: Filling the parameters structure with width = %d, height = %d\n", PHPFUNC, w, h);
 
 	params.width = w;
 	params.height = h;
+
+	/* Pixel format */
 	params.bpp = buf[4];
 	params.depth = buf[5];
 	params.bigEndian = buf[6];
 	params.trueColor = buf[7];
-	params.maxRed = (buf[8] << 8) + buf[9];
-	params.maxGreen = (buf[10] << 8) + buf[11];
-	params.maxBlue = (buf[12] << 8) + buf[13];
+	params.maxRed = SWAP2_BY_ENDIAN(little_endian, buf[8], buf[9]);
+	params.maxGreen = SWAP2_BY_ENDIAN(little_endian, buf[10], buf[11]);
+	params.maxBlue = SWAP2_BY_ENDIAN(little_endian, buf[12], buf[13]);
 	params.shiftRed = buf[14];
 	params.shiftGreen = buf[15];
 	params.shiftBlue = buf[16];
 
+	/* Positions buf[17] up to buf[19] are positions for padding only */
+
 	nlen = (int)CALC_UINT32(buf[20], buf[21], buf[22], buf[23]);
 	params.desktopNameLen = nlen;
-	params.desktopName = strdup( buf + 24 );
+	params.desktopName = strdup(buf + 24);
 
 	DPRINTF("%s: Desktop name set to '%s'\n", PHPFUNC, params.desktopName);
 
@@ -202,7 +225,6 @@ tServerFBParams vnc_parse_fb_params(unsigned char *buf, int len)
 int vnc_send_key(int sfd, unsigned char key, int modifier, int release)
 {
 	unsigned char buf[8];
-	int i;
 	
 	memset(buf, 0, 8);
 	buf[0] = 0x04;
@@ -454,7 +476,7 @@ int vnc_connect(char *server, char *port, int share)
 	if ((err = vnc_authorize(sfd)) < 0)
 		return err;
 
-	/* Share desktop */
+	/* ClientInit phase - Set 'share desktop' bit */
 	buf[0] = share;
 	if (write(sfd, buf, 1) < 0) {
 		int err = errno;
@@ -465,6 +487,49 @@ int vnc_connect(char *server, char *port, int share)
 	DPRINTF("%s: Share desktop flag sent (%d)\n", PHPFUNC, buf[0]);
 	
 	return sfd;
+}
+
+/*
+	Private function name:	vnc_read_server_init
+	Since version:		0.4.5
+	Description:		Function to read the server initialization array
+	Arguments:		@sfd [int]: socket file descriptor acquired by vnc_connect() call
+	Returns:		parameters block
+*/
+tServerFBParams vnc_read_server_init(int sfd)
+{
+	unsigned char *buf = NULL;
+	unsigned char tmpbuf[25] = { 0 };
+	tServerFBParams params = { 0 };
+	int len = 0, namelen = 0;
+
+	DPRINTF("%s: Server init - reading framebuffer parameters\n", PHPFUNC);
+	if (read(sfd, tmpbuf, 24) < 0) {
+		int err = errno;
+		DPRINTF("%s: Read function failed with error code %d (%s)\n", PHPFUNC, err, strerror(err));
+		close(sfd);
+		goto cleanup;
+	}
+
+	namelen = (int)CALC_UINT32(tmpbuf[20], tmpbuf[21], tmpbuf[22], tmpbuf[23]);
+	DPRINTF("%s: Name length is %d\n", PHPFUNC, namelen);
+
+	buf = (unsigned char *)malloc(namelen + 25);
+	memset(buf, 0, namelen + 25);
+	memcpy(buf, tmpbuf, sizeof(tmpbuf));
+
+	if ((len = read(sfd, buf + 24, namelen)) < 0) {
+		int err = errno;
+		DPRINTF("%s: Read function failed with error code %d (%s)\n", PHPFUNC, err, strerror(err));
+		close(sfd);
+		goto cleanup;
+	}
+
+	params = vnc_parse_fb_params(buf, len + 24);
+cleanup:
+	free(buf);
+	buf = NULL;
+	return params;
 }
 
 /*
@@ -479,9 +544,7 @@ int vnc_connect(char *server, char *port, int share)
 */
 int vnc_get_dimensions(char *server, char *port, int *width, int *height)
 {
-	int sfd, len;
-	char buf[1024] = { 0 };
-	int i, skip_next, err;
+	int sfd;
 	tServerFBParams params;
 
 	if (!width && !height) {
@@ -489,7 +552,7 @@ int vnc_get_dimensions(char *server, char *port, int *width, int *height)
 		return -EINVAL;
 	}
 	
-	DPRINTF("%s: server = %s, port = %s\n", PHPFUNC, server, port);
+	DPRINTF("%s: server is %s, port is %s\n", PHPFUNC, server, port);
 
 	sfd = vnc_connect(server, port, 1);
 	if (sfd < 0) {
@@ -498,17 +561,8 @@ int vnc_get_dimensions(char *server, char *port, int *width, int *height)
 		close(sfd);
 		return -err;
 	}
-	
-	/* Read server framebuffer parameters */
-	DPRINTF("%s: Reading framebuffer parameters\n", PHPFUNC);
-	if ((len = read(sfd, buf, 36)) < 0) {
-		int err = errno;
-		DPRINTF("%s: Read function failed with error code %d (%s)\n", PHPFUNC, err, strerror(err));
-		close(sfd);
-		return -err;
-	}
-	
-	params = vnc_parse_fb_params(buf, len);
+
+	params = vnc_read_server_init(sfd);
 	
 	if (width) {
 		*width = params.width;
@@ -542,34 +596,24 @@ int vnc_get_dimensions(char *server, char *port, int *width, int *height)
 */
 int vnc_send_keys(char *server, char *port, unsigned char *keys)
 {
-	int sfd, len;
-	char buf[1024] = { 0 };
-	int i, skip_next, err;
+	int sfd;
+	int i, skip_next;
 	tServerFBParams params;
 
-	DPRINTF("%s: server = %s, port = %s, keys = %s\n", PHPFUNC, server, port, keys);
+	DPRINTF("%s: server is %s, port is %s, keys are '%s'\n", PHPFUNC, server, port, keys);
 
-	sfd = vnc_connect(server, port, 0);
+	sfd = vnc_connect(server, port, 1);
 	if (sfd < 0) {
 		int err = errno;
 		DPRINTF("%s: VNC Connection failed with error code %d (%s)\n", PHPFUNC, err, strerror(err));
 		close(sfd);
 		return -err;
 	}
-	
-	/* Read server framebuffer parameters */
-	DPRINTF("%s: Reading framebuffer parameters\n", PHPFUNC);
-	if ((len = read(sfd, buf, 36)) < 0) {
-		int err = errno;
-		DPRINTF("%s: Read function failed with error code %d (%s)\n", PHPFUNC, err, strerror(err));
-		close(sfd);
-		return -err;
-	}
-	
-	params = vnc_parse_fb_params(buf, len);
+
+	params = vnc_read_server_init(sfd);
 	
 	skip_next = 0;
-	DPRINTF("%s: About to process key sequence '%s' (%d keys)\n", PHPFUNC, keys, strlen(keys));
+	DPRINTF("%s: About to process key sequence '%s' (%d keys)\n", PHPFUNC, keys, (int)strlen(keys));
 	for (i = 0; i < strlen(keys); i++) {
 		DPRINTF("%s: Processing key %d: %d [0x%02x]\n", PHPFUNC, i, keys[i], keys[i]);
 		if (skip_next) {
@@ -597,7 +641,7 @@ int vnc_send_keys(char *server, char *port, unsigned char *keys)
 		usleep(50000);
 	}
 
-	DPRINTF("%s: All %d keys sent\n", PHPFUNC, strlen(keys));
+	DPRINTF("%s: All %d keys sent\n", PHPFUNC, (int)strlen(keys));
 
 	while (socket_has_data(sfd, 500000, 0) == 1)
 		socket_read(sfd, -1);
@@ -622,32 +666,22 @@ int vnc_send_keys(char *server, char *port, unsigned char *keys)
 */
 int vnc_send_pointer_event(char *server, char *port, int pos_x, int pos_y, int clicked, int release)
 {
-	int sfd, j, len, i, ok, err;
-	unsigned char buf[1024] = { 0 };
-	unsigned char end[5] = { 0 };
+	int sfd;
 	tServerFBParams params;
 
-	DPRINTF("%s: Server = %s, port = %s, x = %d, y = %d, clicked = %d, release = %d\n", PHPFUNC,
+	DPRINTF("%s: Server is %s, port is %s, x is %d, y is %d, clicked is %d, release is %d\n", PHPFUNC,
 		server, port, pos_x, pos_y, clicked, release);
 
-	sfd = vnc_connect(server, port, 0);
+	sfd = vnc_connect(server, port, 1);
 	if (sfd < 0) {
 		int err = errno;
 		DPRINTF("%s: VNC Connection failed with error code %d (%s)\n", PHPFUNC, err, strerror(err));
 		close(sfd);
 		return -err;
 	}
-	
-	/* Read server framebuffer parameters */
-	DPRINTF("%s: Reading framebuffer parameters\n", PHPFUNC);
-	if ((len = read(sfd, buf, 36)) < 0) {
-		int err = errno;
-		DPRINTF("%s: Read function failed with error code %d (%s)\n", PHPFUNC, err, strerror(err));
-		close(sfd);
-		return -err;
-	}
-	
-	params = vnc_parse_fb_params(buf, len);
+
+	params = vnc_read_server_init(sfd);
+
 	if (((pos_x > params.width) || (pos_y < 0))
 		|| ((pos_y > params.height) || (pos_y < 0))) {
 		DPRINTF("%s: Required positions out of range (width = %d, height = %d, x = %d, y = %d) for '%s'\n",
@@ -692,12 +726,12 @@ int vnc_send_pointer_event(char *server, char *port, int pos_x, int pos_y, int c
 */
 int vnc_refresh_screen(char *server, char *port, int scancode)
 {
-	int sfd, len;
-	unsigned char buf[1024] = { 0 };
-	int i, skip_next, err;
+	int sfd;
 	tServerFBParams params;
 
-	DPRINTF("%s: server = %s, port = %s, scancode = %d\n", PHPFUNC, server, port, scancode);
+	DPRINTF("%s: Server is %s, port is %s, scancode is %d\n", PHPFUNC, server, port, scancode);
+
+	DPRINTF("%s: server is %s, port is %s\n", PHPFUNC, server, port);
 
 	sfd = vnc_connect(server, port, 1);
 	if (sfd < 0) {
@@ -706,16 +740,8 @@ int vnc_refresh_screen(char *server, char *port, int scancode)
 		close(sfd);
 		return -err;
 	}
-	
-	DPRINTF("%s: Reading framebuffer parameters\n", PHPFUNC);
-	if ((len = read(sfd, buf, 36)) < 0) {
-		int err = errno;
-		DPRINTF("%s: Read function failed with error code %d (%s)\n", PHPFUNC, err, strerror(err));
-		close(sfd);
-		return -err;
-	}
-	
-	params = vnc_parse_fb_params(buf, len);
+
+	params = vnc_read_server_init(sfd);
 	
 	DPRINTF("%s: Sending key press emulation for key %d\n", PHPFUNC, scancode);
 	if (scancode > -1)

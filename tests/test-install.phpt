@@ -1,6 +1,11 @@
 <?php
+	$logfile = 'test-install.log';
+	unlink($logfile);
+	libvirt_logfile_set($logfile, 10);
+
 	$name = 'test';
 	$image = '/tmp/test-libvirt-php.tmp';
+	$disk_image = '/tmp/test-libvirt-php.img';
 	$local_test = true;
 	$show_vnc_location = false;
 	$memory = 64;
@@ -12,7 +17,7 @@
 		bail('Connection to default hypervisor failed');
 
 	$disks = array(
-			array( 'path' => '/tmp/test-libvirt-php.img', 'driver' => 'raw', 'bus' => 'ide', 'dev' => 'hda', 'size' => '1M',
+			array( 'path' => $disk_image, 'driver' => 'raw', 'bus' => 'ide', 'dev' => 'hda', 'size' => '1M',
 				'flags' => VIR_DOMAIN_DISK_FILE | VIR_DOMAIN_DISK_ACCESS_ALL )
 		);
 
@@ -28,12 +33,15 @@
 		$flags |= VIR_DOMAIN_FLAG_TEST_LOCAL_VNC;
 
 	$res = libvirt_domain_new($conn, $name, false, $memory, $memory, 1, $image, $disks, $networks, $flags);
+	if ($res == false)
+		bail('Installation test failed with error: '.libvirt_get_last_error().'. More info saved into '.$logfile);
+
 	$ok = is_resource($res);
 
 	$vncloc = libvirt_domain_new_get_vnc();
 
 	if (!libvirt_domain_destroy($res))
-		bail('Domain destroy failed with error: '.libvirt_get_last_error());
+		bail('Domain destroy failed with error: '.libvirt_get_last_error().'. More info saved into '.$logfile);
 
 	unset($res);
 
@@ -44,7 +52,8 @@
 	unset($res);
 	unset($conn);
 
-	@unlink('/tmp/test-libvirt-php.img');
+	@unlink($disk_image);
+	unlink($logfile);
 
 	if ($ok) {
 		if ($show_vnc_location)
