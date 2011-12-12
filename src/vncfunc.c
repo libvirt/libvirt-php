@@ -227,7 +227,7 @@ int vnc_send_key(int sfd, unsigned char key, int modifier, int release)
 	unsigned char buf[8];
 	
 	memset(buf, 0, 8);
-	buf[0] = 0x04;
+	buf[0] = 0x04;	// KeyEvent
 	buf[1] = (release ? 0x00 : 0x01);
 	buf[2] = 0x00;
 	buf[3] = 0x00;
@@ -271,13 +271,12 @@ int vnc_send_client_pointer(int sfd, int clicked, int pos_x, int pos_y)
 		return -EINVAL;
 	}
 
-	memset(buf, 0, 10);
+	memset(buf, 0, 6);
 	buf[0] = 0x05;
 	buf[1] = clicked;
-	buf[2] = (unsigned char)(pos_x / 256);
-	buf[3] = (unsigned char)(pos_x % 256);
-	buf[4] = (unsigned char)(pos_y / 256);
-	buf[5] = (unsigned char)(pos_y % 256);
+
+	PUT2_BYTE_ENDIAN(1, pos_x, buf[2], buf[3]);
+	PUT2_BYTE_ENDIAN(1, pos_y, buf[4], buf[5]);
 
 	if (write(sfd, buf, 6) < 0) {
 		int err = errno;
@@ -287,7 +286,7 @@ int vnc_send_client_pointer(int sfd, int clicked, int pos_x, int pos_y)
 	}
 
 
-	DPRINTF("%s: Wrote 6 bytes of client pointer event, clicked = %d, x = { 0x%02x, 0x%02x}, y = { 0x%02x, 0x%02x }\n",
+	DPRINTF("%s: Wrote 6 bytes of client pointer event, clicked = %d, x = { 0x%02x, 0x%02x }, y = { 0x%02x, 0x%02x }\n",
 		PHPFUNC, buf[1], buf[2], buf[3], buf[4], buf[5]);
 	return 0;
 }
@@ -312,26 +311,31 @@ int vnc_set_pixel_format(int sfd, tServerFBParams params)
 	DPRINTF("%s: Setting up pixel format\n", PHPFUNC);
 
 	memset(buf, 0, 20);
+	/* Message type 0 is SetPixelFormat message */
 	buf[0] = 0x00;
+	/* Next 3 bytes are just padding bytes */
 	buf[1] = 0;
 	buf[2] = 0;
 	buf[3] = 0;
+	/* This is for the future use only, those values are default if SetPixelFormat not sent at all */
 	buf[4] = params.bpp;
 	buf[5] = params.depth;
-	buf[6] = 0;
-	buf[7] = params.trueColor;
+	buf[6] = 0;			// big endian bit, we try to disable big endian
+	buf[7] = params.trueColor;	// inherit true color bit from the ServerInit message
 	buf[8] = 0;
-	buf[9] = 255;
+	buf[9] = 0xff;
 	buf[10] = 0;
-	buf[11] = 255;
+	buf[11] = 0xff;
 	buf[12] = 0;
-	buf[13] = 255;
+	buf[13] = 0xff;
 	buf[14] = params.shiftRed;
 	buf[15] = params.shiftGreen;
 	buf[16] = params.shiftBlue;
+	/* Next 3 bytes are padding bytes */
 	buf[17] = 0;
 	buf[18] = 0;
 	buf[19] = 0;
+
 	if (write(sfd, buf, 20) < 0) {
 		int err = errno;
 		DPRINTF("%s: Write function failed with error code %d (%s)\n", PHPFUNC, err, strerror(err));
@@ -367,10 +371,11 @@ int vnc_set_encoding(int sfd)
 	buf[1] = 0;
 	buf[2] = 0;
 	buf[3] = 1;
+	/* Raw encoding */
 	buf[4] = 0x00;
 	buf[5] = 0x00;
 	buf[6] = 0x00;
-	buf[7] = 0x07;
+	buf[7] = 0x00;
 
 	if (write(sfd, buf, 8) < 0) {
 		int err = errno;
@@ -408,14 +413,11 @@ int vnc_send_framebuffer_update(int sfd, int incrementalUpdate, int x, int y, in
 	memset(buf, 0, 10);
 	buf[0] = 0x03;
 	buf[1] = incrementalUpdate;
-	buf[2] = x / 256;
-	buf[3] = x % 256;
-	buf[4] = y / 256;
-	buf[5] = y % 256;
-	buf[6] = w / 256;
-	buf[7] = w % 256;
-	buf[8] = h / 256;
-	buf[9] = h % 256;
+
+	PUT2_BYTE_ENDIAN(1, x, buf[2], buf[3]);
+	PUT2_BYTE_ENDIAN(1, y, buf[4], buf[5]);
+	PUT2_BYTE_ENDIAN(1, w, buf[6], buf[7]);
+	PUT2_BYTE_ENDIAN(1, h, buf[8], buf[9]);
 
 	if (write(sfd, buf, 10) < 0) {
 		int err = errno;
@@ -582,6 +584,152 @@ int vnc_get_dimensions(char *server, char *port, int *width, int *height)
 	shutdown(sfd, SHUT_RDWR);
 	close(sfd);
 	DPRINTF("%s: Closed descriptor #%d\n", PHPFUNC, sfd);
+	return 0;
+}
+
+/*
+	Private function name:	vnc_raw_to_bitmap
+	Since version:		0.4.5
+	Description:		Function to get the bitmap from raw encoding
+	Arguments:		@infile [string]: input file
+				@outfile [string]: output file
+				@width [int]: width of the output image (for bitmap headers)
+				@height [int]: height of the output image (for bitmap headers)
+	Returns:		0 on success, -errno otherwise
+*/
+int vnc_raw_to_bmp(char *infile, char *outfile, int width, int height)
+{
+	int i, ix, fd, fd2;
+	tBMPFile fBMP = { 0 };
+	long size = -1;
+	long len, hsize = 0;
+	uint32_t *pixels = NULL;
+	unsigned char buf[8192] = { 0 };
+	unsigned char tbuf[4] = { 0 };
+	long total = 0;
+	int start, end;
+
+	fd = open(infile, O_RDONLY);
+	if (fd == -1)
+		return -EACCES;
+
+	size = lseek(fd, 0, SEEK_END);
+	lseek(fd, 0, SEEK_SET);
+
+	hsize = sizeof(tBMPFile);
+	fBMP.filesz = size + hsize + 2;
+	fBMP.bmp_offset = hsize + 2;
+	fBMP.header_sz = 40;
+	fBMP.height = width;
+	fBMP.width = height;
+	fBMP.nplanes = 1;
+	fBMP.bitspp = 32;
+	fBMP.compress_type = 0;
+	fBMP.bmp_bytesz = 32;
+	fBMP.hres = 2835;
+	fBMP.vres = 2835;
+	fBMP.ncolors = 0;
+	fBMP.nimpcolors = 0;
+
+	fd2 = open(outfile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	if (fd2 == -1)
+		return -EPERM;
+
+	write(fd2, "BM", 2);
+	if (write(fd2, &fBMP, hsize) < 0)
+		perror("Error on write");
+
+	ix = 0;
+	pixels = malloc(width * height * sizeof(uint32_t));
+	if (pixels == NULL)
+		return -ENOMEM;
+
+	total = 0;
+	while ((len = read(fd, buf, sizeof(buf))) > 0) {
+		for (i = 0; i < len; i += 4) {
+			tbuf[0] = buf[i];
+			tbuf[1] = buf[i + 1];
+			tbuf[2] = buf[i + 2];
+			tbuf[3] = buf[i + 3];
+			pixels[ix++] = GETUINT32(tbuf);
+
+			total++;
+		}
+
+		memset(buf, 0, sizeof(buf));
+	}
+
+	/* Flip the image to get the real image */
+	for (i = height - 1; i >= 0; i--) {
+		start = (i * width) + 1;
+		end = ((i + 1) * width) + 1;
+
+		for (ix = start; ix < end; ix++) {
+			UINT32STR(tbuf, pixels[ix]);
+			write(fd2, tbuf, 4);
+		}
+	}
+
+	free(pixels);
+	close(fd2);
+	close(fd);
+	return 0;
+}
+
+/*
+	Private function name:	vnc_get_bitmap
+	Since version:		0.4.5
+	Description:		Function to get the bitmap from the VNC window
+	Arguments:		@server [string]: server string to specify VNC server
+				@port [string]: string version of port value to connect to
+				@fn [string]: string version of filename
+	Returns:		0 on success, -errno otherwise
+*/
+int vnc_get_bitmap(char *server, char *port, char *fn)
+{
+	int sfd;
+	long pattern_size;
+	tServerFBParams params;
+	char file[] = "/tmp/libvirt-php-tmp-XXXXXX";
+
+	if (mkstemp(file) == 0)
+		return -ENOENT;
+
+	if (fn == NULL)
+		return -ENOENT;
+
+	sfd = vnc_connect(server, port, 1);
+	if (sfd < 0) {
+		int err = errno;
+		DPRINTF("%s: VNC Connection failed with error code %d (%s)\n", PHPFUNC, err, strerror(err));
+		close(sfd);
+		return -err;
+	}
+
+	params = vnc_read_server_init(sfd);
+
+	socket_read(sfd, -1);
+	vnc_set_pixel_format(sfd, params);
+	vnc_set_encoding(sfd);
+	socket_read(sfd, -1);
+	usleep(50000);
+
+	vnc_send_framebuffer_update_request(sfd, 0, params);
+	usleep(50000);
+
+	pattern_size = params.width * params.height * (params.bpp / 8);
+
+	socket_read_and_save(sfd, file, pattern_size);
+
+	usleep(50000);
+
+	shutdown(sfd, SHUT_RDWR);
+	close(sfd);
+
+	vnc_raw_to_bmp(file, fn, params.width, params.height);
+	unlink(file);
+	DPRINTF("%s: Closed descriptor #%d\n", PHPFUNC, sfd);
+
 	return 0;
 }
 

@@ -117,8 +117,10 @@ int socket_has_data(int sfd, long maxtime, int ignoremsg)
 	struct timeval timeout;
 	int rc;
 
-	timeout.tv_sec = maxtime / 1000000;
-	timeout.tv_usec = (maxtime % 1000000);
+	if (maxtime > 0) {
+		timeout.tv_sec = maxtime / 1000000;
+		timeout.tv_usec = (maxtime % 1000000);
+	}
 
 	if (!ignoremsg)
 		DPRINTF("%s: Checking data on socket %d, timeout = { %ld, %ld }\n", PHPFUNC, sfd,
@@ -126,7 +128,11 @@ int socket_has_data(int sfd, long maxtime, int ignoremsg)
 
 	FD_ZERO(&fds);
 	FD_SET(sfd, &fds);
-	rc = select( sizeof(fds), &fds, NULL, NULL, &timeout);
+	if (maxtime > 0)
+		rc = select( sizeof(fds), &fds, NULL, NULL, &timeout);
+	else
+		rc = select( sizeof(fds), &fds, NULL, NULL, NULL);
+
 	if (rc==-1) {
 		DPRINTF("%s: Select with error %d (%s)\n", PHPFUNC, errno, strerror(-errno));
 		return -errno;
@@ -177,5 +183,65 @@ void socket_read(int sfd, long length)
 		read(sfd, bigbuf, length);
 
 	DPRINTF("%s: All bytes read\n", PHPFUNC);
+}
+
+/*
+	Private function name:	socket_read_and_save
+	Since version:		0.4.5
+	Description:		Function to read the data from socket and save them into a file identified by fn
+	Arguments:		@sfd [int]: socket descriptor for existing VNC client socket
+				@fn [string]: filename to save data to
+				@length [bool]: length of the data to be read or -1 for all the data
+	Returns:		0 on success, -errno otherwise
+*/
+int socket_read_and_save(int sfd, char *fn, long length)
+{
+	int fd, i;
+        long len = 0;
+	long orig_len = length;
+        unsigned char bigbuf[1048576];
+
+	if (fn == NULL)
+		return -ENOENT;
+
+	orig_len = length;
+	fd = open(fn, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	if (fd == -1)
+		return -EPERM;
+
+        if (socket_has_data(sfd, 50000, 0) != 1) {
+                DPRINTF("%s: No data appears to be available\n", PHPFUNC);
+                return -ENOENT;
+        }
+
+        DPRINTF("%s: Reading %ld bytes\n", PHPFUNC, length);
+        while (length > 0) {
+                len = read(sfd, bigbuf, sizeof(bigbuf));
+
+		for (i = 0; i < len; i += 4)
+			SWAP2_BYTES_ENDIAN(1, bigbuf[i+1], bigbuf[i+2]);
+
+		write(fd, bigbuf, len);
+
+                length -= len;
+                if (length < 0)
+                        length = 0;
+        }
+
+        if (length) {
+                len = read(sfd, bigbuf, length);
+
+		for (i = 0; i < len; i += 4)
+			SWAP2_BYTES_ENDIAN(1, bigbuf[i+1], bigbuf[i+2]);
+
+		write(fd, bigbuf, len);
+	}
+
+	ftruncate(fd, orig_len);
+
+	close(fd);
+
+        DPRINTF("%s: All bytes read\n", PHPFUNC);
+	return 0;
 }
 

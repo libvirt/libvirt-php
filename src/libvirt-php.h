@@ -83,13 +83,24 @@ typedef uint64_t arch_uint;
 #define UINTx PRIx64
 #endif
 
-int connect_socket(char *server, char *port, int keepalive, int nodelay, int allow_server_override);
-int socket_has_data(int sfd, long maxtime, int ignoremsg);
-void socket_read(int sfd, long length);
+int	connect_socket(char *server, char *port, int keepalive, int nodelay, int allow_server_override);
+int	socket_has_data(int sfd, long maxtime, int ignoremsg);
+void	socket_read(int sfd, long length);
+int	socket_read_and_save(int sfd, char *fn, long length);
+int	vnc_get_bitmap(char *server, char *port, char *fn);
 
 int _is_bigendian;
-
 #define SWAP2_BY_ENDIAN(le, v1, v2) (((le && _is_bigendian) || (!le && !_is_bigendian)) ? ((v2 << 8) + v1) : ((v1 << 8) + v2))
+#define PUT2_BYTE_ENDIAN(le, val, v1, v2) { if ((le && _is_bigendian) || (!le && !_is_bigendian)) { v2 = val >> 8; v1 = val % 256; } else { v1 = val >> 8; v2 = val % 256; } }
+#define SWAP2_BYTES_ENDIAN(le, a, b) { if ((le && _is_bigendian) || (!le && !_is_bigendian)) { uint8_t _tmpval; _tmpval = a; a = b; b = _tmpval; } }
+
+#define UINT32STR(var, val)     \
+        var[0] = (val >> 24) & 0xff;    \
+        var[1] = (val >> 16) & 0xff;    \
+        var[2] = (val >>  8) & 0xff;    \
+        var[3] = (val      ) & 0xff;
+
+#define GETUINT32(var)  (uint32_t)(((uint32_t)var[0] << 24) + ((uint32_t)var[1] << 16) + ((uint32_t)var[2] << 8) + ((uint32_t)var[3]))
 
 typedef struct _resource_info {
 	int type;
@@ -157,6 +168,25 @@ typedef struct tVMNetwork {
 	char *network;
 	char *model;
 } tVMNetwork;
+
+typedef struct tBMPFile {
+	uint32_t filesz;
+	uint16_t creator1;
+	uint16_t creator2;
+	uint32_t bmp_offset;
+
+	uint32_t header_sz;
+	int32_t height;
+	int32_t width;
+	uint16_t nplanes;
+	uint16_t bitspp;
+	uint32_t compress_type;
+	uint32_t bmp_bytesz;
+	int32_t hres;
+	int32_t vres;
+	uint32_t ncolors;
+	uint32_t nimpcolors;
+} tBMPFile;
 
 /* Libvirt-php types */
 typedef struct _php_libvirt_connection {

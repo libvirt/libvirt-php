@@ -456,6 +456,27 @@ char *get_feature_binary(char *name)
 	return NULL;
 }
 
+/*
+	Private function name:	has_builtin
+	Since version:		0.4.5
+	Description:		Function to get the information whether feature could be used as a built-in feature or not
+	Arguments:		@name [string]: name of the feature to check against
+	Returns:		1 if feature has a builtin fallback to be used or 0 otherwise
+*/
+int has_builtin(char *name)
+{
+	int i, max;
+
+	max = (ARRAY_CARDINALITY(features) < ARRAY_CARDINALITY(features_binaries)) ?
+		ARRAY_CARDINALITY(features) : ARRAY_CARDINALITY(features_binaries);
+
+	for (i = 0; i < max; i++)
+		if ((features[i] != NULL) && (strcmp(features[i], name) == 0))
+			return 1;
+
+	return 0;
+}
+
 /* Information function for phpinfo() */
 PHP_MINFO_FUNCTION(libvirt)
 {
@@ -2826,14 +2847,13 @@ PHP_FUNCTION(libvirt_domain_get_screenshot)
 	int scancode = 10;
 	char *path;
 	char name[1024] = { 0 };
+	int use_builtin = 0;
 
 	path = get_feature_binary("screenshot");
 	DPRINTF("%s: get_feature_binary('screenshot') returned %s\n", PHPFUNC, path);
 
-	if (access(path, X_OK) != 0) {
-		set_error("Cannot find gvnccapture binary");
-		RETURN_FALSE;
-	}
+	if ((path != NULL) && (access(path, X_OK) != 0))
+		use_builtin = 1;
 	
 	GET_DOMAIN_FROM_ARGS("rs|l",&zdomain, &hostname, &hostname_len, &scancode);
 
@@ -2851,8 +2871,6 @@ PHP_FUNCTION(libvirt_domain_get_screenshot)
 	
 	vnc_refresh_screen(hostname, tmp, scancode);
 
-	port = atoi(tmp)-5900;
-	
 	if (mkstemp(file) == 0)
 		RETURN_FALSE;
 
@@ -2861,30 +2879,44 @@ PHP_FUNCTION(libvirt_domain_get_screenshot)
 	if (strcmp(name, hostname) == 0)
 		hostname = strdup("localhost");
 
-	DPRINTF("%s: Getting screenshot of %s:%d to temporary file %s\n", PHPFUNC, hostname, port, file);
+	if (use_builtin == 1) {
+		DPRINTF("%s: Binary not found, using builtin approach to %s:%s, tmp file = %s\n", PHPFUNC, hostname, tmp, file);
 
-	childpid = fork();
-	if (childpid == -1)
-		RETURN_FALSE;
-	
-	if (childpid == 0) {
-		char tmpp[64] = { 0 };
-		
-		snprintf(tmpp, sizeof(tmpp), "%s:%d", hostname, port);
-		retval = execlp(path, basename(path), tmpp, file, NULL);
-		_exit( retval );
+		if (vnc_get_bitmap(hostname, tmp, file) != 0) {
+			set_error("Cannot use builtin approach to get VNC window contents");
+			RETURN_FALSE;
+		}
+
+		// TODO: FIX!
 	}
 	else {
-		do {
-			w = waitpid(childpid, &retval, 0);
-			if (w == -1)
-				RETURN_FALSE;
-		} while (!WIFEXITED(retval) && !WIFSIGNALED(retval));		
-	}
+		port = atoi(tmp)-5900;
+
+		DPRINTF("%s: Getting screenshot of %s:%d to temporary file %s\n", PHPFUNC, hostname, port, file);
+
+		childpid = fork();
+		if (childpid == -1)
+			RETURN_FALSE;
+
+		if (childpid == 0) {
+			char tmpp[64] = { 0 };
 	
-	if (WEXITSTATUS(retval) != 0) {
-		set_error("Cannot spawn utility to get screenshot");
-		RETURN_FALSE;
+			snprintf(tmpp, sizeof(tmpp), "%s:%d", hostname, port);
+			retval = execlp(path, basename(path), tmpp, file, NULL);
+			_exit( retval );
+		}
+		else {
+			do {
+				w = waitpid(childpid, &retval, 0);
+				if (w == -1)
+					RETURN_FALSE;
+			} while (!WIFEXITED(retval) && !WIFSIGNALED(retval));		
+		}
+
+		if (WEXITSTATUS(retval) != 0) {
+			set_error("Cannot spawn utility to get screenshot");
+			RETURN_FALSE;
+		}
 	}
 	
 	fd = open(file, O_RDONLY);
@@ -7261,7 +7293,7 @@ PHP_FUNCTION(libvirt_has_feature)
 	}
 
 	binary = get_feature_binary(name);
-	ret = (binary != NULL);
+	ret = ((binary != NULL) || (has_builtin(name)));
 	free(binary);
 
 	if (ret)
