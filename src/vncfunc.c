@@ -815,12 +815,13 @@ int vnc_send_keys(char *server, char *port, unsigned char *keys)
 int vnc_send_pointer_event(char *server, char *port, int pos_x, int pos_y, int clicked, int release)
 {
 	int sfd;
+	long pattern_size;
 	tServerFBParams params;
 
 	DPRINTF("%s: Server is %s, port is %s, x is %d, y is %d, clicked is %d, release is %d\n", PHPFUNC,
 		server, port, pos_x, pos_y, clicked, release);
 
-	sfd = vnc_connect(server, port, 1);
+	sfd = vnc_connect(server, port, 0);
 	if (sfd < 0) {
 		int err = errno;
 		DPRINTF("%s: VNC Connection failed with error code %d (%s)\n", PHPFUNC, err, strerror(err));
@@ -837,23 +838,29 @@ int vnc_send_pointer_event(char *server, char *port, int pos_x, int pos_y, int c
 		return -EINVAL;
 	}
 
+	socket_read(sfd, -1);
 	vnc_set_pixel_format(sfd, params);
 	vnc_set_encoding(sfd);
 	socket_read(sfd, -1);
+	usleep(50000);
 
-	vnc_send_key(sfd, 0xc9, 1, 1);
-
-	vnc_send_client_pointer(sfd, clicked, pos_x, pos_y);
-	vnc_send_client_pointer(sfd, 0, pos_x, pos_y);
-	vnc_send_framebuffer_update(sfd, 1, pos_x, pos_y, 1, 1);
+	/* Following paragraph moves mouse pointer to [0, 0] (left upper corner) */
+	vnc_send_client_pointer(sfd, 0, 0x7FFF, 0x7FFF);
+	socket_read(sfd, -1);
+	vnc_send_client_pointer(sfd, 0, 0, 0);
 	socket_read(sfd, -1);
 
-	vnc_send_client_pointer(sfd, clicked, pos_x, pos_y);
-	vnc_send_client_pointer(sfd, 0, pos_x, pos_y);
-	vnc_send_framebuffer_update_request(sfd, 1, params);
+	vnc_send_client_pointer(sfd, clicked, (pos_x / 2), (params.height - pos_y) / 2);
+	socket_read(sfd, -1);
+	vnc_send_client_pointer(sfd, 0, (pos_x / 2), ((params.height - pos_y) / 2));
+	socket_read(sfd, -1);
 
-	while (socket_has_data(sfd, 500000, 0) == 1)
+	if (release) {
+		vnc_send_client_pointer(sfd, clicked, (pos_x / 2), (params.height - pos_y) / 2);
 		socket_read(sfd, -1);
+		vnc_send_client_pointer(sfd, 0, (pos_x / 2), (params.height - pos_y) / 2);
+		socket_read(sfd, -1);
+	}
 
 	shutdown(sfd, SHUT_RDWR);
 	close(sfd);
