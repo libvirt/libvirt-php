@@ -14,7 +14,7 @@ png = \
   graphics/libvirt-php-header-logo.png
 
 dot_html_in = $(notdir $(wildcard $(srcdir)/*.html.in))
-dot_html = $(dot_html_in:%.html.in=%.html)
+dot_html = $(dot_html_in:%.html.in=html/%.html)
 
 EXTRA_DIST=					\
   site.xsl news.xsl page.xsl \
@@ -60,7 +60,7 @@ rebuild: all
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(HTML_DIR)
 	for f in $(css) $(dot_html) $(png); do \
-	  $(INSTALL) -m 0644 $(srcdir)/$$f $(DESTDIR)$(HTML_DIR); \
+	  $(INSTALL) -m 0644 html/$$f $(DESTDIR)$(HTML_DIR); \
 	done
 
 uninstall-local:
