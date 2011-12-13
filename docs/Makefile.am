@@ -60,7 +60,7 @@ rebuild: all
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(HTML_DIR)
 	for f in $(css) $(dot_html) $(png); do \
-	  $(INSTALL) -m 0644 html/$$f $(DESTDIR)$(HTML_DIR); \
+	  $(INSTALL) -m 0644 $(srcdir)/$$f $(DESTDIR)$(HTML_DIR); \
 	done
 
 uninstall-local:
