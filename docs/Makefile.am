@@ -14,7 +14,7 @@ png = \
   graphics/libvirt-php-header-logo.png
 
 dot_html_in = $(notdir $(wildcard $(srcdir)/*.html.in))
-dot_html = $(dot_html_in:%.html.in=html/%.html)
+dot_html = $(dot_html_in:%.html.in=%.html)
 
 EXTRA_DIST=					\
   site.xsl news.xsl page.xsl \
