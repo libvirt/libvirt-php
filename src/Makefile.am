@@ -5,7 +5,7 @@ DEFINES=-DHAVE_CONFIG_H
 
 EXTRA_DIST = libvirt-php.c sockets.c vncfunc.c libvirt-php.h
 
-all-am: build clean-temp
+all-am: build
 
 build:
 	$(CC) $(CFLAGS) -Wall -fpic -DCOMPILE_DL_LIBVIRT=1 $(PHPINC) -c -o libvirt-php.o libvirt-php.c $(LIBXML_CFLAGS) $(DEFINES)
@@ -31,5 +31,5 @@ uninstall-local:
 	$(RM) -f $(DESTDIR)$(PHPCDIR)/$(PACKAGE).ini
 	$(RM) -f $(DESTDIR)$(PHPEDIR)/$(PACKAGE).so
 
-clean-temp:
+clean-local:
 	$(RM) -f *.o
