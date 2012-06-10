@@ -238,7 +238,7 @@ int vnc_refresh_screen(char *server, char *port, int scancode);
 int vnc_send_keys(char *server, char *port, unsigned char *keys);
 int vnc_send_pointer_event(char *server, char *port, int pos_x, int pos_y, int clicked, int release);
 
-int set_logfile(char *filename, long maxsize);
+int set_logfile(char *filename, long maxsize TSRMLS_DC);
 char *get_datetime(void);
 #ifdef DEBUG_SUPPORT
 int gdebug;
