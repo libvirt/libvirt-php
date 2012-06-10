@@ -156,6 +156,7 @@ static zend_function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_storagepool_set_autostart, NULL)
 	PHP_FE(libvirt_storagepool_get_autostart, NULL)
 	PHP_FE(libvirt_storagepool_build, NULL)
+	PHP_FE(libvirt_storagepool_delete, NULL)
 	/* Network functions */
 	PHP_FE(libvirt_network_define_xml, NULL)
 	PHP_FE(libvirt_network_undefine, NULL)
@@ -6106,6 +6107,30 @@ PHP_FUNCTION(libvirt_storagepool_build)
 	if (retval == 0)
 		RETURN_TRUE;
 	
+	RETURN_FALSE;
+}
+
+/*
+	Function name:	libvirt_storagepool_delete
+	Since version:	0.4.6
+	Description:	Function is used to Delete the underlying storage pool, e.g. remove the destination directory for NFS
+	Arguments:	@res [resource]: libvirt storagepool resource
+	Returns:	TRUE if success, FALSE on error
+*/
+PHP_FUNCTION(libvirt_storagepool_delete)
+{
+	php_libvirt_storagepool *pool = NULL;
+	zval *zpool;
+	int flags = 0;
+	int retval;
+
+	GET_STORAGEPOOL_FROM_ARGS ("r", &zpool);
+
+	retval = virStoragePoolDelete(pool->pool, flags);
+	DPRINTF("%s: virStoragePoolDelete(%p, %d) returned %d\n", PHPFUNC, pool->pool, flags, retval);
+	if (retval == 0)
+		RETURN_TRUE;
+
 	RETURN_FALSE;
 }
 
