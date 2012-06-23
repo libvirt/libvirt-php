@@ -307,6 +307,7 @@ PHP_FUNCTION(libvirt_domain_resume);
 PHP_FUNCTION(libvirt_domain_core_dump);
 PHP_FUNCTION(libvirt_domain_shutdown);
 PHP_FUNCTION(libvirt_domain_suspend);
+PHP_FUNCTION(libvirt_domain_managedsave);
 PHP_FUNCTION(libvirt_domain_undefine);
 PHP_FUNCTION(libvirt_domain_reboot);
 PHP_FUNCTION(libvirt_domain_define_xml);

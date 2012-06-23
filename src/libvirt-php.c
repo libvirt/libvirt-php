@@ -99,6 +99,7 @@ static zend_function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_domain_core_dump, NULL)
 	PHP_FE(libvirt_domain_shutdown, NULL)
 	PHP_FE(libvirt_domain_suspend, NULL)
+	PHP_FE(libvirt_domain_managedsave, NULL)
 	PHP_FE(libvirt_domain_undefine, NULL)
 	PHP_FE(libvirt_domain_reboot, NULL)
 	PHP_FE(libvirt_domain_define_xml, NULL)
@@ -4468,6 +4469,27 @@ PHP_FUNCTION(libvirt_domain_shutdown)
 
 	retval=virDomainShutdown(domain->domain);
 	DPRINTF("%s: virDomainShutdown(%p) returned %d\n", PHPFUNC, domain->domain, retval);
+	if (retval != 0) RETURN_FALSE;
+	RETURN_TRUE;
+}
+
+/*
+	Function name:  libvirt_domain_managedsave
+	Since version:  0.4.1(-1)
+	Description:    Function is used to managed save the domain (domain was unloaded from memory and it state saved to disk) identified by it's resource
+	Arguments:      @res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
+	Returns:        TRUE for success, FALSE on error
+*/
+
+PHP_FUNCTION(libvirt_domain_managedsave)
+{
+	php_libvirt_domain *domain=NULL;
+	zval *zdomain;
+	int retval;
+
+	GET_DOMAIN_FROM_ARGS("r",&zdomain);
+	retval=virDomainManagedSave(domain->domain, 0);
+	DPRINTF("%s: virDomainManagedSave(%p) returned %d\n", PHPFUNC, domain->domain, retval);
 	if (retval != 0) RETURN_FALSE;
 	RETURN_TRUE;
 }
