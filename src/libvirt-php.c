@@ -124,6 +124,7 @@ static zend_function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_domain_get_screen_dimensions, NULL)
 	PHP_FE(libvirt_domain_send_keys, NULL)
 	PHP_FE(libvirt_domain_send_pointer_event, NULL)
+    PHP_FE(libvirt_domain_update_device, NULL)
 	/* Domain snapshot functions */
 	PHP_FE(libvirt_domain_has_current_snapshot, NULL)
 	PHP_FE(libvirt_domain_snapshot_create, NULL)
