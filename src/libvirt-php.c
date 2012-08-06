@@ -171,6 +171,7 @@ static zend_function_entry libvirt_functions[] = {
 	/* Node functions */
 	PHP_FE(libvirt_node_get_info, NULL)
 	PHP_FE(libvirt_node_get_cpu_stats, NULL)
+	PHP_FE(libvirt_node_get_mem_stats, NULL)
 	/* Nodedev functions */
 	PHP_FE(libvirt_nodedev_get, NULL)
 	PHP_FE(libvirt_nodedev_capabilities, NULL)
@@ -1582,6 +1583,74 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats)
 }
 #else
 PHP_FUNCTION(libvirt_node_get_cpu_stats)
+{
+	set_error("Function is not supported by libvirt, support has been added in libvirt 0.9.3");
+	RETURN_FALSE;
+}
+#endif
+
+/*
+	Function name:	libvirt_node_get_mem_stats
+	Since version:	0.4.6
+	Description:	Function is used to get the memory stats per node
+	Arguments:	@conn [resource]: resource for connection
+	Returns:	array of node memory statistics including time (in seconds since UNIX epoch) or FALSE for error
+*/
+#if LIBVIR_VERSION_NUMBER>=9003
+PHP_FUNCTION(libvirt_node_get_mem_stats)
+{
+	php_libvirt_connection *conn=NULL;
+	zval *zconn;
+	int memNum = VIR_NODE_MEMORY_STATS_ALL_CELLS;
+	virNodeMemoryStatsPtr params;
+	int nparams = 0;
+	int i, j;
+
+	GET_CONNECTION_FROM_ARGS("r", &zconn);
+
+	if (virNodeGetMemoryStats(conn->conn, memNum, NULL, &nparams, 0) != 0) {
+		set_error("Cannot get number of memory stats");
+		RETURN_FALSE;
+	}
+
+	if (nparams == 0) {
+		RETURN_TRUE;
+	}
+
+	DPRINTF("%s: Number of parameters got from virNodeGetMemoryStats is %d\n", __FUNCTION__, nparams);
+
+	params = calloc(nparams, nparams * sizeof(*params));
+
+	array_init(return_value);
+	for (i = 0; i < 2; i++) {
+		zval *arr;
+		if (i > 0)
+			sleep(1);
+
+		if (virNodeGetMemoryStats(conn->conn, memNum, params, &nparams, 0) != 0) {
+			set_error("Unable to get node memory stats");
+			RETURN_FALSE;
+		}
+
+		ALLOC_INIT_ZVAL(arr);
+		array_init(arr);
+
+		for (j = 0; j < nparams; j++) {
+			DPRINTF("%s: Field %s has value of %llu\n", __FUNCTION__, params[j].field, params[j].value);
+
+			add_assoc_long(arr, params[j].field, params[j].value);
+		}
+
+		add_assoc_long(arr, "time", time(NULL));
+
+		add_index_zval(return_value, i, arr);
+	}
+
+	free(params);
+	params = NULL;
+}
+#else
+PHP_FUNCTION(libvirt_node_get_mem_stats)
 {
 	set_error("Function is not supported by libvirt, support has been added in libvirt 0.9.3");
 	RETURN_FALSE;
