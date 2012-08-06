@@ -120,6 +120,7 @@ static zend_function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_domain_is_active, NULL)
 	PHP_FE(libvirt_domain_get_next_dev_ids, NULL)
 	PHP_FE(libvirt_domain_get_screenshot, NULL)
+	PHP_FE(libvirt_domain_get_screenshot_api, NULL)
 	PHP_FE(libvirt_domain_get_screen_dimensions, NULL)
 	PHP_FE(libvirt_domain_send_keys, NULL)
 	PHP_FE(libvirt_domain_send_pointer_event, NULL)
@@ -2823,6 +2824,93 @@ PHP_FUNCTION(libvirt_domain_get_uuid_string)
 
 	RETURN_STRING(uuid,0);
 }
+
+/*
+	Private function name:	streamSink
+	Since version:		0.4.5
+	Description:		Function to write stream to file, borrowed from libvirt
+	Arguments:		@st [virStreamPtr]: stream pointer
+				@bytes [void *]: buffer array
+				@nbytes [int]: size of buffer
+				@opaque [void *]: used for file descriptor
+	Returns:		write() error code as it's calling write
+*/
+
+static int streamSink(virStreamPtr st ATTRIBUTE_UNUSED,
+                         const char *bytes, size_t nbytes, void *opaque)
+{
+    int *fd = opaque;
+
+    return write(*fd, bytes, nbytes);
+}
+
+/*
+	Function name:	libvirt_domain_get_screenshot_api
+	Since version:	0.4.5
+	Description:	Function is trying to get domain screenshot using libvirt virGetDomainScreenshot() API if available.
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_get_by_*()
+			@screenID [int]: monitor ID from where to take screenshot
+	Returns:	array of filename and mime type as type is hypervisor specific, caller is responsible for temporary file deletion
+*/
+#if LIBVIR_VERSION_NUMBER>=9002
+PHP_FUNCTION(libvirt_domain_get_screenshot_api)
+{
+	php_libvirt_domain *domain=NULL;
+	zval *zdomain;
+	unsigned int screen = 0;
+	int fd = -1;
+	char file[] = "/tmp/libvirt-php-tmp-XXXXXX";
+	virStreamPtr st = NULL;
+	char *mime = NULL;
+
+	GET_DOMAIN_FROM_ARGS("r|l",&zdomain, &screen);
+
+	st = virStreamNew(domain->conn->conn, 0);
+	mime = virDomainScreenshot(domain->domain, st, screen, 0);
+	if (!mime) {
+		set_error_if_unset("Cannot get domain screenshot");
+		RETURN_FALSE;
+	}
+
+	if (mkstemp(file) == 0)
+		RETURN_FALSE;
+
+	if ((fd = open(file, O_WRONLY|O_CREAT|O_EXCL, 0666)) < 0) {
+		if (errno != EEXIST ||
+		(fd = open(file, O_WRONLY|O_TRUNC, 0666)) < 0) {
+			virStreamFree(st);
+			set_error_if_unset("Cannot get create file to save domain screenshot");
+			RETURN_FALSE;
+		}
+	}
+
+	if (virStreamRecvAll(st, streamSink, &fd) < 0) {
+		virStreamFree(st);
+		set_error_if_unset("Cannot receive screenshot data");
+		RETURN_FALSE;
+	}
+
+	close(fd);
+
+	if (virStreamFinish(st) < 0) {
+		virStreamFree(st);
+		set_error_if_unset("Cannot close stream for domain");
+		RETURN_FALSE;
+	}
+
+	virStreamFree(st);
+
+	array_init(return_value);
+	add_assoc_string_ex(return_value, "file", 5, file, 1);
+	add_assoc_string_ex(return_value, "mime", 5, mime, 1);
+}
+#else
+PHP_FUNCTION(libvirt_domain_get_screenshot_api)
+{
+	set_error("Function is not supported by libvirt, you need at least libvirt 0.9.2 to support this function");
+	RETURN_FALSE;
+}
+#endif
 
 /*
 	Function name:	libvirt_domain_get_screenshot

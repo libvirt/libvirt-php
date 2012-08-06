@@ -198,7 +198,7 @@ tServerFBParams vnc_parse_fb_params(unsigned char *buf, int len)
 
 	nlen = (int)CALC_UINT32(buf[20], buf[21], buf[22], buf[23]);
 	params.desktopNameLen = nlen;
-	params.desktopName = strdup(buf + 24);
+	params.desktopName = strdup((char *)buf + 24);
 
 	DPRINTF("%s: Desktop name set to '%s'\n", PHPFUNC, params.desktopName);
 
@@ -742,7 +742,7 @@ int vnc_get_bitmap(char *server, char *port, char *fn)
 				@keys [string]: string to be send to the guest's VNC window
 	Returns:		0 on success, -errno otherwise
 */
-int vnc_send_keys(char *server, char *port, unsigned char *keys)
+int vnc_send_keys(char *server, char *port, char *keys)
 {
 	int sfd;
 	int i, skip_next;
@@ -815,7 +815,6 @@ int vnc_send_keys(char *server, char *port, unsigned char *keys)
 int vnc_send_pointer_event(char *server, char *port, int pos_x, int pos_y, int clicked, int release)
 {
 	int sfd;
-	long pattern_size;
 	tServerFBParams params;
 
 	DPRINTF("%s: Server is %s, port is %s, x is %d, y is %d, clicked is %d, release is %d\n", PHPFUNC,
