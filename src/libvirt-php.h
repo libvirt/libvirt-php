@@ -276,6 +276,7 @@ PHP_FUNCTION(libvirt_connect_get_secure);
 PHP_FUNCTION(libvirt_connect_get_information);
 /* Node functions */
 PHP_FUNCTION(libvirt_node_get_info);
+PHP_FUNCTION(libvirt_node_get_cpu_stats);
 /* Domain functions */
 PHP_FUNCTION(libvirt_domain_new);
 PHP_FUNCTION(libvirt_domain_new_get_vnc);

@@ -169,7 +169,8 @@ static zend_function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_network_get_active, NULL)
 	PHP_FE(libvirt_network_set_active, NULL)
 	/* Node functions */
-	PHP_FE(libvirt_node_get_info,NULL)
+	PHP_FE(libvirt_node_get_info, NULL)
+	PHP_FE(libvirt_node_get_cpu_stats, NULL)
 	/* Nodedev functions */
 	PHP_FE(libvirt_nodedev_get, NULL)
 	PHP_FE(libvirt_nodedev_capabilities, NULL)
@@ -1518,6 +1519,74 @@ PHP_FUNCTION(libvirt_node_get_info)
 	add_assoc_long(return_value, "threads", (long)info.threads);
 	add_assoc_long(return_value, "mhz", (long)info.mhz);
 }
+
+/*
+	Function name:	libvirt_node_get_cpu_stats
+	Since version:	0.4.6
+	Description:	Function is used to get the CPU stats per nodes
+	Arguments:	@conn [resource]: resource for connection
+	Returns:	array of node CPU statistics including time (in seconds since UNIX epoch) or FALSE for error
+*/
+#if LIBVIR_VERSION_NUMBER>=9003
+PHP_FUNCTION(libvirt_node_get_cpu_stats)
+{
+	php_libvirt_connection *conn=NULL;
+	zval *zconn;
+	int cpuNum = VIR_NODE_CPU_STATS_ALL_CPUS;
+	virNodeCPUStatsPtr params;
+	int nparams = 0;
+	int i, j;
+
+	GET_CONNECTION_FROM_ARGS("r", &zconn);
+
+	if (virNodeGetCPUStats(conn->conn, cpuNum, NULL, &nparams, 0) != 0) {
+		set_error("Cannot get number of CPU stats");
+		RETURN_FALSE;
+	}
+
+	if (nparams == 0) {
+		RETURN_TRUE;
+	}
+
+	DPRINTF("%s: Number of parameters got from virNodeGetCPUStats is %d\n", __FUNCTION__, nparams);
+
+	params = calloc(nparams, nparams * sizeof(*params));
+
+	array_init(return_value);
+	for (i = 0; i < 2; i++) {
+		zval *arr;
+		if (i > 0)
+			sleep(1);
+
+		if (virNodeGetCPUStats(conn->conn, cpuNum, params, &nparams, 0) != 0) {
+			set_error("Unable to get node cpu stats");
+			RETURN_FALSE;
+		}
+
+		ALLOC_INIT_ZVAL(arr);
+		array_init(arr);
+
+		for (j = 0; j < nparams; j++) {
+			DPRINTF("%s: Field %s has value of %llu\n", __FUNCTION__, params[j].field, params[j].value);
+
+			add_assoc_long(arr, params[j].field, params[j].value);
+		}
+
+		add_assoc_long(arr, "time", time(NULL));
+
+		add_index_zval(return_value, i, arr);
+	}
+
+	free(params);
+	params = NULL;
+}
+#else
+PHP_FUNCTION(libvirt_node_get_cpu_stats)
+{
+	set_error("Function is not supported by libvirt, support has been added in libvirt 0.9.3");
+	RETURN_FALSE;
+}
+#endif
 
 /*
 	Function name:	libvirt_connect_get_information
