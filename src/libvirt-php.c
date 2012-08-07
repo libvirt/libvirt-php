@@ -1077,6 +1077,8 @@ PHP_MINIT_FUNCTION(libvirt)
 	REGISTER_LONG_CONSTANT("VIR_DOMAIN_XML_SECURE", 	1, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("VIR_DOMAIN_XML_INACTIVE", 	2, CONST_CS | CONST_PERSISTENT);
 
+	REGISTER_LONG_CONSTANT("VIR_NODE_CPU_STATS_ALL_CPUS",	VIR_NODE_CPU_STATS_ALL_CPUS, CONST_CS | CONST_PERSISTENT);
+
 	/* Domain constants */
 	REGISTER_LONG_CONSTANT("VIR_DOMAIN_NOSTATE", 		0, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("VIR_DOMAIN_RUNNING", 		1, CONST_CS | CONST_PERSISTENT);
@@ -1526,7 +1528,8 @@ PHP_FUNCTION(libvirt_node_get_info)
 	Since version:	0.4.6
 	Description:	Function is used to get the CPU stats per nodes
 	Arguments:	@conn [resource]: resource for connection
-	Returns:	array of node CPU statistics including time (in seconds since UNIX epoch) or FALSE for error
+			@cpunr [int]: CPU number to get information about, defaults to VIR_NODE_CPU_STATS_ALL_CPUS to get information about all CPUs
+	Returns:	array of node CPU statistics including time (in seconds since UNIX epoch), cpu number and total number of CPUs on node or FALSE for error
 */
 #if LIBVIR_VERSION_NUMBER>=9003
 PHP_FUNCTION(libvirt_node_get_cpu_stats)
@@ -1535,10 +1538,29 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats)
 	zval *zconn;
 	int cpuNum = VIR_NODE_CPU_STATS_ALL_CPUS;
 	virNodeCPUStatsPtr params;
+	virNodeInfo info;
+	long cpunr = -1;
 	int nparams = 0;
-	int i, j;
+	int i, j, numCpus;
 
-	GET_CONNECTION_FROM_ARGS("r", &zconn);
+	GET_CONNECTION_FROM_ARGS("r|l", &zconn, &cpunr);
+
+	if (virNodeGetInfo(conn->conn, &info) != 0) {
+		set_error("Cannot get number of CPUs");
+		RETURN_FALSE;
+	}
+
+	numCpus = info.cpus;
+	if (cpunr > numCpus - 1) {
+		char tmp[256] = { 0 };
+		snprintf(tmp, sizeof(tmp), "Invalid CPU number, valid numbers in range 0 to %d or VIR_NODE_CPU_STATS_ALL_CPUS",
+				numCpus - 1);
+		set_error(tmp);
+
+		RETURN_FALSE;
+	}
+
+	cpuNum = (int)cpunr;
 
 	if (virNodeGetCPUStats(conn->conn, cpuNum, NULL, &nparams, 0) != 0) {
 		set_error("Cannot get number of CPU stats");
@@ -1578,6 +1600,15 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats)
 		add_index_zval(return_value, i, arr);
 	}
 
+	add_assoc_long(return_value, "cpus", numCpus);
+	if (cpuNum >= 0)
+		add_assoc_long(return_value, "cpu", cpunr);
+	else
+	if (cpuNum == VIR_NODE_CPU_STATS_ALL_CPUS)
+		add_assoc_string_ex(return_value, "cpu", 4, "all", 1);
+	else
+		add_assoc_string_ex(return_value, "cpu", 4, "unknown", 1);
+
 	free(params);
 	params = NULL;
 }
@@ -1604,7 +1635,7 @@ PHP_FUNCTION(libvirt_node_get_mem_stats)
 	int memNum = VIR_NODE_MEMORY_STATS_ALL_CELLS;
 	virNodeMemoryStatsPtr params;
 	int nparams = 0;
-	int i, j;
+	int j;
 
 	GET_CONNECTION_FROM_ARGS("r", &zconn);
 
@@ -1630,10 +1661,10 @@ PHP_FUNCTION(libvirt_node_get_mem_stats)
 	for (j = 0; j < nparams; j++) {
 		DPRINTF("%s: Field %s has value of %llu\n", __FUNCTION__, params[j].field, params[j].value);
 
-		add_assoc_long(arr, params[j].field, params[j].value);
+		add_assoc_long(return_value, params[j].field, params[j].value);
 	}
 
-	add_assoc_long(arr, "time", time(NULL));
+	add_assoc_long(return_value, "time", time(NULL));
 
 	free(params);
 	params = NULL;
