@@ -1622,29 +1622,18 @@ PHP_FUNCTION(libvirt_node_get_mem_stats)
 	params = calloc(nparams, nparams * sizeof(*params));
 
 	array_init(return_value);
-	for (i = 0; i < 2; i++) {
-		zval *arr;
-		if (i > 0)
-			sleep(1);
-
-		if (virNodeGetMemoryStats(conn->conn, memNum, params, &nparams, 0) != 0) {
-			set_error("Unable to get node memory stats");
-			RETURN_FALSE;
-		}
-
-		ALLOC_INIT_ZVAL(arr);
-		array_init(arr);
-
-		for (j = 0; j < nparams; j++) {
-			DPRINTF("%s: Field %s has value of %llu\n", __FUNCTION__, params[j].field, params[j].value);
-
-			add_assoc_long(arr, params[j].field, params[j].value);
-		}
-
-		add_assoc_long(arr, "time", time(NULL));
-
-		add_index_zval(return_value, i, arr);
+	if (virNodeGetMemoryStats(conn->conn, memNum, params, &nparams, 0) != 0) {
+		set_error("Unable to get node memory stats");
+		RETURN_FALSE;
 	}
+
+	for (j = 0; j < nparams; j++) {
+		DPRINTF("%s: Field %s has value of %llu\n", __FUNCTION__, params[j].field, params[j].value);
+
+		add_assoc_long(arr, params[j].field, params[j].value);
+	}
+
+	add_assoc_long(arr, "time", time(NULL));
 
 	free(params);
 	params = NULL;
