@@ -277,6 +277,7 @@ PHP_FUNCTION(libvirt_connect_get_information);
 /* Node functions */
 PHP_FUNCTION(libvirt_node_get_info);
 PHP_FUNCTION(libvirt_node_get_cpu_stats);
+PHP_FUNCTION(libvirt_node_get_cpu_stats_for_each_cpu);
 PHP_FUNCTION(libvirt_node_get_mem_stats);
 /* Domain functions */
 PHP_FUNCTION(libvirt_domain_new);

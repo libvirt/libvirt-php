@@ -171,6 +171,7 @@ static zend_function_entry libvirt_functions[] = {
 	/* Node functions */
 	PHP_FE(libvirt_node_get_info, NULL)
 	PHP_FE(libvirt_node_get_cpu_stats, NULL)
+	PHP_FE(libvirt_node_get_cpu_stats_for_each_cpu, NULL)
 	PHP_FE(libvirt_node_get_mem_stats, NULL)
 	/* Nodedev functions */
 	PHP_FE(libvirt_nodedev_get, NULL)
@@ -1608,6 +1609,109 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats)
 		add_assoc_string_ex(return_value, "cpu", 4, "all", 1);
 	else
 		add_assoc_string_ex(return_value, "cpu", 4, "unknown", 1);
+
+	free(params);
+	params = NULL;
+}
+#else
+PHP_FUNCTION(libvirt_node_get_cpu_stats)
+{
+	set_error("Function is not supported by libvirt, support has been added in libvirt 0.9.3");
+	RETURN_FALSE;
+}
+#endif
+
+/*
+	Function name:	libvirt_node_get_cpu_stats_for_each_cpu
+	Since version:	0.4.6
+	Description:	Function is used to get the CPU stats for each CPU on the host node
+	Arguments:	@conn [resource]: resource for connection
+			@time [int]: time in seconds to get the information about, without aggregation for further processing
+	Returns:	array of node CPU statistics for each CPU including time (in seconds since UNIX epoch), cpu number and total number of CPUs on node or FALSE for error
+*/
+#if LIBVIR_VERSION_NUMBER>=9003
+PHP_FUNCTION(libvirt_node_get_cpu_stats_for_each_cpu)
+{
+	php_libvirt_connection *conn=NULL;
+	zval *zconn;
+	virNodeCPUStatsPtr params;
+	virNodeInfo info;
+	int nparams = 0;
+	long avg = 0, iter = 0;
+	int done = 0;
+	int i, j, numCpus;
+	time_t startTime = 0;
+	zval *time_array;
+
+	GET_CONNECTION_FROM_ARGS("r|l", &zconn, &avg);
+
+	if (virNodeGetInfo(conn->conn, &info) != 0) {
+		set_error("Cannot get number of CPUs");
+		RETURN_FALSE;
+	}
+
+	if (virNodeGetCPUStats(conn->conn, VIR_NODE_CPU_STATS_ALL_CPUS, NULL, &nparams, 0) != 0) {
+		set_error("Cannot get number of CPU stats");
+		RETURN_FALSE;
+	}
+
+	if (nparams == 0) {
+		RETURN_TRUE;
+	}
+
+	DPRINTF("%s: Number of parameters got from virNodeGetCPUStats is %d\n", __FUNCTION__, nparams);
+
+	params = calloc(nparams, nparams * sizeof(*params));
+
+	numCpus = info.cpus;
+	array_init(return_value);
+
+	startTime = time(NULL);
+
+	iter = 0;
+	done = 0;
+	while ( !done ) {
+		zval *arr;
+
+		ALLOC_INIT_ZVAL(arr);
+		array_init(arr);
+		for (i = 0; i < numCpus; i++) {
+			zval *arr2;
+
+			if (virNodeGetCPUStats(conn->conn, i, params, &nparams, 0) != 0) {
+				set_error("Unable to get node cpu stats");
+				RETURN_FALSE;
+			}
+
+			ALLOC_INIT_ZVAL(arr2);
+			array_init(arr2);
+
+			for (j = 0; j < nparams; j++)
+				add_assoc_long(arr2, params[j].field, params[j].value);
+
+			add_assoc_long(arr, "time", time(NULL));
+			add_index_zval(arr, i, arr2);
+		}
+
+		add_index_zval(return_value, iter, arr);
+
+		if ((avg <= 0) || (iter == avg - 1)) {
+			done = 1;
+			break;
+		}
+
+		sleep(1);
+		iter++;
+	}
+
+	ALLOC_INIT_ZVAL(time_array);
+	array_init(time_array);
+
+	add_assoc_long(time_array, "start", startTime);
+	add_assoc_long(time_array, "finish", time(NULL));
+	add_assoc_long(time_array, "duration", time(NULL) - startTime);
+
+	add_assoc_zval(return_value, "times", time_array);
 
 	free(params);
 	params = NULL;
