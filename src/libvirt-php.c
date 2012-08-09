@@ -5408,11 +5408,20 @@ PHP_FUNCTION(libvirt_domain_migrate)
 	uri_len=0;
 	uri=NULL;
 	
-	GET_DOMAIN_FROM_ARGS("rrl|sl",&zdomain,&zdconn,&flags,&dname,&dname_len,&uri,&uri_len,&bandwidth);
+	GET_DOMAIN_FROM_ARGS("rrl|sl",&zdomain,&zdconn,&flags,&dname,&dname_len,&bandwidth);
+
+	if ((domain->domain == NULL) || (domain->conn->conn == NULL)) {
+		set_error("Domain object is not valid");
+		RETURN_FALSE;
+	}
+
 	ZEND_FETCH_RESOURCE(dconn, php_libvirt_connection*, &zdconn, -1, PHP_LIBVIRT_CONNECTION_RES_NAME, le_libvirt_connection);
-	if ((dconn==NULL) || (dconn->conn==NULL)) RETURN_FALSE;
+	if ((dconn==NULL) || (dconn->conn==NULL)) {
+		set_error("Destination connection object is not valid");
+		RETURN_FALSE;
+	}
  
-	destdomain=virDomainMigrate(domain->domain,dconn->conn,flags,dname,uri,bandwidth);
+	destdomain=virDomainMigrate(domain->domain, dconn->conn, flags, dname, NULL, bandwidth);
 	if (destdomain == NULL) RETURN_FALSE;
 
 	res_domain= emalloc(sizeof(php_libvirt_domain));
