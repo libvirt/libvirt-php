@@ -124,7 +124,7 @@ static zend_function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_domain_get_screen_dimensions, NULL)
 	PHP_FE(libvirt_domain_send_keys, NULL)
 	PHP_FE(libvirt_domain_send_pointer_event, NULL)
-    PHP_FE(libvirt_domain_update_device, NULL)
+        PHP_FE(libvirt_domain_update_device, NULL)
 	/* Domain snapshot functions */
 	PHP_FE(libvirt_domain_has_current_snapshot, NULL)
 	PHP_FE(libvirt_domain_snapshot_create, NULL)
@@ -6230,7 +6230,7 @@ PHP_FUNCTION(libvirt_storagepool_get_xml_desc)
 	int xpath_len;
 	int retval = -1;
 
-	GET_STORAGEPOOL_FROM_ARGS("rs|l", &zpool, &xpath, &xpath_len, &flags);
+	GET_STORAGEPOOL_FROM_ARGS("r|s", &zpool, &xpath, &xpath_len, &flags);
 	if (xpath_len < 1)
 		xpath = NULL;
 
