@@ -1718,7 +1718,7 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats_for_each_cpu)
 	params = NULL;
 }
 #else
-PHP_FUNCTION(libvirt_node_get_cpu_stats)
+PHP_FUNCTION(libvirt_node_get_cpu_stats_for_each_cpu)
 {
 	set_error("Function is not supported by libvirt, support has been added in libvirt 0.9.3");
 	RETURN_FALSE;
