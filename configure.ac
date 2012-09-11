@@ -1,4 +1,4 @@
-AC_INIT([libvirt-php], [0.4.5], [http://libvirt.org])
+AC_INIT([libvirt-php], [0.4.6], [http://libvirt.org])
 AM_INIT_AUTOMAKE([-Wall -Werror])
 AC_CONFIG_FILES([Makefile tools/Makefile src/Makefile tests/Makefile docs/Makefile])
 AM_INIT_AUTOMAKE([-Wno-portability])

@@ -23,7 +23,12 @@
     <h2>Reference materials on writing Windows libraries/applications under Linux</h2>
     <p>
       If you seek for some reference information about Windows application/libraries programming under the Linux operating system please refer to
-      author's programming guide at <a href="http://migsoft.net/linux-winprog.html">Windows programming under Linux programming guide</a>.
+      author's programming guide at <a href="http://migsoft.net/linux-winprog.html">Windows programming under Linux programming guide</a>. Also,
+      there are some other references useful like:<br /><br />
+      <a href="http://stackoverflow.com/questions/2096519/from-mingw-static-library-a-to-visual-studio-static-library-lib">Linking .a library to a VS2008 static library</a><br />
+      <a href="http://www.willus.com/mingw/yongweiwu_stdcall.html">Stdcall and DLL tools of MSVC and MinGW</a><br />
+      <a href="http://stackoverflow.com/questions/2521926/win32-php-extension-development">Win32 PHP Extension Development</a><br />
+      <a href="https://www.google.com/#q=using+ming32+to+compile+php+extension">Google search results</a>
     </p>
 
     <h2>Notes on writing PHP extensions under Windows</h2>
