@@ -1548,7 +1548,7 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats)
 	GET_CONNECTION_FROM_ARGS("r|l", &zconn, &cpunr);
 
 	if (virNodeGetInfo(conn->conn, &info) != 0) {
-		set_error("Cannot get number of CPUs");
+		set_error("Cannot get number of CPUs" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
@@ -1557,7 +1557,7 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats)
 		char tmp[256] = { 0 };
 		snprintf(tmp, sizeof(tmp), "Invalid CPU number, valid numbers in range 0 to %d or VIR_NODE_CPU_STATS_ALL_CPUS",
 				numCpus - 1);
-		set_error(tmp);
+		set_error(tmp TSRMLS_CC);
 
 		RETURN_FALSE;
 	}
@@ -1565,7 +1565,7 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats)
 	cpuNum = (int)cpunr;
 
 	if (virNodeGetCPUStats(conn->conn, cpuNum, NULL, &nparams, 0) != 0) {
-		set_error("Cannot get number of CPU stats");
+		set_error("Cannot get number of CPU stats" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
@@ -1584,7 +1584,7 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats)
 			sleep(1);
 
 		if (virNodeGetCPUStats(conn->conn, cpuNum, params, &nparams, 0) != 0) {
-			set_error("Unable to get node cpu stats");
+			set_error("Unable to get node cpu stats" TSRMLS_CC);
 			RETURN_FALSE;
 		}
 
@@ -1647,12 +1647,12 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats_for_each_cpu)
 	GET_CONNECTION_FROM_ARGS("r|l", &zconn, &avg);
 
 	if (virNodeGetInfo(conn->conn, &info) != 0) {
-		set_error("Cannot get number of CPUs");
+		set_error("Cannot get number of CPUs" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
 	if (virNodeGetCPUStats(conn->conn, VIR_NODE_CPU_STATS_ALL_CPUS, NULL, &nparams, 0) != 0) {
-		set_error("Cannot get number of CPU stats");
+		set_error("Cannot get number of CPU stats" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
@@ -1680,7 +1680,7 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats_for_each_cpu)
 			zval *arr2;
 
 			if (virNodeGetCPUStats(conn->conn, i, params, &nparams, 0) != 0) {
-				set_error("Unable to get node cpu stats");
+				set_error("Unable to get node cpu stats" TSRMLS_CC);
 				RETURN_FALSE;
 			}
 
@@ -1745,7 +1745,7 @@ PHP_FUNCTION(libvirt_node_get_mem_stats)
 	GET_CONNECTION_FROM_ARGS("r", &zconn);
 
 	if (virNodeGetMemoryStats(conn->conn, memNum, NULL, &nparams, 0) != 0) {
-		set_error("Cannot get number of memory stats");
+		set_error("Cannot get number of memory stats" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
@@ -1759,7 +1759,7 @@ PHP_FUNCTION(libvirt_node_get_mem_stats)
 
 	array_init(return_value);
 	if (virNodeGetMemoryStats(conn->conn, memNum, params, &nparams, 0) != 0) {
-		set_error("Unable to get node memory stats");
+		set_error("Unable to get node memory stats" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
@@ -3131,7 +3131,7 @@ PHP_FUNCTION(libvirt_domain_get_screenshot_api)
 	st = virStreamNew(domain->conn->conn, 0);
 	mime = virDomainScreenshot(domain->domain, st, screen, 0);
 	if (!mime) {
-		set_error_if_unset("Cannot get domain screenshot");
+		set_error_if_unset("Cannot get domain screenshot" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
@@ -3142,14 +3142,14 @@ PHP_FUNCTION(libvirt_domain_get_screenshot_api)
 		if (errno != EEXIST ||
 		(fd = open(file, O_WRONLY|O_TRUNC, 0666)) < 0) {
 			virStreamFree(st);
-			set_error_if_unset("Cannot get create file to save domain screenshot");
+			set_error_if_unset("Cannot get create file to save domain screenshot" TSRMLS_CC);
 			RETURN_FALSE;
 		}
 	}
 
 	if (virStreamRecvAll(st, streamSink, &fd) < 0) {
 		virStreamFree(st);
-		set_error_if_unset("Cannot receive screenshot data");
+		set_error_if_unset("Cannot receive screenshot data" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
@@ -3157,7 +3157,7 @@ PHP_FUNCTION(libvirt_domain_get_screenshot_api)
 
 	if (virStreamFinish(st) < 0) {
 		virStreamFree(st);
-		set_error_if_unset("Cannot close stream for domain");
+		set_error_if_unset("Cannot close stream for domain" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
@@ -5400,14 +5400,10 @@ PHP_FUNCTION(libvirt_domain_migrate)
 	char *dname;
 	int dname_len;
 	long bandwidth;
-	char *uri;
-	int uri_len;	 
 
 	dname=NULL;
 	dname_len=0;
 	bandwidth=0;
-	uri_len=0;
-	uri=NULL;
 	
 	GET_DOMAIN_FROM_ARGS("rrl|sl",&zdomain,&zdconn,&flags,&dname,&dname_len,&bandwidth);
 

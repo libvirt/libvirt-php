@@ -23,6 +23,10 @@
         <span>Get the latest source releases, binary builds and get access to the source repository</span>
       </li>
       <li>
+        <a href="distros.html">Distributions</a>
+        <span>See the list of distributions where you can find libvirt-php in their repositories</span>
+      </li>
+      <li>
         <a href="windows.html">Windows port</a>
         <span>Information on libvirt-php Windows port</span>
       </li>
