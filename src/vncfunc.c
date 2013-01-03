@@ -174,8 +174,8 @@ tServerFBParams vnc_parse_fb_params(unsigned char *buf, int len)
 	DPRINTF("%s: Read dimension bytes: width = { 0x%02x, 0x%02x }, height = { 0x%02x, 0x%02x }, %s endian\n", PHPFUNC,
 		w1, w2, h1, h2, little_endian ? "little" : "big");
 
-	h = SWAP2_BY_ENDIAN(little_endian, h1, h2);
 	w = SWAP2_BY_ENDIAN(little_endian, w1, w2);
+	h = SWAP2_BY_ENDIAN(little_endian, h1, h2);
 
 	DPRINTF("%s: Filling the parameters structure with width = %d, height = %d\n", PHPFUNC, w, h);
 
@@ -708,20 +708,19 @@ int vnc_get_bitmap(char *server, char *port, char *fn)
 
 	params = vnc_read_server_init(sfd);
 
-	socket_read(sfd, -1);
+	pattern_size = params.width * params.height * (params.bpp / 8);
+	DPRINTF("%s: %ld\n", PHPFUNC, pattern_size);
+
 	vnc_set_pixel_format(sfd, params);
 	vnc_set_encoding(sfd);
-	socket_read(sfd, -1);
-	usleep(50000);
 
-	vnc_send_framebuffer_update_request(sfd, 0, params);
-	usleep(50000);
+	DPRINTF("%s: Requesting framebuffer update\n", PHPFUNC);
+	vnc_send_framebuffer_update_request(sfd, 1, params);
 
-	pattern_size = params.width * params.height * (params.bpp / 8);
-
+	while (socket_has_data(sfd, 50000, 0) == 0) {
+		continue;
+	}
 	socket_read_and_save(sfd, file, pattern_size);
-
-	usleep(50000);
 
 	shutdown(sfd, SHUT_RDWR);
 	close(sfd);
@@ -729,7 +728,6 @@ int vnc_get_bitmap(char *server, char *port, char *fn)
 	vnc_raw_to_bmp(file, fn, params.width, params.height);
 	unlink(file);
 	DPRINTF("%s: Closed descriptor #%d\n", PHPFUNC, sfd);
-
 	return 0;
 }
 

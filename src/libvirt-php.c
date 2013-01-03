@@ -3202,7 +3202,7 @@ PHP_FUNCTION(libvirt_domain_get_screenshot)
 	path = get_feature_binary("screenshot");
 	DPRINTF("%s: get_feature_binary('screenshot') returned %s\n", PHPFUNC, path);
 
-	if ((path != NULL) && (access(path, X_OK) != 0))
+	if ((path == NULL) || (access(path, X_OK) != 0))
 		use_builtin = 1;
 
 	GET_DOMAIN_FROM_ARGS("rs|l",&zdomain, &hostname, &hostname_len, &scancode);
@@ -3219,8 +3219,6 @@ PHP_FUNCTION(libvirt_domain_get_screenshot)
 		RETURN_FALSE;
 	}
 
-	vnc_refresh_screen(hostname, tmp, scancode);
-
 	if (mkstemp(file) == 0)
 		RETURN_FALSE;
 
@@ -3236,10 +3234,9 @@ PHP_FUNCTION(libvirt_domain_get_screenshot)
 			set_error("Cannot use builtin approach to get VNC window contents" TSRMLS_CC);
 			RETURN_FALSE;
 		}
-
-		// TODO: FIX!
 	}
 	else {
+		vnc_refresh_screen(hostname, tmp, scancode);
 		port = atoi(tmp)-5900;
 
 		DPRINTF("%s: Getting screenshot of %s:%d to temporary file %s\n", PHPFUNC, hostname, port, file);
