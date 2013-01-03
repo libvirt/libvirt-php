@@ -1033,7 +1033,7 @@ static void php_libvirt_snapshot_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 	{
 		if (snapshot->snapshot != NULL)
 		{
-			if (!check_resource_allocation(snapshot->domain->conn->conn, INT_RESOURCE_SNAPSHOT, snapshot->snapshot TSRMLS_CC)) {
+			if (!check_resource_allocation(NULL, INT_RESOURCE_SNAPSHOT, snapshot->snapshot TSRMLS_CC)) {
 				snapshot->snapshot=NULL;
 				efree(snapshot);
 				return;
@@ -5637,14 +5637,20 @@ PHP_FUNCTION(libvirt_list_domain_snapshots)
 	expectedcount=virDomainSnapshotNum(domain->domain, 0);
 	DPRINTF("%s: virDomainSnapshotNum(%p, 0) returned %d\n", PHPFUNC, domain->domain, expectedcount);
 
-	names=emalloc( expectedcount * sizeof(char *) );
-	count=virDomainSnapshotListNames(domain->domain, names, expectedcount, 0);
-	if ((count != expectedcount) || (count<0)) RETURN_FALSE;
-	array_init(return_value);
-	for (i=0;i<count;i++)
-	{
-		add_next_index_string(return_value, names[i], 1);
-		free(names[i]);
+	if (expectedcount != -1 ) {
+		names=emalloc( expectedcount * sizeof(char *) );
+		count=virDomainSnapshotListNames(domain->domain, names, expectedcount, 0);
+	}
+
+	if ((count != expectedcount) || (count<0)) {
+		RETURN_FALSE;
+	} else {
+		array_init(return_value);
+		for (i=0;i<count;i++)
+		{
+			add_next_index_string(return_value, names[i], 1);
+			free(names[i]);
+		}
 	}
 	efree(names);
 }
