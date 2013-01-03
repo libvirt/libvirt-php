@@ -6905,7 +6905,6 @@ PHP_FUNCTION(libvirt_list_inactive_domains)
 
 	GET_CONNECTION_FROM_ARGS("r",&zconn);
 
-	array_init(return_value);
 	expectedcount=virConnectNumOfDefinedDomains (conn->conn);
 
 	names=emalloc(expectedcount*sizeof(char *));
@@ -6915,6 +6914,8 @@ PHP_FUNCTION(libvirt_list_inactive_domains)
 		efree (names);
 		RETURN_FALSE;
 	}
+
+	array_init(return_value);
 	for (i=0;i<count;i++)
 	{
 		add_next_index_string(return_value,  names[i],1);
