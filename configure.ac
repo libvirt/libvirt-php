@@ -130,6 +130,16 @@ if test "x$PHPIZE" = "xno"; then
     AC_MSG_ERROR([phpize not found; please install the PHP SDK])
 fi
 
+OS=`uname`
+if test "$OS" = "Darwin"; then
+    WL=-Wl,
+    AC_SUBST([WL])
+    SHLIB_FLAGS="\${WL}-flat_namespace \${WL}-undefined \${WL}suppress -bundle"
+else
+    SHLIB_FLAGS="-shared -rdynamic"
+fi
+AC_SUBST([SHLIB_FLAGS])
+
 AC_SUBST([PHPIZE])
 AC_SUBST([PHPCONFIG])
 AC_CONFIG_HEADERS([config.h])

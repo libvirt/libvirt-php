@@ -73,7 +73,12 @@
 #include <sys/wait.h>
 #include <netdb.h>
 #include <inttypes.h>
+
+#ifdef __APPLE__
+#include <netinet/tcp.h>
+#else
 #include <linux/tcp.h>
+#endif
 
 #ifdef __i386__
 typedef uint32_t arch_uint;
