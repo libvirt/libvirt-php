@@ -6870,19 +6870,18 @@ PHP_FUNCTION(libvirt_list_active_domains)
 		domain=virDomainLookupByID(conn->conn,ids[i]);
 		if (domain!=NULL)
 		{
-			resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, domain, 1 TSRMLS_CC);
 			name=virDomainGetName(domain);
+
+			if (virDomainFree (domain))
+				resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, domain, 0 TSRMLS_CC);
+
 			if (name==NULL)
 			{
 				efree (ids);
-				if (virDomainFree (domain))
-					resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, domain, 0 TSRMLS_CC);
 				RETURN_FALSE;
 			}
 
 			add_next_index_string(return_value, name, 1);
-			if (virDomainFree (domain))
-				resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, domain, 0 TSRMLS_CC);
 		}
 	}
 	efree(ids);
