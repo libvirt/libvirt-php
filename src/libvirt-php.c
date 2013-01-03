@@ -7798,7 +7798,7 @@ PHP_FUNCTION(libvirt_print_binding_resources)
 PHP_FUNCTION(libvirt_logfile_set)
 {
 	char *filename = NULL;
-	int maxsize = DEFAULT_LOG_MAXSIZE;
+	long maxsize = DEFAULT_LOG_MAXSIZE;
 	int filename_len = 0;
 	int err;
 
