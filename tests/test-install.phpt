@@ -1,10 +1,10 @@
 <?php
 	$logfile = 'test-install.log';
-	unlink($logfile);
+	@unlink($logfile);
 	libvirt_logfile_set($logfile, 10);
 
-	$name = 'test';
-	$image = '/tmp/test-libvirt-php.tmp';
+	$name = 'test-'.rand(0, 999);
+	$image = __DIR__.'/data/test-libvirt-php.img';
 	$disk_image = '/tmp/test-libvirt-php.img';
 	$local_test = true;
 	$show_vnc_location = false;
@@ -12,7 +12,7 @@
 
 	require_once('functions.phpt');
 
-	$conn = libvirt_connect('null', false); /* Enable read-write connection */
+	$conn = libvirt_connect('test:///default', false); /* Enable read-write connection */
 	if (!is_resource($conn))
 		bail('Connection to default hypervisor failed');
 
@@ -53,7 +53,7 @@
 	unset($conn);
 
 	@unlink($disk_image);
-	unlink($logfile);
+	@unlink($logfile);
 
 	if ($ok) {
 		if ($show_vnc_location)

@@ -14,7 +14,7 @@
 	$num = $num_ini + 1;
 
 	for ($i = 0; $i < $num; $i++)
-		$conn[] = libvirt_connect('null', false);
+		$conn[] = @libvirt_connect('test:///default', false);
 
 	$tmp = libvirt_print_binding_resources();
 	if (sizeof($tmp) > $num_ini)

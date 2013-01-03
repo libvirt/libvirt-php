@@ -1,7 +1,7 @@
 <?php
 	require_once('functions.phpt');
 
-	$conn = libvirt_connect('null', false);
+	$conn = libvirt_connect('test:///default', false);
 	if (!is_resource($conn))
 		bail('Connection to default hypervisor failed');
 
@@ -12,7 +12,7 @@
 	if (!is_resource($res))
 		bail('Domain definition failed with error: '.libvirt_get_last_error());
 
-	$info = libvirt_domain_xml_xpath($res, '/domain/devices/emulator');
+	$info = libvirt_domain_xml_xpath($res, '/domain/name');
 	if (!$info)
 		bail('Cannot get domain XML and/or xPath expression');
 

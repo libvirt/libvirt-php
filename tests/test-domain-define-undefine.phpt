@@ -1,7 +1,7 @@
 <?php
 	require_once('functions.phpt');
 
-	$conn = libvirt_connect('null', false);
+	$conn = libvirt_connect('test:///default', false);
 	if (!is_resource($conn))
 		bail('Connection to default hypervisor failed');
 

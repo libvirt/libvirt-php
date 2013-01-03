@@ -1,9 +1,9 @@
 <?php
 	require_once('functions.phpt');
 
-	$conn = libvirt_connect('null', false);
+	$conn = @libvirt_connect(NULL, false);
 	if (!is_resource($conn))
-		bail('Connection to default hypervisor failed');
+		skip( basename(__FILE__) );
 
 	$curdir = getcwd();
 	$xml = file_get_contents($curdir.'/data/example-qcow2-disk.xml');

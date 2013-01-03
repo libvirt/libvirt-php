@@ -1,8 +1,7 @@
 #!/bin/bash
 
 nf=$1
-tests=( "test-connect" "test-version-check" "test-version-get" "test-domain-define-undefine" "test-domain-define-create-destroy" "test-domain-create"
-	"test-domain-create-and-get-xpath" "test-domain-create-and-coredump" "test-logging" "test-conn-limit" "test-get-emulator" "test-install" )
+tests=( "test-connect" "test-version-check" "test-version-get" "test-domain-define-undefine" "test-domain-define-create-destroy" "test-domain-create" "test-domain-create-and-get-xpath" "test-domain-create-and-coredump" "test-logging" "test-get-emulator" "test-install" "test-conn-limit" )
 
 run_test()
 {
@@ -10,7 +9,7 @@ run_test()
 	local nf=$2
 	ret=0
 
-	php $name.phpt
+	php -n -c "./php.ini" $name.phpt
 	if [ "x$?" != "x0" ]; then
 		if [ "x$nf" == 'x1' ]; then
 			ret=1

@@ -581,6 +581,8 @@ void set_vnc_location(char *msg TSRMLS_DC)
 	}
 
 	LIBVIRT_G (vnc_location)=estrndup(msg,strlen(msg));
+
+	DPRINTF("set_vnc_location: VNC server location set to '%s'\n", LIBVIRT_G (vnc_location));
 }
 
 /*
@@ -2586,7 +2588,7 @@ char *get_disk_xml(unsigned long long size, char *path, char *driver, char *bus,
 
 		char *qemu_img_cmd = get_feature_binary("create-image");
 		if (qemu_img_cmd == NULL) {
-			DPRINTF("%s: Binary for creating disk images doesn't exist", __FUNCTION__);
+			DPRINTF("%s: Binary for creating disk images doesn't exist\n", __FUNCTION__);
 			return NULL;
 		}
 
@@ -3806,15 +3808,12 @@ PHP_FUNCTION(libvirt_domain_new)
 		snprintf(vncl, sizeof(vncl), "Connection failed, port %s is most likely forbidden on firewall (iptables) on the host (%s)"
 				" or the emulator VNC server is bound to localhost address only.",
 				tmp, virConnectGetHostname(conn->conn));
-		set_vnc_location(vncl TSRMLS_CC);
-	}
-	else {
+	} else {
 		close(fd);
 		DPRINTF("%s: Connection to '%s' successfull (%s local connection)\n", PHPFUNC, vncl,
 				(flags & DOMAIN_FLAG_TEST_LOCAL_VNC) ? "using" : "not using");
-		set_vnc_location(vncl TSRMLS_CC);
-		DPRINTF("%s: VNC server location set to '%s'\n", PHPFUNC, vncl);
 	}
+	set_vnc_location(vncl TSRMLS_CC);
 
 	tmp = installation_get_xml(2,
 			conn->conn, name, memMB, maxmemMB, NULL /* arch */, NULL, vcpus, iso_image,
@@ -3854,7 +3853,7 @@ PHP_FUNCTION(libvirt_domain_new)
 PHP_FUNCTION(libvirt_domain_new_get_vnc)
 {
 	if (LIBVIRT_G(vnc_location))
-		RETURN_STRING(LIBVIRT_G(vnc_location),0);
+		RETURN_STRING(LIBVIRT_G(vnc_location),1);
 
 	RETURN_NULL();
 }

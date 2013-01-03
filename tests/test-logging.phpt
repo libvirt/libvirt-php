@@ -3,11 +3,11 @@
 
 	require_once('functions.phpt');
 
-	unlink($logfile);
+	@unlink($logfile);
 	if (!libvirt_logfile_set($logfile, 1))
 		bail('Cannot enable debug logging to test.log file');
 
-	$conn = libvirt_connect('null');
+	$conn = libvirt_connect('test:///default');
 	if (!is_resource($conn))
 		bail('Connection to default hypervisor failed');
 
@@ -45,7 +45,7 @@
 	if (libvirt_connect_get_capabilities($conn) == false)
 		bail('Invalid capabilities on the hypervisor connection');
 
-	if (libvirt_connect_get_information($conn) == false)
+	if (@libvirt_connect_get_information($conn) == false)
 		bail('No information on the connection are available');
 
 	unset($res);
