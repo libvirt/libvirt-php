@@ -902,9 +902,6 @@ int vnc_refresh_screen(char *server, char *port, int scancode)
 	DPRINTF("%s: Requesting framebuffer update\n", PHPFUNC);
 	vnc_send_framebuffer_update_request(sfd, 1, params);
 
-	while (socket_has_data(sfd, 500000, 0) == 1)
-		socket_read(sfd, -1);
-
 	shutdown(sfd, SHUT_RDWR);
 	close(sfd);
 	DPRINTF("%s: Closed descriptor #%d\n", PHPFUNC, sfd);

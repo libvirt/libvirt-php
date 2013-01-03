@@ -3227,6 +3227,8 @@ PHP_FUNCTION(libvirt_domain_get_screenshot)
 	if (strcmp(name, hostname) == 0)
 		hostname = strdup("localhost");
 
+	vnc_refresh_screen(hostname, tmp, scancode);
+
 	if (use_builtin == 1) {
 		DPRINTF("%s: Binary not found, using builtin approach to %s:%s, tmp file = %s\n", PHPFUNC, hostname, tmp, file);
 
@@ -3236,7 +3238,6 @@ PHP_FUNCTION(libvirt_domain_get_screenshot)
 		}
 	}
 	else {
-		vnc_refresh_screen(hostname, tmp, scancode);
 		port = atoi(tmp)-5900;
 
 		DPRINTF("%s: Getting screenshot of %s:%d to temporary file %s\n", PHPFUNC, hostname, port, file);
