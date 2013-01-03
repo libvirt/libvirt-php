@@ -2409,7 +2409,7 @@ char *connection_get_domain_type(virConnectPtr conn, char *arch TSRMLS_DC)
 
 	DPRINTF("%s: Requested domain type for arch '%s'\n",  __FUNCTION__, arch);
 
-	snprintf(xpath, sizeof(xpath), "//capabilities/guest/arch[@name='%s']/domain/emulator/../@type", arch);
+	snprintf(xpath, sizeof(xpath), "//capabilities/guest/arch[@name='%s']/domain/@type", arch);
 	DPRINTF("%s: Applying xPath '%s' to capabilities XML output\n", __FUNCTION__, xpath);
 	tmp = get_string_from_xpath(caps, xpath, NULL, &retval);
 	if ((tmp == NULL) || (retval < 0)) {
