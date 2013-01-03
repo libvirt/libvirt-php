@@ -4817,11 +4817,11 @@ PHP_FUNCTION(libvirt_domain_shutdown)
 }
 
 /*
-	Function name:  libvirt_domain_managedsave
-	Since version:  0.4.1(-1)
-	Description:    Function is used to managed save the domain (domain was unloaded from memory and it state saved to disk) identified by it's resource
-	Arguments:      @res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
-	Returns:        TRUE for success, FALSE on error
+	Function name:	libvirt_domain_managedsave
+	Since version:	0.4.1(-1)
+	Description:	Function is used to managed save the domain (domain was unloaded from memory and it state saved to disk) identified by it's resource
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
+	Returns:	TRUE for success, FALSE on error
 */
 
 PHP_FUNCTION(libvirt_domain_managedsave)
