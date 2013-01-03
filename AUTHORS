@@ -23,6 +23,10 @@ There are also other people that have contributed to the project:
         Ivo van den Abeelen <ivovandenabeelen@gmail.com>
         Tiziano Müller <dev-zero@gentoo.org>
         Pavel Odintsov <pavel.odintsov@gmail.com>
+        Tugdual Saunier <tugdual.saunier@gmail.com>
+
+Thanks goes to all of them with big thanks to Tugdual Saunier
+for various fixes and OS-X compilation support.
 
 If you would like to be listed in the contributors list
 feel free to clone this repository to your computer and

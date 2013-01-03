@@ -5545,7 +5545,7 @@ PHP_FUNCTION(libvirt_domain_snapshot_create)
 
 	DPRINTF("%s: returning %p\n", PHPFUNC, res_snapshot->snapshot);
 	resource_change_counter(INT_RESOURCE_SNAPSHOT, domain->conn->conn, res_snapshot->snapshot, 1 TSRMLS_CC);
- 	ZEND_REGISTER_RESOURCE(return_value, res_snapshot, le_libvirt_snapshot);
+	ZEND_REGISTER_RESOURCE(return_value, res_snapshot, le_libvirt_snapshot);
 }
 
 /*
