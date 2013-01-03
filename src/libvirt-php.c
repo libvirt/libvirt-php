@@ -7634,16 +7634,16 @@ PHP_FUNCTION(libvirt_version)
 	Function name:	libvirt_check_version
 	Since version:	0.4.1(-1)
 	Description:	Function is used to check major, minor and micro (also sometimes called release) versions of libvirt-php or libvirt itself. This could useful when you want your application to support only versions of libvirt or libvirt-php higher than some version specified.
-	Arguments:	@major [int]: major version number to check for
-			@minor [int]: minor version number to check for
-			@micro [int]: micro (also release) version number to check for
-			@type [int]: type of checking, VIR_VERSION_BINDING to check against libvirt-php binding or VIR_VERSION_LIBVIRT to check against libvirt version
+	Arguments:	@major [long]: major version number to check for
+			@minor [long]: minor version number to check for
+			@micro [long]: micro (also release) version number to check for
+			@type [long]: type of checking, VIR_VERSION_BINDING to check against libvirt-php binding or VIR_VERSION_LIBVIRT to check against libvirt version
 	Returns:	TRUE if version is equal or higher than required, FALSE if not, FALSE with error [for libvirt_get_last_error()] on unsupported version type check
 */
 PHP_FUNCTION(libvirt_check_version)
 {
 	unsigned long libVer;
-	int major = -1, minor = -1, micro = -1, type = VIR_VERSION_BINDING;
+	unsigned long major = 0, minor = 0, micro = 0, type = VIR_VERSION_BINDING;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "lll|l", &major, &minor, &micro, &type) == FAILURE) {
 		set_error("Invalid arguments" TSRMLS_CC);
@@ -7653,7 +7653,7 @@ PHP_FUNCTION(libvirt_check_version)
 	if (virGetVersion(&libVer,NULL,NULL) != 0)
 		RETURN_FALSE;
 
-	DPRINTF("%s: Checking for version %d.%d.%d of %s\n", PHPFUNC, major, minor, micro,
+	DPRINTF("%s: Checking for version %lu.%lu.%lu of %s\n", PHPFUNC, major, minor, micro,
 			(type == VIR_VERSION_BINDING) ? "php bindings" :
 			((type == VIR_VERSION_LIBVIRT) ? "libvirt" : "unknown"));
 
