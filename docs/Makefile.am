@@ -42,12 +42,14 @@ web: $(dot_html)
 	@if test -x $(XMLLINT) && test -x $(XMLCATALOG) ; then \
 	  if $(XMLCATALOG) '$(XML_CATALOG_FILE)' \
 	    "-//W3C//DTD XHTML 1.0 Strict//EN" > /dev/null ; then \
-	  echo "Validating $@" ; \
-	  SGML_CATALOG_FILES='$(XML_CATALOG_FILE)' \
-	  $(XMLLINT) --catalogs --nonet --format --valid $< > $@ \
-	  || { rm $@ && exit 1; }; \
-          # Hack it as build is failing on my F-17 x86_64 box \
-	  else cp $< $@; fi ; fi
+	    echo "Validating $@" ; \
+	    SGML_CATALOG_FILES='$(XML_CATALOG_FILE)' \
+	    $(XMLLINT) --catalogs --nonet --format --valid $< > $@ \
+	    || { rm $@ && exit 1; }; \
+      else cp $< $@; \
+      fi ; \
+    fi
+# Hack it as build is failing on my F-17 x86_64 box
 
 check-local: all
 
