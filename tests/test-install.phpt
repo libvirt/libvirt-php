@@ -3,7 +3,7 @@
 	@unlink($logfile);
 	libvirt_logfile_set($logfile, 10);
 
-	$name = 'test-'.rand(0, 999);
+	$name = 'test';
 	$image = __DIR__.'/data/test-libvirt-php.img';
 	$disk_image = '/tmp/test-libvirt-php.img';
 	$local_test = true;
@@ -15,6 +15,12 @@
 	$conn = libvirt_connect('test:///default', false); /* Enable read-write connection */
 	if (!is_resource($conn))
 		bail('Connection to default hypervisor failed');
+
+	//cleaning
+	if ($res = libvirt_domain_lookup_by_name($conn, "test")) {
+		libvirt_domain_destroy($res);
+		libvirt_domain_undefine($res);
+	}
 
 	$disks = array(
 			array( 'path' => $disk_image, 'driver' => 'raw', 'bus' => 'ide', 'dev' => 'hda', 'size' => '1M',
