@@ -188,6 +188,7 @@ int main(int argc, char *argv[])
 			in_comment = 1;
 			functions = (func_t *) realloc( functions, sizeof(func_t) * (function_number + 1) );
 			functions[function_number].name = NULL;
+			functions[function_number].num_args = 0;
 		}
 		else
 		if (strcmp(line, "*/") == 0)
