@@ -3693,7 +3693,7 @@ PHP_FUNCTION(libvirt_domain_new)
 	int arch_len;
 	char *tmp;
 	char *name;
-	char name_len=0;
+	int name_len=0;
 	// char *emulator;
 	char *iso_image = NULL;
 	int iso_image_len;
