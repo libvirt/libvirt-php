@@ -1,7 +1,13 @@
 #!/bin/bash
 
 nf=$1
-tests=( "test-connect" "test-version-check" "test-version-get" "test-domain-define-undefine" "test-domain-define-create-destroy" "test-domain-create" "test-domain-create-and-get-xpath" "test-domain-create-and-coredump" "test-logging" "test-get-emulator" "test-install" "test-conn-limit" )
+tests=( "test-version-check" "test-version-get" "test-get-emulator" "test-logging"
+		"test-connect" "test-conn-limit"
+		"test-domain-define-undefine"
+		"test-domain-define-create-destroy"
+		"test-domain-create" "test-domain-create-and-get-xpath" "test-domain-create-and-coredump"
+		"test-install"
+	)
 
 run_test()
 {
