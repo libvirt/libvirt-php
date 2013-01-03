@@ -855,7 +855,7 @@ static void php_libvirt_connection_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 			free_resources_on_connection(conn->conn TSRMLS_CC);
 
 			rv = virConnectClose(conn->conn);
-			if (rv!=0) {
+			if (rv == -1) {
 				DPRINTF("%s: virConnectClose(%p) returned %d (%s)\n", __FUNCTION__, conn->conn, rv, LIBVIRT_G (last_error));
 				php_error_docref(NULL TSRMLS_CC, E_WARNING,"virConnectClose failed with %i on destructor: %s", rv, LIBVIRT_G (last_error));
 			}
