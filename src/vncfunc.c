@@ -198,7 +198,7 @@ tServerFBParams vnc_parse_fb_params(unsigned char *buf, int len)
 
 	nlen = (int)CALC_UINT32(buf[20], buf[21], buf[22], buf[23]);
 	params.desktopNameLen = nlen;
-	params.desktopName = strdup((char *)buf + 24);
+	params.desktopName =  (unsigned char*) strdup((char *)buf + 24);
 
 	DPRINTF("%s: Desktop name set to '%s'\n", PHPFUNC, params.desktopName);
 

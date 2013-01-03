@@ -73,6 +73,8 @@
 #include <sys/wait.h>
 #include <netdb.h>
 #include <inttypes.h>
+#include <stdint.h>
+#include <libgen.h>
 
 #ifdef __APPLE__
 #include <netinet/tcp.h>
@@ -94,7 +96,6 @@ void	socket_read(int sfd, long length);
 int	socket_read_and_save(int sfd, char *fn, long length);
 int	vnc_get_bitmap(char *server, char *port, char *fn);
 
-#include <stdint.h>
 #define IS_BIGENDIAN (*(uint16_t *)"\0\xff" < 0x100)
 
 #define SWAP2_BY_ENDIAN(le, v1, v2) (((le && IS_BIGENDIAN) || (!le && !IS_BIGENDIAN)) ? ((v2 << 8) + v1) : ((v1 << 8) + v2))

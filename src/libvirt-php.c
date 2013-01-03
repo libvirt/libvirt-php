@@ -2254,7 +2254,7 @@ char *get_string_from_xpath(char *xml, char *xpath, zval **val, int *retVal)
 				@binary [string]: output binary string with the binary interpretation
 	Returns:		None
 */
-void dec_to_bin(unsigned long long decimal, char *binary)
+void dec_to_bin(long long decimal, char *binary)
 {
 	int  k = 0, n = 0;
 	int  neg_flag = 0;
@@ -2594,7 +2594,7 @@ char *get_disk_xml(unsigned long long size, char *path, char *driver, char *bus,
 		snprintf(cmd, sizeof(cmd), "%s create -f %s %s %ldM > /dev/null &2>/dev/null", qemu_img_cmd, driver, path, size);
 		free(qemu_img_cmd);
 
-		char *cmdRet = system(cmd);
+		int cmdRet = system(cmd);
 		ret = WEXITSTATUS(cmdRet);
 		DPRINTF("%s: Command '%s' finished with error code %d\n", __FUNCTION__, cmd, ret);
 		if (ret != 0) {
@@ -3362,7 +3362,7 @@ PHP_FUNCTION(libvirt_domain_send_keys)
 	char *xml = NULL;
 	char *hostname = NULL;
 	int hostname_len;
-	unsigned char *keys = NULL;
+	char *keys = NULL;
 	int keys_len;
 	int ret = 0;
 
