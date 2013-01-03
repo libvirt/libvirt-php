@@ -94,10 +94,12 @@ void	socket_read(int sfd, long length);
 int	socket_read_and_save(int sfd, char *fn, long length);
 int	vnc_get_bitmap(char *server, char *port, char *fn);
 
-int _is_bigendian;
-#define SWAP2_BY_ENDIAN(le, v1, v2) (((le && _is_bigendian) || (!le && !_is_bigendian)) ? ((v2 << 8) + v1) : ((v1 << 8) + v2))
-#define PUT2_BYTE_ENDIAN(le, val, v1, v2) { if ((le && _is_bigendian) || (!le && !_is_bigendian)) { v2 = val >> 8; v1 = val % 256; } else { v1 = val >> 8; v2 = val % 256; } }
-#define SWAP2_BYTES_ENDIAN(le, a, b) { if ((le && _is_bigendian) || (!le && !_is_bigendian)) { uint8_t _tmpval; _tmpval = a; a = b; b = _tmpval; } }
+#include <stdint.h>
+#define IS_BIGENDIAN (*(uint16_t *)"\0\xff" < 0x100)
+
+#define SWAP2_BY_ENDIAN(le, v1, v2) (((le && IS_BIGENDIAN) || (!le && !IS_BIGENDIAN)) ? ((v2 << 8) + v1) : ((v1 << 8) + v2))
+#define PUT2_BYTE_ENDIAN(le, val, v1, v2) { if ((le && IS_BIGENDIAN) || (!le && !IS_BIGENDIAN)) { v2 = val >> 8; v1 = val % 256; } else { v1 = val >> 8; v2 = val % 256; } }
+#define SWAP2_BYTES_ENDIAN(le, a, b) { if ((le && IS_BIGENDIAN) || (!le && !IS_BIGENDIAN)) { uint8_t _tmpval; _tmpval = a; a = b; b = _tmpval; } }
 
 #define UINT32STR(var, val)     \
         var[0] = (val >> 24) & 0xff;    \
