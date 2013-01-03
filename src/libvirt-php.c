@@ -2542,16 +2542,15 @@ char *generate_uuid(virConnectPtr conn TSRMLS_DC)
 {
 	virDomainPtr domain=NULL;
 	char *uuid = NULL;
+	int old_error_reporting = EG(error_reporting);
+	EG(error_reporting) = 0;
 
 	uuid = generate_uuid_any();
-	domain = virDomainLookupByUUIDString(conn, uuid);
-	if (domain != NULL) {
+	while ((domain = virDomainLookupByUUIDString(conn, uuid)) != NULL) {
 		virDomainFree(domain);
-		while ((domain = virDomainLookupByUUIDString(conn, uuid)) != NULL) {
-			virDomainFree(domain);
-			uuid = generate_uuid_any();
-		}
+		uuid = generate_uuid_any();
 	}
+	EG(error_reporting) = old_error_reporting;
 
 	DPRINTF("%s: Generated new UUID '%s'\n", __FUNCTION__, uuid);
 	return uuid;
