@@ -5395,8 +5395,8 @@ PHP_FUNCTION(libvirt_domain_migrate_to_uri2)
 	long flags=0;
 	char *dname;
 	int dname_len;
-	long bandwidth;	 
- 
+	long bandwidth;
+
 	dconnuri=NULL;
 	dconnuri_len=0;
 	miguri=NULL;
