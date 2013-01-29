@@ -111,6 +111,7 @@ static zend_function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_domain_get_connect, NULL)
 	PHP_FE(libvirt_domain_migrate, NULL)
 	PHP_FE(libvirt_domain_migrate_to_uri, NULL)
+	PHP_FE(libvirt_domain_migrate_to_uri2, NULL)
 	PHP_FE(libvirt_domain_get_job_info, NULL)
 	PHP_FE(libvirt_domain_xml_xpath, NULL)
 	PHP_FE(libvirt_domain_get_block_info, NULL)
@@ -5367,6 +5368,58 @@ PHP_FUNCTION(libvirt_domain_migrate_to_uri)
 	RETURN_FALSE;
 }
 
+/*
+	Function name:	libvirt_domain_migrate_to_uri2
+	Since version:	0.4.6(-1)
+	Description:	Function is used migrate domain to another libvirt daemon specified by it's URI
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
+			@dconnuri [string]: URI for target libvirtd
+			@miguri [string]: URI for invoking the migration
+			@dxml [string]: XML config for launching guest on target
+			@flags [int]: migration flags
+			@dname [string]: domain name to rename domain to on destination side
+			@bandwidth [int]: migration bandwidth in Mbps
+	Returns:	TRUE for success, FALSE on error
+*/
+PHP_FUNCTION(libvirt_domain_migrate_to_uri2)
+{
+	php_libvirt_domain *domain=NULL;
+	zval *zdomain;
+	int retval;
+	char *dconnuri;
+	int dconnuri_len;
+	char *miguri;
+	int miguri_len;
+	char *dxml;
+	int dxml_len;
+	long flags=0;
+	char *dname;
+	int dname_len;
+	long bandwidth;	 
+ 
+	dconnuri=NULL;
+	dconnuri_len=0;
+	miguri=NULL;
+	miguri_len=0;
+	dxml=NULL;
+	dxml_len=0;
+	dname=NULL;
+	dname_len=0;
+	bandwidth=0;
+	GET_DOMAIN_FROM_ARGS("r|ssslsl",&zdomain,&dconnuri,&dconnuri_len,&miguri,&miguri_len,&dxml,&dxml_len,&flags,&dname,&dname_len,&bandwidth);
+
+	// set to NULL if empty string
+	if (dconnuri_len == 0) dconnuri=NULL;
+	if (miguri_len == 0) miguri=NULL;
+	if (dxml_len == 0) dxml=NULL;
+	if (dname_len == 0) dname=NULL;
+
+	retval=virDomainMigrateToURI2(domain->domain,dconnuri,miguri,dxml,flags,dname,bandwidth);
+	DPRINTF("%s: virDomainMigrateToURI2() returned %d\n", PHPFUNC, retval);
+
+	if (retval == 0) RETURN_TRUE;
+	RETURN_FALSE;
+}
 
 /*
 	Function name:	libvirt_domain_migrate

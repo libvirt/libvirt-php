@@ -336,6 +336,7 @@ PHP_FUNCTION(libvirt_domain_xml_xpath);
 PHP_FUNCTION(libvirt_domain_get_block_info);
 PHP_FUNCTION(libvirt_domain_get_network_info);
 PHP_FUNCTION(libvirt_domain_migrate_to_uri);
+PHP_FUNCTION(libvirt_domain_migrate_to_uri2);
 PHP_FUNCTION(libvirt_domain_get_autostart);
 PHP_FUNCTION(libvirt_domain_set_autostart);
 PHP_FUNCTION(libvirt_domain_is_active);
