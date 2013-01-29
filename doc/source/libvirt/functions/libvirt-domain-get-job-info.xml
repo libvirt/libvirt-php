@@ -117,6 +117,7 @@ Array
   <para>
    <simplelist>
     <member><function>libvirt_domain_migrate</function></member>
+    <member><function>libvirt_domain_migrate_to_uri2</function></member>
     <member><function>libvirt_domain_migrate_to_uri</function></member>
    </simplelist>
   </para>

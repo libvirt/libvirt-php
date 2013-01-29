@@ -13,7 +13,7 @@
    <type>resource</type><methodname>libvirt_domain_migrate</methodname>
    <methodparam ><type>resource</type><parameter>domain</parameter></methodparam>
    <methodparam ><type>resource</type><parameter>dconn</parameter></methodparam>
-   <methodparam ><type>int</type><parameter>flags</parameter></methodparam>
+   <methodparam ><type>integer</type><parameter>flags</parameter></methodparam>
    <methodparam ><type>string</type><parameter>dname</parameter></methodparam>
    <methodparam ><type>string</type><parameter>uri</parameter></methodparam>
    <methodparam ><type>integer</type><parameter>bandwith</parameter></methodparam>
@@ -91,6 +91,7 @@
   &reftitle.seealso;
   <para>
    <simplelist>
+    <member><function>libvirt_domain_migrate_to_uri2</function></member>
     <member><function>libvirt_domain_migrate_to_uri</function></member>
     <member><function>libvirt_domain_get_job_info</function></member>
    </simplelist>

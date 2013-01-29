@@ -12,14 +12,16 @@
   <methodsynopsis>
    <type>bool</type><methodname>libvirt_domain_migrate_to_uri</methodname>
    <methodparam ><type>resource</type><parameter>domain</parameter></methodparam>
-   <methodparam ><type>string</type><parameter>duri</parameter></methodparam>
+   <methodparam ><type>string</type><parameter>dconnuri</parameter></methodparam>
+   <methodparam ><type>string</type><parameter>miguri</parameter></methodparam>
+   <methodparam ><type>string</type><parameter>dxml</parameter></methodparam>
    <methodparam ><type>integer</type><parameter>flags</parameter></methodparam>
    <methodparam ><type>string</type><parameter>dname</parameter></methodparam>
    <methodparam ><type>string</type><parameter>uri</parameter></methodparam>
    <methodparam ><type>integer</type><parameter>bandwith</parameter></methodparam>
   </methodsynopsis>
   <para>
-   Performs migration of the domain from one host to another. For description of parameters and flags see <link xlink:href="http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateToURI">original documentation</link>.
+   Performs migration of the domain from one host to another. For description of parameters and flags see <link xlink:href="http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateToURI2">original documentation</link>.
   </para>
   <para>
    Please note that the function returns after the migration is complete. It may take a lot of time to migrate a host. Be sure to configure PHP maximum execution time.
@@ -39,35 +41,55 @@
   &reftitle.examples;
   <para>
    <example>
-    <title><function>libvirt_domain_migrate_to_uri</function> example</title>
+    <title><function>libvirt_domain_migrate_to_uri2</function> example</title>
     <para>
     Live migrate domain (f13_exper) to another node
     </para>
     <programlisting role="php">
 <![CDATA[
 <?php
-    echo ("Looking up f13_exper domain\n");
-    $dom=@libvirt_domain_lookup_by_name($conn,"f13_exper");
-    if ($dom==false)
-    {
-       echo ("Domain not found\n");
-       echo ("Libvirt last error: ".libvirt_get_last_error()."\n");
-       exit;
-    }
-    echo ("Domain found\n");
+   echo ("Looking up f13_exper domain\n");
+   $domain=@libvirt_domain_lookup_by_name($conn,"f13_exper");
+   if ($domain==false)
+   {
+      echo ("Domain not found\n");
+      echo ("Libvirt last error: ".libvirt_get_last_error()."\n");
+      exit;
+   }
+   echo ("Domain found\n");
 
-    echo ("Migrating domain to $duri\n");
-    $rv=libvirt_domain_migrate_to_uri($dom,$duri,VIR_MIGRATE_LIVE | VIR_MIGRATE_PEER2PEER | VIR_MIGRATE_PERSIST_DEST | VIR_MIGRATE_UNDEFINE_SOURCE);
-    if ($rv==false)
-    {
-       echo ("Failure!");
-       echo ("Libvirt last error: ".libvirt_get_last_error()."\n");
-    }
-    else
-    {
-       echo ("Success\n");
-    }
+   $xmllibvirt=libvirt_domain_get_xml_desc($domain, NULL);
+   $spicePort=5900;
+   $xml='';
+   $pos1=strpos($xmllibvirt,'<graphics');
+   if (false!==$pos1)
+   {
+      $pos2=strpos($xmllibvirt,"</graphics>",$pos1+1);
+      if (false!==$pos2)
+      {
+         $pos3=($xmllibvirt,"port='",$pos1+1);
+         if (false!==$pos3 && $pos3<$pos2) {
+            $start=$pos3+6;
+            $end=($xmllibvirt,"'",$start);
+            if (false!==$end) {
+               $xml=substr_replace($xmllibvirt,$spicePort,$start,$end-$start);
+            }
+         }
+      }
+   }
+   $flags=$VIR_MIGRATE_LIVE | $VIR_MIGRATE_UNDEFINE_SOURCE | $VIR_MIGRATE_PEER2PEER | $VIR_MIGRATE_TUNNELLED | $VIR_MIGRATE_PERSIST_DEST | $VIR_MIGRATE_UNSAFE;
 
+   echo ("Migrating domain to $miguri\n");
+   $rv=libvirt_domain_migrate_to_uri2($domain,$miguri,null,$xml,$flags);
+   if ($rv==false)
+   {
+      echo ("Failure!");
+      echo ("Libvirt last error: ".libvirt_get_last_error()."\n");
+   }
+   else
+   {
+      echo ("Success\n");
+   }
 ?>
 ]]>
     </programlisting>
@@ -81,7 +103,7 @@
   &reftitle.seealso;
   <para>
    <simplelist>
-    <member><function>libvirt_domain_migrate_to_uri2</function></member>
+    <member><function>libvirt_domain_migrate_to_uri</function></member>
     <member><function>libvirt_domain_migrate</function></member>
     <member><function>libvirt_domain_get_job_info</function></member>
    </simplelist>

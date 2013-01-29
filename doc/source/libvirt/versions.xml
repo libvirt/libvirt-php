@@ -42,6 +42,7 @@ Example entries:
  <function name='libvirt_domain_memory_peek' from='php-libvirt 0.1'/>
  <function name='libvirt_domain_memory_stats' from='php-libvirt 0.3'/>
  <function name='libvirt_domain_migrate' from='php-libvirt 0.4'/>
+ <function name='libvirt_domain_migrate_to_uri2' from='php-libvirt 0.4.8'/>
  <function name='libvirt_domain_migrate_to_uri' from='php-libvirt 0.4'/>
  <function name='libvirt_domain_get_job_info' from='php-libvirt 0.4'/>
 <function name='libvirt_domain_block_stats' from='php-libvirt 0.3'/>
