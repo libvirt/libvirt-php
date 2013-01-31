@@ -14,7 +14,7 @@ build:
 	$(CC) $(CFLAGS) -Wall -fpic -DCOMPILE_DL_LIBVIRT=1 $(PHPINC) -c -o libvirt-php.o libvirt-php.c $(LIBXML_CFLAGS) $(LIBVIRT_CFLAGS) $(DEFINES)
 	$(CC) $(CFLAGS) -Wall -fpic -DCOMPILE_DL_LIBVIRT=1 -c -o vncfunc.o vncfunc.c $(PHPINC) $(LIBXML_CFLAGS) $(LIBVIRT_CFLAGS) $(DEFINES)
 	$(CC) $(CFLAGS) -Wall -fpic -DCOMPILE_DL_LIBVIRT=1 -c -o sockets.o sockets.c $(PHPINC) $(LIBXML_CFLAGS) $(LIBVIRT_CFLAGS) $(DEFINES)
-	$(CC) $(CFLAGS) -Wall $(SHLIB_FLAGS) $(LIBS) -o $(PACKAGE).so vncfunc.o sockets.o libvirt-php.o -ldl -lvirt $(LIBXML_LIBS) $(LIBVIRT_LIBS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -Wall $(SHLIB_FLAGS) $(LIBS) -o $(PACKAGE).so vncfunc.o sockets.o libvirt-php.o -ldl -lvirt $(LIBXML_LIBS) $(LIBVIRT_LIBS)
 	$(ECHO) "Extension compiled as $(PACKAGE).so"
 
 install-exec-local:
