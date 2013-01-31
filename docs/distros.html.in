@@ -4,8 +4,8 @@
     <p>
       There are several distributions that supports the libvirt-php in it's repositories. You can see the list in here:<br />
 
-      <table align="center" width="75%">
-        <tr>
+      <table width="75%">
+        <tr align="center">
           <th>Distribution</th>
           <th>Installer command</th>
           <th>Link</th>
