@@ -1,0 +1,34 @@
+<html>
+  <body>
+    <h1>Distributions</h1>
+    <p>
+      There are several distributions that supports the libvirt-php in it's repositories. You can see the list in here:<br />
+
+      <table align="center" width="75%">
+        <tr>
+          <th>Distribution</th>
+          <th>Installer command</th>
+          <th>Link</th>
+          <th>More information</th>
+        </tr>
+        <tr align="center">
+          <td>Fedora 16+</td>
+          <td>yum install php-libvirt</td>
+          <td><a href="https://admin.fedoraproject.org/updates/search/php-libvirt">List on FedoraProject.org</a></td>
+          <td>-</td>
+        </tr>
+        <tr align="center">
+          <td>altLinux</td>
+          <td>N/A</td>
+          <td><a href="http://sisyphus.ru/en/srpm/Sisyphus/php-virt-control">List on Sisyphus.ru</a></td>
+          <td>Distributed as part of php-virt-control project</td>
+        </tr>
+        <tr align="center">
+          <td>Gentoo</td>
+          <td>emerge libvirt-php</td>
+          <td><a href="http://packages.gentoo.org/package/dev-php/libvirt-php">List on packages.gentoo.org</a></td>
+          <td>-</td>
+        </tr>
+      </table>
+  </body>
+</html>
