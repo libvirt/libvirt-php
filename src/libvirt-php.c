@@ -1615,7 +1615,7 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats)
 #else
 PHP_FUNCTION(libvirt_node_get_cpu_stats)
 {
-	set_error("Function is not supported by libvirt, support has been added in libvirt 0.9.3");
+	set_error("Function is not supported by libvirt, support has been added in libvirt 0.9.3" TSRMLS_CC);
 	RETURN_FALSE;
 }
 #endif
@@ -1718,7 +1718,7 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats_for_each_cpu)
 #else
 PHP_FUNCTION(libvirt_node_get_cpu_stats_for_each_cpu)
 {
-	set_error("Function is not supported by libvirt, support has been added in libvirt 0.9.3");
+	set_error("Function is not supported by libvirt, support has been added in libvirt 0.9.3" TSRMLS_CC);
 	RETURN_FALSE;
 }
 #endif
@@ -1775,7 +1775,7 @@ PHP_FUNCTION(libvirt_node_get_mem_stats)
 #else
 PHP_FUNCTION(libvirt_node_get_mem_stats)
 {
-	set_error("Function is not supported by libvirt, support has been added in libvirt 0.9.3");
+	set_error("Function is not supported by libvirt, support has been added in libvirt 0.9.3" TSRMLS_CC);
 	RETURN_FALSE;
 }
 #endif
@@ -3168,7 +3168,7 @@ PHP_FUNCTION(libvirt_domain_get_screenshot_api)
 #else
 PHP_FUNCTION(libvirt_domain_get_screenshot_api)
 {
-	set_error("Function is not supported by libvirt, you need at least libvirt 0.9.2 to support this function");
+	set_error("Function is not supported by libvirt, you need at least libvirt 0.9.2 to support this function" TSRMLS_CC);
 	RETURN_FALSE;
 }
 #endif
@@ -5453,13 +5453,13 @@ PHP_FUNCTION(libvirt_domain_migrate)
 	GET_DOMAIN_FROM_ARGS("rrl|sl",&zdomain,&zdconn,&flags,&dname,&dname_len,&bandwidth);
 
 	if ((domain->domain == NULL) || (domain->conn->conn == NULL)) {
-		set_error("Domain object is not valid");
+		set_error("Domain object is not valid" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
 	ZEND_FETCH_RESOURCE(dconn, php_libvirt_connection*, &zdconn, -1, PHP_LIBVIRT_CONNECTION_RES_NAME, le_libvirt_connection);
 	if ((dconn==NULL) || (dconn->conn==NULL)) {
-		set_error("Destination connection object is not valid");
+		set_error("Destination connection object is not valid" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
