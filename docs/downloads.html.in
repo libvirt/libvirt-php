@@ -6,23 +6,23 @@
     <h2>Official Releases</h2>
 
     <p>
-      You can download the third official release, release 0.4.7, from:
+      You can download the third official release, release 0.4.8, from:
     </p>
 
-<pre><a href="http://libvirt.org/sources/php/libvirt-php-0.4.7.tar.gz">http://libvirt.org/sources/php/libvirt-php-0.4.7.tar.gz</a></pre>
+<pre><a href="http://libvirt.org/sources/php/libvirt-php-0.4.8.tar.gz">http://libvirt.org/sources/php/libvirt-php-0.4.8.tar.gz</a></pre>
 
     <p>
       However if you prefer to download any of 3 latest versions of the previous official releases please click on the release you want to download:
     </p>
 
+<a href="http://libvirt.org/sources/php/libvirt-php-0.4.7.tar.gz">http://libvirt.org/sources/php/libvirt-php-0.4.7.tar.gz</a>
+<br />
 <a href="http://libvirt.org/sources/php/libvirt-php-0.4.6.tar.gz">http://libvirt.org/sources/php/libvirt-php-0.4.6.tar.gz</a>
 <br />
 <a href="http://libvirt.org/sources/php/libvirt-php-0.4.5.tar.gz">http://libvirt.org/sources/php/libvirt-php-0.4.5.tar.gz</a>
 <br />
-<a href="http://libvirt.org/sources/php/libvirt-php-0.4.4.tar.gz">http://libvirt.org/sources/php/libvirt-php-0.4.4.tar.gz</a>
-<br />
 
-    <h2>GIT source repository</h2>
+    <h2>Git source repository</h2>
 
     <p>
       You can clone the development version of libvirt-php from GIT repository:
