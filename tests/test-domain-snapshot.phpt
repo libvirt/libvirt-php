@@ -15,7 +15,12 @@
 	$xml = file_get_contents($curdir.'/data/example-qcow2-disk.xml');
 
 	/* This is applicable only for QEMU/KVM so check whether we're on QEMU/KVM */
-	$e = libvirt_connect_get_emulator($conn);
+	$e = @libvirt_connect_get_emulator($conn);
+	if (!$e) {
+		echo "Skipping test ...\n";
+		success( basename(__FILE__) );
+	}
+
 	$fp = popen($e.' --version', 'r');
 	$data = trim(fgets($fp, 1024));
 	fclose($fp);
