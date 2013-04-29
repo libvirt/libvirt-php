@@ -14,6 +14,14 @@
 	$curdir = getcwd();
 	$xml = file_get_contents($curdir.'/data/example-qcow2-disk.xml');
 
+	/* This is applicable only for QEMU/KVM so check whether we're on QEMU/KVM */
+	$e = libvirt_connect_get_emulator($conn);
+	$t = explode('/', $e);
+	if (substr( $t[ sizeof($t) - 1], 0, 4) != 'qemu') {
+		echo "Not running on KVM hypervisor. Skipping ...\n";
+		success( basename(__FILE__) );
+	}
+
 	$res = libvirt_domain_create_xml($conn, $xml);
 	if (!is_resource($res))
 		bail('Domain definition failed with error: '.libvirt_get_last_error());
