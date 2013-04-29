@@ -16,8 +16,11 @@
 
 	/* This is applicable only for QEMU/KVM so check whether we're on QEMU/KVM */
 	$e = libvirt_connect_get_emulator($conn);
-	$t = explode('/', $e);
-	if (substr( $t[ sizeof($t) - 1], 0, 4) != 'qemu') {
+	$fp = popen($e.' --version', 'r');
+	$data = trim(fgets($fp, 1024));
+	fclose($fp);
+
+	if (substr($data, 0, 4) != 'QEMU') {
 		echo "Not running on KVM hypervisor. Skipping ...\n";
 		success( basename(__FILE__) );
 	}

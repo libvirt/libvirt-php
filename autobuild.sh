@@ -29,6 +29,7 @@ else
   EXTRA_RELEASE=".$USER$NOW"
 fi
 
+EXTRA_RELEASE=""
 if [ -x /usr/bin/rpmbuild ]
 then
   rpmbuild --nodeps \
