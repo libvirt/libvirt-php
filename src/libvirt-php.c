@@ -7564,32 +7564,36 @@ PHP_FUNCTION(libvirt_network_set_active)
 {
 	php_libvirt_network *network;
 	zval *znetwork;
-	int act = 0;
+	long act = 0;
 
-	GET_NETWORK_FROM_ARGS("rl",&znetwork,&act);
+	DPRINTF("%s: Setting network activity...\n", PHPFUNC TSRMLS_CC);
+
+	GET_NETWORK_FROM_ARGS("rl", &znetwork, &act);
 
 	if ((act != 0) && (act != 1)) {
 		set_error("Invalid network activity state" TSRMLS_CC);
 		RETURN_FALSE;
 	}
 
+	DPRINTF("%s: %sabling network...\n", PHPFUNC, (act == 1) ? "En" : "Dis");
+
 	if (act == 1) {
 		if (virNetworkCreate(network->network) == 0) {
-			/* Network is up and running */
+			// Network is up and running
 			RETURN_TRUE;
 		}
 		else {
-			/* We don't have to set error since it's caught by libvirt error handler itself */
+			// We don't have to set error since it's caught by libvirt error handler itself
 			RETURN_FALSE;
 		}
 	}
 
 	if (virNetworkDestroy(network->network) == 0) {
-		/* Network is down */
+		// Network is down
 		RETURN_TRUE;
 	}
 	else {
-		/* Caught by libvirt error handler too */
+		// Caught by libvirt error handler too
 		RETURN_FALSE;
 	}
 }
