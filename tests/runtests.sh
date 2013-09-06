@@ -6,7 +6,7 @@ tests=( "test-version-check" "test-version-get" "test-get-emulator" "test-loggin
 		"test-domain-define-undefine"
 		"test-domain-define-create-destroy"
 		"test-domain-create" "test-domain-create-and-get-xpath" "test-domain-create-and-coredump"
-		"test-install"
+		"test-install" "test-get-models"
 	)
 
 run_test()

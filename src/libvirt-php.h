@@ -96,6 +96,11 @@ void	socket_read(int sfd, long length);
 int	socket_read_and_save(int sfd, char *fn, long length);
 int	vnc_get_bitmap(char *server, char *port, char *fn);
 
+typedef struct tTokenizer {
+	char **tokens;
+	int numTokens;
+} tTokenizer;
+
 #define IS_BIGENDIAN (*(uint16_t *)"\0\xff" < 0x100)
 
 #define SWAP2_BY_ENDIAN(le, v1, v2) (((le && IS_BIGENDIAN) || (!le && !IS_BIGENDIAN)) ? ((v2 << 8) + v1) : ((v1 << 8) + v2))
@@ -139,6 +144,9 @@ ZEND_END_MODULE_GLOBALS(libvirt)
 
 #define PHP_LIBVIRT_WORLD_VERSION VERSION
 #define PHP_LIBVIRT_WORLD_EXTNAME "libvirt"
+
+/* Connect flags */
+#define	CONNECT_FLAG_SOUNDHW_GET_NAMES	0x01
 
 /* Domain flags */
 #define DOMAIN_FLAG_FEATURE_ACPI	0x01
@@ -277,6 +285,8 @@ PHP_FUNCTION(libvirt_connect_get_hostname);
 PHP_FUNCTION(libvirt_connect_get_hypervisor);
 PHP_FUNCTION(libvirt_connect_get_capabilities);
 PHP_FUNCTION(libvirt_connect_get_emulator);
+PHP_FUNCTION(libvirt_connect_get_nic_models);
+PHP_FUNCTION(libvirt_connect_get_soundhw_models);
 PHP_FUNCTION(libvirt_connect_get_maxvcpus);
 PHP_FUNCTION(libvirt_connect_get_sysinfo);
 PHP_FUNCTION(libvirt_connect_get_encrypted);

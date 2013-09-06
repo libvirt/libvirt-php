@@ -64,6 +64,8 @@ static zend_function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_connect_get_hostname, NULL)
 	PHP_FE(libvirt_connect_get_capabilities, NULL)
 	PHP_FE(libvirt_connect_get_emulator, NULL)
+	PHP_FE(libvirt_connect_get_nic_models, NULL)
+	PHP_FE(libvirt_connect_get_soundhw_models, NULL)
 	PHP_FE(libvirt_connect_get_information, NULL)
 	PHP_FE(libvirt_connect_get_hypervisor, NULL)
 	PHP_FE(libvirt_connect_get_sysinfo, NULL)
@@ -360,6 +362,53 @@ char *translate_counter_type(int type)
 	}
 
 	return "unknown";
+}
+
+/*
+	Private function name:	tokenize
+	Since version:		0.4.9
+	Description:		Function to tokenize string into tokens by delimiter $by
+	Arguments:		@string [string]: input string
+				@by [string]: string used as delimited
+	Returns:		tTokenizer structure
+ */
+tTokenizer tokenize(char *string, char *by)
+{
+	char *tmp;
+	char *str;
+	char *save;
+	char *token;
+	int i = 0;
+	tTokenizer t;
+
+	tmp = strdup(string);
+	t.tokens = (char **)malloc( sizeof(char *) );
+	for (str = tmp; ; str = NULL) {
+		token = strtok_r(str, by, &save);
+		if (token == NULL)
+			break;
+
+		t.tokens = realloc( t.tokens, (i + 1) * sizeof(char *) );
+		t.tokens[i++] = strdup(token);
+	}
+
+	t.numTokens = i;
+	return t;
+}
+
+/*
+	Private function name:	free_tokens
+	Since version:		0.4.9
+	Description:		Function to free tokens allocated by tokenize function
+	Arguments:		@t [tTokenizer]: tokenizer structure previously allocated by tokenize function
+	Returns:		none
+ */
+void free_tokens(tTokenizer t)
+{
+	int i;
+
+	for (i = 0; i < t.numTokens; i++)
+		free(t.tokens[i]);
 }
 
 /*
@@ -1201,6 +1250,9 @@ PHP_MINIT_FUNCTION(libvirt)
 	REGISTER_LONG_CONSTANT("VIR_DOMAIN_DISK_FILE",			DOMAIN_DISK_FILE, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("VIR_DOMAIN_DISK_BLOCK",			DOMAIN_DISK_BLOCK, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("VIR_DOMAIN_DISK_ACCESS_ALL",		DOMAIN_DISK_ACCESS_ALL, CONST_CS | CONST_PERSISTENT);
+
+	/* Connect flags */
+	REGISTER_LONG_CONSTANT("VIR_CONNECT_FLAG_SOUNDHW_GET_NAMES",	CONNECT_FLAG_SOUNDHW_GET_NAMES, CONST_CS | CONST_PERSISTENT);
 
 	REGISTER_INI_ENTRIES();
 
@@ -3602,6 +3654,147 @@ PHP_FUNCTION(libvirt_connect_get_emulator)
 	RECREATE_STRING_WITH_E(emulator, tmp);
 
 	RETURN_STRING(emulator, 0);
+}
+
+/*
+	Function name:	libvirt_connect_get_nic_models
+	Since version:	0.4.9
+	Description:	Function is used to get NIC models for requested connection/architecture
+	Arguments:	@conn [resource]: libvirt connection resource
+			@arch [string]: optional architecture string, can be NULL to get default
+	Returns:	array of models
+*/
+PHP_FUNCTION(libvirt_connect_get_nic_models)
+{
+	php_libvirt_connection *conn=NULL;
+	zval *zconn;
+	char *arch = NULL;
+	int arch_len;
+	char *tmp;
+
+	GET_CONNECTION_FROM_ARGS("r|s",&zconn,&arch,&arch_len);
+
+	if ((arch == NULL) || (arch_len == 0))
+		arch = NULL;
+
+	tmp = connection_get_emulator(conn->conn, arch TSRMLS_CC);
+	if (tmp == NULL) {
+		set_error("Cannot get emulator" TSRMLS_CC);
+		RETURN_FALSE;
+	}
+
+	char cmd[4096] = { 0 };
+	char tmp2[16]  = { 0 };
+	snprintf(cmd, sizeof(cmd), "%s -net nic,model=? 2>&1", tmp);
+
+	FILE *fp = popen(cmd, "r");
+	if (fp == NULL)
+		RETURN_FALSE;
+
+	array_init(return_value);
+	while (!feof(fp)) {
+		memset(cmd, 0, sizeof(cmd));
+		fgets(cmd, sizeof(cmd), fp);
+
+		if ((tmp = strstr(cmd, "Supported NIC models:")) != NULL) {
+			tmp = strstr(tmp, ":") + 2;
+
+			int i;
+			tTokenizer t = tokenize(tmp, ",");
+			for (i = 0; i < t.numTokens; i++) {
+				snprintf(tmp2, sizeof(tmp2), "%d", i);
+				add_assoc_string_ex(return_value, tmp2, strlen(tmp2) + 1, t.tokens[i], 1);
+			}
+			free_tokens(t);
+		}
+	}
+	fclose(fp);
+}
+
+/*
+	Function name:	libvirt_connect_get_soundhw_models
+	Since version:	0.4.9
+	Description:	Function is used to get sound hardware models for requested connection/architecture
+	Arguments:	@conn [resource]: libvirt connection resource
+			@arch [string]: optional architecture string, can be NULL to get default
+			@flags [int]: flags for getting sound hardware. Can be either 0 or VIR_CONNECT_SOUNDHW_GET_NAMES
+	Returns:	array of models
+*/
+PHP_FUNCTION(libvirt_connect_get_soundhw_models)
+{
+	php_libvirt_connection *conn=NULL;
+	zval *zconn;
+	char *arch = NULL;
+	int arch_len;
+	char *tmp;
+	long flags = 0;
+
+	GET_CONNECTION_FROM_ARGS("r|sl",&zconn,&arch,&arch_len,&flags);
+
+	if ((arch == NULL) || (arch_len == 0))
+		arch = NULL;
+
+	tmp = connection_get_emulator(conn->conn, arch TSRMLS_CC);
+	if (tmp == NULL) {
+		set_error("Cannot get emulator" TSRMLS_CC);
+		RETURN_FALSE;
+	}
+
+	char cmd[4096] = { 0 };
+	snprintf(cmd, sizeof(cmd), "%s -soundhw help 2>&1", tmp);
+
+	FILE *fp = popen(cmd, "r");
+	if (fp == NULL)
+		RETURN_FALSE;
+
+	short inFunc = 0;
+
+	int n = 0;
+	array_init(return_value);
+	while (!feof(fp)) {
+		memset(cmd, 0, sizeof(cmd));
+		fgets(cmd, sizeof(cmd), fp);
+
+		if (strncmp(cmd, "Valid ", 6)== 0) {
+			inFunc = 1;
+			continue;
+		}
+		else
+		if (strlen(cmd) < 2)
+			inFunc = 0;
+
+		if (inFunc) {
+			int i;
+			char desc[1024] = { 0 };
+			tTokenizer t = tokenize(cmd, " ");
+			if (t.numTokens == 0)
+				continue;
+
+			if ((i > 0) && (flags & CONNECT_FLAG_SOUNDHW_GET_NAMES)) {
+				memset(desc, 0, sizeof(desc));
+				for (i = 1; i < t.numTokens; i++) {
+					strcat(desc, t.tokens[i]);
+					if (i < t.numTokens - 1)
+						strcat(desc, " ");
+				}
+
+				zval *arr;
+				ALLOC_INIT_ZVAL(arr);
+				array_init(arr);
+				add_assoc_string_ex(arr, "name", 5, t.tokens[0], 1);
+				add_assoc_string_ex(arr, "description", 12, desc, 1);
+				add_next_index_zval(return_value, arr);
+			}
+			else {
+				char tmp2[16] = { 0 };
+				snprintf(tmp2, sizeof(tmp2), "%d", n++);
+				add_assoc_string_ex(return_value, tmp2, strlen(tmp2) + 1, t.tokens[0], 1);
+			}
+
+			free_tokens(t);
+		}
+	}
+	fclose(fp);
 }
 
 void parse_array(zval *arr, tVMDisk *disk, tVMNetwork *network)
