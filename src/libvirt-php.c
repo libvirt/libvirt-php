@@ -371,7 +371,7 @@ char *translate_counter_type(int type)
 	Arguments:		@string [string]: input string
 				@by [string]: string used as delimited
 	Returns:		tTokenizer structure
- */
+*/
 tTokenizer tokenize(char *string, char *by)
 {
 	char *tmp;
@@ -402,7 +402,7 @@ tTokenizer tokenize(char *string, char *by)
 	Description:		Function to free tokens allocated by tokenize function
 	Arguments:		@t [tTokenizer]: tokenizer structure previously allocated by tokenize function
 	Returns:		none
- */
+*/
 void free_tokens(tTokenizer t)
 {
 	int i;
