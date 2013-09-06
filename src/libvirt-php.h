@@ -301,6 +301,7 @@ PHP_FUNCTION(libvirt_node_get_mem_stats);
 PHP_FUNCTION(libvirt_domain_new);
 PHP_FUNCTION(libvirt_domain_new_get_vnc);
 PHP_FUNCTION(libvirt_domain_get_counts);
+PHP_FUNCTION(libvirt_domain_is_persistent);
 PHP_FUNCTION(libvirt_domain_lookup_by_name);
 PHP_FUNCTION(libvirt_domain_get_xml_desc);
 PHP_FUNCTION(libvirt_domain_get_disk_devices);

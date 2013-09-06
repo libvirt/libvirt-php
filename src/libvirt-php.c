@@ -76,6 +76,7 @@ static zend_function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_domain_new, NULL)
 	PHP_FE(libvirt_domain_new_get_vnc, NULL)
 	PHP_FE(libvirt_domain_get_counts, NULL)
+	PHP_FE(libvirt_domain_is_persistent, NULL)
 	PHP_FE(libvirt_domain_lookup_by_name, NULL)
 	PHP_FE(libvirt_domain_get_xml_desc, NULL)
 	PHP_FE(libvirt_domain_get_disk_devices, NULL)
@@ -2899,6 +2900,31 @@ PHP_FUNCTION(libvirt_domain_get_counts)
 	add_assoc_long(return_value, "total", (long)(count_defined + count_active));
 	add_assoc_long(return_value, "active", (long)count_active);
 	add_assoc_long(return_value, "inactive", (long)count_defined);
+}
+
+/*
+	Function name:	libvirt_domain_is_persistent
+	Since version:	0.4.9
+	Description:	Function to get information whether domain is persistent or not
+	Arguments:	@res [resource]: libvirt domain resource
+	Returns:	TRUE for persistent, FALSE for not persistent, -1 on error
+*/
+PHP_FUNCTION(libvirt_domain_is_persistent)
+{
+	php_libvirt_domain *domain = NULL;
+	zval *zdomain;
+	int p;
+
+	GET_DOMAIN_FROM_ARGS ("r", &zdomain);
+
+	if ((p = virDomainIsPersistent(domain->domain)) < 0) {
+		RETURN_LONG(-1);
+	}
+
+	if (p == 1)
+		RETURN_TRUE;
+
+	RETURN_FALSE;
 }
 
 /*
