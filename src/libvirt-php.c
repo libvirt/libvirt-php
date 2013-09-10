@@ -1873,7 +1873,7 @@ PHP_FUNCTION(libvirt_connect_get_machine_types)
 				array_init(arr2);
 
 				for (j = 0; j < num2; j++) {
-					int mts, num3, k;
+					int num3, k;
 					char tmp2[1024] = { 0 };
 
 					/* Common */
@@ -1884,7 +1884,6 @@ PHP_FUNCTION(libvirt_connect_get_machine_types)
 					snprintf(tmp2, sizeof(tmp2), "//capabilities/guest/arch[@name=\"%s\"]/machine",
 							ret[i]);
 
-					mts = 0;
 					char **ret3 = get_array_from_xpath(caps, tmp2, &num3);
 					if (ret3 != NULL) {
 						for (k = 0; k < num3; k++) {
@@ -1892,7 +1891,7 @@ PHP_FUNCTION(libvirt_connect_get_machine_types)
 							char key[8] = { 0 };
 							char tmp3[2048] = { 0 };
 
-							snprintf(key, sizeof(key), "%d", mts++);
+							snprintf(key, sizeof(key), "%d", k);
 							//add_assoc_string_ex(arr2, key, strlen(key) + 1, ret3[k], 1);
 
 							snprintf(tmp3, sizeof(tmp3), "//capabilities/guest/arch[@name=\"%s\"]/machine[text()=\"%s\"]/@maxCpus",
@@ -1928,7 +1927,7 @@ PHP_FUNCTION(libvirt_connect_get_machine_types)
 							char tmp3[2048] = { 0 };
 							char *numTmp = NULL;
 
-							snprintf(key, sizeof(key), "%d", mts++);
+							snprintf(key, sizeof(key), "%d", k);
 							snprintf(tmp3, sizeof(tmp3),
 								"//capabilities/guest/arch[@name=\"%s\"]/domain[@type=\"%s\"]/machine[text()=\"%s\"]/@maxCpus",
 								ret[i], ret2[j], ret3[k]);
