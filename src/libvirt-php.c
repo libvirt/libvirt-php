@@ -1954,7 +1954,7 @@ PHP_FUNCTION(libvirt_connect_get_machine_types)
 						add_assoc_zval_ex(arr2, ret2[j], strlen(ret2[j]) + 1, arr3);
 					}
 				}
-				free(ret2[j]);
+				//free(ret2[j]);
 
 				add_assoc_zval_ex(return_value, ret[i], strlen(ret[i]) + 1, arr2);
 			}
