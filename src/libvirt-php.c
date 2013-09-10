@@ -1139,6 +1139,13 @@ PHP_MINIT_FUNCTION(libvirt)
 	REGISTER_LONG_CONSTANT("VIR_DOMAIN_SHUTOFF", 		5, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("VIR_DOMAIN_CRASHED", 		6, CONST_CS | CONST_PERSISTENT);
 
+	/* Domain vCPU flags */
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_VCPU_CONFIG",	VIR_DOMAIN_VCPU_CONFIG, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_VCPU_CURRENT",	VIR_DOMAIN_VCPU_CURRENT, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_VCPU_LIVE",		VIR_DOMAIN_VCPU_LIVE, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_VCPU_MAXIMUM",	VIR_DOMAIN_VCPU_MAXIMUM, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_VCPU_GUEST",		VIR_DOMAIN_VCPU_GUEST, CONST_CS | CONST_PERSISTENT);
+
 	#if LIBVIR_VERSION_NUMBER>=8000
 	/* Domain snapshot constants */
 	REGISTER_LONG_CONSTANT("VIR_SNAPSHOT_DELETE_CHILDREN",	 VIR_DOMAIN_SNAPSHOT_DELETE_CHILDREN,	CONST_CS | CONST_PERSISTENT);
@@ -4417,75 +4424,23 @@ PHP_FUNCTION(libvirt_domain_get_interface_devices)
 	Description:	Function is used to change the VCPU count for the domain
 	Arguments:	@res [resource]: libvirt domain resource
 			@numCpus [int]: number of VCPUs to be set for the guest
-	Returns:	new domain resource
+			@flags [int]: flags for virDomainSetVcpusFlags (available at http://libvirt.org/html/libvirt-libvirt.html#virDomainVcpuFlags )
+	Returns:	true on success, false on error
 */
 PHP_FUNCTION(libvirt_domain_change_vcpus)
 {
+	int numCpus, flags = 0;
 	php_libvirt_domain *domain=NULL;
 	zval *zdomain;
-	char *tmp1 = NULL;
-	char *tmp2 = NULL;
-	char *xml;
-	char *new_xml = NULL;
-	int new_len;
-	char new[4096] = { 0 };
-	long xflags = 0;
-	int numCpus = 1;
-	int retval = -1;
-	int pos = -1;
-	php_libvirt_domain *res_domain = NULL;
-	php_libvirt_connection *conn   = NULL;
-	virDomainPtr dom=NULL;
 
-	GET_DOMAIN_FROM_ARGS("rl|l",&zdomain,&numCpus,&xflags);
+	GET_DOMAIN_FROM_ARGS("rl|l",&zdomain,&numCpus,&flags);
 
-	DPRINTF("%s: Changing domain vcpu count to %d, domain = %p\n", PHPFUNC, numCpus, domain->domain);
-
-	xml=virDomainGetXMLDesc(domain->domain,xflags);
-	if (xml==NULL) {
-		set_error_if_unset("Cannot get the XML description" TSRMLS_CC);
-		RETURN_FALSE;
-	}
-
-	snprintf(new, sizeof(new), "  <vcpu>%d</vcpu>\n", numCpus);
-	tmp1 = strstr(xml, "</vcpu>") + strlen("</vcpu>");
-	pos = strlen(xml) - strlen(tmp1);
-
-	tmp2 = emalloc( ( pos + 1 )* sizeof(char) );
-	memset(tmp2, 0, pos + 1);
-	memcpy(tmp2, xml, pos - 15);
-
-	new_len = strlen(tmp1) + strlen(tmp2) + strlen(new) + 2;
-	new_xml = emalloc( new_len * sizeof(char) );
-	snprintf(new_xml, new_len, "%s\n%s%s", tmp2, new, tmp1);
-
-	conn = domain->conn;
-
-	virDomainUndefine(domain->domain);
-	retval = virDomainFree(domain->domain);
-	if (retval != 0) {
-		DPRINTF("%s: Cannot free domain %p, error code = %d (%s)\n", PHPFUNC, domain->domain, retval, LIBVIRT_G(last_error));
+	if (virDomainSetVcpusFlags(domain->domain, numCpus, flags) == 0) {
+		RETURN_TRUE;
 	}
 	else {
-		resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, domain->domain, 0 TSRMLS_CC);
-		DPRINTF("%s: Domain %p freed\n", PHPFUNC, domain->domain);
+		RETURN_FALSE;
 	}
-
-	dom=virDomainDefineXML(conn->conn, new_xml);
-	if (dom==NULL) {
-		DPRINTF("%s: Function failed, restoring original XML\n", PHPFUNC);
-		dom=virDomainDefineXML(conn->conn, xml);
-		if (dom == NULL)
-			RETURN_FALSE;
-	}
-
-	res_domain = emalloc(sizeof(php_libvirt_domain));
-	res_domain->domain = dom;
-	res_domain->conn = conn;
-
-	DPRINTF("%s: returning %p\n", PHPFUNC, res_domain->domain);
-	resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1 TSRMLS_CC);
-	ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
 }
 
 /*
