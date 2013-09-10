@@ -256,6 +256,8 @@ int vnc_send_pointer_event(char *server, char *port, int pos_x, int pos_y, int c
 
 int set_logfile(char *filename, long maxsize TSRMLS_DC);
 char *get_datetime(void);
+char *get_string_from_xpath(char *xml, char *xpath, zval **val, int *retVal);
+char **get_array_from_xpath(char *xml, char *xpath, int *num);
 #ifdef DEBUG_SUPPORT
 int gdebug;
 #endif
@@ -292,6 +294,7 @@ PHP_FUNCTION(libvirt_connect_get_sysinfo);
 PHP_FUNCTION(libvirt_connect_get_encrypted);
 PHP_FUNCTION(libvirt_connect_get_secure);
 PHP_FUNCTION(libvirt_connect_get_information);
+PHP_FUNCTION(libvirt_connect_get_machine_types);
 /* Node functions */
 PHP_FUNCTION(libvirt_node_get_info);
 PHP_FUNCTION(libvirt_node_get_cpu_stats);

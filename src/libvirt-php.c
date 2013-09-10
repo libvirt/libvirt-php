@@ -67,6 +67,7 @@ static zend_function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_connect_get_nic_models, NULL)
 	PHP_FE(libvirt_connect_get_soundhw_models, NULL)
 	PHP_FE(libvirt_connect_get_information, NULL)
+	PHP_FE(libvirt_connect_get_machine_types, NULL)
 	PHP_FE(libvirt_connect_get_hypervisor, NULL)
 	PHP_FE(libvirt_connect_get_sysinfo, NULL)
 	PHP_FE(libvirt_connect_get_maxvcpus, NULL)
@@ -1833,6 +1834,135 @@ PHP_FUNCTION(libvirt_node_get_mem_stats)
 }
 #endif
 
+//virsh capabilities | xpath '//capabilities/guest/arch[@name="x86_64"]/machine[@maxCpus=1]'
+
+/*
+	Function name:	libvirt_connect_get_machine_types
+	Since version:	0.4.9
+	Description:	Function is used to get machine types supported by hypervisor on the conneciton
+	Arguments:	@conn [resource]: resource for connection
+	Returns:	array of machine types for the connection incl. maxCpus if appropriate
+*/
+PHP_FUNCTION(libvirt_connect_get_machine_types)
+{
+	zval *zconn;
+	php_libvirt_connection *conn = NULL;
+	char *caps = NULL;
+	char **ret = NULL;
+	int i, num = -1;
+
+	GET_CONNECTION_FROM_ARGS("r",&zconn);
+
+	caps = virConnectGetCapabilities(conn->conn);
+	if (caps == NULL)
+		RETURN_FALSE;
+
+	array_init(return_value);
+
+	ret = get_array_from_xpath(caps, "//capabilities/guest/arch/@name", &num);
+	if (ret != NULL) {
+		for (i = 0; i < num; i++) {
+			int num2, j;
+			char tmp[1024] = { 0 };
+
+			snprintf(tmp, sizeof(tmp), "//capabilities/guest/arch[@name=\"%s\"]/domain/@type", ret[i]);
+			char **ret2 = get_array_from_xpath(caps, tmp, &num2);
+			if (ret2 != NULL) {
+				zval *arr2;
+				ALLOC_INIT_ZVAL(arr2);
+				array_init(arr2);
+
+				for (j = 0; j < num2; j++) {
+					int mts, num3, k;
+					char tmp2[1024] = { 0 };
+
+					/* Common */
+					zval *arr3;
+					ALLOC_INIT_ZVAL(arr3);
+					array_init(arr3);
+
+					snprintf(tmp2, sizeof(tmp2), "//capabilities/guest/arch[@name=\"%s\"]/machine",
+							ret[i]);
+
+					mts = 0;
+					char **ret3 = get_array_from_xpath(caps, tmp2, &num3);
+					if (ret3 != NULL) {
+						for (k = 0; k < num3; k++) {
+							char *numTmp = NULL;
+							char key[8] = { 0 };
+							char tmp3[2048] = { 0 };
+
+							snprintf(key, sizeof(key), "%d", mts++);
+							//add_assoc_string_ex(arr2, key, strlen(key) + 1, ret3[k], 1);
+
+							snprintf(tmp3, sizeof(tmp3), "//capabilities/guest/arch[@name=\"%s\"]/machine[text()=\"%s\"]/@maxCpus",
+									ret[i], ret3[k]);
+
+							numTmp = get_string_from_xpath(caps, tmp3, NULL, NULL);
+							if (numTmp == NULL)
+								add_assoc_string_ex(arr2, key, strlen(key) + 1, ret3[k], 1);
+							else {
+								zval *arr4;
+								ALLOC_INIT_ZVAL(arr4);
+								array_init(arr4);
+
+								add_assoc_string_ex(arr4, "name", 5, ret3[k], 1);
+								add_assoc_string_ex(arr4, "maxCpus", 9, numTmp, 1);
+
+								add_assoc_zval_ex(arr2, key, strlen(key) + 1, arr4);
+								free(numTmp);
+							}
+
+							free(ret3[k]);
+						}
+					}
+
+					/* Domain type specific */
+					snprintf(tmp2, sizeof(tmp2), "//capabilities/guest/arch[@name=\"%s\"]/domain[@type=\"%s\"]/machine",
+							ret[i], ret2[j]);
+
+					ret3 = get_array_from_xpath(caps, tmp2, &num3);
+					if (ret3 != NULL) {
+						for (k = 0; k < num3; k++) {
+							char key[8] = { 0 };
+							char tmp3[2048] = { 0 };
+							char *numTmp = NULL;
+
+							snprintf(key, sizeof(key), "%d", mts++);
+							snprintf(tmp3, sizeof(tmp3),
+								"//capabilities/guest/arch[@name=\"%s\"]/domain[@type=\"%s\"]/machine[text()=\"%s\"]/@maxCpus",
+								ret[i], ret2[j], ret3[k]);
+
+							numTmp = get_string_from_xpath(caps, tmp3, NULL, NULL);
+							if (numTmp == NULL)
+								add_assoc_string_ex(arr3, key, strlen(key) + 1, ret3[k], 1);
+							else {
+								zval *arr4;
+								ALLOC_INIT_ZVAL(arr4);
+								array_init(arr4);
+
+								add_assoc_string_ex(arr4, "name", 5, ret3[k], 1);
+								add_assoc_string_ex(arr4, "maxCpus", 9, numTmp, 1);
+
+								add_assoc_zval_ex(arr3, key, strlen(key) + 1, arr4);
+								free(numTmp);
+							}
+
+							free(ret3[k]);
+						}
+
+						add_assoc_zval_ex(arr2, ret2[j], strlen(ret2[j]) + 1, arr3);
+					}
+				}
+				free(ret2[j]);
+
+				add_assoc_zval_ex(return_value, ret[i], strlen(ret[i]) + 1, arr2);
+			}
+			free(ret[i]);
+		}
+	}
+}
+
 /*
 	Function name:	libvirt_connect_get_information
 	Since version:	0.4.1(-2)
@@ -1847,7 +1977,7 @@ PHP_FUNCTION(libvirt_connect_get_information)
 	unsigned long hvVer = 0;
 	const char *type = NULL;
 	char hvStr[64] = { 0 };
-	int iTmp = -1;
+	int iTmp = -1, maxvcpus = -1;
 	php_libvirt_connection *conn = NULL;
 
 	GET_CONNECTION_FROM_ARGS("r",&zconn);
@@ -1870,7 +2000,14 @@ PHP_FUNCTION(libvirt_connect_get_information)
 		add_assoc_string_ex(return_value, "hypervisor_string", 18, hvStr, 1);
 	}
 
-	add_assoc_long(return_value, "hypervisor_maxvcpus", virConnectGetMaxVcpus(conn->conn, type));
+	if (strcmp(type, "QEMU") == 0) {
+		/* For QEMU the value is not reliable so we return -1 instead */
+		maxvcpus = -1;
+	}
+	else
+		maxvcpus = virConnectGetMaxVcpus(conn->conn, type);
+
+	add_assoc_long(return_value, "hypervisor_maxvcpus", maxvcpus);
 	iTmp = virConnectIsEncrypted(conn->conn);
 	if (iTmp == 1)
 		add_assoc_string_ex(return_value, "encrypted", 10, "Yes", 1);
@@ -2300,6 +2437,93 @@ char *get_string_from_xpath(char *xml, char *xpath, zval **val, int *retVal)
 		*retVal = ret;
 
 	return (value != NULL) ? strdup(value) : NULL;
+}
+
+/*
+	Private function name:	get_array_from_xpath
+	Since version:		0.4.9
+	Description:		Function is used to get all XPath elements from XML and return in array (character pointer)
+	Arguments:		@xml [string]: input XML document
+				@xpath [string]: xPath expression to find nodes in the XML document
+				@num [int *]: number of elements
+	Returns:		pointer to char ** if successful or NULL for error
+*/
+char **get_array_from_xpath(char *xml, char *xpath, int *num)
+{
+	xmlParserCtxtPtr xp;
+	xmlDocPtr doc;
+	xmlXPathContextPtr context;
+	xmlXPathObjectPtr result;
+	xmlNodeSetPtr nodeset;
+	int ret = 0, i;
+	char *value = NULL;
+	char **val = NULL;
+
+	if ((xpath == NULL) || (xml == NULL))
+		return NULL;
+
+	xp = xmlCreateDocParserCtxt( (xmlChar *)xml );
+	if (!xp)
+		return NULL;
+
+	doc = xmlCtxtReadDoc(xp, (xmlChar *)xml, NULL, NULL, 0);
+	if (!doc) {
+		xmlCleanupParser();
+		return NULL;
+	}
+
+	context = xmlXPathNewContext(doc);
+	if (!context) {
+		xmlCleanupParser();
+		return NULL;
+	}
+
+	result = xmlXPathEvalExpression( (xmlChar *)xpath, context);
+	if (!result) {
+	        xmlXPathFreeContext(context);
+		xmlCleanupParser();
+		return NULL;
+	}
+
+	if(xmlXPathNodeSetIsEmpty(result->nodesetval)){
+		xmlXPathFreeObject(result);
+		xmlXPathFreeContext(context);
+		xmlCleanupParser();
+		return NULL;
+	}
+
+	nodeset = result->nodesetval;
+	ret = nodeset->nodeNr;
+
+	if (ret == 0) {
+		xmlXPathFreeObject(result);
+		xmlFreeDoc(doc);
+		xmlXPathFreeContext(context);
+		xmlCleanupParser();
+		if (num != NULL)
+			*num = 0;
+		return NULL;
+	}
+
+	ret = 0;
+	val = (char **)malloc( nodeset->nodeNr  * sizeof(char *) );
+	for (i = 0; i < nodeset->nodeNr; i++) {
+		if (xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode, 1) != NULL) {
+			value = (char *)xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode, 1);
+
+			val[ret++] = strdup(value);
+		}
+	}
+
+	xmlXPathFreeContext(context);
+	xmlXPathFreeObject(result);
+	xmlFreeDoc(doc);
+	xmlCleanupParser();
+
+	if (num != NULL)
+		*num = ret;
+
+	return val;
 }
 
 /*
@@ -8021,6 +8245,8 @@ PHP_FUNCTION(libvirt_get_iso_images)
 		}
 		closedir(d);
 	}
+	else
+		printf("Error: %d\n", errno);
 
 	if (num == 0)
 		RETURN_FALSE;
