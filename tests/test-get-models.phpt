@@ -2,7 +2,6 @@
 	require_once('functions.phpt');
 
 	$conn = libvirt_connect(NULL);
-	//$conn = libvirt_connect('qemu:///system');
 	if (!is_resource($conn))
 		bail('Connection to default hypervisor failed');
 

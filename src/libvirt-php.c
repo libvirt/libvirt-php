@@ -3930,6 +3930,18 @@ PHP_FUNCTION(libvirt_connect_get_nic_models)
 
 	GET_CONNECTION_FROM_ARGS("r|s",&zconn,&arch,&arch_len);
 
+	/* Disable getting it on remote connections */
+	if (!is_local_connection(conn->conn)) {
+		set_error("This function is accessing emulator binary directly but the connection is not local" TSRMLS_CC);
+		RETURN_FALSE;
+	}
+
+	/* This approach is working only for QEMU driver so bails if not currently using it */
+	if (strcmp(virConnectGetType(conn->conn), "QEMU") != 0) {
+		set_error("This function can be used only for QEMU driver" TSRMLS_CC);
+		RETURN_FALSE;
+	}
+
 	if ((arch == NULL) || (arch_len == 0))
 		arch = NULL;
 
@@ -3989,6 +4001,18 @@ PHP_FUNCTION(libvirt_connect_get_soundhw_models)
 
 	if ((arch == NULL) || (arch_len == 0))
 		arch = NULL;
+
+	/* Disable getting it on remote connections */
+	if (!is_local_connection(conn->conn)) {
+		set_error("This function is accessing emulator binary directly but the connection is not local" TSRMLS_CC);
+		RETURN_FALSE;
+	}
+
+	/* This approach is working only for QEMU driver so bails if not currently using it */
+	if (strcmp(virConnectGetType(conn->conn), "QEMU") != 0) {
+		set_error("This function can be used only for QEMU driver" TSRMLS_CC);
+		RETURN_FALSE;
+	}
 
 	tmp = connection_get_emulator(conn->conn, arch TSRMLS_CC);
 	if (tmp == NULL) {
