@@ -34,8 +34,8 @@ do {} while(0)
 #define	PHPFUNC	(__FUNCTION__ + 4)
 
 /* Additional binaries */
-char *features[] = { "screenshot", "create-image", NULL };
-char *features_binaries[] = { "/usr/bin/gvnccapture", "/usr/bin/qemu-img", NULL };
+char *features[] = { "screenshot", "create-image", "screenshot-convert", NULL };
+char *features_binaries[] = { "/usr/bin/gvnccapture", "/usr/bin/qemu-img", "/bin/convert", NULL };
 
 /* ZEND thread safe per request globals definition */
 int le_libvirt_connection;
@@ -3470,8 +3470,23 @@ PHP_FUNCTION(libvirt_domain_get_screenshot_api)
 	virStreamFree(st);
 
 	array_init(return_value);
-	add_assoc_string_ex(return_value, "file", 5, file, 1);
-	add_assoc_string_ex(return_value, "mime", 5, mime, 1);
+	if (get_feature_binary("screenshot-convert") != NULL) {
+		char *bin = get_feature_binary("screenshot-convert");
+		char tmp[4096] = { 0 };
+		char fileNew[1024] = { 0 };
+
+		snprintf(fileNew, sizeof(fileNew), "%s.png", file);
+		snprintf(tmp, sizeof(tmp), "%s %s %s > /dev/null 2> /dev/null", bin, file, fileNew);
+		system(tmp);
+		unlink(file);
+
+		add_assoc_string_ex(return_value, "file", 5, fileNew, 1);
+		add_assoc_string_ex(return_value, "mime", 5, "image/png", 1);
+	}
+	else {
+		add_assoc_string_ex(return_value, "file", 5, file, 1);
+		add_assoc_string_ex(return_value, "mime", 5, mime, 1);
+	}
 }
 #else
 PHP_FUNCTION(libvirt_domain_get_screenshot_api)
