@@ -357,6 +357,8 @@ PHP_FUNCTION(libvirt_domain_is_active);
 PHP_FUNCTION(libvirt_domain_get_next_dev_ids);
 PHP_FUNCTION(libvirt_domain_send_keys);
 PHP_FUNCTION(libvirt_domain_send_pointer_event);
+PHP_FUNCTION(libvirt_domain_get_metadata);
+PHP_FUNCTION(libvirt_domain_set_metadata);
 /* Domain snapshot functions */
 PHP_FUNCTION(libvirt_domain_has_current_snapshot);
 PHP_FUNCTION(libvirt_domain_snapshot_create);

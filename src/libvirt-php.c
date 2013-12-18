@@ -122,6 +122,8 @@ static zend_function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_domain_get_network_info, NULL)
 	PHP_FE(libvirt_domain_get_autostart, NULL)
 	PHP_FE(libvirt_domain_set_autostart, NULL)
+	PHP_FE(libvirt_domain_get_metadata, NULL)
+	PHP_FE(libvirt_domain_set_metadata, NULL)
 	PHP_FE(libvirt_domain_is_active, NULL)
 	PHP_FE(libvirt_domain_get_next_dev_ids, NULL)
 	PHP_FE(libvirt_domain_get_screenshot, NULL)
@@ -1259,6 +1261,14 @@ PHP_MINIT_FUNCTION(libvirt)
 	REGISTER_LONG_CONSTANT("VIR_DOMAIN_DISK_FILE",			DOMAIN_DISK_FILE, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("VIR_DOMAIN_DISK_BLOCK",			DOMAIN_DISK_BLOCK, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("VIR_DOMAIN_DISK_ACCESS_ALL",		DOMAIN_DISK_ACCESS_ALL, CONST_CS | CONST_PERSISTENT);
+
+	/* Domain metadata constants */
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_METADATA_DESCRIPTION",	0, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_METADATA_TITLE",		1, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_METADATA_ELEMENT",		2, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_AFFECT_CURRENT",		0, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_AFFECT_LIVE",		1, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_AFFECT_CONFIG",		2, CONST_CS | CONST_PERSISTENT);
 
 	/* Connect flags */
 	REGISTER_LONG_CONSTANT("VIR_CONNECT_FLAG_SOUNDHW_GET_NAMES",	CONNECT_FLAG_SOUNDHW_GET_NAMES, CONST_CS | CONST_PERSISTENT);
@@ -3200,6 +3210,80 @@ PHP_FUNCTION(libvirt_domain_set_autostart)
 		RETURN_FALSE;
 	}
 	RETURN_TRUE;
+}
+
+/*
+	Function name:	libvirt_domain_get_metadata
+	Since version:	0.4.9
+	Description:	Function retrieve appropriate domain element given by @type.
+	Arguments:	@res [resource]: libvirt domain resource
+			@type [int]: virDomainMetadataType type of description
+			@uri [string]: XML namespace identifier
+			@flags [int]: bitwise-OR of virDomainModificationImpact
+	Returns:	metadata string, NULL on error or FALSE on API not supported
+*/
+PHP_FUNCTION(libvirt_domain_get_metadata)
+{
+	php_libvirt_domain *domain = NULL;
+	zval *zdomain;
+	int type = 0;
+	unsigned int flags = 0;
+	char *uri = NULL;
+	int uri_len;
+	char *ret = NULL;
+
+	GET_DOMAIN_FROM_ARGS ("rlsl", &zdomain, &type, &uri, &uri_len, &flags);
+
+	if ((uri != NULL) && (strlen(uri) == 0))
+		uri = NULL;
+
+	ret = virDomainGetMetadata(domain->domain, type, uri, flags);
+	if (ret == NULL) {
+		if (strstr(LIBVIRT_G(last_error), "not supported") != NULL) {
+			RETURN_FALSE;
+		}
+		else {
+			RETURN_NULL();
+		}
+	}
+	else {
+		RETURN_STRING(ret, 0);
+	}
+}
+
+/*
+	Function name:	libvirt_domain_set_metadata
+	Since version:	0.4.9
+	Description:	Function sets the appropriate domain element given by @type to the value of @description. No new lines are permitted.
+	Arguments:	@res [resource]: libvirt domain resource
+			@type [int]: virDomainMetadataType type of description
+			@metadata [string]: new metadata text
+			@key [string]: XML namespace key or empty string (alias of NULL)
+			@uri [string]: XML namespace identifier or empty string (alias of NULL)
+			@flags [int]: bitwise-OR of virDomainModificationImpact
+	Returns:	-1 on error, 0 on success
+*/
+PHP_FUNCTION(libvirt_domain_set_metadata)
+{
+	php_libvirt_domain *domain = NULL;
+	zval *zdomain;
+	int metadata_len, key_len, uri_len;
+	char *metadata = NULL;
+	char *key = NULL;
+	char *uri = NULL;
+	int type = 0;
+	unsigned int flags = 0;
+	int rc;
+
+	GET_DOMAIN_FROM_ARGS ("rlsssl", &zdomain, &type, &metadata, &metadata_len, &key, &key_len, &uri, &uri_len, &flags);
+
+	if ((key != NULL) && (strlen(key) == 0))
+		key = NULL;
+	if ((uri != NULL) && (strlen(uri) == 0))
+		uri = NULL;
+
+	rc = virDomainSetMetadata(domain->domain, type, metadata, key, uri, flags);
+	RETURN_LONG(rc);
 }
 
 /*

@@ -5,6 +5,14 @@
 		exit($error_code);
 	}
 
+	function testskip($name = false) {
+		if ($name == false)
+			bail("Invalid test name!");
+
+		printf("Test $name skipped. Possibly not supported by hypervisor\n");
+		exit(0);
+	}
+
 	function success($name = false) {
 		if ($name == false)
 			bail("Invalid test name!");
