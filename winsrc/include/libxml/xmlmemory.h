@@ -153,7 +153,7 @@ XMLPUBFUN void * XMLCALL
 	xmlMemRealloc	(void *ptr,size_t size);
 XMLPUBFUN void XMLCALL
 	xmlMemFree	(void *ptr);
-XMLPUBFUN char * XMLCAL\l
+XMLPUBFUN char * XMLCALL
 	xmlMemoryStrdup	(const char *str);
 XMLPUBFUN void * XMLCALL
 	xmlMallocLoc	(size_t size, const char *file, int line);
