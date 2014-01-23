@@ -40,6 +40,14 @@
 #define	VIR_VERSION_BINDING		1
 #define	VIR_VERSION_LIBVIRT		2
 
+#ifdef _MSC_VER
+#define EXTWIN
+#endif
+
+#ifdef EXTWIN
+#define COMPILE_DL_LIBVIRT
+#endif
+
 #ifdef COMPILE_DL_LIBVIRT
 #include "php.h"
 #undef PACKAGE_BUGREPORT
@@ -54,25 +62,36 @@
 #endif
 
 #include "php_ini.h"
+#ifdef EXTWIN
+#include "ext/standard/info.h"
+#else
 #include "standard/info.h"
+#endif
 #endif
 
 #ifdef HAVE_CONFIG_H
 #include "../config.h"
+#else
+#define VERSION "0.5.0"
+#define VERSION_MAJOR 0
+#define VERSION_MINOR 5
+#define VERSION_MICRO 0
 #endif
 
 #include <libvirt/libvirt.h>
 #include <libvirt/virterror.h>
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
-#include <dirent.h>
-#include <strings.h>
 #include <fcntl.h>
 #include <sys/types.h>
+
+#ifndef EXTWIN
+#include <inttypes.h>
+#include <dirent.h>
+#include <strings.h>
 #include <sys/socket.h>
 #include <sys/wait.h>
 #include <netdb.h>
-#include <inttypes.h>
 #include <stdint.h>
 #include <libgen.h>
 
@@ -80,6 +99,32 @@
 #include <netinet/tcp.h>
 #else
 #include <linux/tcp.h>
+#endif
+#else
+
+#define PRIx32       "I32x"
+#define PRIx64       "I64x"
+
+#ifdef EXTWIN
+#if (_MSC_VER < 1300)
+   typedef signed char       int8_t;
+   typedef signed short      int16_t;
+   typedef signed int        int32_t;
+   typedef unsigned char     uint8_t;
+   typedef unsigned short    uint16_t;
+   typedef unsigned int      uint32_t;
+#else
+   typedef signed __int8     int8_t;
+   typedef signed __int16    int16_t;
+   typedef signed __int32    int32_t;
+   typedef unsigned __int8   uint8_t;
+   typedef unsigned __int16  uint16_t;
+   typedef unsigned __int32  uint32_t;
+#endif
+typedef signed __int64       int64_t;
+typedef unsigned __int64     uint64_t;
+#endif
+
 #endif
 
 #ifdef __i386__
@@ -185,6 +230,7 @@ typedef struct tVMNetwork {
 	char *model;
 } tVMNetwork;
 
+#ifndef EXTWIN
 typedef struct tBMPFile {
 	uint32_t filesz;
 	uint16_t creator1;
@@ -203,6 +249,7 @@ typedef struct tBMPFile {
 	uint32_t ncolors;
 	uint32_t nimpcolors;
 } tBMPFile;
+#endif
 
 /* Libvirt-php types */
 typedef struct _php_libvirt_connection {
