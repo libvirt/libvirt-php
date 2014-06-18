@@ -3928,7 +3928,7 @@ PHP_FUNCTION(libvirt_domain_send_pointer_event)
 		RETURN_FALSE;
 	}
 
-	DPRINTF("%s: x = %d, y = %d, clicked = %d, release = %d, hostname = %s...\n", PHPFUNC, pos_x, pos_y, clicked, release, hostname);
+	DPRINTF("%s: x = %d, y = %d, clicked = %d, release = %d, hostname = %s...\n", PHPFUNC, (int) pos_x, (int) pos_y, (int) clicked, release, hostname);
 	ret = vnc_send_pointer_event(hostname, tmp, pos_x, pos_y, clicked, release);
 	if (ret == 0) {
 		DPRINTF("%s: Pointer event result is %d\n", PHPFUNC, ret);
@@ -4428,7 +4428,7 @@ PHP_FUNCTION(libvirt_domain_new)
 	numNets = i;
 
 	snprintf(tmpname, sizeof(tmpname), "%s-install", name);
-	DPRINTF("%s: Name is '%s', memMB is %d, maxmemMB is %d\n", PHPFUNC, tmpname, memMB, maxmemMB);
+	DPRINTF("%s: Name is '%s', memMB is %d, maxmemMB is %d\n", PHPFUNC, tmpname, (int) memMB, (int) maxmemMB);
 	tmp = installation_get_xml(1,
 			conn->conn, tmpname, memMB, maxmemMB, NULL /* arch */, NULL, vcpus, iso_image,
 			vmDisks, numDisks, vmNetworks, numNets,
@@ -6272,7 +6272,7 @@ PHP_FUNCTION(libvirt_domain_snapshot_delete)
 	GET_SNAPSHOT_FROM_ARGS("r|l",&zsnapshot, &flags);
 
 	retval = virDomainSnapshotDelete(snapshot->snapshot, flags);
-	DPRINTF("%s: virDomainSnapshotDelete(%p, %d) returned %d\n", PHPFUNC, snapshot->snapshot, flags, retval);
+	DPRINTF("%s: virDomainSnapshotDelete(%p, %d) returned %d\n", PHPFUNC, snapshot->snapshot, (int) flags, retval);
 	if (retval == -1) RETURN_FALSE;
 	RETURN_TRUE;
 }
@@ -6772,7 +6772,7 @@ PHP_FUNCTION(libvirt_storagevolume_delete)
 	GET_VOLUME_FROM_ARGS("r|l",&zvolume,&flags);
 
 	retval = virStorageVolDelete(volume->volume, flags);
-	DPRINTF("%s: virStorageVolDelete(%p, %d) returned %d\n", PHPFUNC, volume->volume, flags, retval);
+	DPRINTF("%s: virStorageVolDelete(%p, %d) returned %d\n", PHPFUNC, volume->volume, (int) flags, retval);
         if (retval != 0) {
 		set_error_if_unset("Cannot delete storage volume" TSRMLS_CC);
 		RETURN_FALSE;
