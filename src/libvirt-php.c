@@ -3283,8 +3283,8 @@ PHP_FUNCTION(libvirt_domain_get_metadata)
 {
 	php_libvirt_domain *domain = NULL;
 	zval *zdomain;
-	int type = 0;
-	unsigned int flags = 0;
+	long type = 0;
+	long flags = 0;
 	char *uri = NULL;
 	int uri_len;
 	char *ret = NULL;
@@ -3328,8 +3328,8 @@ PHP_FUNCTION(libvirt_domain_set_metadata)
 	char *metadata = NULL;
 	char *key = NULL;
 	char *uri = NULL;
-	int type = 0;
-	unsigned int flags = 0;
+	long type = 0;
+	long flags = 0;
 	int rc;
 
 	GET_DOMAIN_FROM_ARGS ("rlsssl", &zdomain, &type, &metadata, &metadata_len, &key, &key_len, &uri, &uri_len, &flags);
@@ -3566,7 +3566,7 @@ PHP_FUNCTION(libvirt_domain_get_screenshot_api)
 {
 	php_libvirt_domain *domain=NULL;
 	zval *zdomain;
-	unsigned int screen = 0;
+	long screen = 0;
 	int fd = -1;
 	char file[] = "/tmp/libvirt-php-tmp-XXXXXX";
 	virStreamPtr st = NULL;
@@ -3668,7 +3668,7 @@ PHP_FUNCTION(libvirt_domain_get_screenshot)
 	int port = -1;
 	char *hostname = NULL;
 	int hostname_len;
-	int scancode = 10;
+	long scancode = 10;
 	char *path;
 	char name[1024] = { 0 };
 	int use_builtin = 0;
@@ -3908,9 +3908,9 @@ PHP_FUNCTION(libvirt_domain_send_pointer_event)
 	char *xml = NULL;
 	char *hostname = NULL;
 	int hostname_len;
-	int pos_x = 0;
-	int pos_y = 0;
-	int clicked = 0;
+	long pos_x = 0;
+	long pos_y = 0;
+	long clicked = 0;
 	int release = 1;
 	int ret;
 
@@ -4352,12 +4352,12 @@ PHP_FUNCTION(libvirt_domain_new)
 	// char *emulator;
 	char *iso_image = NULL;
 	int iso_image_len;
-	int vcpus = -1;
-	int memMB = -1;
+	long vcpus = -1;
+	long memMB = -1;
 	zval *disks, *networks;
 	tVMDisk *vmDisks = NULL;
 	tVMNetwork *vmNetworks = NULL;
-	int maxmemMB = -1;
+	long maxmemMB = -1;
 	HashTable *arr_hash;
 	int numDisks, numNets, i;
 	zval **data; // removed **zvalue
@@ -4642,7 +4642,7 @@ PHP_FUNCTION(libvirt_domain_get_interface_devices)
 */
 PHP_FUNCTION(libvirt_domain_change_vcpus)
 {
-	int numCpus, flags = 0;
+	long numCpus, flags = 0;
 	php_libvirt_domain *domain=NULL;
 	zval *zdomain;
 
@@ -6266,7 +6266,7 @@ PHP_FUNCTION(libvirt_domain_snapshot_delete)
 {
 	zval *zsnapshot;
 	php_libvirt_snapshot *snapshot;
-	int flags = 0;
+	long flags = 0;
 	int retval;
 
 	GET_SNAPSHOT_FROM_ARGS("r|l",&zsnapshot, &flags);
@@ -6766,7 +6766,7 @@ PHP_FUNCTION(libvirt_storagevolume_delete)
 {
 	php_libvirt_volume *volume=NULL;
 	zval *zvolume;
-	int flags = 0;
+	long flags = 0;
 	int retval = 0;
 
 	GET_VOLUME_FROM_ARGS("r|l",&zvolume,&flags);
@@ -7057,7 +7057,7 @@ PHP_FUNCTION(libvirt_storagepool_refresh)
 {
 	php_libvirt_storagepool *pool = NULL;
 	zval *zpool;
-	unsigned long flags = 0;
+	long flags = 0;
 	int retval;
 
 	GET_STORAGEPOOL_FROM_ARGS ("r|l", &zpool, &flags);
