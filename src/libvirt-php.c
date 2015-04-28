@@ -61,6 +61,7 @@ int le_libvirt_storagepool;
 int le_libvirt_volume;
 int le_libvirt_network;
 int le_libvirt_nodedev;
+int le_libvirt_stream;
 #if LIBVIR_VERSION_NUMBER>=8000
 int le_libvirt_snapshot;
 #endif
@@ -90,6 +91,13 @@ static zend_function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_connect_get_maxvcpus, NULL)
 	PHP_FE(libvirt_connect_get_encrypted, NULL)
 	PHP_FE(libvirt_connect_get_secure, NULL)
+	/* Stream functions */
+	PHP_FE(libvirt_stream_create, NULL)
+	PHP_FE(libvirt_stream_close, NULL)
+	PHP_FE(libvirt_stream_abort, NULL)
+	PHP_FE(libvirt_stream_finish, NULL)
+	PHP_FE(libvirt_stream_send, NULL)
+	PHP_FE(libvirt_stream_recv, NULL)
 	/* Domain functions */
 	PHP_FE(libvirt_domain_new, NULL)
 	PHP_FE(libvirt_domain_new_get_vnc, NULL)
@@ -148,7 +156,7 @@ static zend_function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_domain_get_screen_dimensions, NULL)
 	PHP_FE(libvirt_domain_send_keys, NULL)
 	PHP_FE(libvirt_domain_send_pointer_event, NULL)
-        PHP_FE(libvirt_domain_update_device, NULL)
+	PHP_FE(libvirt_domain_update_device, NULL)
 	/* Domain snapshot functions */
 	PHP_FE(libvirt_domain_has_current_snapshot, NULL)
 	PHP_FE(libvirt_domain_snapshot_create, NULL)
@@ -169,6 +177,9 @@ static zend_function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_storagevolume_create_xml,NULL)
 	PHP_FE(libvirt_storagevolume_create_xml_from,NULL)
 	PHP_FE(libvirt_storagevolume_delete,NULL)
+	PHP_FE(libvirt_storagevolume_download,NULL)
+	PHP_FE(libvirt_storagevolume_upload,NULL)
+	PHP_FE(libvirt_storagevolume_resize,NULL)
 	PHP_FE(libvirt_storagepool_get_uuid_string, NULL)
 	PHP_FE(libvirt_storagepool_get_name, NULL)
 	PHP_FE(libvirt_storagepool_lookup_by_uuid_string, NULL)
@@ -370,6 +381,8 @@ char *translate_counter_type(int type)
 						break;
 		case INT_RESOURCE_DOMAIN:	return "domain";
 						break;
+		case INT_RESOURCE_STREAM:	return "stream";
+						break;
 		case INT_RESOURCE_NETWORK:	return "network";
 						break;
 		case INT_RESOURCE_NODEDEV:	return "node device";
@@ -444,7 +457,7 @@ void free_tokens(tTokenizer t)
 	Private function name:	resource_change_counter
 	Since version:		0.4.2
 	Description:		Function to increment (inc = 1) / decrement (inc = 0) the resource pointers count including the memory location
-	Arguments:		@type [int]: type of resource (INT_RESOURCE_x defines where x can be { CONNECTION | DOMAIN | NETWORK | NODEDEV | STORAGEPOOL | VOLUME | SNAPSHOT })
+	Arguments:		@type [int]: type of resource (INT_RESOURCE_x defines where x can be { CONNECTION | DOMAIN | NETWORK | NODEDEV | STORAGEPOOL | VOLUME | SNAPSHOT | STREAM })
 				@conn [virConnectPtr]: libvirt connection pointer associated with the resource, NULL for libvirt connection objects
 				@mem [pointer]: Pointer to memory location for the resource. Will be converted to appropriate uint for the arch.
 				@inc [int/bool]: Increment the counter (1 = add memory location) or decrement the counter (0 = remove memory location) from entries.
@@ -724,6 +737,18 @@ void free_resource(int type, arch_uint mem TSRMLS_DC)
 		}
 	}
 
+	if (type == INT_RESOURCE_STREAM) {
+		rv = virStreamFree( (virStreamPtr)mem );
+		if (rv != 0) {
+			DPRINTF("%s: virStreamFree(%p) returned %d (%s)\n", __FUNCTION__, (virStreamPtr)mem, rv, LIBVIRT_G (last_error));
+			php_error_docref(NULL TSRMLS_CC, E_WARNING,"virStreamFree failed with %i on destructor: %s", rv, LIBVIRT_G (last_error));
+		}
+		else {
+			DPRINTF("%s: virStreamFree(%p) completed successfully\n", __FUNCTION__, (virStreamPtr)mem);
+			resource_change_counter(INT_RESOURCE_STREAM, NULL, (virStreamPtr)mem, 0 TSRMLS_CC);
+		}
+	}
+
 	if (type == INT_RESOURCE_NETWORK) {
 		rv = virNetworkFree( (virNetworkPtr)mem );
 		if (rv != 0) {
@@ -986,6 +1011,36 @@ static void php_libvirt_domain_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 	}
 }
 
+/* Destructor for stream resource */
+static void php_libvirt_stream_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
+{
+	php_libvirt_stream *stream = (php_libvirt_stream*)rsrc->ptr;
+	int rv = 0;
+
+	if (stream != NULL)
+		{
+			if (stream->stream != NULL)
+				{
+					if (!check_resource_allocation(NULL, INT_RESOURCE_STREAM, stream->stream TSRMLS_CC)) {
+						stream->stream=NULL;
+						efree (stream);
+                                                return;
+					}
+					rv = virStreamFree(stream->stream);
+					if (rv != 0) {
+						DPRINTF("%s: virStreamFree(%p) returned %d (%s)\n", __FUNCTION__, stream->stream, rv, LIBVIRT_G (last_error));
+						php_error_docref(NULL TSRMLS_CC, E_WARNING,"virStreamFree failed with %i on destructor: %s", rv, LIBVIRT_G (last_error));
+					}
+					else {
+						DPRINTF("%s: virStreamFree(%p) completed successfully\n", __FUNCTION__, stream->stream);
+						resource_change_counter(INT_RESOURCE_STREAM, NULL, stream->stream, 0 TSRMLS_CC);
+					}
+					stream->stream=NULL;
+				}
+			efree (stream);
+		}
+}
+
 /* Destructor for storagepool resource */
 static void php_libvirt_storagepool_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 {
@@ -1144,6 +1199,7 @@ PHP_MINIT_FUNCTION(libvirt)
 	/* register resource types and their descriptors */
 	le_libvirt_connection = zend_register_list_destructors_ex(php_libvirt_connection_dtor, NULL, PHP_LIBVIRT_CONNECTION_RES_NAME, module_number);
 	le_libvirt_domain = zend_register_list_destructors_ex(php_libvirt_domain_dtor, NULL, PHP_LIBVIRT_DOMAIN_RES_NAME, module_number);
+	le_libvirt_stream = zend_register_list_destructors_ex(php_libvirt_stream_dtor, NULL, PHP_LIBVIRT_STREAM_RES_NAME, module_number);
 	le_libvirt_storagepool = zend_register_list_destructors_ex(php_libvirt_storagepool_dtor, NULL, PHP_LIBVIRT_STORAGEPOOL_RES_NAME, module_number);
 	le_libvirt_volume = zend_register_list_destructors_ex(php_libvirt_volume_dtor, NULL, PHP_LIBVIRT_VOLUME_RES_NAME, module_number);
 	le_libvirt_network = zend_register_list_destructors_ex(php_libvirt_network_dtor, NULL, PHP_LIBVIRT_NETWORK_RES_NAME, module_number);
@@ -1170,6 +1226,11 @@ PHP_MINIT_FUNCTION(libvirt)
 	REGISTER_LONG_CONSTANT("VIR_DOMAIN_SHUTDOWN", 		4, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("VIR_DOMAIN_SHUTOFF", 		5, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("VIR_DOMAIN_CRASHED", 		6, CONST_CS | CONST_PERSISTENT);
+
+        /* Volume constants */
+        REGISTER_LONG_CONSTANT("VIR_STORAGE_VOL_RESIZE_ALLOCATE",        1, CONST_CS | CONST_PERSISTENT);
+        REGISTER_LONG_CONSTANT("VIR_STORAGE_VOL_RESIZE_DELTA",           2, CONST_CS | CONST_PERSISTENT);
+        REGISTER_LONG_CONSTANT("VIR_STORAGE_VOL_RESIZE_SHRINK",          4, CONST_CS | CONST_PERSISTENT);
 
 	/* Domain vCPU flags */
 	REGISTER_LONG_CONSTANT("VIR_DOMAIN_VCPU_CONFIG",	VIR_DOMAIN_VCPU_CONFIG, CONST_CS | CONST_PERSISTENT);
@@ -3456,6 +3517,207 @@ PHP_FUNCTION(libvirt_domain_lookup_by_uuid_string)
 }
 
 /*
+	Function name:	libvirt_stream_create
+	Since version:	0.5.0
+	Description:	Function is used to create new stream from libvirt conn
+	Arguments:	@res [resource]: libvirt connection resource from libvirt_connect()
+	Returns:	resource libvirt stream resource
+*/
+PHP_FUNCTION(libvirt_stream_create)
+{
+	php_libvirt_connection *conn=NULL;
+	zval *zconn;
+	virStreamPtr stream = NULL;
+	php_libvirt_stream *res_stream;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zconn) == FAILURE) {
+		RETURN_FALSE;
+	}
+	ZEND_FETCH_RESOURCE (conn, php_libvirt_connection*, &zconn, -1, PHP_LIBVIRT_CONNECTION_RES_NAME, le_libvirt_connection);
+	if ((conn==NULL)||(conn->conn==NULL))RETURN_FALSE;
+
+	stream = virStreamNew(conn->conn, 0);
+	if (stream==NULL) {
+		set_error("Cannot create new stream" TSRMLS_CC);
+		RETURN_FALSE;
+	}
+
+	res_stream = (php_libvirt_stream *)emalloc(sizeof(php_libvirt_stream));
+	res_stream->stream = stream;
+	res_stream->conn = conn;
+
+	resource_change_counter(INT_RESOURCE_STREAM, conn->conn, res_stream->stream, 1 TSRMLS_CC);
+	ZEND_REGISTER_RESOURCE(return_value, res_stream, le_libvirt_stream);
+}
+
+/*
+	Function name:	libvirt_stream_close
+	Since version:	0.5.0
+	Description:	Function is used to close stream
+	Arguments:	@res [resource]: libvirt stream resource from libvirt_stream_create()
+	Returns:	int
+*/
+PHP_FUNCTION(libvirt_stream_close)
+{
+	zval *zstream;
+	php_libvirt_stream *stream=NULL;
+	int retval = -1;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zstream) == FAILURE) {
+		RETURN_LONG(retval);
+	}
+	ZEND_FETCH_RESOURCE (stream, php_libvirt_stream*, &zstream, -1, PHP_LIBVIRT_STREAM_RES_NAME, le_libvirt_stream);
+	if ((stream==NULL)||(stream->stream==NULL))RETURN_LONG(retval);
+
+	retval = virStreamFree(stream->stream);
+	if (retval != 0) {
+		set_error("Cannot free stream" TSRMLS_CC);
+		RETURN_LONG(retval);
+	}
+
+	resource_change_counter(INT_RESOURCE_STREAM, stream->conn, stream->stream, 0 TSRMLS_CC);
+	RETURN_LONG(retval);
+}
+
+/*
+	Function name:	libvirt_stream_abort
+	Since version:	0.5.0
+	Description:	Function is used to abort transfer
+	Arguments:	@res [resource]: libvirt stream resource from libvirt_stream_create()
+	Returns:	int
+*/
+PHP_FUNCTION(libvirt_stream_abort)
+{
+	zval *zstream;
+	php_libvirt_stream *stream=NULL;
+	int retval = -1;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zstream) == FAILURE) {
+		RETURN_LONG(retval);
+	}
+	ZEND_FETCH_RESOURCE (stream, php_libvirt_stream*, &zstream, -1, PHP_LIBVIRT_STREAM_RES_NAME, le_libvirt_stream);
+	if ((stream==NULL)||(stream->stream==NULL))RETURN_LONG(retval);
+
+	retval = virStreamAbort(stream->stream);
+	if (retval != 0) {
+		set_error("Cannot abort stream" TSRMLS_CC);
+		RETURN_LONG(retval);
+	}
+	RETURN_LONG(retval);
+}
+
+/*
+	Function name:	libvirt_stream_finish
+	Since version:	0.5.0
+	Description:	Function is used to finish transfer
+	Arguments:	@res [resource]: libvirt stream resource from libvirt_stream_create()
+	Returns:	int
+*/
+PHP_FUNCTION(libvirt_stream_finish)
+{
+	zval *zstream;
+	php_libvirt_stream *stream=NULL;
+	int retval = -1;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zstream) == FAILURE) {
+		RETURN_LONG(retval);
+	}
+	ZEND_FETCH_RESOURCE (stream, php_libvirt_stream*, &zstream, -1, PHP_LIBVIRT_STREAM_RES_NAME, le_libvirt_stream);
+	if ((stream==NULL)||(stream->stream==NULL))RETURN_LONG(retval);
+
+	retval = virStreamFinish(stream->stream);
+	if (retval != 0) {
+		set_error("Cannot finish stream" TSRMLS_CC);
+		RETURN_LONG(retval);
+	}
+	RETURN_LONG(retval);
+}
+
+/*
+	Function name:	libvirt_stream_recv
+	Since version:	0.5.0
+	Description:	Function is used to close stream from libvirt conn
+	Arguments:	@res [resource]: libvirt stream resource from libvirt_stream_create()
+			@data [string]: buffer
+			@len [int]: amout of data to recieve
+	Returns:	int
+*/
+PHP_FUNCTION(libvirt_stream_recv)
+{
+	zval *zstream, *zbuf;
+	char *recv_buf;
+	php_libvirt_stream *stream=NULL;
+	int retval = -1;
+	long length = 0;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rz|l", &zstream, &zbuf, &length) == FAILURE) {
+		RETURN_LONG(retval);
+	}
+	ZEND_FETCH_RESOURCE (stream, php_libvirt_stream*, &zstream, -1, PHP_LIBVIRT_STREAM_RES_NAME, le_libvirt_stream);
+	if ((stream==NULL)||(stream->stream==NULL))RETURN_LONG(retval);
+
+	recv_buf = emalloc(length + 1);
+	memset(recv_buf, 0, length + 1);
+
+	retval = virStreamRecv(stream->stream, recv_buf, length);
+	if (retval < 0) {
+		efree(recv_buf);
+		zval_dtor(zbuf);
+		Z_TYPE_P(zbuf) = IS_NULL;
+	} else {
+		recv_buf[retval] = '\0';
+		/* Rebuild buffer zval */
+		zval_dtor(zbuf);
+		Z_STRVAL_P(zbuf) = recv_buf;
+		Z_STRLEN_P(zbuf) = retval;
+		Z_TYPE_P(zbuf) = IS_STRING;
+	}
+
+        if (retval == -1) {
+		set_error("Cannot recv from stream" TSRMLS_CC);
+		RETURN_LONG(retval);
+	}
+
+	RETURN_LONG(retval);
+}
+
+/*
+	Function name:	libvirt_stream_send
+	Since version:	0.5.0
+	Description:	Function is used to close stream from libvirt conn
+	Arguments:	@res [resource]: libvirt stream resource from libvirt_stream_create()
+			@data [string]: buffer
+			@length [int]: amout of data to send
+	Returns:	int
+*/
+PHP_FUNCTION(libvirt_stream_send)
+{
+	zval *zstream, *zbuf;
+	php_libvirt_stream *stream=NULL;
+	int retval = -1;
+	long length = 0;
+	char *cstr;
+	//int cstrlen;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rz|l", &zstream, &zbuf, &length) == FAILURE) {
+		RETURN_LONG(retval);
+	}
+	ZEND_FETCH_RESOURCE (stream, php_libvirt_stream*, &zstream, -1, PHP_LIBVIRT_STREAM_RES_NAME, le_libvirt_stream);
+	if ((stream==NULL)||(stream->stream==NULL))RETURN_LONG(retval);
+
+	cstr = Z_STRVAL_P(zbuf);
+	//cstrlen = Z_STRLEN_P(zbuf);
+
+	retval = virStreamSend(stream->stream, cstr, length);
+	if (retval == -1) {
+		set_error("Cannot send to stream" TSRMLS_CC);
+		RETURN_LONG(retval);
+	}
+
+	RETURN_LONG(retval);
+}
+
+/*
 	Function name:	libvirt_domain_lookup_by_id
 	Since version:	0.4.1(-1)
 	Description:	Function is used to get domain by it's ID, applicable only to running guests
@@ -3544,13 +3806,12 @@ PHP_FUNCTION(libvirt_domain_get_uuid_string)
 				@opaque [void *]: used for file descriptor
 	Returns:		write() error code as it's calling write
 */
-
 static int streamSink(virStreamPtr st ATTRIBUTE_UNUSED,
                          const char *bytes, size_t nbytes, void *opaque)
 {
-    int *fd = (int *)opaque;
+	int *fd = (int *)opaque;
 
-    return write(*fd, bytes, nbytes);
+	return write(*fd, bytes, nbytes);
 }
 
 /*
@@ -6779,6 +7040,117 @@ PHP_FUNCTION(libvirt_storagevolume_delete)
 	}
 
 	RETURN_TRUE;
+}
+
+/*
+	Function name:	libvirt_storagevolume_resize
+	Since version:	0.5.0
+	Description:	Function is used to resize volume identified by it's resource
+	Arguments:	@res [resource]: libvirt storagevolume resource
+			@capacity [int]: capacity for the storage volume
+			@flags [int]: optional flags for the storage volume resize for virStorageVolResize()
+	Returns:	int
+*/
+PHP_FUNCTION(libvirt_storagevolume_resize)
+{
+	php_libvirt_volume *volume=NULL;
+	zval *zvolume;
+	long flags = 0;
+	long capacity = 0;
+	int retval = -1;
+
+	GET_VOLUME_FROM_ARGS("rl|l", &zvolume, &capacity, &flags);
+
+	retval = virStorageVolResize(volume->volume, capacity, flags);
+	DPRINTF("%s: virStorageVolResize(%p, %d, %d) returned %d\n", PHPFUNC, volume->volume, (int) capacity, (int) flags, retval);
+	if (retval != 0) {
+		set_error_if_unset("Cannot resize storage volume" TSRMLS_CC);
+		RETURN_LONG(retval);
+	}
+
+	RETURN_LONG(retval);
+}
+
+/*
+	Function name:	libvirt_storagevolume_download
+	Since version:	0.5.0
+	Description:	Function is used to download volume identified by it's resource
+	Arguments:	@res [resource]: libvirt storagevolume resource
+			@stream [resource]: stream to use as output
+			@offset [int]: position to start reading from
+			@length [int] : limit on amount of data to download
+			@flags [int]: optional flags for the storage volume download for virStorageVolDownload()
+	Returns:	int
+*/
+PHP_FUNCTION(libvirt_storagevolume_download)
+{
+	php_libvirt_volume *volume=NULL;
+	php_libvirt_stream *stream=NULL;
+	zval *zvolume;
+	zval *zstream;
+	long flags = 0;
+	long offset = 0;
+	long length = 0;
+	int retval = -1;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rr|l|l|l", &zvolume, &zstream, &offset, &length, &flags) == FAILURE) {
+		RETURN_LONG(retval);
+	}
+	ZEND_FETCH_RESOURCE (volume, php_libvirt_volume*, &zvolume, -1, PHP_LIBVIRT_VOLUME_RES_NAME, le_libvirt_volume);
+	if ((volume==NULL)||(volume->volume==NULL))RETURN_LONG(retval);
+	ZEND_FETCH_RESOURCE (stream, php_libvirt_stream*, &zstream, -1, PHP_LIBVIRT_STREAM_RES_NAME, le_libvirt_stream);
+	if ((stream==NULL)||(stream->stream==NULL))RETURN_LONG(retval);
+
+	retval = virStorageVolDownload(volume->volume, stream->stream, offset, length, flags);
+	DPRINTF("%s: virStorageVolDownload(%p, %p, %d, %d, %d) returned %d\n", PHPFUNC, volume->volume, stream->stream, (int) offset, (int) length, (int) flags, retval);
+
+	if (retval == -1) {
+		set_error("Cannot download from stream" TSRMLS_CC);
+		RETURN_LONG(retval);
+	}
+
+	RETURN_LONG(retval);
+}
+
+/*
+	Function name:	libvirt_storagevolume_upload
+	Since version:	0.5.0
+	Description:	Function is used to upload volume identified by it's resource
+	Arguments:	@res [resource]: libvirt storagevolume resource
+			@stream [resource]: stream to use as input
+			@offset [int]: position to start writing to
+			@length [int] : limit on amount of data to upload
+			@flags [int]: optional flags for the storage volume upload for virStorageVolUpload()
+	Returns:	int
+*/
+PHP_FUNCTION(libvirt_storagevolume_upload)
+{
+	php_libvirt_volume *volume=NULL;
+	php_libvirt_stream *stream=NULL;
+	zval *zvolume;
+	zval *zstream;
+	long flags = 0;
+	long offset = 0;
+	long length = 0;
+	int retval = -1;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rr|l|l|l", &zvolume, &zstream, &offset, &length, &flags) == FAILURE) {
+		RETURN_LONG(retval);
+	}
+	ZEND_FETCH_RESOURCE (volume, php_libvirt_volume*, &zvolume, -1, PHP_LIBVIRT_VOLUME_RES_NAME, le_libvirt_volume);
+	if ((volume==NULL)||(volume->volume==NULL))RETURN_LONG(retval);
+	ZEND_FETCH_RESOURCE (stream, php_libvirt_stream*, &zstream, -1, PHP_LIBVIRT_STREAM_RES_NAME, le_libvirt_stream);
+	if ((stream==NULL)||(stream->stream==NULL))RETURN_LONG(retval);
+
+	retval = virStorageVolUpload(volume->volume, stream->stream, offset, length, flags);
+	DPRINTF("%s: virStorageVolUpload(%p, %p, %d, %d, %d) returned %d\n", PHPFUNC, volume->volume, stream->stream, (int) offset, (int) length, (int) flags, retval);
+
+	if (retval == -1) {
+		set_error_if_unset("Cannot upload storage volume" TSRMLS_CC);
+		RETURN_LONG(retval);
+	}
+
+	RETURN_LONG(retval);
 }
 
 /*

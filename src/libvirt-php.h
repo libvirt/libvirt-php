@@ -214,6 +214,7 @@ ZEND_END_MODULE_GLOBALS(libvirt)
 #define INT_RESOURCE_STORAGEPOOL	0x10
 #define INT_RESOURCE_VOLUME		0x20
 #define INT_RESOURCE_SNAPSHOT		0x40
+#define INT_RESOURCE_STREAM             0x50
 
 typedef struct tVMDisk {
 	char *path;
@@ -256,6 +257,11 @@ typedef struct _php_libvirt_connection {
 	virConnectPtr conn;
 	long resource_id;
 } php_libvirt_connection;
+
+typedef struct _php_libvirt_stream {
+        virStreamPtr stream;
+        php_libvirt_connection* conn;
+} php_libvirt_stream;
 
 typedef struct _php_libvirt_domain {
 	virDomainPtr domain;
@@ -311,6 +317,7 @@ int gdebug;
 
 #define PHP_LIBVIRT_CONNECTION_RES_NAME "Libvirt connection"
 #define PHP_LIBVIRT_DOMAIN_RES_NAME "Libvirt domain"
+#define PHP_LIBVIRT_STREAM_RES_NAME "Libvirt stream"
 #define PHP_LIBVIRT_STORAGEPOOL_RES_NAME "Libvirt storagepool"
 #define PHP_LIBVIRT_VOLUME_RES_NAME "Libvirt volume"
 #define PHP_LIBVIRT_NETWORK_RES_NAME "Libvirt virtual network"
@@ -347,6 +354,13 @@ PHP_FUNCTION(libvirt_node_get_info);
 PHP_FUNCTION(libvirt_node_get_cpu_stats);
 PHP_FUNCTION(libvirt_node_get_cpu_stats_for_each_cpu);
 PHP_FUNCTION(libvirt_node_get_mem_stats);
+/* Stream functions */
+PHP_FUNCTION(libvirt_stream_create);
+PHP_FUNCTION(libvirt_stream_close);
+PHP_FUNCTION(libvirt_stream_abort);
+PHP_FUNCTION(libvirt_stream_finish);
+PHP_FUNCTION(libvirt_stream_recv);
+PHP_FUNCTION(libvirt_stream_send);
 /* Domain functions */
 PHP_FUNCTION(libvirt_domain_new);
 PHP_FUNCTION(libvirt_domain_new_get_vnc);
@@ -427,6 +441,9 @@ PHP_FUNCTION(libvirt_storagevolume_get_xml_desc);
 PHP_FUNCTION(libvirt_storagevolume_create_xml);
 PHP_FUNCTION(libvirt_storagevolume_create_xml_from);
 PHP_FUNCTION(libvirt_storagevolume_delete);
+PHP_FUNCTION(libvirt_storagevolume_download);
+PHP_FUNCTION(libvirt_storagevolume_upload);
+PHP_FUNCTION(libvirt_storagevolume_resize);
 PHP_FUNCTION(libvirt_storagepool_get_uuid_string);
 PHP_FUNCTION(libvirt_storagepool_get_name);
 PHP_FUNCTION(libvirt_storagepool_lookup_by_uuid_string);
