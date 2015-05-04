@@ -5,8 +5,7 @@
 	if (!is_resource($conn))
 		bail('Connection to default hypervisor failed');
 
-	$curdir = getcwd();
-	$xml = file_get_contents($curdir.'/data/example-no-disk-and-media.xml');
+	$xml = file_get_contents($abs_srcdir.'/data/example-no-disk-and-media.xml');
 
 	$res = libvirt_domain_create_xml($conn, $xml);
 	if (!is_resource($res))

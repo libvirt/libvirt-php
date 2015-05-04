@@ -29,8 +29,10 @@
 		exit(1);
 	}
 
+    $abs_srcdir = '@abs_srcdir@' ?: getcwd();
+
 	if (!extension_loaded('libvirt')) {
-		if (!dl('../src/libvirt-php.so'))
+		if (!dl('libvirt-php.so'))
 			bail('Cannot load libvirt-php extension. Please install libvirt-php first (using `make install`)');
 	}
 ?>

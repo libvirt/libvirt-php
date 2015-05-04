@@ -6,7 +6,9 @@ WL=@WL@
 SHLIB_FLAGS=@SHLIB_FLAGS@
 
 install-exec-local:
-	$(INSTALL) -m 644 -D $(PACKAGE).so $(DESTDIR)$(PHPEDIR)/$(PACKAGE).so
+	$(MKDIR_P) $(DESTDIR)$(PHPEDIR)
+	$(MKDIR_P) $(DESTDIR)$(PHPCDIR)
+	$(INSTALL) -m 644 -D .libs/$(PACKAGE).so $(DESTDIR)$(PHPEDIR)/$(PACKAGE).so
 	$(INSTALL) -m 755 -d $(DESTDIR)$(PHPCDIR)
 	$(ECHO) "extension=$(PACKAGE).so" > $(DESTDIR)$(PHPCDIR)/libvirt-php.ini
 	$(ECHO) >> $(DESTDIR)$(PHPCDIR)/libvirt-php.ini

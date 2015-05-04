@@ -11,8 +11,7 @@
 		@libvirt_domain_undefine($res);
 	}
 
-	$curdir = getcwd();
-	$xml = file_get_contents($curdir.'/data/example-qcow2-disk.xml');
+	$xml = file_get_contents($abs_srcdir.'/data/example-qcow2-disk.xml');
 
 	/* This is applicable only for QEMU/KVM so check whether we're on QEMU/KVM */
 	$e = @libvirt_connect_get_emulator($conn);

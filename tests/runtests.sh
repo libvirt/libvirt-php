@@ -1,5 +1,7 @@
 #!/bin/bash
 
+: ${srcdir=.}
+
 nf=$1
 tests=( "test-version-check" "test-version-get" "test-get-emulator" "test-logging"
 		"test-connect" "test-conn-limit"
@@ -15,7 +17,7 @@ run_test()
 	local nf=$2
 	ret=0
 
-	php -n -c "./php.ini" $name.phpt
+	php -n -c "${srcdir}/php.ini" "${srcdir}/${name}.phpt"
 	if [ "x$?" != "x0" ]; then
 		if [ "x$nf" == 'x1' ]; then
 			ret=1
