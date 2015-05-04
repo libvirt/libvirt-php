@@ -23,6 +23,7 @@ depcomp
 docs/*.html
 docs/*.html.in
 autom4te.cache/
+m4/
 src/*.so
 stamp-h1
 tools/generate-api-docs
