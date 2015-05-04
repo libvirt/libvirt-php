@@ -2873,7 +2873,7 @@ long get_next_free_numeric_value(virDomainPtr domain, char *xpath)
 				if (zend_hash_get_current_key_ex(arr_hash, &key, &key_len, &index, 0, &pointer) != HASH_KEY_IS_STRING) {
 					long num = -1;
 
-					sscanf(Z_STRVAL_PP(data), "%x", &num);
+					sscanf(Z_STRVAL_PP(data), "%lx", &num);
 					if (num > max_slot)
 						max_slot = num;
 				}
