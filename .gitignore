@@ -19,6 +19,7 @@ Makefile.in
 config.log
 config.status
 configure
+depcomp
 docs/*.html
 docs/*.html.in
 autom4te.cache/
