@@ -16,6 +16,10 @@
 /libvirt-php-[0-9]*/
 /ltmain.sh
 /missing
+/tests/*.log
+/tests/*.trs
+/tests/functions.phpt
+/test-driver
 /INSTALL
 Makefile
 Makefile.in
