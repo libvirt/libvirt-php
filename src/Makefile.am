@@ -5,18 +5,6 @@ DEFINES=-DHAVE_CONFIG_H
 WL=@WL@
 SHLIB_FLAGS=@SHLIB_FLAGS@
 
-EXTRA_DIST = libvirt-php.c sockets.c vncfunc.c libvirt-php.h
-
-
-all-am: build
-
-build:
-	$(CC) $(CFLAGS) -Wall -fpic -DCOMPILE_DL_LIBVIRT=1 $(PHPINC) -c -o libvirt-php.o libvirt-php.c $(LIBXML_CFLAGS) $(LIBVIRT_CFLAGS) $(DEFINES)
-	$(CC) $(CFLAGS) -Wall -fpic -DCOMPILE_DL_LIBVIRT=1 -c -o vncfunc.o vncfunc.c $(PHPINC) $(LIBXML_CFLAGS) $(LIBVIRT_CFLAGS) $(DEFINES)
-	$(CC) $(CFLAGS) -Wall -fpic -DCOMPILE_DL_LIBVIRT=1 -c -o sockets.o sockets.c $(PHPINC) $(LIBXML_CFLAGS) $(LIBVIRT_CFLAGS) $(DEFINES)
-	$(CC) $(CFLAGS) $(LDFLAGS) -Wall $(SHLIB_FLAGS) -o $(PACKAGE).so vncfunc.o sockets.o libvirt-php.o -ldl -lvirt $(LIBXML_LIBS) $(LIBVIRT_LIBS) $(LIBS)
-	$(ECHO) "Extension compiled as $(PACKAGE).so"
-
 install-exec-local:
 	$(INSTALL) -m 644 -D $(PACKAGE).so $(DESTDIR)$(PHPEDIR)/$(PACKAGE).so
 	$(INSTALL) -m 755 -d $(DESTDIR)$(PHPCDIR)
@@ -34,5 +22,22 @@ uninstall-local:
 	$(RM) -f $(DESTDIR)$(PHPCDIR)/$(PACKAGE).ini
 	$(RM) -f $(DESTDIR)$(PHPEDIR)/$(PACKAGE).so
 
-clean-local:
-	$(RM) -f *.o
+AM_CFLAGS = \
+	$(PHPINC) $(LIBXML_CFLAGS) \
+	$(LIBVIRT_CFLAGS) $(DEFINES) \
+	-I$(top_srcdir)/winsrc
+
+AM_LDFLAGS = \
+	$(SHLIB_LDFLAGS) \
+	$(LIBXML_LIBS) \
+	$(LIBVIRT_LIBS)
+
+lib_LTLIBRARIES = libvirt-php.la
+
+libvirt_php_la_SOURCES = \
+	vncfunc.c \
+	sockets.c \
+	libvirt-php.c libvirt-php.h
+libvirt_php_la_CFLAGS = \
+	$(AM_CFLAGS) \
+	-DCOMPILE_DL_LIBVIRT=1
