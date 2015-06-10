@@ -2467,18 +2467,25 @@ PHP_FUNCTION(libvirt_connect_get_all_domain_stats)
 			switch (params.type) {
 			case VIR_TYPED_PARAM_INT:
 				add_assoc_long(arr2, params.field, params.value.i);
+				break;
 			case VIR_TYPED_PARAM_UINT:
 				add_assoc_long(arr2, params.field, params.value.ui);
+				break;
 			case VIR_TYPED_PARAM_LLONG:
 				add_assoc_long(arr2, params.field, params.value.l);
+				break;
 			case VIR_TYPED_PARAM_ULLONG:
 				add_assoc_long(arr2, params.field, params.value.ul);
+				break;
 			case VIR_TYPED_PARAM_DOUBLE:
 				add_assoc_double(arr2, params.field, params.value.d);
+				break;
 			case VIR_TYPED_PARAM_BOOLEAN:
 				add_assoc_bool(arr2, params.field, params.value.b);
+				break;
 			case VIR_TYPED_PARAM_STRING:
 				add_assoc_string_ex(arr2, params.field, strlen(params.field)+1, params.value.s, strlen(params.value.s)+1);
+				break;
 			}
 		}
 		name = virDomainGetName(retstats[i]->dom);
