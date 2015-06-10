@@ -349,6 +349,7 @@ PHP_FUNCTION(libvirt_connect_get_encrypted);
 PHP_FUNCTION(libvirt_connect_get_secure);
 PHP_FUNCTION(libvirt_connect_get_information);
 PHP_FUNCTION(libvirt_connect_get_machine_types);
+PHP_FUNCTION(libvirt_connect_get_all_domain_stats);
 /* Node functions */
 PHP_FUNCTION(libvirt_node_get_info);
 PHP_FUNCTION(libvirt_node_get_cpu_stats);
@@ -403,6 +404,9 @@ PHP_FUNCTION(libvirt_domain_memory_peek);
 PHP_FUNCTION(libvirt_domain_memory_stats);
 PHP_FUNCTION(libvirt_domain_update_device);
 PHP_FUNCTION(libvirt_domain_block_stats);
+PHP_FUNCTION(libvirt_domain_block_resize);
+PHP_FUNCTION(libvirt_domain_block_job_abort);
+PHP_FUNCTION(libvirt_domain_block_job_set_speed);
 PHP_FUNCTION(libvirt_domain_interface_stats);
 PHP_FUNCTION(libvirt_domain_get_connect);
 PHP_FUNCTION(libvirt_domain_migrate);

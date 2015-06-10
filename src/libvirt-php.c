@@ -91,6 +91,7 @@ static zend_function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_connect_get_maxvcpus, NULL)
 	PHP_FE(libvirt_connect_get_encrypted, NULL)
 	PHP_FE(libvirt_connect_get_secure, NULL)
+	PHP_FE(libvirt_connect_get_all_domain_stats, NULL)
 	/* Stream functions */
 	PHP_FE(libvirt_stream_create, NULL)
 	PHP_FE(libvirt_stream_close, NULL)
@@ -136,6 +137,9 @@ static zend_function_entry libvirt_functions[] = {
 	PHP_FE(libvirt_domain_memory_peek,NULL)
 	PHP_FE(libvirt_domain_memory_stats,NULL)
 	PHP_FE(libvirt_domain_block_stats,NULL)
+	PHP_FE(libvirt_domain_block_resize,NULL)
+	PHP_FE(libvirt_domain_block_job_abort,NULL)
+	PHP_FE(libvirt_domain_block_job_set_speed,NULL)
 	PHP_FE(libvirt_domain_interface_stats,NULL)
 	PHP_FE(libvirt_domain_get_connect, NULL)
 	PHP_FE(libvirt_domain_migrate, NULL)
@@ -1308,6 +1312,11 @@ PHP_MINIT_FUNCTION(libvirt)
 	/* Job was aborted but it's not cleanup up yet */
 	REGISTER_LONG_CONSTANT("VIR_DOMAIN_JOB_CANCELLED",	5, CONST_CS | CONST_PERSISTENT);
 
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_BLOCK_JOB_ABORT_ASYNC",	VIR_DOMAIN_BLOCK_JOB_ABORT_ASYNC, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_BLOCK_JOB_ABORT_PIVOT",	VIR_DOMAIN_BLOCK_JOB_ABORT_PIVOT, CONST_CS | CONST_PERSISTENT);
+
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_BLOCK_JOB_SPEED_BANDWIDTH_BYTES",	VIR_DOMAIN_BLOCK_JOB_SPEED_BANDWIDTH_BYTES, CONST_CS | CONST_PERSISTENT);
+
 	/* Migration constants */
 	REGISTER_LONG_CONSTANT("VIR_MIGRATE_LIVE",		  1, CONST_CS | CONST_PERSISTENT);
 	/* direct source -> dest host control channel Note the less-common spelling that we're stuck with: */
@@ -1350,7 +1359,7 @@ PHP_MINIT_FUNCTION(libvirt)
 	REGISTER_LONG_CONSTANT("VIR_DOMAIN_FLAG_TEST_LOCAL_VNC",	DOMAIN_FLAG_TEST_LOCAL_VNC, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("VIR_DOMAIN_FLAG_SOUND_AC97",		DOMAIN_FLAG_SOUND_AC97, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("VIR_DOMAIN_DISK_FILE",			DOMAIN_DISK_FILE, CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("VIR_DOMAIN_DISK_BLOCK",			DOMAIN_DISK_BLOCK, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_DISK_BLOCK",	            DOMAIN_DISK_BLOCK, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("VIR_DOMAIN_DISK_ACCESS_ALL",		DOMAIN_DISK_ACCESS_ALL, CONST_CS | CONST_PERSISTENT);
 
 	/* Domain metadata constants */
@@ -1360,6 +1369,23 @@ PHP_MINIT_FUNCTION(libvirt)
 	REGISTER_LONG_CONSTANT("VIR_DOMAIN_AFFECT_CURRENT",		0, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("VIR_DOMAIN_AFFECT_LIVE",		1, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("VIR_DOMAIN_AFFECT_CONFIG",		2, CONST_CS | CONST_PERSISTENT);
+
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_STATS_STATE",		VIR_DOMAIN_STATS_STATE, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_STATS_CPU_TOTAL",		VIR_DOMAIN_STATS_CPU_TOTAL, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_STATS_BALLOON",		VIR_DOMAIN_STATS_BALLOON, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_STATS_VCPU",		VIR_DOMAIN_STATS_VCPU, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_STATS_INTERFACE",		VIR_DOMAIN_STATS_INTERFACE, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_STATS_BLOCK",		VIR_DOMAIN_STATS_BLOCK, CONST_CS | CONST_PERSISTENT);
+
+	REGISTER_LONG_CONSTANT("VIR_CONNECT_GET_ALL_DOMAINS_STATS_ACTIVE",	VIR_CONNECT_GET_ALL_DOMAINS_STATS_ACTIVE, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_CONNECT_GET_ALL_DOMAINS_STATS_INACTIVE",	VIR_CONNECT_GET_ALL_DOMAINS_STATS_INACTIVE, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_CONNECT_GET_ALL_DOMAINS_STATS_OTHER",	VIR_CONNECT_GET_ALL_DOMAINS_STATS_OTHER, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_CONNECT_GET_ALL_DOMAINS_STATS_PAUSED",	VIR_CONNECT_GET_ALL_DOMAINS_STATS_PAUSED, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_CONNECT_GET_ALL_DOMAINS_STATS_PERSISTENT",	VIR_CONNECT_GET_ALL_DOMAINS_STATS_PERSISTENT, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_CONNECT_GET_ALL_DOMAINS_STATS_RUNNING",	VIR_CONNECT_GET_ALL_DOMAINS_STATS_RUNNING, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_CONNECT_GET_ALL_DOMAINS_STATS_SHUTOFF",	VIR_CONNECT_GET_ALL_DOMAINS_STATS_SHUTOFF, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_CONNECT_GET_ALL_DOMAINS_STATS_TRANSIENT", VIR_CONNECT_GET_ALL_DOMAINS_STATS_TRANSIENT, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_CONNECT_GET_ALL_DOMAINS_STATS_ENFORCE_STATS", VIR_CONNECT_GET_ALL_DOMAINS_STATS_ENFORCE_STATS, CONST_CS | CONST_PERSISTENT);
 
 	/* Connect flags */
 	REGISTER_LONG_CONSTANT("VIR_CONNECT_FLAG_SOUNDHW_GET_NAMES",	CONNECT_FLAG_SOUNDHW_GET_NAMES, CONST_CS | CONST_PERSISTENT);
@@ -2400,6 +2426,69 @@ PHP_FUNCTION(libvirt_connect_get_secure)
 
 	RETURN_LONG( virConnectIsSecure(conn->conn) );
 }
+
+
+/*
+	Function name:	libvirt_connect_get_all_domain_stats
+	Since version:	0.5.1(-1)
+	Description:	Query statistics for all domains on a given connection
+	Arguments:     @conn [resource]: resource for connection
+			@stats [int]: the statistic groups from VIR_DOMAIN_STATS_*
+			@flags [int]: the filter flags from VIR_CONNECT_GET_ALL_DOMAINS_STATS_*
+	Returns:	assoc array with statistics or false on error
+*/
+PHP_FUNCTION(libvirt_connect_get_all_domain_stats)
+{
+	php_libvirt_connection *conn = NULL;
+	zval *zconn;
+	int retval = -1;
+	long flags = 0;
+	long stats = 0;
+	const char *name = NULL;
+	int i;
+	int j;
+	virTypedParameter params;
+	virDomainStatsRecordPtr *retstats = NULL;
+
+	GET_CONNECTION_FROM_ARGS("r|l|l",&zconn, &stats, &flags);
+
+	retval = virConnectGetAllDomainStats(conn->conn, stats, &retstats, flags);
+
+	array_init(return_value);
+	if (retval < 0)
+		RETURN_FALSE;
+
+	for (i=0; i < retval; i++) {
+		zval *arr2;
+		ALLOC_INIT_ZVAL(arr2);
+		array_init(arr2);
+		for (j = 0; j < retstats[i]->nparams; j++) {
+			params = retstats[i]->params[j];
+			switch (params.type) {
+			case VIR_TYPED_PARAM_INT:
+				add_assoc_long(arr2, params.field, params.value.i);
+			case VIR_TYPED_PARAM_UINT:
+				add_assoc_long(arr2, params.field, params.value.ui);
+			case VIR_TYPED_PARAM_LLONG:
+				add_assoc_long(arr2, params.field, params.value.l);
+			case VIR_TYPED_PARAM_ULLONG:
+				add_assoc_long(arr2, params.field, params.value.ul);
+			case VIR_TYPED_PARAM_DOUBLE:
+				add_assoc_double(arr2, params.field, params.value.d);
+			case VIR_TYPED_PARAM_BOOLEAN:
+				add_assoc_bool(arr2, params.field, params.value.b);
+			case VIR_TYPED_PARAM_STRING:
+				add_assoc_string_ex(arr2, params.field, strlen(params.field)+1, params.value.s, strlen(params.value.s)+1);
+			}
+		}
+		name = virDomainGetName(retstats[i]->dom);
+		zend_hash_update(Z_ARRVAL_P(return_value), name, strlen(name)+1, &arr2, sizeof(arr2), NULL);
+	}
+
+	virDomainStatsRecordListFree(retstats);
+}
+
+
 
 /*
 	Function name:	libvirt_connect_get_maxvcpus
@@ -5964,6 +6053,90 @@ PHP_FUNCTION(libvirt_domain_block_stats)
 	LONGLONG_ASSOC(return_value, "wr_bytes", stats.wr_bytes);
 	LONGLONG_ASSOC(return_value, "errs", stats.errs);
 }
+
+/*
+        Function name:  libvirt_domain_block_resize
+        Since version:  0.5.1(-1)
+        Description:    Function is used to resize the domain's block device
+        Arguments:      @res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
+                        @path [string]: device path to resize
+			@size [int]: size of device
+			@flags [int]: bitwise-OR of VIR_DOMAIN_BLOCK_RESIZE_*
+        Returns:        true on success fail on error
+*/
+PHP_FUNCTION(libvirt_domain_block_resize)
+{
+	php_libvirt_domain *domain=NULL;
+	zval *zdomain;
+	int retval;
+	char *path;
+	int path_len;
+	long size = 0;
+	long flags = 0;
+
+	GET_DOMAIN_FROM_ARGS("rsl|l",&zdomain, &path, &path_len, &size, &flags);
+
+	retval=virDomainBlockResize(domain->domain, path, size, flags);
+	if (retval == -1) RETURN_FALSE;
+
+	RETURN_TRUE;
+}
+
+/*
+	Function name:	libvirt_domain_block_job_abort
+	Since version:	0.5.1(-1)
+	Description:	Function is used to abort block job
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
+			@path [string]: device path to resize
+			@flags [int]: bitwise-OR of VIR_DOMAIN_BLOCK_JOB_ABORT_*
+	Returns:	true on success fail on error
+*/
+PHP_FUNCTION(libvirt_domain_block_job_abort)
+{
+	php_libvirt_domain *domain=NULL;
+	zval *zdomain;
+	int retval;
+	char *path;
+	int path_len;
+	long flags = 0;
+
+	GET_DOMAIN_FROM_ARGS("rs|l",&zdomain, &path, &path_len, &flags);
+
+	retval=virDomainBlockJobAbort(domain->domain, path, flags);
+	if (retval == -1) RETURN_FALSE;
+
+	RETURN_TRUE;
+}
+
+/*
+	Function name:	libvirt_domain_block_job_set_speed
+	Since version:	0.5.1(-1)
+	Description:	Function is used to set speed of block job
+	Arguments:	@res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
+			@path [string]: device path to resize
+			@bandwidth [int]: bandwidth
+			@flags [int]: bitwise-OR of VIR_DOMAIN_BLOCK_JOB_SPEED_BANDWIDTH_*
+	Returns:	true on success fail on error
+*/
+PHP_FUNCTION(libvirt_domain_block_job_set_speed)
+{
+	php_libvirt_domain *domain=NULL;
+	zval *zdomain;
+	int retval;
+	char *path;
+	int path_len;
+	long bandwidth = 0;
+	long flags = 0;
+
+	GET_DOMAIN_FROM_ARGS("rsl|l",&zdomain, &path, &path_len, &bandwidth, &flags);
+
+	retval=virDomainBlockJobSetSpeed(domain->domain, path, bandwidth, flags);
+	if (retval == -1) RETURN_FALSE;
+
+	RETURN_TRUE;
+}
+
+
 
 /*
 	Function name:	libvirt_domain_get_network_info
