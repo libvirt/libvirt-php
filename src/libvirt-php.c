@@ -1387,6 +1387,11 @@ PHP_MINIT_FUNCTION(libvirt)
 	REGISTER_LONG_CONSTANT("VIR_CONNECT_GET_ALL_DOMAINS_STATS_TRANSIENT", VIR_CONNECT_GET_ALL_DOMAINS_STATS_TRANSIENT, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("VIR_CONNECT_GET_ALL_DOMAINS_STATS_ENFORCE_STATS", VIR_CONNECT_GET_ALL_DOMAINS_STATS_ENFORCE_STATS, CONST_CS | CONST_PERSISTENT);
 
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_MEM_CONFIG",	VIR_DOMAIN_MEM_CONFIG, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_MEM_CURRENT",	VIR_DOMAIN_MEM_CURRENT, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_MEM_LIVE",	VIR_DOMAIN_MEM_LIVE, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("VIR_DOMAIN_MEM_MAXIMUM",	VIR_DOMAIN_MEM_MAXIMUM, CONST_CS | CONST_PERSISTENT);
+
 	/* Connect flags */
 	REGISTER_LONG_CONSTANT("VIR_CONNECT_FLAG_SOUNDHW_GET_NAMES",	CONNECT_FLAG_SOUNDHW_GET_NAMES, CONST_CS | CONST_PERSISTENT);
 
@@ -3380,6 +3385,75 @@ PHP_FUNCTION(libvirt_domain_is_persistent)
 
 	RETURN_FALSE;
 }
+
+/*
+	Function name:	libvirt_domain_set_max_memory
+	Since version:	0.5.1
+	Description:	Function to set max memory for domain
+	Arguments:	@res [resource]: libvirt domain resource
+			@memory [int]: memory size in 1024 bytes (Kb)
+	Returns:        TRUE for success, FALSE for failure
+*/
+PHP_FUNCTION(libvirt_domain_set_max_memory)
+{
+	php_libvirt_domain *domain = NULL;
+	zval *zdomain;
+	long memory = 0;
+
+	GET_DOMAIN_FROM_ARGS ("rl", &zdomain, &memory);
+
+	if (virDomainSetMaxMemory(domain->domain, memory) != 0)
+		RETURN_FALSE;
+
+	RETURN_TRUE;
+}
+
+/*
+	Function name:	libvirt_domain_set_memory
+	Since version:	0.5.1
+	Description:	Function to set memory for domain
+	Arguments:	@res [resource]: libvirt domain resource
+			@memory [int]: memory size in 1024 bytes (Kb)
+	Returns:	TRUE for success, FALSE for failure
+*/
+PHP_FUNCTION(libvirt_domain_set_memory)
+{
+	php_libvirt_domain *domain = NULL;
+	zval *zdomain;
+	long memory = 0;
+
+	GET_DOMAIN_FROM_ARGS ("rl", &zdomain, &memory);
+
+	if (virDomainSetMemory(domain->domain, memory) != 0)
+		RETURN_FALSE;
+
+	RETURN_TRUE;
+}
+
+/*
+	Function name:	libvirt_domain_set_memory_flags
+	Since version:	0.5.1
+	Description:	Function to set max memory for domain
+	Arguments:	@res [resource]: libvirt domain resource
+			@memory [int]: memory size in 1024 bytes (Kb)
+			@flags [int]: bitwise-OR VIR_DOMAIN_MEM_* flags
+	Returns:	TRUE for success, FALSE for failure
+*/
+PHP_FUNCTION(libvirt_domain_set_memory_flags)
+{
+	php_libvirt_domain *domain = NULL;
+	zval *zdomain;
+	long memory = 0;
+	long flags = 0;
+
+	GET_DOMAIN_FROM_ARGS ("rl|l", &zdomain, &memory, &flags);
+
+	if (virDomainSetMemoryFlags(domain->domain, memory, flags) != 0)
+		RETURN_FALSE;
+
+	RETURN_TRUE;
+}
+
 
 /*
 	Function name:	libvirt_domain_get_autostart
@@ -9043,4 +9117,3 @@ PHP_FUNCTION(libvirt_logfile_set)
 	RETURN_TRUE;
 }
 #endif
-
