@@ -1,18 +1,18 @@
 /*
-* libvirt-php.h: libvirt PHP bindings header file
-*
-* See COPYING for the license of this software
-*
-* Written by:
-*   Radek Hladik <r.hladik@cybersales.cz>
-*   Michal Novotny <minovotn@redhat.com>
-*   David King
-*   Jan-Paul van Burgsteden
-*   Lyre <liyong@skybility.com> (or <4179e1@gmail.com>)
-*   Daniel P. Berrange <berrange@redhat.com>
-*   Tiziano Mueller <dev-zero@gentoo.org>
-*   Yukihiro Kawada <warp.kawada@gmail.com>
-*/
+ * libvirt-php.h: libvirt PHP bindings header file
+ *
+ * See COPYING for the license of this software
+ *
+ * Written by:
+ *   Radek Hladik <r.hladik@cybersales.cz>
+ *   Michal Novotny <minovotn@redhat.com>
+ *   David King
+ *   Jan-Paul van Burgsteden
+ *   Lyre <liyong@skybility.com> (or <4179e1@gmail.com>)
+ *   Daniel P. Berrange <berrange@redhat.com>
+ *   Tiziano Mueller <dev-zero@gentoo.org>
+ *   Yukihiro Kawada <warp.kawada@gmail.com>
+ */
 
 #ifndef PHP_LIBVIRT_H
 #define PHP_LIBVIRT_H 1
@@ -24,21 +24,21 @@
 #define DEBUG_VNC
 #endif
 
-#define ARRAY_CARDINALITY(array)	(sizeof(array) / sizeof(array[0]))
+#define ARRAY_CARDINALITY(array)    (sizeof(array) / sizeof(array[0]))
 
 /* Maximum number of authentication attempts */
-#define VNC_MAX_AUTH_ATTEMPTS		10
+#define VNC_MAX_AUTH_ATTEMPTS       10
 
 /* Maximum size (in KiB) of log file when DEBUG_SUPPORT is enabled */
-#define	DEFAULT_LOG_MAXSIZE		1024
+#define DEFAULT_LOG_MAXSIZE     1024
 
 /* Network constants */
-#define	VIR_NETWORKS_ACTIVE		1
-#define	VIR_NETWORKS_INACTIVE		2
+#define VIR_NETWORKS_ACTIVE     1
+#define VIR_NETWORKS_INACTIVE       2
 
 /* Version constants */
-#define	VIR_VERSION_BINDING		1
-#define	VIR_VERSION_LIBVIRT		2
+#define VIR_VERSION_BINDING     1
+#define VIR_VERSION_LIBVIRT     2
 
 #ifdef _MSC_VER
 #define EXTWIN
@@ -107,19 +107,19 @@
 
 #ifdef EXTWIN
 #if (_MSC_VER < 1300)
-   typedef signed char       int8_t;
-   typedef signed short      int16_t;
-   typedef signed int        int32_t;
-   typedef unsigned char     uint8_t;
-   typedef unsigned short    uint16_t;
-   typedef unsigned int      uint32_t;
+typedef signed char       int8_t;
+typedef signed short      int16_t;
+typedef signed int        int32_t;
+typedef unsigned char     uint8_t;
+typedef unsigned short    uint16_t;
+typedef unsigned int      uint32_t;
 #else
-   typedef signed __int8     int8_t;
-   typedef signed __int16    int16_t;
-   typedef signed __int32    int32_t;
-   typedef unsigned __int8   uint8_t;
-   typedef unsigned __int16  uint16_t;
-   typedef unsigned __int32  uint32_t;
+typedef signed __int8     int8_t;
+typedef signed __int16    int16_t;
+typedef signed __int32    int32_t;
+typedef unsigned __int8   uint8_t;
+typedef unsigned __int16  uint16_t;
+typedef unsigned __int32  uint32_t;
 #endif
 typedef signed __int64       int64_t;
 typedef unsigned __int64     uint64_t;
@@ -135,15 +135,15 @@ typedef uint64_t arch_uint;
 #define UINTx PRIx64
 #endif
 
-int	connect_socket(char *server, char *port, int keepalive, int nodelay, int allow_server_override);
-int	socket_has_data(int sfd, long maxtime, int ignoremsg);
-void	socket_read(int sfd, long length);
-int	socket_read_and_save(int sfd, char *fn, long length);
-int	vnc_get_bitmap(char *server, char *port, char *fn);
+int connect_socket(char *server, char *port, int keepalive, int nodelay, int allow_server_override);
+int socket_has_data(int sfd, long maxtime, int ignoremsg);
+void socket_read(int sfd, long length);
+int socket_read_and_save(int sfd, char *fn, long length);
+int vnc_get_bitmap(char *server, char *port, char *fn);
 
 typedef struct tTokenizer {
-	char **tokens;
-	int numTokens;
+    char **tokens;
+    int numTokens;
 } tTokenizer;
 
 #define IS_BIGENDIAN (*(uint16_t *)"\0\xff" < 0x100)
@@ -152,33 +152,33 @@ typedef struct tTokenizer {
 #define PUT2_BYTE_ENDIAN(le, val, v1, v2) { if ((le && IS_BIGENDIAN) || (!le && !IS_BIGENDIAN)) { v2 = val >> 8; v1 = val % 256; } else { v1 = val >> 8; v2 = val % 256; } }
 #define SWAP2_BYTES_ENDIAN(le, a, b) { if ((le && IS_BIGENDIAN) || (!le && !IS_BIGENDIAN)) { uint8_t _tmpval; _tmpval = a; a = b; b = _tmpval; } }
 
-#define UINT32STR(var, val)     \
-        var[0] = (val >> 24) & 0xff;    \
-        var[1] = (val >> 16) & 0xff;    \
-        var[2] = (val >>  8) & 0xff;    \
-        var[3] = (val      ) & 0xff;
+#define UINT32STR(var, val)         \
+    var[0] = (val >> 24) & 0xff;    \
+    var[1] = (val >> 16) & 0xff;    \
+    var[2] = (val >>  8) & 0xff;    \
+    var[3] = (val      ) & 0xff;
 
 #define GETUINT32(var)  (uint32_t)(((uint32_t)var[0] << 24) + ((uint32_t)var[1] << 16) + ((uint32_t)var[2] << 8) + ((uint32_t)var[3]))
 
 typedef struct _resource_info {
-	int type;
-	virConnectPtr conn;
-	arch_uint mem;
-	int overwrite;
+    int type;
+    virConnectPtr conn;
+    arch_uint mem;
+    int overwrite;
 } resource_info;
 
 ZEND_BEGIN_MODULE_GLOBALS(libvirt)
-	char *last_error;
-	char *vnc_location;
-	zend_bool longlong_to_string_ini;
-	char *iso_path_ini;
-	char *image_path_ini;
-	char *max_connections_ini;
-	#ifdef DEBUG_SUPPORT
-	int debug;
-	#endif
-	resource_info *binding_resources;
-	int binding_resources_count;
+    char *last_error;
+    char *vnc_location;
+    zend_bool longlong_to_string_ini;
+    char *iso_path_ini;
+    char *image_path_ini;
+    char *max_connections_ini;
+#ifdef DEBUG_SUPPORT
+    int debug;
+#endif
+    resource_info *binding_resources;
+    int binding_resources_count;
 ZEND_END_MODULE_GLOBALS(libvirt)
 
 #ifdef ZTS
@@ -191,115 +191,115 @@ ZEND_END_MODULE_GLOBALS(libvirt)
 #define PHP_LIBVIRT_WORLD_EXTNAME "libvirt"
 
 /* Connect flags */
-#define	CONNECT_FLAG_SOUNDHW_GET_NAMES	0x01
+#define CONNECT_FLAG_SOUNDHW_GET_NAMES  0x01
 
 /* Domain flags */
-#define DOMAIN_FLAG_FEATURE_ACPI	0x01
-#define DOMAIN_FLAG_FEATURE_APIC	0x02
-#define DOMAIN_FLAG_FEATURE_PAE 	0x04
-#define DOMAIN_FLAG_CLOCK_LOCALTIME	0x08
-#define DOMAIN_FLAG_TEST_LOCAL_VNC	0x10
-#define DOMAIN_FLAG_SOUND_AC97		0x20
+#define DOMAIN_FLAG_FEATURE_ACPI    0x01
+#define DOMAIN_FLAG_FEATURE_APIC    0x02
+#define DOMAIN_FLAG_FEATURE_PAE     0x04
+#define DOMAIN_FLAG_CLOCK_LOCALTIME 0x08
+#define DOMAIN_FLAG_TEST_LOCAL_VNC  0x10
+#define DOMAIN_FLAG_SOUND_AC97      0x20
 
 /* Domain disk flags */
-#define DOMAIN_DISK_FILE		0x01
-#define DOMAIN_DISK_BLOCK		0x02
-#define DOMAIN_DISK_ACCESS_ALL		0x04
+#define DOMAIN_DISK_FILE            0x01
+#define DOMAIN_DISK_BLOCK           0x02
+#define DOMAIN_DISK_ACCESS_ALL      0x04
 
 /* Internal resource identifier objects */
-#define INT_RESOURCE_CONNECTION		0x01
-#define INT_RESOURCE_DOMAIN		0x02
-#define INT_RESOURCE_NETWORK		0x04
-#define INT_RESOURCE_NODEDEV		0x08
-#define INT_RESOURCE_STORAGEPOOL	0x10
-#define INT_RESOURCE_VOLUME		0x20
-#define INT_RESOURCE_SNAPSHOT		0x40
-#define INT_RESOURCE_STREAM             0x50
+#define INT_RESOURCE_CONNECTION     0x01
+#define INT_RESOURCE_DOMAIN         0x02
+#define INT_RESOURCE_NETWORK        0x04
+#define INT_RESOURCE_NODEDEV        0x08
+#define INT_RESOURCE_STORAGEPOOL    0x10
+#define INT_RESOURCE_VOLUME         0x20
+#define INT_RESOURCE_SNAPSHOT       0x40
+#define INT_RESOURCE_STREAM         0x50
 
 typedef struct tVMDisk {
-	char *path;
-	char *driver;
-	char *bus;
-	char *dev;
-	unsigned long long size;
-	int flags;
+    char *path;
+    char *driver;
+    char *bus;
+    char *dev;
+    unsigned long long size;
+    int flags;
 } tVMDisk;
 
 typedef struct tVMNetwork {
-	char *mac;
-	char *network;
-	char *model;
+    char *mac;
+    char *network;
+    char *model;
 } tVMNetwork;
 
 #ifndef EXTWIN
 typedef struct tBMPFile {
-	uint32_t filesz;
-	uint16_t creator1;
-	uint16_t creator2;
-	uint32_t bmp_offset;
+    uint32_t filesz;
+    uint16_t creator1;
+    uint16_t creator2;
+    uint32_t bmp_offset;
 
-	uint32_t header_sz;
-	int32_t height;
-	int32_t width;
-	uint16_t nplanes;
-	uint16_t bitspp;
-	uint32_t compress_type;
-	uint32_t bmp_bytesz;
-	int32_t hres;
-	int32_t vres;
-	uint32_t ncolors;
-	uint32_t nimpcolors;
+    uint32_t header_sz;
+    int32_t height;
+    int32_t width;
+    uint16_t nplanes;
+    uint16_t bitspp;
+    uint32_t compress_type;
+    uint32_t bmp_bytesz;
+    int32_t hres;
+    int32_t vres;
+    uint32_t ncolors;
+    uint32_t nimpcolors;
 } tBMPFile;
 #endif
 
 /* Libvirt-php types */
 typedef struct _php_libvirt_connection {
-	virConnectPtr conn;
-	long resource_id;
+    virConnectPtr conn;
+    long resource_id;
 } php_libvirt_connection;
 
 typedef struct _php_libvirt_stream {
-        virStreamPtr stream;
-        php_libvirt_connection* conn;
+    virStreamPtr stream;
+    php_libvirt_connection* conn;
 } php_libvirt_stream;
 
 typedef struct _php_libvirt_domain {
-	virDomainPtr domain;
-	php_libvirt_connection* conn;
+    virDomainPtr domain;
+    php_libvirt_connection* conn;
 } php_libvirt_domain;
 
 #if LIBVIR_VERSION_NUMBER>=8000
 typedef struct _php_libvirt_snapshot {
-	virDomainSnapshotPtr snapshot;
-	php_libvirt_domain* domain;
+    virDomainSnapshotPtr snapshot;
+    php_libvirt_domain* domain;
 } php_libvirt_snapshot;
 #endif
 
 typedef struct _php_libvirt_network {
-	virNetworkPtr network;
-	php_libvirt_connection* conn;
+    virNetworkPtr network;
+    php_libvirt_connection* conn;
 } php_libvirt_network;
 
 typedef struct _php_libvirt_nodedev {
-	virNodeDevicePtr device;
-	php_libvirt_connection* conn;
+    virNodeDevicePtr device;
+    php_libvirt_connection* conn;
 } php_libvirt_nodedev;
 
 typedef struct _php_libvirt_storagepool {
-	virStoragePoolPtr pool;
-	php_libvirt_connection* conn;
+    virStoragePoolPtr pool;
+    php_libvirt_connection* conn;
 } php_libvirt_storagepool;
 
 typedef struct _php_libvirt_volume {
-	virStorageVolPtr volume;
-	php_libvirt_connection* conn;
+    virStorageVolPtr volume;
+    php_libvirt_connection* conn;
 } php_libvirt_volume;
 
 typedef struct _php_libvirt_cred_value {
-	int count;
-	int	type;
-	char *result;
-	unsigned int	resultlen;
+    int count;
+    int type;
+    char *result;
+    unsigned int    resultlen;
 } php_libvirt_cred_value;
 
 /* Private definitions */
