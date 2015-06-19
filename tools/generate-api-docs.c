@@ -32,10 +32,18 @@ void bail_error(const char *fmt, ...)
 
 char *ltrim_string(char *str)
 {
-    while (*str++ == ' ') ;
+    /* Skip initial comment indentation */
+    if (strncmp(str, " * ", 3) == 0)
+        str += 3;
+
+    /* Now skip spaces */
+    while (*str == ' ')
+        str++;
+
+    /* TABs are not acceptable! */
     if (*str == '\t')
-        while (*str++ == '\t')
-            if (*str != '\t') break;
+        bail_error("Indent with spaces, not TABs");
+
     return str;
 }
 
