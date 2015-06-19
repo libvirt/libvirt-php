@@ -3744,7 +3744,7 @@ PHP_FUNCTION(libvirt_stream_close)
         RETURN_LONG(retval);
     }
 
-    resource_change_counter(INT_RESOURCE_STREAM, stream->conn, stream->stream, 0 TSRMLS_CC);
+    resource_change_counter(INT_RESOURCE_STREAM, stream->conn->conn, stream->stream, 0 TSRMLS_CC);
     RETURN_LONG(retval);
 }
 
