@@ -15,7 +15,7 @@ AC_LANG([C])
 AC_PROG_INSTALL
 AC_PROG_SED
 AC_PROG_AWK
-AC_CHECK_TOOL([ECHO], [echo])
+AC_PATH_PROG([ECHO], [echo], [])
 AC_CHECK_TOOL([RM], [rm])
 
 dnl Need to test if pkg-config exists
