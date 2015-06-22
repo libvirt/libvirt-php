@@ -62,9 +62,7 @@ int le_libvirt_volume;
 int le_libvirt_network;
 int le_libvirt_nodedev;
 int le_libvirt_stream;
-#if LIBVIR_VERSION_NUMBER>=8000
 int le_libvirt_snapshot;
-#endif
 
 ZEND_DECLARE_MODULE_GLOBALS(libvirt)
 
@@ -804,7 +802,6 @@ void free_resource(int type, arch_uint mem TSRMLS_DC)
         }
     }
 
-#if LIBVIR_VERSION_NUMBER>=8000
     if (type == INT_RESOURCE_SNAPSHOT) {
         rv = virDomainSnapshotFree( (virDomainSnapshotPtr)mem );
         if (rv != 0) {
@@ -816,7 +813,6 @@ void free_resource(int type, arch_uint mem TSRMLS_DC)
             resource_change_counter(INT_RESOURCE_SNAPSHOT, NULL, (virDomainSnapshotPtr)mem, 0 TSRMLS_CC);
         }
     }
-#endif
 }
 
 /*
@@ -1168,7 +1164,6 @@ static void php_libvirt_nodedev_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
     }
 }
 
-#if LIBVIR_VERSION_NUMBER>=8000
 /* Destructor for snapshot resource */
 static void php_libvirt_snapshot_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 {
@@ -1198,7 +1193,6 @@ static void php_libvirt_snapshot_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
         efree(snapshot);
     }
 }
-#endif
 
 /* ZEND Module inicialization function */
 PHP_MINIT_FUNCTION(libvirt)
@@ -1211,9 +1205,7 @@ PHP_MINIT_FUNCTION(libvirt)
     le_libvirt_volume = zend_register_list_destructors_ex(php_libvirt_volume_dtor, NULL, PHP_LIBVIRT_VOLUME_RES_NAME, module_number);
     le_libvirt_network = zend_register_list_destructors_ex(php_libvirt_network_dtor, NULL, PHP_LIBVIRT_NETWORK_RES_NAME, module_number);
     le_libvirt_nodedev = zend_register_list_destructors_ex(php_libvirt_nodedev_dtor, NULL, PHP_LIBVIRT_NODEDEV_RES_NAME, module_number);
-#if LIBVIR_VERSION_NUMBER>=8000
     le_libvirt_snapshot = zend_register_list_destructors_ex(php_libvirt_snapshot_dtor, NULL, PHP_LIBVIRT_SNAPSHOT_RES_NAME, module_number);
-#endif
 
     ZEND_INIT_MODULE_GLOBALS(libvirt, php_libvirt_init_globals, NULL);
 
@@ -1246,10 +1238,8 @@ PHP_MINIT_FUNCTION(libvirt)
     REGISTER_LONG_CONSTANT("VIR_DOMAIN_VCPU_MAXIMUM",   VIR_DOMAIN_VCPU_MAXIMUM, CONST_CS | CONST_PERSISTENT);
     REGISTER_LONG_CONSTANT("VIR_DOMAIN_VCPU_GUEST",     VIR_DOMAIN_VCPU_GUEST, CONST_CS | CONST_PERSISTENT);
 
-#if LIBVIR_VERSION_NUMBER>=8000
     /* Domain snapshot constants */
     REGISTER_LONG_CONSTANT("VIR_SNAPSHOT_DELETE_CHILDREN",   VIR_DOMAIN_SNAPSHOT_DELETE_CHILDREN,   CONST_CS | CONST_PERSISTENT);
-#endif
 
     /* Memory constants */
     REGISTER_LONG_CONSTANT("VIR_MEMORY_VIRTUAL",        1, CONST_CS | CONST_PERSISTENT);
@@ -1481,8 +1471,6 @@ if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, args, __VA_ARGS__) == FAILU
 ZEND_FETCH_RESOURCE(volume, php_libvirt_volume*, &zvolume, -1, PHP_LIBVIRT_VOLUME_RES_NAME, le_libvirt_volume);\
 if ((volume==NULL) || (volume->volume==NULL)) RETURN_FALSE;\
 
-#if LIBVIR_VERSION_NUMBER>=8000
-
 #define GET_SNAPSHOT_FROM_ARGS(args, ...) \
     reset_error(TSRMLS_C);  \
 if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, args, __VA_ARGS__) == FAILURE) {\
@@ -1492,8 +1480,6 @@ if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, args, __VA_ARGS__) == FAILU
 \
 ZEND_FETCH_RESOURCE(snapshot, php_libvirt_snapshot*, &zsnapshot, -1, PHP_LIBVIRT_SNAPSHOT_RES_NAME, le_libvirt_snapshot);\
 if ((snapshot==NULL) || (snapshot->snapshot==NULL)) RETURN_FALSE;\
-
-#endif
 
 /* Macro to "recreate" string with emalloc and free the original one */
 #define RECREATE_STRING_WITH_E(str_out, str_in) \
@@ -1727,7 +1713,6 @@ PHP_FUNCTION(libvirt_node_get_info)
  *                  @cpunr [int]: CPU number to get information about, defaults to VIR_NODE_CPU_STATS_ALL_CPUS to get information about all CPUs
  * Returns:         array of node CPU statistics including time (in seconds since UNIX epoch), cpu number and total number of CPUs on node or FALSE for error
  */
-#if LIBVIR_VERSION_NUMBER>=9003
 PHP_FUNCTION(libvirt_node_get_cpu_stats)
 {
     php_libvirt_connection *conn=NULL;
@@ -1812,13 +1797,6 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats)
     free(params);
     params = NULL;
 }
-#else
-PHP_FUNCTION(libvirt_node_get_cpu_stats)
-{
-    set_error("Function is not supported by libvirt, support has been added in libvirt 0.9.3" TSRMLS_CC);
-    RETURN_FALSE;
-}
-#endif
 
 /*
  * Function name:   libvirt_node_get_cpu_stats_for_each_cpu
@@ -1828,7 +1806,6 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats)
  *                  @time [int]: time in seconds to get the information about, without aggregation for further processing
  * Returns:         array of node CPU statistics for each CPU including time (in seconds since UNIX epoch), cpu number and total number of CPUs on node or FALSE for error
  */
-#if LIBVIR_VERSION_NUMBER>=9003
 PHP_FUNCTION(libvirt_node_get_cpu_stats_for_each_cpu)
 {
     php_libvirt_connection *conn=NULL;
@@ -1919,13 +1896,6 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats_for_each_cpu)
     free(params);
     params = NULL;
 }
-#else
-PHP_FUNCTION(libvirt_node_get_cpu_stats_for_each_cpu)
-{
-    set_error("Function is not supported by libvirt, support has been added in libvirt 0.9.3" TSRMLS_CC);
-    RETURN_FALSE;
-}
-#endif
 
 /*
  * Function name:   libvirt_node_get_mem_stats
@@ -1934,7 +1904,6 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats_for_each_cpu)
  * Arguments:       @conn [resource]: resource for connection
  * Returns:         array of node memory statistics including time (in seconds since UNIX epoch) or FALSE for error
  */
-#if LIBVIR_VERSION_NUMBER>=9003
 PHP_FUNCTION(libvirt_node_get_mem_stats)
 {
     php_libvirt_connection *conn=NULL;
@@ -1976,13 +1945,6 @@ PHP_FUNCTION(libvirt_node_get_mem_stats)
     free(params);
     params = NULL;
 }
-#else
-PHP_FUNCTION(libvirt_node_get_mem_stats)
-{
-    set_error("Function is not supported by libvirt, support has been added in libvirt 0.9.3" TSRMLS_CC);
-    RETURN_FALSE;
-}
-#endif
 
 //virsh capabilities | xpath '//capabilities/guest/arch[@name="x86_64"]/machine[@maxCpus=1]'
 
@@ -2533,7 +2495,6 @@ PHP_FUNCTION(libvirt_connect_get_maxvcpus)
  * Arguments:       @conn [resource]: resource for connection
  * Returns:         XML description of system information from the connection or FALSE for error
  */
-#if LIBVIR_VERSION_NUMBER>=8008
 PHP_FUNCTION(libvirt_connect_get_sysinfo)
 {
     php_libvirt_connection *conn=NULL;
@@ -2550,13 +2511,6 @@ PHP_FUNCTION(libvirt_connect_get_sysinfo)
 
     RETURN_STRING(sysinfo_out,0);
 }
-#else
-PHP_FUNCTION(libvirt_connect_get_sysinfo)
-{
-    set_error("Only libvirt 0.8.8 or higher supports virConnectGetSysinfo() API function" TSRMLS_CC);
-    RETURN_FALSE;
-}
-#endif
 
 /*
  * Private function name:   get_string_from_xpath
@@ -3994,7 +3948,6 @@ static int streamSink(virStreamPtr st ATTRIBUTE_UNUSED,
  *                  @screenID [int]: monitor ID from where to take screenshot
  * Returns:         array of filename and mime type as type is hypervisor specific, caller is responsible for temporary file deletion
  */
-#if LIBVIR_VERSION_NUMBER>=9002
 PHP_FUNCTION(libvirt_domain_get_screenshot_api)
 {
     php_libvirt_domain *domain=NULL;
@@ -4068,13 +4021,6 @@ PHP_FUNCTION(libvirt_domain_get_screenshot_api)
         add_assoc_string_ex(return_value, "mime", 5, mime, 1);
     }
 }
-#else
-PHP_FUNCTION(libvirt_domain_get_screenshot_api)
-{
-    set_error("Function is not supported by libvirt, you need at least libvirt 0.9.2 to support this function" TSRMLS_CC);
-    RETURN_FALSE;
-}
-#endif
 
 /*
  * Function name:   libvirt_domain_get_screenshot
@@ -6039,7 +5985,6 @@ PHP_FUNCTION(libvirt_domain_memory_peek)
  * Arguments:       @res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
  * Returns:         domain memory stats array (same fields as virDomainMemoryStats, please see libvirt documentation)
  */
-#if LIBVIR_VERSION_NUMBER>=7005
 PHP_FUNCTION(libvirt_domain_memory_stats)
 {
     php_libvirt_domain *domain=NULL;
@@ -6062,12 +6007,6 @@ PHP_FUNCTION(libvirt_domain_memory_stats)
         LONGLONG_INDEX(return_value, stats[i].tag,stats[i].val)
     }
 }
-#else
-PHP_FUNCTION(libvirt_domain_memory_stats)
-{
-    set_error("Only libvirt 0.7.5 and higher supports getting the job information" TSRMLS_CC);
-}
-#endif
 
 /*
  * Function name:   libvirt_domain_update_device
@@ -6078,7 +6017,6 @@ PHP_FUNCTION(libvirt_domain_memory_stats)
  *                  @flags [int]: Flags to update the device (VIR_DOMAIN_DEVICE_MODIFY_CURRENT, VIR_DOMAIN_DEVICE_MODIFY_LIVE, VIR_DOMAIN_DEVICE_MODIFY_CONFIG, VIR_DOMAIN_DEVICE_MODIFY_FORCE)
  * Returns:         TRUE for success, FALSE on error
  */
-#if LIBVIR_VERSION_NUMBER>=8000
 PHP_FUNCTION(libvirt_domain_update_device)
 {
     php_libvirt_domain *domain=NULL;
@@ -6097,12 +6035,6 @@ PHP_FUNCTION(libvirt_domain_update_device)
 
     RETURN_TRUE;
 }
-#else
-PHP_FUNCTION(libvirt_domain_update_device)
-{
-    set_error("Only libvirt 0.8.0 and higher supports updating the device information" TSRMLS_CC);
-}
-#endif
 
 /*
  * Function name:   libvirt_domain_block_stats
@@ -6282,7 +6214,6 @@ PHP_FUNCTION(libvirt_domain_get_network_info)
  *                  @dev [string]: device to get block information about
  * Returns:         domain block device information array of device, file or partition, capacity, allocation and physical size
  */
-#if LIBVIR_VERSION_NUMBER>=8000
 PHP_FUNCTION(libvirt_domain_get_block_info)
 {
     php_libvirt_domain *domain=NULL;
@@ -6354,13 +6285,6 @@ PHP_FUNCTION(libvirt_domain_get_block_info)
     LONGLONG_ASSOC(return_value, "allocation", info.allocation);
     LONGLONG_ASSOC(return_value, "physical", info.physical);
 }
-#else
-PHP_FUNCTION(libvirt_domain_get_block_info)
-{
-    set_error("Only libvirt 0.8.0 and higher supports getting the block information" TSRMLS_CC);
-    RETURN_FALSE;
-}
-#endif
 
 /*
  * Function name:   libvirt_domain_xml_xpath
@@ -6610,7 +6534,6 @@ PHP_FUNCTION(libvirt_domain_migrate)
  * Arguments:       @res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
  * Returns:         job information array of type, time, data, mem and file fields
  */
-#if LIBVIR_VERSION_NUMBER>=7007
 PHP_FUNCTION(libvirt_domain_get_job_info)
 {
     php_libvirt_domain *domain=NULL;
@@ -6639,15 +6562,7 @@ PHP_FUNCTION(libvirt_domain_get_job_info)
     LONGLONG_ASSOC(return_value, "file_processed", jobinfo.fileProcessed);
     LONGLONG_ASSOC(return_value, "file_remaining", jobinfo.fileRemaining);
 }
-#else
-PHP_FUNCTION(libvirt_domain_get_job_info)
-{
-    set_error("Only libvirt 0.7.7 and higher supports getting the job information" TSRMLS_CC);
-    RETURN_FALSE;
-}
-#endif
 
-#if LIBVIR_VERSION_NUMBER>=8000
 /*
  * Function name:   libvirt_domain_has_current_snapshot
  * Since version:   0.4.1(-2)
@@ -6835,49 +6750,6 @@ PHP_FUNCTION(libvirt_list_domain_snapshots)
     }
     efree(names);
 }
-#else
-PHP_FUNCTION(libvirt_domain_has_current_snapshot)
-{
-    set_error("Only libvirt 0.8.0 and higher support snapshots" TSRMLS_CC);
-    RETURN_FALSE;
-}
-
-PHP_FUNCTION(libvirt_domain_snapshot_create)
-{
-    set_error("Only libvirt 0.8.0 and higher support snapshots" TSRMLS_CC);
-    RETURN_FALSE;
-}
-
-PHP_FUNCTION(libvirt_domain_snapshot_get_xml)
-{
-    set_error("Only libvirt 0.8.0 and higher support snapshots" TSRMLS_CC);
-    RETURN_FALSE;
-}
-
-PHP_FUNCTION(libvirt_domain_snapshot_lookup_by_name)
-{
-    set_error("Only libvirt 0.8.0 and higher support snapshots" TSRMLS_CC);
-    RETURN_FALSE;
-}
-
-PHP_FUNCTION(libvirt_domain_snapshot_revert)
-{
-    set_error("Only libvirt 0.8.0 and higher support snapshots" TSRMLS_CC);
-    RETURN_FALSE;
-}
-
-PHP_FUNCTION(libvirt_domain_snapshot_delete)
-{
-    set_error("Only libvirt 0.8.0 and higher support snapshots" TSRMLS_CC);
-    RETURN_FALSE;
-}
-
-PHP_FUNCTION(libvirt_list_domain_snapshots)
-{
-    set_error("Only libvirt 0.8.0 and higher support snapshots" TSRMLS_CC);
-    RETURN_FALSE;
-}
-#endif
 
 /* Storagepool functions */
 

@@ -1,4 +1,4 @@
-%define		req_libvirt_version 0.6.2
+%define		req_libvirt_version 1.2.8
 
 %if 0%{?suse_version}
 %define		php_confdir %{_sysconfdir}/php5/conf.d

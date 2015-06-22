@@ -268,12 +268,10 @@ typedef struct _php_libvirt_domain {
     php_libvirt_connection* conn;
 } php_libvirt_domain;
 
-#if LIBVIR_VERSION_NUMBER>=8000
 typedef struct _php_libvirt_snapshot {
     virDomainSnapshotPtr snapshot;
     php_libvirt_domain* domain;
 } php_libvirt_snapshot;
-#endif
 
 typedef struct _php_libvirt_network {
     virNetworkPtr network;
@@ -322,9 +320,7 @@ int gdebug;
 #define PHP_LIBVIRT_VOLUME_RES_NAME "Libvirt volume"
 #define PHP_LIBVIRT_NETWORK_RES_NAME "Libvirt virtual network"
 #define PHP_LIBVIRT_NODEDEV_RES_NAME "Libvirt node device"
-#if LIBVIR_VERSION_NUMBER>=8000
 #define PHP_LIBVIRT_SNAPSHOT_RES_NAME "Libvirt domain snapshot"
-#endif
 
 PHP_MINIT_FUNCTION(libvirt);
 PHP_MSHUTDOWN_FUNCTION(libvirt);

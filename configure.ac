@@ -32,7 +32,7 @@ if test "$prefix" = "/usr" && test "$sysconfdir" = '${prefix}/etc' ; then
     sysconfdir='/etc'
 fi
 
-LIBVIRT_REQUIRED=0.6.2
+LIBVIRT_REQUIRED=1.2.8
 PKG_CHECK_MODULES(LIBVIRT, libvirt >= $LIBVIRT_REQUIRED)
 
 dnl ==========================================================================
