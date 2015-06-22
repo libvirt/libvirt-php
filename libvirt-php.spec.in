@@ -1,10 +1,10 @@
 %define		req_libvirt_version 0.6.2
 
-%if 0%{?suse_version} 
+%if 0%{?suse_version}
 %define		php_confdir %{_sysconfdir}/php5/conf.d
 %define		php_extdir  %{_libdir}/php5/extensions
 %else
-%define		php_confdir %{_sysconfdir}/php.d 
+%define		php_confdir %{_sysconfdir}/php.d
 %define		php_extdir  %{_libdir}/php/modules
 %endif
 
@@ -13,7 +13,7 @@ Version:	@VERSION@
 Release:	3%{?dist}%{?extra_release}
 Summary:	PHP language binding for Libvirt
 
-%if 0%{?suse_version}  
+%if 0%{?suse_version}
 Group:		Development/Libraries/PHP
 %else
 Group:		Development/Libraries
@@ -27,20 +27,20 @@ BuildRequires:	php-devel
 BuildRequires:	libvirt-devel >= %{req_libvirt_version}
 BuildRequires:	libxml2-devel
 BuildRequires:	libxslt
-%if 0%{?suse_version}  
+%if 0%{?suse_version}
 BuildRequires:	xhtml-dtd
 %else
 BuildRequires:	xhtml1-dtds
 %endif
 Requires:	libvirt >= %{req_libvirt_version}
-%if 0%{?suse_version}  
+%if 0%{?suse_version}
 Requires:	php5
 %else
 Requires:	php
 %endif
 
 %description
-PHP language bindings for Libvirt API. 
+PHP language bindings for Libvirt API.
 For more details see: http://www.libvirt.org/php/
 
 %package -n libvirt-php-doc
@@ -50,7 +50,7 @@ BuildArch:	noarch
 Requires:	libvirt-php = %{version}
 
 %description -n libvirt-php-doc
-PHP language bindings for Libvirt API. 
+PHP language bindings for Libvirt API.
 For more details see: http://www.libvirt.org/php/ http://www.php.net/
 
 This package contain the document for libvirt-php.
