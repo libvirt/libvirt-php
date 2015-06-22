@@ -59,8 +59,7 @@ This package contain the document for libvirt-php.
 %setup -q -n libvirt-php-%{version}
 
 %build
-%configure
-./configure --with-html-dir=%{_datadir}/doc --with-html-subdir=%{name}-%{version}/html --libdir=%{php_extdir}
+%configure --with-html-dir=%{_datadir}/doc --with-html-subdir=%{name}-%{version}/html --libdir=%{php_extdir}
 make %{?_smp_mflags}
 
 %install
