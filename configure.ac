@@ -21,6 +21,17 @@ AC_CHECK_TOOL([RM], [rm])
 dnl Need to test if pkg-config exists
 PKG_PROG_PKG_CONFIG
 
+dnl if --prefix is /usr, don't use /usr/var for localstatedir
+dnl or /usr/etc for sysconfdir
+dnl as this makes a lot of things break in testing situations
+
+if test "$prefix" = "/usr" && test "$localstatedir" = '${prefix}/var' ; then
+    localstatedir='/var'
+fi
+if test "$prefix" = "/usr" && test "$sysconfdir" = '${prefix}/etc' ; then
+    sysconfdir='/etc'
+fi
+
 LIBVIRT_REQUIRED=0.6.2
 PKG_CHECK_MODULES(LIBVIRT, libvirt >= $LIBVIRT_REQUIRED)
 
