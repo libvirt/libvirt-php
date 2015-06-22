@@ -32,7 +32,6 @@ BuildRequires:	xhtml-dtd
 %else
 BuildRequires:	xhtml1-dtds
 %endif
-Requires:	libvirt >= %{req_libvirt_version}
 %if 0%{?suse_version}
 Requires:	php5
 %else
@@ -65,18 +64,19 @@ make %{?_smp_mflags}
 %install
 rm -rf %{buildroot}
 make install DESTDIR=%{buildroot}
-chmod +x %{buildroot}%{php_extdir}/libvirt-php.so
+rm -f ${RPM_BUILD_ROOT}%{php_extdir}/*.la
 
 %clean
 rm -rf %{buildroot}
 
 %files
-%defattr(-,root,root,-)
+%defattr(-,root,root)
 %{php_extdir}/libvirt-php.so
+%{php_extdir}/libvirt-php.so.*
 %config(noreplace) %{php_confdir}/libvirt-php.ini
 
 %files -n libvirt-php-doc
-%defattr(-,root,root,-)
+%defattr(-,root,root)
 %doc
 %dir %{_datadir}/doc/%{name}-%{version}
 %{_datadir}/doc/%{name}-%{version}/html
