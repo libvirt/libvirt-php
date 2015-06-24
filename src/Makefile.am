@@ -6,10 +6,10 @@ WL=@WL@
 SHLIB_FLAGS=@SHLIB_FLAGS@
 
 install-exec-local:
-	$(MKDIR_P) $(DESTDIR)$(prefix)$(PHPEDIR)
-	$(MKDIR_P) $(DESTDIR)$(prefix)$(PHPCDIR)
-	$(INSTALL) -m 644 -D .libs/$(PACKAGE).so $(DESTDIR)$(prefix)$(PHPEDIR)/$(PACKAGE).so
-	$(INSTALL) -m 755 -d $(DESTDIR)$(prefix)$(PHPCDIR)
+	$(MKDIR_P) $(DESTDIR)$(PHPEDIR)
+	$(MKDIR_P) $(DESTDIR)$(PHPCDIR)
+	$(INSTALL) -m 644 -D .libs/$(PACKAGE).so $(DESTDIR)$(PHPEDIR)/$(PACKAGE).so
+	$(INSTALL) -m 755 -d $(DESTDIR)$(PHPCDIR)
 	$(ECHO) "extension=$(PACKAGE).so" > libvirt-php.ini
 	$(ECHO) >> libvirt-php.ini
 	$(ECHO) "[libvirt]" >> libvirt-php.ini
@@ -19,11 +19,11 @@ install-exec-local:
 	$(ECHO) "libvirt.image_path=/var/lib/libvirt/images" >> libvirt-php.ini
 	$(ECHO) "; Limit maximum number of libvirt connections" >> libvirt-php.ini
 	$(ECHO) "libvirt.max_connections=5" >> libvirt-php.ini
-	$(INSTALL) -m 644 -D libvirt-php.ini $(DESTDIR)$(prefix)$(PHPCDIR)/$(PACKAGE).ini
+	$(INSTALL) -m 644 -D libvirt-php.ini $(DESTDIR)$(PHPCDIR)/$(PACKAGE).ini
 
 uninstall-local:
-	$(RM) -f $(DESTDIR)$(prefix)$(PHPCDIR)/$(PACKAGE).ini
-	$(RM) -f $(DESTDIR)$(prefix)$(PHPEDIR)/$(PACKAGE).so
+	$(RM) -f $(DESTDIR)$(PHPCDIR)/$(PACKAGE).ini
+	$(RM) -f $(DESTDIR)$(PHPEDIR)/$(PACKAGE).so
 
 AM_CFLAGS = \
 	$(PHPINC) $(LIBXML_CFLAGS) \
