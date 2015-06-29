@@ -1242,6 +1242,31 @@ PHP_MINIT_FUNCTION(libvirt)
 
     /* Domain snapshot constants */
     REGISTER_LONG_CONSTANT("VIR_SNAPSHOT_DELETE_CHILDREN",   VIR_DOMAIN_SNAPSHOT_DELETE_CHILDREN,   CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_SNAPSHOT_DELETE_METADATA_ONLY",     VIR_DOMAIN_SNAPSHOT_DELETE_METADATA_ONLY,       CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_SNAPSHOT_DELETE_CHILDREN_ONLY",     VIR_DOMAIN_SNAPSHOT_DELETE_CHILDREN_ONLY,       CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_SNAPSHOT_CREATE_REDEFINE",   VIR_DOMAIN_SNAPSHOT_CREATE_REDEFINE,   CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_SNAPSHOT_CREATE_CURRENT",   VIR_DOMAIN_SNAPSHOT_CREATE_CURRENT,     CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_SNAPSHOT_CREATE_NO_METADATA",       VIR_DOMAIN_SNAPSHOT_CREATE_NO_METADATA, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_SNAPSHOT_CREATE_HALT",      VIR_DOMAIN_SNAPSHOT_CREATE_HALT,        CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_SNAPSHOT_CREATE_DISK_ONLY", VIR_DOMAIN_SNAPSHOT_CREATE_DISK_ONLY,   CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_SNAPSHOT_CREATE_REUSE_EXT", VIR_DOMAIN_SNAPSHOT_CREATE_REUSE_EXT,   CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_SNAPSHOT_CREATE_QUIESCE",   VIR_DOMAIN_SNAPSHOT_CREATE_QUIESCE,     CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_SNAPSHOT_CREATE_ATOMIC",    VIR_DOMAIN_SNAPSHOT_CREATE_ATOMIC,      CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_SNAPSHOT_CREATE_LIVE",      VIR_DOMAIN_SNAPSHOT_CREATE_LIVE,        CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_SNAPSHOT_LIST_DESCENDANTS", VIR_DOMAIN_SNAPSHOT_LIST_DESCENDANTS,   CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_SNAPSHOT_LIST_ROOTS",       VIR_DOMAIN_SNAPSHOT_LIST_ROOTS, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_SNAPSHOT_LIST_METADATA",    VIR_DOMAIN_SNAPSHOT_LIST_METADATA,      CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_SNAPSHOT_LIST_LEAVES",      VIR_DOMAIN_SNAPSHOT_LIST_LEAVES,        CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_SNAPSHOT_LIST_NO_LEAVES",   VIR_DOMAIN_SNAPSHOT_LIST_NO_LEAVES,     CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_SNAPSHOT_LIST_NO_METADATA", VIR_DOMAIN_SNAPSHOT_LIST_NO_METADATA,   CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_SNAPSHOT_LIST_INACTIVE",    VIR_DOMAIN_SNAPSHOT_LIST_INACTIVE,      CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_SNAPSHOT_LIST_ACTIVE",      VIR_DOMAIN_SNAPSHOT_LIST_ACTIVE,        CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_SNAPSHOT_LIST_DISK_ONLY",   VIR_DOMAIN_SNAPSHOT_LIST_DISK_ONLY,     CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_SNAPSHOT_LIST_INTERNAL",    VIR_DOMAIN_SNAPSHOT_LIST_INTERNAL,      CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_SNAPSHOT_LIST_EXTERNAL",    VIR_DOMAIN_SNAPSHOT_LIST_EXTERNAL,      CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_SNAPSHOT_REVERT_RUNNING",   VIR_DOMAIN_SNAPSHOT_REVERT_RUNNING,     CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_SNAPSHOT_REVERT_PAUSED",    VIR_DOMAIN_SNAPSHOT_REVERT_PAUSED,      CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_SNAPSHOT_REVERT_FORCE",     VIR_DOMAIN_SNAPSHOT_REVERT_FORCE,       CONST_CS | CONST_PERSISTENT);
 
     /* Memory constants */
     REGISTER_LONG_CONSTANT("VIR_MEMORY_VIRTUAL",        1, CONST_CS | CONST_PERSISTENT);
@@ -6597,6 +6622,7 @@ PHP_FUNCTION(libvirt_domain_get_job_info)
  * Since version:   0.4.1(-2)
  * Description:     Function is used to get the information whether domain has the current snapshot
  * Arguments:       @res [resource]: libvirt domain resource
+ *                  @flags [int]: libvirt snapshot flags
  * Returns:         TRUE is domain has the current snapshot, otherwise FALSE (you may need to check for error using libvirt_get_last_error())
  */
 PHP_FUNCTION(libvirt_domain_has_current_snapshot)
@@ -6604,10 +6630,11 @@ PHP_FUNCTION(libvirt_domain_has_current_snapshot)
     php_libvirt_domain *domain=NULL;
     zval *zdomain;
     int retval;
+    long flags = 0;
 
-    GET_DOMAIN_FROM_ARGS("r",&zdomain);
+    GET_DOMAIN_FROM_ARGS("r|l",&zdomain, &flags);
 
-    retval=virDomainHasCurrentSnapshot(domain->domain, 0);
+    retval=virDomainHasCurrentSnapshot(domain->domain, flags);
     if (retval <= 0) RETURN_FALSE;
     RETURN_TRUE;
 }
@@ -6618,6 +6645,7 @@ PHP_FUNCTION(libvirt_domain_has_current_snapshot)
  * Description:     This functions is used to lookup for the snapshot by it's name
  * Arguments:       @res [resource]: libvirt domain resource
  *                  @name [string]: name of the snapshot to get the resource
+ *                  @flags [int]: libvirt snapshot flags
  * Returns:         domain snapshot resource
  */
 PHP_FUNCTION(libvirt_domain_snapshot_lookup_by_name)
@@ -6626,13 +6654,14 @@ PHP_FUNCTION(libvirt_domain_snapshot_lookup_by_name)
     zval *zdomain;
     int name_len;
     char *name=NULL;
+    long flags = 0;
     php_libvirt_snapshot *res_snapshot;
     virDomainSnapshotPtr snapshot = NULL;
 
-    GET_DOMAIN_FROM_ARGS("rs",&zdomain,&name,&name_len);
+    GET_DOMAIN_FROM_ARGS("rs|l",&zdomain,&name,&name_len,&flags);
 
     if ( (name == NULL) || (name_len<1)) RETURN_FALSE;
-    snapshot=virDomainSnapshotLookupByName(domain->domain, name, 0);
+    snapshot=virDomainSnapshotLookupByName(domain->domain, name, flags);
     if (snapshot==NULL) RETURN_FALSE;
 
     res_snapshot = (php_libvirt_snapshot *)emalloc(sizeof(php_libvirt_snapshot));
@@ -6649,6 +6678,7 @@ PHP_FUNCTION(libvirt_domain_snapshot_lookup_by_name)
  * Since version:   0.4.1(-2)
  * Description:     This function creates the domain snapshot for the domain identified by it's resource
  * Arguments:       @res [resource]: libvirt domain resource
+ *                  @flags [int]: libvirt snapshot flags
  * Returns:         domain snapshot resource
  */
 PHP_FUNCTION(libvirt_domain_snapshot_create)
@@ -6657,10 +6687,11 @@ PHP_FUNCTION(libvirt_domain_snapshot_create)
     php_libvirt_snapshot *res_snapshot;
     zval *zdomain;
     virDomainSnapshotPtr snapshot = NULL;
+    long flags = 0;
 
-    GET_DOMAIN_FROM_ARGS("r",&zdomain);
+    GET_DOMAIN_FROM_ARGS("r|l",&zdomain, &flags);
 
-    snapshot=virDomainSnapshotCreateXML(domain->domain, "<domainsnapshot/>", 0);
+    snapshot=virDomainSnapshotCreateXML(domain->domain, "<domainsnapshot/>", flags);
     DPRINTF("%s: virDomainSnapshotCreateXML(%p, <xml>) returned %p\n", PHPFUNC, domain->domain, snapshot);
     if (snapshot == NULL) RETURN_FALSE;
 
@@ -6678,6 +6709,7 @@ PHP_FUNCTION(libvirt_domain_snapshot_create)
  * Since version:   0.4.1(-2)
  * Description:     Function is used to get the XML description of the snapshot identified by it's resource
  * Arguments:       @res [resource]: libvirt snapshot resource
+ *                  @flags [int]: libvirt snapshot flags
  * Returns:         XML description string for the snapshot
  */
 PHP_FUNCTION(libvirt_domain_snapshot_get_xml)
@@ -6686,10 +6718,11 @@ PHP_FUNCTION(libvirt_domain_snapshot_get_xml)
     char *xml_out;
     zval *zsnapshot;
     php_libvirt_snapshot *snapshot;
+    long flags = 0;
 
-    GET_SNAPSHOT_FROM_ARGS("r",&zsnapshot);
+    GET_SNAPSHOT_FROM_ARGS("r|l",&zsnapshot, &flags);
 
-    xml = virDomainSnapshotGetXMLDesc(snapshot->snapshot, 0);
+    xml = virDomainSnapshotGetXMLDesc(snapshot->snapshot, flags);
     if (xml==NULL) RETURN_FALSE;
 
     RECREATE_STRING_WITH_E(xml_out,xml);
@@ -6702,6 +6735,7 @@ PHP_FUNCTION(libvirt_domain_snapshot_get_xml)
  * Since version:   0.4.1(-2)
  * Description:     Function is used to revert the domain state to the state identified by the snapshot
  * Arguments:       @res [resource]: libvirt snapshot resource
+ *                  @flags [int]: libvirt snapshot flags
  * Returns:         TRUE on success, FALSE on error
  */
 PHP_FUNCTION(libvirt_domain_snapshot_revert)
@@ -6709,10 +6743,11 @@ PHP_FUNCTION(libvirt_domain_snapshot_revert)
     zval *zsnapshot;
     php_libvirt_snapshot *snapshot;
     int ret;
+    long flags = 0;
 
-    GET_SNAPSHOT_FROM_ARGS("r",&zsnapshot);
+    GET_SNAPSHOT_FROM_ARGS("r|l",&zsnapshot, &flags);
 
-    ret = virDomainRevertToSnapshot(snapshot->snapshot, 0);
+    ret = virDomainRevertToSnapshot(snapshot->snapshot, flags);
     DPRINTF("%s: virDomainRevertToSnapshot(%p, 0) returned %d\n", PHPFUNC, snapshot->snapshot, ret);
     if (ret == -1) RETURN_FALSE;
     RETURN_TRUE;
@@ -6746,6 +6781,7 @@ PHP_FUNCTION(libvirt_domain_snapshot_delete)
  * Since version:   0.4.1(-2)
  * Description:     Function is used to list domain snapshots for the domain specified by it's resource
  * Arguments:       @res [resource]: libvirt domain resource
+ *                  @flags [int]: libvirt snapshot flags
  * Returns:         libvirt domain snapshot names array
  */
 PHP_FUNCTION(libvirt_list_domain_snapshots)
@@ -6755,11 +6791,12 @@ PHP_FUNCTION(libvirt_list_domain_snapshots)
     int count=-1;
     int expectedcount=-1;
     char **names;
+    long flags = 0;
     int i;
 
-    GET_DOMAIN_FROM_ARGS("r",&zdomain);
+    GET_DOMAIN_FROM_ARGS("r|l",&zdomain, &flags);
 
-    expectedcount=virDomainSnapshotNum(domain->domain, 0);
+    expectedcount=virDomainSnapshotNum(domain->domain, flags);
     DPRINTF("%s: virDomainSnapshotNum(%p, 0) returned %d\n", PHPFUNC, domain->domain, expectedcount);
 
     if (expectedcount != -1 ) {
