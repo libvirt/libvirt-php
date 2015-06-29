@@ -34,6 +34,9 @@ fi
 
 LIBVIRT_REQUIRED=1.2.8
 PKG_CHECK_MODULES(LIBVIRT, libvirt >= $LIBVIRT_REQUIRED)
+PKG_CHECK_MODULES(QEMU, libvirt-qemu)
+AC_SUBST([QEMU_CFLAGS])
+AC_SUBST([QEMU_LIBS])
 
 dnl ==========================================================================
 dnl required minimum version of libxml2

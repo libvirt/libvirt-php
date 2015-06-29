@@ -80,6 +80,7 @@
 
 #include <libvirt/libvirt.h>
 #include <libvirt/virterror.h>
+#include <libvirt/libvirt-qemu.h>
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
 #include <fcntl.h>
@@ -423,6 +424,7 @@ PHP_FUNCTION(libvirt_domain_send_keys);
 PHP_FUNCTION(libvirt_domain_send_pointer_event);
 PHP_FUNCTION(libvirt_domain_get_metadata);
 PHP_FUNCTION(libvirt_domain_set_metadata);
+PHP_FUNCTION(libvirt_domain_qemu_agent_command);
 /* Domain snapshot functions */
 PHP_FUNCTION(libvirt_domain_has_current_snapshot);
 PHP_FUNCTION(libvirt_domain_snapshot_create);

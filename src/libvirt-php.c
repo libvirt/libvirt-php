@@ -242,6 +242,8 @@ static zend_function_entry libvirt_functions[] = {
     /* Debugging functions */
     PHP_FE(libvirt_logfile_set, NULL)
     PHP_FE(libvirt_print_binding_resources, NULL)
+    /* Agent functions */
+    PHP_FE(libvirt_domain_qemu_agent_command, NULL)
     {NULL, NULL, NULL}
 };
 
@@ -3608,6 +3610,33 @@ PHP_FUNCTION(libvirt_domain_lookup_by_uuid)
     DPRINTF("%s: domain UUID = '%s', returning %p\n", PHPFUNC, uuid, res_domain->domain);
     resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1 TSRMLS_CC);
     ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
+}
+
+/*
+ * Function name:  libvirt_domain_qemu_agent_command
+ * Since version:  0.5.2(-1)
+ * Description:    Function is used to send qemu-ga command
+ * Arguments:      @res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
+ *                 @timeout [int] timeout for waiting (-2 block, -1 default, 0 no wait, >0 wait specific time
+ *                 @flags [int]: unknown
+ * Returns:        String on success and FALSE on error
+ */
+PHP_FUNCTION(libvirt_domain_qemu_agent_command)
+{
+       php_libvirt_domain *domain=NULL;
+       zval *zdomain;
+       const char *cmd;
+       int cmd_len;
+       char *ret;
+       long timeout = -1;
+       long flags = 0;
+
+       GET_DOMAIN_FROM_ARGS("rs|ll", &zdomain, &cmd, &cmd_len, &timeout, &flags);
+
+       ret = virDomainQemuAgentCommand(domain->domain, cmd, timeout, flags);
+       if (ret == NULL) RETURN_FALSE;
+
+       RETURN_STRING(ret, 1);
 }
 
 /*

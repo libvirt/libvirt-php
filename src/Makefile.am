@@ -27,13 +27,14 @@ uninstall-local:
 
 AM_CFLAGS = \
 	$(PHPINC) $(LIBXML_CFLAGS) \
-	$(LIBVIRT_CFLAGS) $(DEFINES) \
+	$(LIBVIRT_CFLAGS) $(QEMU_CFLAGS) $(DEFINES) \
 	-I$(top_srcdir)/winsrc
 
 AM_LDFLAGS = \
 	$(SHLIB_LDFLAGS) \
 	$(LIBXML_LIBS) \
-	$(LIBVIRT_LIBS)
+	$(LIBVIRT_LIBS) \
+	$(QEMU_LIBS)
 
 lib_LTLIBRARIES = libvirt-php.la
 
