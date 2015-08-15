@@ -1216,6 +1216,8 @@ PHP_MINIT_FUNCTION(libvirt)
     /* XML contants */
     REGISTER_LONG_CONSTANT("VIR_DOMAIN_XML_SECURE",     1, CONST_CS | CONST_PERSISTENT);
     REGISTER_LONG_CONSTANT("VIR_DOMAIN_XML_INACTIVE",   2, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_DOMAIN_XML_UPDATE_CPU", 4, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_DOMAIN_XML_MIGRATABLE", 8, CONST_CS | CONST_PERSISTENT);
 
     REGISTER_LONG_CONSTANT("VIR_NODE_CPU_STATS_ALL_CPUS",   VIR_NODE_CPU_STATS_ALL_CPUS, CONST_CS | CONST_PERSISTENT);
 
@@ -1227,6 +1229,7 @@ PHP_MINIT_FUNCTION(libvirt)
     REGISTER_LONG_CONSTANT("VIR_DOMAIN_SHUTDOWN",       4, CONST_CS | CONST_PERSISTENT);
     REGISTER_LONG_CONSTANT("VIR_DOMAIN_SHUTOFF",        5, CONST_CS | CONST_PERSISTENT);
     REGISTER_LONG_CONSTANT("VIR_DOMAIN_CRASHED",        6, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_DOMAIN_PMSUSPENDED",    7, CONST_CS | CONST_PERSISTENT);
 
     /* Volume constants */
     REGISTER_LONG_CONSTANT("VIR_STORAGE_VOL_RESIZE_ALLOCATE",        1, CONST_CS | CONST_PERSISTENT);
@@ -1270,6 +1273,7 @@ PHP_MINIT_FUNCTION(libvirt)
 
     /* Memory constants */
     REGISTER_LONG_CONSTANT("VIR_MEMORY_VIRTUAL",        1, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_MEMORY_PHYSICAL",       2, CONST_CS | CONST_PERSISTENT);
 
     /* Version checking constants */
     REGISTER_LONG_CONSTANT("VIR_VERSION_BINDING",           VIR_VERSION_BINDING,    CONST_CS | CONST_PERSISTENT);
@@ -1317,7 +1321,13 @@ PHP_MINIT_FUNCTION(libvirt)
     /* The number of statistics supported by this version of the interface. To add new statistics, add them */
     /* to the enum and increase this value. */
     REGISTER_LONG_CONSTANT("VIR_DOMAIN_MEMORY_STAT_AVAILABLE",  5, CONST_CS | CONST_PERSISTENT);
-    REGISTER_LONG_CONSTANT("VIR_DOMAIN_MEMORY_STAT_NR",     6, CONST_CS | CONST_PERSISTENT);
+    /* Current balloon value (in KB). */
+    REGISTER_LONG_CONSTANT("VIR_DOMAIN_MEMORY_STAT_ACTUAL_BALLOON",  6, CONST_CS | CONST_PERSISTENT);
+    /* Resident Set Size of the process running the domain. This value is in kB */
+    REGISTER_LONG_CONSTANT("VIR_DOMAIN_MEMORY_STAT_RSS",  7, CONST_CS | CONST_PERSISTENT);
+    /* The number of statistics supported by this version of the interface. */
+    /* To add new statistics, add them to the enum and increase this value. */
+    REGISTER_LONG_CONSTANT("VIR_DOMAIN_MEMORY_STAT_NR",     8, CONST_CS | CONST_PERSISTENT);
 
     /* Job constants */
     REGISTER_LONG_CONSTANT("VIR_DOMAIN_JOB_NONE",       0, CONST_CS | CONST_PERSISTENT);
@@ -1354,6 +1364,18 @@ PHP_MINIT_FUNCTION(libvirt)
     REGISTER_LONG_CONSTANT("VIR_MIGRATE_NON_SHARED_DISK",    64, CONST_CS | CONST_PERSISTENT);
     /* migration with non-shared storage with incremental copy (same base image shared between source and destination) */
     REGISTER_LONG_CONSTANT("VIR_MIGRATE_NON_SHARED_INC",    128, CONST_CS | CONST_PERSISTENT);
+    /* protect for changing domain configuration through the whole migration process; this will be used automatically when supported */
+    REGISTER_LONG_CONSTANT("VIR_MIGRATE_CHANGE_PROTECTION",    256, CONST_CS | CONST_PERSISTENT);
+    /* force migration even if it is considered unsafe */
+    REGISTER_LONG_CONSTANT("VIR_MIGRATE_UNSAFE",    512, CONST_CS | CONST_PERSISTENT);
+    /* offline migrate */
+    REGISTER_LONG_CONSTANT("VIR_MIGRATE_OFFLINE",    1024, CONST_CS | CONST_PERSISTENT);
+    /* compress data during migration */
+    REGISTER_LONG_CONSTANT("VIR_MIGRATE_COMPRESSED",    2048, CONST_CS | CONST_PERSISTENT);
+    /* abort migration on I/O errors happened during migration */
+    REGISTER_LONG_CONSTANT("VIR_MIGRATE_ABORT_ON_ERROR",    4096, CONST_CS | CONST_PERSISTENT);
+    /* force convergence */
+    REGISTER_LONG_CONSTANT("VIR_MIGRATE_AUTO_CONVERGE",    8192, CONST_CS | CONST_PERSISTENT);
 
     /* Modify device allocation based on current domain state */
     REGISTER_LONG_CONSTANT("VIR_DOMAIN_DEVICE_MODIFY_CURRENT",  0, CONST_CS | CONST_PERSISTENT);
