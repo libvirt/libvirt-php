@@ -2582,63 +2582,41 @@ char *get_string_from_xpath(char *xml, char *xpath, zval **val, int *retVal)
     char *value = NULL;
     char key[8] = { 0 };
 
-    if ((xpath == NULL) || (xml == NULL))
-    {
+    if (!xpath || !xml)
         return NULL;
-    }
 
     xp = xmlCreateDocParserCtxt( (xmlChar *)xml );
     if (!xp) {
-        if (retVal)
-            *retVal = -1;
-        return NULL;
+        ret = -1;
+        goto cleanup;
     }
+
     doc = xmlCtxtReadDoc(xp, (xmlChar *)xml, NULL, NULL, 0);
     if (!doc) {
-        if (retVal)
-            *retVal = -2;
-        xmlCleanupParser();
-        return NULL;
+        ret = -2;
+        goto cleanup;
     }
 
     context = xmlXPathNewContext(doc);
     if (!context) {
-        if (retVal)
-            *retVal = -3;
-        xmlCleanupParser();
-        return NULL;
+        ret = -3;
+        goto cleanup;
     }
 
     result = xmlXPathEvalExpression( (xmlChar *)xpath, context);
     if (!result) {
-        if (retVal)
-            *retVal = -4;
-        xmlXPathFreeContext(context);
-        xmlCleanupParser();
-        return NULL;
+        ret = -4;
+        goto cleanup;
     }
 
-    if(xmlXPathNodeSetIsEmpty(result->nodesetval)){
-        xmlXPathFreeObject(result);
-        xmlXPathFreeContext(context);
-        xmlCleanupParser();
-        if (retVal)
-            *retVal = 0;
-        return NULL;
-    }
+    if(xmlXPathNodeSetIsEmpty(result->nodesetval))
+        goto cleanup;
 
     nodeset = result->nodesetval;
     ret = nodeset->nodeNr;
 
-    if (ret == 0) {
-        xmlXPathFreeObject(result);
-        xmlFreeDoc(doc);
-        xmlXPathFreeContext(context);
-        xmlCleanupParser();
-        if (retVal)
-            *retVal = 0;
-        return NULL;
-    }
+    if (!ret)
+        goto cleanup;
 
     if (val != NULL) {
         ret = 0;
@@ -2658,14 +2636,14 @@ char *get_string_from_xpath(char *xml, char *xpath, zval **val, int *retVal)
             value = (char *)xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode, 1);
     }
 
-    xmlXPathFreeContext(context);
-    xmlXPathFreeObject(result);
-    xmlFreeDoc(doc);
-    xmlCleanupParser();
-
+ cleanup:
     if (retVal)
         *retVal = ret;
-
+    xmlXPathFreeObject(result);
+    xmlXPathFreeContext(context);
+    xmlFreeParserCtxt(xp);
+    xmlFreeDoc(doc);
+    xmlCleanupParser();
     return (value != NULL) ? strdup(value) : NULL;
 }
 
