@@ -279,32 +279,43 @@
 
 		for ($i = 0; $i < sizeof($tmp); $i++) {
 			$tmp2 = $lv->get_network_information($tmp[$i]);
-			if ($tmp2['forwarding'] != 'None')
-				$forward = $tmp2['forwarding'].' to '.$tmp2['forward_dev'];
-			else
-				$forward = 'None';
+			$ip = '';
+			$ip_range = '';
+			$activity = $tmp2['active'] ? 'Active' : 'Inactive';
+			$dhcp = 'Disabled';
+			$forward = 'None';
+			if (array_key_exists('forwarding', $tmp2) && $tmp2['forwarding'] != 'None') {
+				if (array_key_exists('forward_dev', $tmp2))
+					$forward = $tmp2['forwarding'].' to '.$tmp2['forward_dev'];
+				else
+					$forward = $tmp2['forwarding'];
+			}
+
 			if (array_key_exists('dhcp_start', $tmp2) && array_key_exists('dhcp_end', $tmp2))
 				$dhcp = $tmp2['dhcp_start'].' - '.$tmp2['dhcp_end'];
-			else
-				$dhcp = 'Disabled';
-			$activity = $tmp2['active'] ? 'Active' : 'Inactive';
 
-			$act = !$tmp2['active'] ? "<a href=\"?action={$_GET['action']}&amp;subaction=start&amp;name={$tmp2['name']}\">Start network</a>" :
-									  "<a href=\"?action={$_GET['action']}&amp;subaction=stop&amp;name={$tmp2['name']}\">Stop network</a>";
-			$act .= " | <a href=\"?action={$_GET['action']}&amp;subaction=dumpxml&amp;name={$tmp2['name']}\">Dump network XML</a>";
-			if (!$tmp2['active']) {
-				$act .= ' | <a href="?action='.$_GET['action'].'&amp;subaction=edit&amp;name='.$tmp2['name'].'">Edit network</a>';
-			}
+			if (array_key_exists('ip', $tmp2))
+				$ip = $tmp2['ip'];
+
+			if (array_key_exists('ip_range', $tmp2))
+				$ip_range = $tmp2['ip_range'];
+
+			$act = "<a href=\"?action={$_GET['action']}&amp;subaction=" . ($tmp2['active'] ? "stop" : "start");
+			$act .= "&amp;name=" . urlencode($tmp2['name']) . "\">";
+			$act .= ($tmp2['active'] ? "Stop" : "Start") . " network</a>";
+			$act .= " | <a href=\"?action={$_GET['action']}&amp;subaction=dumpxml&amp;name=" . urlencode($tmp2['name']) . "\">Dump network XML</a>";
+			if (!$tmp2['active'])
+				$act .= ' | <a href="?action='.$_GET['action'].'&amp;subaction=edit&amp;name='. urlencode($tmp2['name']) . '">Edit network</a>';
 
 			echo "<tr>
 					<td>$spaces{$tmp2['name']}$spaces</td>
 					<td align=\"center\">$spaces$activity$spaces</td>
-					<td align=\"center\">$spaces{$tmp2['ip']}$spaces</td>
-					<td align=\"center\">$spaces{$tmp2['ip_range']}$spaces</td>
+					<td align=\"center\">$spaces$ip$spaces</td>
+					<td align=\"center\">$spaces$ip_range$spaces</td>
 					<td align=\"center\">$spaces$forward$spaces</td>
 					<td align=\"center\">$spaces$dhcp$spaces</td>
 					<td align=\"center\">$spaces$act$spaces</td>
-			      </tr>";
+				</tr>";
 		}
 		echo "</table>";
 
