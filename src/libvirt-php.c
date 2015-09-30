@@ -8644,15 +8644,20 @@ PHP_FUNCTION(libvirt_network_get_information)
     zval *znetwork;
     int retval = 0;
     char *xml  = NULL;
-    char *tmp  = NULL;
-    char *tmp2 = NULL;
+    char *name = NULL;
+    char *ipaddr = NULL;
+    char *netmask = NULL;
+    char *mode = NULL;
+    char *dev = NULL;
+    char *dhcp_start = NULL;
+    char *dhcp_end = NULL;
     char fixedtemp[32] = { 0 };
 
     GET_NETWORK_FROM_ARGS("r",&znetwork);
 
     xml=virNetworkGetXMLDesc(network->network, 0);
 
-    if (xml==NULL) {
+    if (xml == NULL) {
         set_error_if_unset("Cannot get network XML" TSRMLS_CC);
         RETURN_FALSE;
     }
@@ -8660,8 +8665,8 @@ PHP_FUNCTION(libvirt_network_get_information)
     array_init(return_value);
 
     /* Get name */
-    tmp = get_string_from_xpath(xml, "//network/name", NULL, &retval);
-    if (tmp == NULL) {
+    name = get_string_from_xpath(xml, "//network/name", NULL, &retval);
+    if (name == NULL) {
         set_error("Invalid XPath node for network name" TSRMLS_CC);
         RETURN_FALSE;
     }
@@ -8671,63 +8676,52 @@ PHP_FUNCTION(libvirt_network_get_information)
         RETURN_FALSE;
     }
 
-    add_assoc_string_ex(return_value, "name", 5, tmp, 1);
+    add_assoc_string_ex(return_value, "name", 5, name, 1);
 
     /* Get gateway IP address */
-    tmp = get_string_from_xpath(xml, "//network/ip/@address", NULL, &retval);
-    if (tmp == NULL) {
-        set_error("Invalid XPath node for network gateway IP address" TSRMLS_CC);
-        RETURN_FALSE;
-    }
-
-    if (retval < 0) {
-        set_error("Cannot get XPath expression result for network gateway IP address" TSRMLS_CC);
-        RETURN_FALSE;
-    }
-
-    add_assoc_string_ex(return_value, "ip", 3, tmp, 1);
+    ipaddr = get_string_from_xpath(xml, "//network/ip/@address", NULL, &retval);
+    if (ipaddr && retval > 0)
+        add_assoc_string_ex(return_value, "ip", 3, ipaddr, 1);
 
     /* Get netmask */
-    tmp2 = get_string_from_xpath(xml, "//network/ip/@netmask", NULL, &retval);
-    if (tmp2 == NULL) {
-        set_error("Invalid XPath node for network mask" TSRMLS_CC);
-        RETURN_FALSE;
+    netmask = get_string_from_xpath(xml, "//network/ip/@netmask", NULL, &retval);
+    if (netmask && retval > 0) {
+        int subnet_bits = get_subnet_bits(netmask);
+        add_assoc_string_ex(return_value, "netmask", 8, netmask, 1);
+        add_assoc_long(return_value, "netmask_bits", (long) subnet_bits);
+
+        /* Format CIDR address representation */
+        ipaddr[strlen(ipaddr) - 1] = ipaddr[strlen(ipaddr) - 1] - 1;
+        snprintf(fixedtemp, sizeof(fixedtemp), "%s/%d", ipaddr, subnet_bits);
+        add_assoc_string_ex(return_value, "ip_range", 9, fixedtemp, 1);
     }
 
-    if (retval < 0) {
-        set_error("Cannot get XPath expression result for network mask" TSRMLS_CC);
-        RETURN_FALSE;
-    }
-
-    add_assoc_string_ex(return_value, "netmask", 8, tmp2, 1);
-    add_assoc_long(return_value, "netmask_bits", (long)get_subnet_bits(tmp2));
-
-    /* Format CIDR address representation */
-    tmp[strlen(tmp) - 1] = tmp[strlen(tmp) - 1] - 1;
-    snprintf(fixedtemp, sizeof(fixedtemp), "%s/%d", tmp, get_subnet_bits(tmp2));
-    add_assoc_string_ex(return_value, "ip_range", 9, fixedtemp, 1);
+    /* Get forwarding settings */
+    mode = get_string_from_xpath(xml, "//network/forward/@mode", NULL, &retval);
+    if (mode && retval > 0)
+        add_assoc_string_ex(return_value, "forwarding", 11, mode, 1);
 
     /* Get forwarding settings */
-    tmp = get_string_from_xpath(xml, "//network/forward/@mode", NULL, &retval);
-    if ((tmp == NULL) || (retval < 0))
-        add_assoc_string_ex(return_value, "forwarding", 11, "None", 1);
-    else
-        add_assoc_string_ex(return_value, "forwarding", 11, tmp, 1);
-
-    /* Get forwarding settings */
-    tmp = get_string_from_xpath(xml, "//network/forward/@dev", NULL, &retval);
-    if ((tmp == NULL) || (retval < 0))
-        add_assoc_string_ex(return_value, "forward_dev", 12, "any interface", 1);
-    else
-        add_assoc_string_ex(return_value, "forward_dev", 12, tmp, 1);
+    dev = get_string_from_xpath(xml, "//network/forward/@dev", NULL, &retval);
+    if (dev && retval > 0)
+        add_assoc_string_ex(return_value, "forward_dev", 12, dev, 1);
 
     /* Get DHCP values */
-    tmp = get_string_from_xpath(xml, "//network/ip/dhcp/range/@start", NULL, &retval);
-    tmp2 = get_string_from_xpath(xml, "//network/ip/dhcp/range/@end", NULL, &retval);
-    if ((retval > 0) && (tmp != NULL) && (tmp2 != NULL)) {
-        add_assoc_string_ex(return_value, "dhcp_start", 11, tmp,  1);
-        add_assoc_string_ex(return_value, "dhcp_end",    9, tmp2, 1);
+    dhcp_start = get_string_from_xpath(xml, "//network/ip/dhcp/range/@start", NULL, &retval);
+    dhcp_end = get_string_from_xpath(xml, "//network/ip/dhcp/range/@end", NULL, &retval);
+    if (dhcp_start && dhcp_end && retval > 0) {
+        add_assoc_string_ex(return_value, "dhcp_start", 11, dhcp_start,  1);
+        add_assoc_string_ex(return_value, "dhcp_end", 9, dhcp_end, 1);
     }
+
+    free(dhcp_end);
+    free(dhcp_start);
+    free(dev);
+    free(mode);
+    free(netmask);
+    free(ipaddr);
+    free(name);
+    free(xml);
 }
 
 /*
