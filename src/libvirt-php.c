@@ -8315,8 +8315,8 @@ PHP_FUNCTION(libvirt_nodedev_get_xml_desc)
         xpath = NULL;
     }
 
-    xml=virNodeDeviceGetXMLDesc(nodedev->device, 0);
-    if ( xml == NULL ) {
+    xml = virNodeDeviceGetXMLDesc(nodedev->device, 0);
+    if (!xml) {
         set_error("Cannot get the device XML information" TSRMLS_CC);
         RETURN_FALSE;
     }
@@ -8352,8 +8352,8 @@ PHP_FUNCTION(libvirt_nodedev_get_information)
 
     GET_NODEDEV_FROM_ARGS("r",&znodedev);
 
-    xml=virNodeDeviceGetXMLDesc(nodedev->device, 0);
-    if ( xml == NULL ) {
+    xml = virNodeDeviceGetXMLDesc(nodedev->device, 0);
+    if (!xml) {
         set_error("Cannot get the device XML information" TSRMLS_CC);
         RETURN_FALSE;
     }
@@ -8364,17 +8364,18 @@ PHP_FUNCTION(libvirt_nodedev_get_information)
     tmp = get_string_from_xpath(xml, "//device/name", NULL, &retval);
     if (tmp == NULL) {
         set_error("Invalid XPath node for device name" TSRMLS_CC);
-        RETURN_FALSE;
+        goto error;
     }
 
     if (retval < 0) {
         set_error("Cannot get XPath expression result for device name" TSRMLS_CC);
-        RETURN_FALSE;
+        goto error;
     }
 
     add_assoc_string_ex(return_value, "name", 5, tmp, 1);
 
     /* Get parent name */
+    free(tmp);
     tmp = get_string_from_xpath(xml, "//device/parent", NULL, &retval);
     if ((tmp != NULL) && (retval > 0))
         add_assoc_string_ex(return_value, "parent", 7, tmp, 1);
@@ -8387,80 +8388,106 @@ PHP_FUNCTION(libvirt_nodedev_get_information)
     /* System capability is having hardware and firmware sub-blocks */
     if (strcmp(cap, "system") == 0) {
         /* Get hardware vendor */
+        free(tmp);
         tmp = get_string_from_xpath(xml, "//device/capability/hardware/vendor", NULL, &retval);
         if ((tmp != NULL) && (retval > 0))
             add_assoc_string_ex(return_value, "hardware_vendor", 16, tmp, 1);
 
         /* Get hardware version */
+        free(tmp);
         tmp = get_string_from_xpath(xml, "//device/capability/hardware/version", NULL, &retval);
         if ((tmp != NULL) && (retval > 0))
             add_assoc_string_ex(return_value, "hardware_version", 17, tmp, 1);
 
         /* Get hardware serial */
+        free(tmp);
         tmp = get_string_from_xpath(xml, "//device/capability/hardware/serial", NULL, &retval);
         if ((tmp != NULL) && (retval > 0))
             add_assoc_string_ex(return_value, "hardware_serial", 16, tmp, 1);
 
         /* Get hardware UUID */
+        free(tmp);
         tmp = get_string_from_xpath(xml, "//device/capability/hardware/uuid", NULL, &retval);
         if (tmp != NULL)
             add_assoc_string_ex(return_value, "hardware_uuid", 15, tmp, 1);
 
         /* Get firmware vendor */
+        free(tmp);
         tmp = get_string_from_xpath(xml, "//device/capability/firmware/vendor", NULL, &retval);
         if ((tmp != NULL) && (retval > 0))
             add_assoc_string_ex(return_value, "firmware_vendor", 16, tmp, 1);
 
         /* Get firmware version */
+        free(tmp);
         tmp = get_string_from_xpath(xml, "//device/capability/firmware/version", NULL, &retval);
         if ((tmp != NULL) && (retval > 0))
             add_assoc_string_ex(return_value, "firmware_version", 17, tmp, 1);
 
         /* Get firmware release date */
+        free(tmp);
         tmp = get_string_from_xpath(xml, "//device/capability/firmware/release_date", NULL, &retval);
         if ((tmp != NULL) && (retval > 0))
             add_assoc_string_ex(return_value, "firmware_release_date", 22, tmp, 1);
     }
 
     /* Get product_id */
+    free(tmp);
     tmp = get_string_from_xpath(xml, "//device/capability/product/@id", NULL, &retval);
     if ((tmp != NULL) && (retval > 0))
         add_assoc_string_ex(return_value, "product_id", 11, tmp, 1);
 
     /* Get product_name */
+    free(tmp);
     tmp = get_string_from_xpath(xml, "//device/capability/product", NULL, &retval);
     if ((tmp != NULL) && (retval > 0))
         add_assoc_string_ex(return_value, "product_name", 13, tmp, 1);
 
     /* Get vendor_id */
+    free(tmp);
     tmp = get_string_from_xpath(xml, "//device/capability/vendor/@id", NULL, &retval);
     if ((tmp != NULL) && (retval > 0))
         add_assoc_string_ex(return_value, "vendor_id", 10, tmp, 1);
 
     /* Get vendor_name */
+    free(tmp);
     tmp = get_string_from_xpath(xml, "//device/capability/vendor", NULL, &retval);
     if ((tmp != NULL) && (retval > 0))
         add_assoc_string_ex(return_value, "vendor_name", 12, tmp, 1);
 
     /* Get driver name */
+    free(tmp);
     tmp = get_string_from_xpath(xml, "//device/driver/name", NULL, &retval);
     if ((tmp != NULL) && (retval > 0))
         add_assoc_string_ex(return_value, "driver_name", 12, tmp, 1);
 
     /* Get driver name */
+    free(tmp);
     tmp = get_string_from_xpath(xml, "//device/capability/interface", NULL, &retval);
     if ((tmp != NULL) && (retval > 0))
         add_assoc_string_ex(return_value, "interface_name", 15, tmp, 1);
 
     /* Get driver name */
+    free(tmp);
     tmp = get_string_from_xpath(xml, "//device/capability/address", NULL, &retval);
     if ((tmp != NULL) && (retval > 0))
         add_assoc_string_ex(return_value, "address", 8, tmp, 1);
 
     /* Get driver name */
+    free(tmp);
     tmp = get_string_from_xpath(xml, "//device/capability/capability/@type", NULL, &retval);
     if ((tmp != NULL) && (retval > 0))
         add_assoc_string_ex(return_value, "capabilities", 11, tmp, 1);
+
+    free(cap);
+    free(tmp);
+    free(xml);
+    return;
+
+ error:
+    free(cap);
+    free(tmp);
+    free(xml);
+    RETURN_FALSE;
 }
 
 /* Network functions */
