@@ -1530,10 +1530,9 @@ if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, args, __VA_ARGS__) == FAILU
 ZEND_FETCH_RESOURCE(snapshot, php_libvirt_snapshot*, &zsnapshot, -1, PHP_LIBVIRT_SNAPSHOT_RES_NAME, le_libvirt_snapshot);\
 if ((snapshot==NULL) || (snapshot->snapshot==NULL)) RETURN_FALSE;\
 
-/* Macro to "recreate" string with emalloc and free the original one */
+/* Macro to "recreate" string with emalloc */
 #define RECREATE_STRING_WITH_E(str_out, str_in) \
-    str_out = estrndup(str_in, strlen(str_in)); \
-free(str_in);   \
+    str_out = estrdup(str_in);
 
 #define LONGLONG_INIT \
     char tmpnumber[64];
@@ -2225,6 +2224,7 @@ PHP_FUNCTION(libvirt_connect_get_uri)
     if (uri == NULL) RETURN_FALSE;
 
     RECREATE_STRING_WITH_E(uri_out, uri);
+    free(uri);
     RETURN_STRING(uri_out, 0);
 }
 
@@ -2249,7 +2249,7 @@ PHP_FUNCTION(libvirt_connect_get_hostname)
     if (hostname==NULL) RETURN_FALSE;
 
     RECREATE_STRING_WITH_E(hostname_out,hostname);
-
+    free(hostname);
     RETURN_STRING(hostname_out,0);
 }
 
@@ -2557,7 +2557,7 @@ PHP_FUNCTION(libvirt_connect_get_sysinfo)
     if (sysinfo==NULL) RETURN_FALSE;
 
     RECREATE_STRING_WITH_E(sysinfo_out, sysinfo);
-
+    free(sysinfo);
     RETURN_STRING(sysinfo_out,0);
 }
 
@@ -4491,6 +4491,9 @@ PHP_FUNCTION(libvirt_connect_get_capabilities)
         RECREATE_STRING_WITH_E (caps_out, tmp);
     }
 
+    free(caps);
+    free(tmp);
+
     RETURN_STRING(caps_out,0);
 }
 
@@ -4523,7 +4526,7 @@ PHP_FUNCTION(libvirt_connect_get_emulator)
     }
 
     RECREATE_STRING_WITH_E(emulator, tmp);
-
+    free(tmp);
     RETURN_STRING(emulator, 0);
 }
 
@@ -4992,6 +4995,9 @@ PHP_FUNCTION(libvirt_domain_get_xml_desc)
     } else {
         RECREATE_STRING_WITH_E (xml_out, tmp);
     }
+
+    free(tmp);
+    free(xml);
 
     RETURN_STRING(xml_out,0);
 }
@@ -6726,7 +6732,7 @@ PHP_FUNCTION(libvirt_domain_snapshot_get_xml)
     if (xml==NULL) RETURN_FALSE;
 
     RECREATE_STRING_WITH_E(xml_out,xml);
-
+    free(xml);
     RETURN_STRING(xml_out,0);
 }
 
@@ -7130,6 +7136,9 @@ PHP_FUNCTION(libvirt_storagevolume_get_xml_desc)
         RECREATE_STRING_WITH_E(xml_out, tmp);
     }
 
+    free(xml);
+    free(tmp);
+
     RETURN_STRING(xml_out,0);
 }
 
@@ -7473,6 +7482,9 @@ PHP_FUNCTION(libvirt_storagepool_get_xml_desc)
     } else {
         RECREATE_STRING_WITH_E (xml_out, tmp);
     }
+
+    free(xml);
+    free(tmp);
 
     RETURN_STRING (xml_out, 0);
 }
@@ -8361,6 +8373,9 @@ PHP_FUNCTION(libvirt_nodedev_get_xml_desc)
         RECREATE_STRING_WITH_E (xml_out, tmp);
     }
 
+    free(xml);
+    free(tmp);
+
     RETURN_STRING(xml_out, 0);
 }
 
@@ -8807,6 +8822,9 @@ PHP_FUNCTION(libvirt_network_get_xml_desc)
     } else {
         RECREATE_STRING_WITH_E (xml_out, tmp);
     }
+
+    free(xml);
+    free(tmp);
 
     RETURN_STRING(xml_out, 0);
 }
