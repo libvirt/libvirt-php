@@ -767,44 +767,17 @@
 			return libvirt_domain_get_name($res);
 		}
 
-		function domain_get_info_call($name = false, $name_override = false) {
-			$ret = array();
-
-			if ($name != false) {
-				$dom = $this->get_domain_object($name);
-				if (!$dom)
-					return false;
-
-				if ($name_override)
-					$name = $name_override;
-
-				$ret[$name] = libvirt_domain_get_info($dom);
-				return $ret;
-			}
-			else {
-				$doms = libvirt_list_domains($this->conn);
-				foreach ($doms as $dom) {
-					$tmp = $this->domain_get_name($dom);
-					$ret[$tmp] = libvirt_domain_get_info($dom);
-				}
-			}
-
-			ksort($ret);
-			return $ret;
-		}
-
-		function domain_get_info($name = false, $name_override = false) {
+		function domain_get_info($dom) {
 			if (!$this->allow_cached)
-				return $this->domain_get_info_call($name, $name_override);
+				return libvirt_domain_get_info($dom);
 
-			$domname = $name_override ? $name_override : $name;
-			$domkey  = $name_override ? $name_override : $this->domain_get_name($name);
-			if (!array_key_exists($domkey, $this->dominfos)) {
-				$tmp = $this->domain_get_info_call($name, $name_override);
-				$this->dominfos[$domkey] = $tmp[$domname];
+			$domname = libvirt_domain_get_name($dom);
+			if (!array_key_exists($domname, $this->dominfos)) {
+				$info = libvirt_domain_get_info($dom);
+				$this->dominfos[$domname] = $info;
 			}
 
-			return $this->dominfos[$domkey];
+			return $this->dominfos[$domname];
 		}
 
 		function get_last_error() {
@@ -940,8 +913,7 @@
 			$dom = $this->get_domain_object($domain);
 			if (!$dom)
 				return false;
-
-			$tmp = $this->domain_get_info( $domain, $name );
+			$tmp = $this->domain_get_info($dom);
 			if (!$tmp)
 				return $this->_set_last_error();
 			$ret = ( ($tmp['state'] == VIR_DOMAIN_RUNNING) || ($tmp['state'] == VIR_DOMAIN_BLOCKED) );

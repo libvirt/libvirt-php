@@ -511,14 +511,14 @@
 				}
 		}
 
-		$res = $lv->get_domain_object($domName);
-		$dom = $lv->domain_get_info($res);
-		$mem = number_format($dom['memory'] / 1024, 2, '.', ' ').' MB';
-		$cpu = $dom['nrVirtCpu'];
-		$state = $lv->domain_state_translate($dom['state']);
-		$id = $lv->domain_get_id($res);
-		$arch = $lv->domain_get_arch($res);
-		$vnc = $lv->domain_get_vnc_port($res);
+		$dom = $lv->get_domain_object($domName);
+		$info = $lv->domain_get_info($dom);
+		$mem = number_format($info['memory'] / 1024, 2, '.', ' ').' MB';
+		$cpu = $info['nrVirtCpu'];
+		$state = $lv->domain_state_translate($info['state']);
+		$id = $lv->domain_get_id($dom);
+		$arch = $lv->domain_get_arch($dom);
+		$vnc = $lv->domain_get_vnc_port($dom);
 
 		if (!$id)
 			$id = 'N/A';
@@ -662,7 +662,6 @@
 		}
 
 		$doms = $lv->get_domains();
-		$domkeys = array_keys($doms);
 		echo "<table>
 			   <tr>
 				<th>Name</th>
@@ -682,23 +681,21 @@
 		echo "
 				<th>Action</th>
 			  </tr>";
-
 		$active = $tmp['active'];
-		for ($i = 0; $i < sizeof($doms); $i++) {
-			$name = $doms[$i];
-			$res = $lv->get_domain_by_name($name);
-			$uuid = libvirt_domain_get_uuid_string($res);
-			$dom = $lv->domain_get_info($name);
-			$mem = number_format($dom['memory'] / 1024, 2, '.', ' ').' MB';
-			$cpu = $dom['nrVirtCpu'];
-			$state = $lv->domain_state_translate($dom['state']);
-			$id = $lv->domain_get_id($res);
-			$arch = $lv->domain_get_arch($res);
-			$vnc = $lv->domain_get_vnc_port($res);
-			$nics = $lv->get_network_cards($res);
-			if (($diskcnt = $lv->get_disk_count($res)) > 0) {
-				$disks = $diskcnt.' / '.$lv->get_disk_capacity($res);
-				$diskdesc = 'Current physical size: '.$lv->get_disk_capacity($res, true);
+		foreach ($doms as $name) {
+			$dom = $lv->get_domain_object($name);
+			$uuid = libvirt_domain_get_uuid_string($dom);
+			$info = $lv->domain_get_info($dom);
+			$mem = number_format($info['memory'] / 1024, 2, '.', ' ').' MB';
+			$cpu = $info['nrVirtCpu'];
+			$state = $lv->domain_state_translate($info['state']);
+			$id = $lv->domain_get_id($dom);
+			$arch = $lv->domain_get_arch($dom);
+			$vnc = $lv->domain_get_vnc_port($dom);
+			$nics = $lv->get_network_cards($dom);
+			if (($diskcnt = $lv->get_disk_count($dom)) > 0) {
+				$disks = $diskcnt.' / '.$lv->get_disk_capacity($dom);
+				$diskdesc = 'Current physical size: '.$lv->get_disk_capacity($dom, true);
 			}
 			else {
 				$disks = '-';
