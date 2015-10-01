@@ -1535,7 +1535,7 @@ if ((snapshot==NULL) || (snapshot->snapshot==NULL)) RETURN_FALSE;\
     str_out = estrdup(str_in);
 
 #define LONGLONG_INIT \
-    char tmpnumber[64];
+    char tmpnumber[64]
 
 #define LONGLONG_ASSOC(out,key,in) \
     if (LIBVIRT_G(longlong_to_string_ini)) { \
@@ -6060,8 +6060,8 @@ PHP_FUNCTION(libvirt_domain_memory_stats)
     DPRINTF("%s: virDomainMemoryStats(%p...) returned %d\n", PHPFUNC, domain->domain, retval);
 
     if (retval == -1) RETURN_FALSE;
-    LONGLONG_INIT
-        array_init(return_value);
+    LONGLONG_INIT;
+    array_init(return_value);
     for (i=0;i<retval;i++)
     {
         LONGLONG_INDEX(return_value, stats[i].tag,stats[i].val)
@@ -6121,8 +6121,8 @@ PHP_FUNCTION(libvirt_domain_block_stats)
     if (retval == -1) RETURN_FALSE;
 
     array_init(return_value);
-    LONGLONG_INIT
-        LONGLONG_ASSOC(return_value, "rd_req", stats.rd_req);
+    LONGLONG_INIT;
+    LONGLONG_ASSOC(return_value, "rd_req", stats.rd_req);
     LONGLONG_ASSOC(return_value, "rd_bytes", stats.rd_bytes);
     LONGLONG_ASSOC(return_value, "wr_req", stats.wr_req);
     LONGLONG_ASSOC(return_value, "wr_bytes", stats.wr_bytes);
@@ -6328,8 +6328,8 @@ PHP_FUNCTION(libvirt_domain_get_block_info)
     }
 
     array_init(return_value);
-    LONGLONG_INIT
-        add_assoc_string_ex(return_value, "device", 7, dev, 1);
+    LONGLONG_INIT;
+    add_assoc_string_ex(return_value, "device", 7, dev, 1);
 
     if (isFile)
         add_assoc_string_ex(return_value, "file", 5, tmp, 1);
@@ -6412,8 +6412,8 @@ PHP_FUNCTION(libvirt_domain_interface_stats)
     if (retval == -1) RETURN_FALSE;
 
     array_init(return_value);
-    LONGLONG_INIT
-        LONGLONG_ASSOC(return_value, "rx_bytes", stats.rx_bytes);
+    LONGLONG_INIT;
+    LONGLONG_ASSOC(return_value, "rx_bytes", stats.rx_bytes);
     LONGLONG_ASSOC(return_value, "rx_packets", stats.rx_packets);
     LONGLONG_ASSOC(return_value, "rx_errs", stats.rx_errs);
     LONGLONG_ASSOC(return_value, "rx_drop", stats.rx_drop);
@@ -6608,8 +6608,8 @@ PHP_FUNCTION(libvirt_domain_get_job_info)
     if (retval == -1) RETURN_FALSE;
 
     array_init(return_value);
-    LONGLONG_INIT
-        add_assoc_long(return_value, "type", jobinfo.type);
+    LONGLONG_INIT;
+    add_assoc_long(return_value, "type", jobinfo.type);
     LONGLONG_ASSOC(return_value, "time_elapsed", jobinfo.timeElapsed);
     LONGLONG_ASSOC(return_value, "time_remaining", jobinfo.timeRemaining);
     LONGLONG_ASSOC(return_value, "data_total", jobinfo.dataTotal);
@@ -6949,8 +6949,8 @@ PHP_FUNCTION(libvirt_storagepool_get_info)
     array_init(return_value);
 
     // @todo: fix the long long returns
-    LONGLONG_INIT
-        add_assoc_long(return_value, "state", (long)poolInfo.state);
+    LONGLONG_INIT;
+    add_assoc_long(return_value, "state", (long)poolInfo.state);
     LONGLONG_ASSOC(return_value, "capacity", poolInfo.capacity);
     LONGLONG_ASSOC(return_value, "allocation", poolInfo.allocation);
     LONGLONG_ASSOC(return_value, "available", poolInfo.available);
@@ -7091,8 +7091,8 @@ PHP_FUNCTION(libvirt_storagevolume_get_info)
     if (retval != 0) RETURN_FALSE;
 
     array_init(return_value);
-    LONGLONG_INIT
-        add_assoc_long(return_value, "type", (long)volumeInfo.type);
+    LONGLONG_INIT;
+    add_assoc_long(return_value, "type", (long)volumeInfo.type);
     LONGLONG_ASSOC(return_value, "capacity", volumeInfo.capacity);
     LONGLONG_ASSOC(return_value, "allocation", volumeInfo.allocation);
 }
