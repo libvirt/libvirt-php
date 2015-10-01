@@ -2876,6 +2876,7 @@ long get_next_free_numeric_value(virDomainPtr domain, char *xpath)
     }
 
     efree(output);
+    free(xml);
     return max_slot + 1;
 }
 
@@ -4121,20 +4122,20 @@ PHP_FUNCTION(libvirt_domain_get_screenshot)
 
     GET_DOMAIN_FROM_ARGS("rs|l",&zdomain, &hostname, &hostname_len, &scancode);
 
-    xml=virDomainGetXMLDesc(domain->domain, 0);
-    if (xml==NULL) {
+    xml = virDomainGetXMLDesc(domain->domain, 0);
+    if (!xml) {
         set_error_if_unset("Cannot get the XML description" TSRMLS_CC);
-        RETURN_FALSE;
+        goto error;
     }
 
     tmp = get_string_from_xpath(xml, "//domain/devices/graphics/@port", NULL, &retval);
     if ((tmp == NULL) || (retval < 0)) {
         set_error("Cannot get the VNC port" TSRMLS_CC);
-        RETURN_FALSE;
+        goto error;
     }
 
     if (mkstemp(file) == 0)
-        RETURN_FALSE;
+        goto error;
 
     /* Get the current hostname and override to localhost if local machine */
     gethostname(name, 1024);
@@ -4148,7 +4149,7 @@ PHP_FUNCTION(libvirt_domain_get_screenshot)
 
         if (vnc_get_bitmap(hostname, tmp, file) != 0) {
             set_error("Cannot use builtin approach to get VNC window contents" TSRMLS_CC);
-            RETURN_FALSE;
+            goto error;
         }
     }
     else {
@@ -4158,7 +4159,7 @@ PHP_FUNCTION(libvirt_domain_get_screenshot)
 
         childpid = fork();
         if (childpid == -1)
-            RETURN_FALSE;
+            goto error;
 
         if (childpid == 0) {
             char tmpp[64] = { 0 };
@@ -4171,13 +4172,13 @@ PHP_FUNCTION(libvirt_domain_get_screenshot)
             do {
                 w = waitpid(childpid, &retval, 0);
                 if (w == -1)
-                    RETURN_FALSE;
+                    goto error;
             } while (!WIFEXITED(retval) && !WIFSIGNALED(retval));
         }
 
         if (WEXITSTATUS(retval) != 0) {
             set_error("Cannot spawn utility to get screenshot" TSRMLS_CC);
-            RETURN_FALSE;
+            goto error;
         }
     }
 
@@ -4189,7 +4190,7 @@ PHP_FUNCTION(libvirt_domain_get_screenshot)
     if (read(fd, buf, fsize) < 0) {
         close(fd);
         unlink(file);
-        RETURN_FALSE;
+        goto error;
     }
     close(fd);
 
@@ -4202,6 +4203,19 @@ PHP_FUNCTION(libvirt_domain_get_screenshot)
     Z_STRLEN_P(return_value) = fsize;
     Z_STRVAL_P(return_value) = buf;
     Z_TYPE_P(return_value) = IS_STRING;
+
+    efree(buf);
+    free(tmp);
+    free(xml);
+    free(path);
+    return;
+
+ error:
+    efree(buf);
+    free(tmp);
+    free(xml);
+    free(path);
+    RETURN_FALSE;
 #else
     set_error("Function is not supported on Windows systems" TSRMLS_CC);
     RETURN_FALSE;
@@ -4232,16 +4246,16 @@ PHP_FUNCTION(libvirt_domain_get_screen_dimensions)
 
     GET_DOMAIN_FROM_ARGS("rs",&zdomain, &hostname, &hostname_len);
 
-    xml=virDomainGetXMLDesc(domain->domain, 0);
-    if (xml==NULL) {
+    xml = virDomainGetXMLDesc(domain->domain, 0);
+    if (!xml) {
         set_error_if_unset("Cannot get the XML description" TSRMLS_CC);
-        RETURN_FALSE;
+        goto error;
     }
 
     tmp = get_string_from_xpath(xml, "//domain/devices/graphics/@port", NULL, &retval);
     if ((tmp == NULL) || (retval < 0)) {
         set_error("Cannot get the VNC port" TSRMLS_CC);
-        RETURN_FALSE;
+        goto error;
     }
 
     DPRINTF("%s: hostname = %s, port = %s\n", PHPFUNC, hostname, tmp);
@@ -4255,12 +4269,21 @@ PHP_FUNCTION(libvirt_domain_get_screen_dimensions)
             snprintf(error, sizeof(error), "Cannot get screen dimensions, error code = %d (%s)", ret, strerror(-ret));
 
         set_error(error TSRMLS_CC);
-        RETURN_FALSE;
+        goto error;
     }
 
     array_init(return_value);
     add_assoc_long(return_value, "width", (long)width);
     add_assoc_long(return_value, "height", (long)height);
+
+    free(tmp);
+    free(xml);
+    return;
+
+ error:
+    free(tmp);
+    free(xml);
+    RETURN_FALSE;
 #else
     set_error("Function is not supported on Windows systems" TSRMLS_CC);
     RETURN_FALSE;
@@ -4294,16 +4317,16 @@ PHP_FUNCTION(libvirt_domain_send_keys)
 
     DPRINTF("%s: Sending %d VNC keys to %s...\n", PHPFUNC, (int)strlen((const char *)keys), hostname);
 
-    xml=virDomainGetXMLDesc(domain->domain, 0);
-    if (xml==NULL) {
+    xml = virDomainGetXMLDesc(domain->domain, 0);
+    if (!xml) {
         set_error_if_unset("Cannot get the XML description" TSRMLS_CC);
-        RETURN_FALSE;
+        goto error;
     }
 
     tmp = get_string_from_xpath(xml, "//domain/devices/graphics/@port", NULL, &retval);
     if ((tmp == NULL) || (retval < 0)) {
         set_error("Cannot get the VNC port" TSRMLS_CC);
-        RETURN_FALSE;
+        goto error;
     }
 
     DPRINTF("%s: About to send string '%s' (%d keys) to %s:%s\n", PHPFUNC, keys, (int)strlen((const char *)keys), hostname, tmp);
@@ -4311,15 +4334,21 @@ PHP_FUNCTION(libvirt_domain_send_keys)
     ret = vnc_send_keys(hostname, tmp, keys);
     DPRINTF("%s: Sequence sending result is %d\n", PHPFUNC, ret);
 
-    if (ret == 0) {
-        RETURN_TRUE
-    }
-    else {
+    if (!ret) {
         char tmpp[64] = { 0 };
         snprintf(tmpp, sizeof(tmpp), "Cannot send keys, error code %d", ret);
         set_error(tmpp TSRMLS_CC);
-        RETURN_FALSE;
+        goto error;
     }
+
+    free(tmp);
+    free(xml);
+    RETURN_TRUE;
+
+ error:
+    free(tmp);
+    free(xml);
+    RETURN_FALSE;
 #else
     set_error("Function is not supported on Windows systems" TSRMLS_CC);
     RETURN_FALSE;
@@ -4356,25 +4385,21 @@ PHP_FUNCTION(libvirt_domain_send_pointer_event)
 
     GET_DOMAIN_FROM_ARGS("rslll|b",&zdomain, &hostname, &hostname_len, &pos_x, &pos_y, &clicked, &release);
 
-    xml=virDomainGetXMLDesc(domain->domain, 0);
-    if (xml==NULL) {
+    xml = virDomainGetXMLDesc(domain->domain, 0);
+    if (!xml) {
         set_error_if_unset("Cannot get the XML description" TSRMLS_CC);
-        RETURN_FALSE;
+        goto error;
     }
 
     tmp = get_string_from_xpath(xml, "//domain/devices/graphics/@port", NULL, &retval);
     if ((tmp == NULL) || (retval < 0)) {
         set_error("Cannot get the VNC port" TSRMLS_CC);
-        RETURN_FALSE;
+        goto error;
     }
 
     DPRINTF("%s: x = %d, y = %d, clicked = %d, release = %d, hostname = %s...\n", PHPFUNC, (int) pos_x, (int) pos_y, (int) clicked, release, hostname);
     ret = vnc_send_pointer_event(hostname, tmp, pos_x, pos_y, clicked, release);
-    if (ret == 0) {
-        DPRINTF("%s: Pointer event result is %d\n", PHPFUNC, ret);
-        RETURN_TRUE
-    }
-    else {
+    if (!ret) {
         char error[1024] = { 0 };
         if (ret == -9)
             snprintf(error, sizeof(error), "Cannot connect to VNC server. Please make sure domain is running and VNC graphics are set");
@@ -4382,8 +4407,17 @@ PHP_FUNCTION(libvirt_domain_send_pointer_event)
             snprintf(error, sizeof(error), "Cannot send pointer event, error code = %d (%s)", ret, strerror(-ret));
 
         set_error(error TSRMLS_CC);
-        RETURN_FALSE;
+        goto error;
     }
+
+    free(tmp);
+    free(xml);
+    RETURN_TRUE;
+
+ error:
+    free(tmp);
+    free(xml);
+    RETURN_FALSE;
 #else
     set_error("Function is not supported on Windows systems" TSRMLS_CC);
     RETURN_FALSE;
@@ -4890,7 +4924,7 @@ PHP_FUNCTION(libvirt_domain_new)
     }
 
     xml = virDomainGetXMLDesc(domain, 0);
-    if (xml == NULL) {
+    if (!xml) {
         DPRINTF("%s: Cannot get the XML description\n", PHPFUNC);
         set_error_if_unset("Cannot get the XML description" TSRMLS_CC);
         RETURN_FALSE;
@@ -4990,8 +5024,8 @@ PHP_FUNCTION(libvirt_domain_get_xml_desc)
 
     DPRINTF("%s: Getting the XML for domain %p (xPath = %s)\n", PHPFUNC, domain->domain, xpath);
 
-    xml=virDomainGetXMLDesc(domain->domain,flags);
-    if (xml==NULL) {
+    xml = virDomainGetXMLDesc(domain->domain,flags);
+    if (!xml) {
         set_error_if_unset("Cannot get the XML description" TSRMLS_CC);
         RETURN_FALSE;
     }
@@ -5027,8 +5061,8 @@ PHP_FUNCTION(libvirt_domain_get_disk_devices)
 
     DPRINTF("%s: Getting disk device list for domain %p\n", PHPFUNC, domain->domain);
 
-    xml=virDomainGetXMLDesc(domain->domain, 0);
-    if (xml == NULL) {
+    xml = virDomainGetXMLDesc(domain->domain, 0);
+    if (!xml) {
         set_error_if_unset("Cannot get the XML description" TSRMLS_CC);
         RETURN_FALSE;
     }
@@ -5062,8 +5096,8 @@ PHP_FUNCTION(libvirt_domain_get_interface_devices)
 
     DPRINTF("%s: Getting interface device list for domain %p\n", PHPFUNC, domain->domain);
 
-    xml=virDomainGetXMLDesc(domain->domain, 0);
-    if (xml==NULL) {
+    xml = virDomainGetXMLDesc(domain->domain, 0);
+    if (!xml) {
         set_error_if_unset("Cannot get the XML description" TSRMLS_CC);
         RETURN_FALSE;
     }
@@ -5071,6 +5105,7 @@ PHP_FUNCTION(libvirt_domain_get_interface_devices)
     array_init(return_value);
 
     free( get_string_from_xpath(xml, "//domain/devices/interface/target/@dev", &return_value, &retval) );
+    free(xml);
 
     if (retval < 0)
         add_assoc_long(return_value, "error_code", (long)retval);
@@ -5122,7 +5157,7 @@ PHP_FUNCTION(libvirt_domain_change_memory)
     char *xml;
     char *new_xml = NULL;
     int new_len;
-    char newXml[4096] = { 0 };
+    char *newXml = NULL;
     long xflags = 0;
     long allocMem = 0;
     long allocMax = 0;
@@ -5144,8 +5179,8 @@ PHP_FUNCTION(libvirt_domain_change_memory)
     if (allocMem > allocMax)
         allocMem = allocMax;
 
-    xml=virDomainGetXMLDesc(domain->domain,xflags);
-    if (xml==NULL) {
+    xml = virDomainGetXMLDesc(domain->domain,xflags);
+    if (!xml) {
         set_error_if_unset("Cannot get the XML description" TSRMLS_CC);
         RETURN_FALSE;
     }
@@ -5166,24 +5201,14 @@ PHP_FUNCTION(libvirt_domain_change_memory)
 
     conn = domain->conn;
 
-    virDomainUndefine(domain->domain);
-
-    retval = virDomainFree(domain->domain);
-    if (retval != 0) {
-        DPRINTF("%s: Cannot free domain %p, error code = %d (%s)\n", PHPFUNC, domain->domain, retval, LIBVIRT_G(last_error));
-    }
-    else {
-        resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, domain->domain, 0 TSRMLS_CC);
-        DPRINTF("%s: Domain %p freed\n", PHPFUNC, domain->domain);
-    }
-
     dom=virDomainDefineXML(conn->conn, new_xml);
     if (dom==NULL) {
-        DPRINTF("%s: Function failed, restoring original XML\n", PHPFUNC);
-        dom=virDomainDefineXML(conn->conn, xml);
-        if (dom == NULL)
-            RETURN_FALSE;
+        free(xml);
+        efree(new_xml);
+        RETURN_FALSE;
     }
+    free(xml);
+    efree(new_xml);
 
     res_domain = (php_libvirt_domain *)emalloc(sizeof(php_libvirt_domain));
     res_domain->domain = dom;
@@ -5228,8 +5253,8 @@ PHP_FUNCTION(libvirt_domain_change_boot_devices)
 
     GET_DOMAIN_FROM_ARGS("rss|l",&zdomain,&first, &first_len, &second, &second_len, &xflags);
 
-    xml=virDomainGetXMLDesc(domain->domain,xflags);
-    if (xml==NULL) {
+    xml = virDomainGetXMLDesc(domain->domain,xflags);
+    if (!xml) {
         set_error_if_unset("Cannot get the XML description" TSRMLS_CC);
         RETURN_FALSE;
     }
@@ -5256,24 +5281,15 @@ PHP_FUNCTION(libvirt_domain_change_boot_devices)
 
     conn = domain->conn;
 
-    virDomainUndefine(domain->domain);
-
-    retval = virDomainFree(domain->domain);
-    if (retval != 0) {
-        DPRINTF("%s: Cannot free domain %p, error code = %d (%s)\n", PHPFUNC, domain->domain, retval, LIBVIRT_G(last_error));
-    }
-    else {
-        resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, domain->domain, 0 TSRMLS_CC);
-        DPRINTF("%s: Domain %p freed\n", PHPFUNC, domain->domain);
-    }
-
     dom=virDomainDefineXML(conn->conn, new_xml);
     if (dom==NULL) {
         DPRINTF("%s: Function failed, restoring original XML\n", PHPFUNC);
-        dom=virDomainDefineXML(conn->conn, xml);
-        if (dom == NULL)
-            RETURN_FALSE;
+        free(xml);
+        efree(newXml);
+        RETURN_FALSE;
     }
+    free(xml);
+    efree(newXml);
 
     res_domain = (php_libvirt_domain *)emalloc(sizeof(php_libvirt_domain));
     res_domain->domain = dom;
@@ -5300,8 +5316,6 @@ PHP_FUNCTION(libvirt_domain_disk_add)
 {
     php_libvirt_domain *domain=NULL;
     zval *zdomain;
-    char *tmp1 = NULL;
-    char *tmp2 = NULL;
     char *xml;
     char *img = NULL;
     int img_len;
@@ -5313,95 +5327,74 @@ PHP_FUNCTION(libvirt_domain_disk_add)
     int typ_len;
     char *new_xml = NULL;
     int new_len;
-    char newXml[4096] = { 0 };
+    char *newXml = NULL;
     long xflags = 0;
     int retval = -1;
-    int pos = -1;
-    php_libvirt_domain *res_domain = NULL;
-    php_libvirt_connection *conn   = NULL;
-    virDomainPtr dom=NULL;
+    char *xpath = NULL;
+    char *tmp = NULL;
 
     GET_DOMAIN_FROM_ARGS("rssss|l",&zdomain,&img,&img_len,&dev,&dev_len,&typ,&typ_len,&driver,&driver_len,&xflags);
 
     DPRINTF("%s: Domain %p, device = %s, image = %s, type = %s, driver = %s\n", PHPFUNC,
             domain->domain, dev, img, typ, driver);
 
-    xml=virDomainGetXMLDesc(domain->domain,xflags);
-    if (xml==NULL) {
+    xml = virDomainGetXMLDesc(domain->domain,xflags);
+    if (!xml) {
         set_error_if_unset("Cannot get the XML description" TSRMLS_CC);
-        RETURN_FALSE;
+        goto error;
     }
 
-    snprintf(newXml, sizeof(newXml), "//domain/devices/disk/source[@file=\"%s\"]/./@file", img);
-    tmp1 = get_string_from_xpath(xml, newXml, NULL, &retval);
-    if (tmp1 != NULL) {
-        free(tmp1);
-        snprintf(newXml, sizeof(newXml), "Domain already has image <i>%s</i> connected", img);
-        set_error(newXml TSRMLS_CC);
-        RETURN_FALSE;
+    if (asprintf(&xpath, "//domain/devices/disk/source[@file=\"%s\"]/./@file", img) < 0) {
+        set_error("Out of memory" TSRMLS_CC);
+        goto error;
+    }
+    tmp = get_string_from_xpath(xml, xpath, NULL, &retval);
+    if (tmp != NULL) {
+        free(tmp);
+        asprintf(&tmp, "Domain already has image <i>%s</i> connected", img);
+        set_error(tmp TSRMLS_CC);
+        goto error;
     }
 
-    snprintf(newXml, sizeof(newXml), "//domain/devices/disk/target[@dev='%s']/./@dev", dev);
-    tmp1 = get_string_from_xpath(xml, newXml, NULL, &retval);
-    if (tmp1 != NULL) {
-        free(tmp1);
-        snprintf(newXml, sizeof(newXml), "Domain already has device <i>%s</i> connected", dev);
-        set_error(newXml TSRMLS_CC);
-        RETURN_FALSE;
+    free(xpath);
+    if (asprintf(&xpath, "//domain/devices/disk/target[@dev='%s']/./@dev", dev) < 0) {
+        set_error("Out of memory" TSRMLS_CC);
+        goto error;
+    }
+    tmp = get_string_from_xpath(xml, newXml, NULL, &retval);
+    if (tmp != NULL) {
+        free(tmp);
+        asprintf(&tmp, "Domain already has device <i>%s</i> connected", dev);
+        set_error(tmp TSRMLS_CC);
+        goto error;
     }
 
-    if (access(img, R_OK) != 0) {
-        snprintf(newXml, sizeof(newXml), "Image file <i>%s</i> doesn't exist", img);
-        set_error(newXml TSRMLS_CC);
-        RETURN_FALSE;
-    }
-
-    snprintf(newXml, sizeof(newXml),
+    if (asnprintf(&newXml,
              "    <disk type='file' device='disk'>\n"
              "      <driver name='qemu' type='%s'/>\n"
              "      <source file='%s'/>\n"
              "      <target dev='%s' bus='%s'/>\n"
-             "    </disk>", driver, img, dev, typ);
-    tmp1 = strstr(xml, "</emulator>") + strlen("</emulator>");
-    pos = strlen(xml) - strlen(tmp1);
-
-    tmp2 = (char *)emalloc( ( pos + 1 )* sizeof(char) );
-    memset(tmp2, 0, pos + 1);
-    memcpy(tmp2, xml, pos);
-
-    new_len = strlen(tmp1) + strlen(tmp2) + strlen(newXml) + 2;
-    new_xml = (char *)emalloc( new_len * sizeof(char) );
-    snprintf(new_xml, new_len, "%s\n%s%s", tmp2, newXml, tmp1);
-
-    conn = domain->conn;
-
-    virDomainUndefine(domain->domain);
-    virDomainFree(domain->domain);
-
-    retval = virDomainFree(domain->domain);
-    if (retval != 0) {
-        DPRINTF("%s: Cannot free domain %p, error code = %d (%s)\n", PHPFUNC, domain->domain, retval, LIBVIRT_G(last_error));
-    }
-    else {
-        resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, domain->domain, 0 TSRMLS_CC);
-        DPRINTF("%s: Domain %p freed\n", PHPFUNC, domain->domain);
+             "    </disk>", driver, img, dev, typ) < 0) {
+        set_error("Out of memory" TSRMLS_CC);
+        goto error;
     }
 
-    dom=virDomainDefineXML(conn->conn, new_xml);
-    if (dom==NULL) {
-        DPRINTF("%s: Function failed, restoring original XML\n", PHPFUNC);
-        dom=virDomainDefineXML(conn->conn, xml);
-        if (dom == NULL)
-            RETURN_FALSE;
+    if (virDomainAttachDeviceFlags(domain->domain,
+                                   newXml, VIR_DOMAIN_AFFECT_CONFIG) < 0) {
+        set_error("Unable to attach disk" TSRMLS_CC);
+        goto error;
     }
 
-    res_domain = (php_libvirt_domain *)emalloc(sizeof(php_libvirt_domain));
-    res_domain->domain = dom;
-    res_domain->conn = conn;
+    free(tmp);
+    free(xpath);
+    free(xml);
+    RETURN_TRUE;
 
-    DPRINTF("%s: returning %p\n", PHPFUNC, res_domain->domain);
-    resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1 TSRMLS_CC);
-    ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
+ error:
+    free(tmp);
+    free(xpath);
+    free(xml);
+    RETURN_FALSE;
 }
 
 /*
@@ -5417,14 +5410,12 @@ PHP_FUNCTION(libvirt_domain_disk_remove)
 {
     php_libvirt_domain *domain=NULL;
     zval *zdomain;
-    char *tmp1 = NULL;
-    char *tmp2 = NULL;
     char *xml;
     char *dev = NULL;
     int dev_len;
     char *new_xml = NULL;
     int new_len;
-    char newXml[4096] = { 0 };
+    char *newXml = NULL;
     long xflags = 0;
     int retval = -1;
     int pos = -1;
@@ -5432,81 +5423,54 @@ PHP_FUNCTION(libvirt_domain_disk_remove)
     php_libvirt_domain *res_domain=NULL;
     php_libvirt_connection *conn = NULL;
     virDomainPtr dom = NULL;
+    char *xpath = NULL;
+    char *tmp = NULL;
 
     GET_DOMAIN_FROM_ARGS("rs|l",&zdomain,&dev,&dev_len,&xflags);
 
     DPRINTF("%s: Trying to remove %s from domain %p\n", PHPFUNC, dev, domain->domain);
 
-    xml=virDomainGetXMLDesc(domain->domain,xflags);
-    if (xml==NULL) {
+    xml = virDomainGetXMLDesc(domain->domain,xflags);
+    if (!xml) {
         set_error_if_unset("Cannot get the XML description" TSRMLS_CC);
         RETURN_FALSE;
     }
 
-    snprintf(newXml, sizeof(newXml), "//domain/devices/disk/target[@dev='%s']/./@dev", dev);
-    tmp1 = get_string_from_xpath(xml, newXml, NULL, &retval);
-    if (tmp1 == NULL) {
-        snprintf(newXml, sizeof(newXml), "Device <i>%s</i> is not connected to the guest", dev);
-        set_error(newXml TSRMLS_CC);
-        RETURN_FALSE;
+    if (asprintf(&xpath, "//domain/devices/disk/target[@dev='%s']/./@dev", dev) < 0) {
+        set_error("Out of memory" TSRMLS_CC);
+        goto error;
+    }
+    tmp = get_string_from_xpath(xml, xpath, NULL, &retval);
+    if (!tmp) {
+        asnprintf(&tmp, "Device <i>%s</i> is not connected to the guest", dev);
+        set_error(tmp TSRMLS_CC);
+        goto error;
     }
 
-    free(tmp1);
-
-    snprintf(newXml, sizeof(newXml), "<target dev='%s'", dev);
-    tmp1 = strstr(xml, newXml) + strlen(newXml);
-    pos = strlen(xml) - strlen(tmp1);
-
-    tmp2 = (char *)emalloc( ( pos + 1 )* sizeof(char) );
-    memset(tmp2, 0, pos + 1);
-    memcpy(tmp2, xml, pos);
-
-    for (i = strlen(tmp2) - 5; i > 0; i--)
-        if ((tmp2[i] == '<') && (tmp2[i+1] == 'd')
-            && (tmp2[i+2] == 'i') && (tmp2[i+3] == 's')
-            && (tmp2[i+4] == 'k')) {
-            tmp2[i-5] = 0;
-            break;
-        }
-
-    for (i = 0; i < strlen(tmp1) - 7; i++)
-        if ((tmp1[i] == '<') && (tmp1[i+1] == '/')
-            && (tmp1[i+2] == 'd') && (tmp1[i+3] == 'i')
-            && (tmp1[i+4] == 's') && (tmp1[i+5] == 'k')
-            && (tmp1[i+6] == '>')) {
-            idx = i + 6;
-            break;
-        }
-
-    new_len = strlen(tmp2) + (strlen(tmp1) - idx);
-    new_xml = (char *)emalloc( new_len * sizeof(char) );
-    memset(new_xml, 0, new_len);
-    strcpy(new_xml, tmp2);
-    for (i = idx; i < strlen(tmp1) - 1; i++)
-        new_xml[ strlen(tmp2) + i - idx ] = tmp1[i];
-
-    conn = domain->conn;
-    virDomainUndefine(domain->domain);
-
-    retval = virDomainFree(domain->domain);
-    if (retval != 0) {
-        DPRINTF("%s: Cannot free domain %p, error code = %d (%s)\n", PHPFUNC, domain->domain, retval, LIBVIRT_G(last_error));
-    }
-    else {
-        resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, domain->domain, 0 TSRMLS_CC);
-        DPRINTF("%s: Domain %p freed\n", PHPFUNC, domain->domain);
+    if (asnprintf(&newXml,
+             "    <disk type='file' device='disk'>\n"
+             "      <target dev='%s'/>\n"
+             "    </disk>", dev) < 0) {
+        set_error("Out of memory" TSRMLS_CC);
+        goto error;
     }
 
-    dom=virDomainDefineXML(conn->conn,new_xml);
-    if (dom==NULL) RETURN_FALSE;
+    if (virDomainDetachDeviceFlags(domain->domain,
+                                   newXml, VIR_DOMAIN_AFFECT_CONFIG) < 0) {
+        set_error("Unable to attach disk" TSRMLS_CC);
+        goto error;
+    }
 
-    res_domain = (php_libvirt_domain *)emalloc(sizeof(php_libvirt_domain));
-    res_domain->domain = dom;
-    res_domain->conn = conn;
+    free(tmp);
+    free(xpath);
+    free(xml);
+    RETURN_TRUE;
 
-    DPRINTF("%s: returning %p\n", PHPFUNC, res_domain->domain);
-    resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1 TSRMLS_CC);
-    ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
+ error:
+    free(tmp);
+    free(xpath);
+    free(xml);
+    RETURN_FALSE;
 }
 
 /*
@@ -5524,8 +5488,6 @@ PHP_FUNCTION(libvirt_domain_nic_add)
 {
     php_libvirt_domain *domain=NULL;
     zval *zdomain;
-    char *tmp1 = NULL;
-    char *tmp2 = NULL;
     char *xml;
     char *mac = NULL;
     int mac_len;
@@ -5535,14 +5497,12 @@ PHP_FUNCTION(libvirt_domain_nic_add)
     int model_len;
     char *new_xml = NULL;
     int new_len;
-    char newXml[4096] = { 0 };
+    char *newXml = NULL;
     long xflags = 0;
     int retval = -1;
     int pos = -1;
-    php_libvirt_domain *res_domain = NULL;
-    php_libvirt_connection *conn   = NULL;
-    virDomainPtr dom=NULL;
-    long slot = -1;
+    char *xpath = NULL;
+    char *tmp = NULL;
 
     DPRINTF("%s: Entering\n", PHPFUNC);
 
@@ -5552,83 +5512,61 @@ PHP_FUNCTION(libvirt_domain_nic_add)
 
     DPRINTF("%s: domain = %p, mac = %s, net = %s, model = %s\n", PHPFUNC, domain->domain, mac, net, model);
 
-    xml=virDomainGetXMLDesc(domain->domain,xflags);
-    if (xml==NULL) {
+    xml = virDomainGetXMLDesc(domain->domain,xflags);
+    if (!xml) {
         set_error_if_unset("Cannot get the XML description" TSRMLS_CC);
         RETURN_FALSE;
     }
 
-    snprintf(newXml, sizeof(newXml), "//domain/devices/interface[@type='network']/mac[@address='%s']/./@mac", mac);
-    tmp1 = get_string_from_xpath(xml, newXml, NULL, &retval);
-    if (tmp1 != NULL) {
-        free(tmp1);
-        snprintf(newXml, sizeof(newXml), "Domain already has NIC device with MAC address <i>%s</i> connected", mac);
-        set_error(newXml TSRMLS_CC);
-        RETURN_FALSE;
+    if (asprintf(&xpath, "//domain/devices/interface[@type='network']/mac[@address='%s']/./@mac", mac) < 0) {
+        set_error("Out of memory" TSRMLS_CC);
+        goto error;
+    }
+    tmp = get_string_from_xpath(xml, xpath, NULL, &retval);
+    if (tmp) {
+        free(tmp);
+        asprintf(&tmp, "Domain already has NIC device with MAC address <i>%s</i> connected", mac);
+        set_error(tmp TSRMLS_CC);
+        goto error;
     }
 
-    slot = get_next_free_numeric_value(domain->domain, "//@function");
-    if (slot < 0) {
-        free(tmp1);
-        snprintf(newXml, sizeof(newXml), "Cannot find a free function slot for domain");
-        set_error(newXml TSRMLS_CC);
-        RETURN_FALSE;
+    if (model) {
+        if (asprintf(&newXml,
+                     "   <interface type='network'>\n"
+                     "       <mac address='%s' />\n"
+                     "       <source network='%s' />\n"
+                     "       <model type='%s' />\n"
+                     "   </interface>", mac, net, model) < 0) {
+            set_error("Out of memory" TSRMLS_CC);
+            goto error;
+        }
+    } else {
+        if (asprintf(&newXml,
+                     "   <interface type='network'>\n"
+                     "       <mac address='%s' />\n"
+                     "       <source network='%s' />\n"
+                     "   </interface>", mac, net) < 0) {
+            set_error("Out of memory" TSRMLS_CC);
+            goto error;
+        }
     }
 
-    if (model == NULL)
-        snprintf(newXml, sizeof(newXml),
-                 "   <interface type='network'>\n"
-                 "       <mac address='%s' />\n"
-                 "       <source network='%s' />\n"
-                 "       <address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x%02x' />\n"
-                 "   </interface>", mac, net, slot+1);
-    else
-        snprintf(newXml, sizeof(newXml),
-                 "   <interface type='network'>\n"
-                 "       <mac address='%s' />\n"
-                 "       <source network='%s' />\n"
-                 "       <model type='%s' />\n"
-                 "       <address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x%02x' />\n"
-                 "   </interface>", mac, net, model, slot+1);
-
-    tmp1 = strstr(xml, "</controller>") + strlen("</controller>");
-    pos = strlen(xml) - strlen(tmp1);
-
-    tmp2 = (char *)emalloc( ( pos + 1 )* sizeof(char) );
-    memset(tmp2, 0, pos + 1);
-    memcpy(tmp2, xml, pos);
-
-    new_len = strlen(tmp1) + strlen(tmp2) + strlen(newXml) + 2;
-    new_xml = (char *)emalloc( new_len * sizeof(char) );
-    snprintf(new_xml, new_len, "%s\n%s%s", tmp2, newXml, tmp1);
-
-    conn = domain->conn;
-
-    virDomainUndefine(domain->domain);
-
-    retval = virDomainFree(domain->domain);
-    if (retval != 0) {
-        DPRINTF("%s: Cannot free domain %p, error code = %d (%s)\n", PHPFUNC, domain->domain, retval, LIBVIRT_G(last_error));
-    }
-    else {
-        resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, domain->domain, 0 TSRMLS_CC);
-        DPRINTF("%s: Domain %p freed\n", PHPFUNC, domain->domain);
+    if (virDomainAttachDeviceFlags(domain->domain,
+                                   newXml, VIR_DOMAIN_AFFECT_CONFIG) < 0) {
+        set_error("Unable to attach interface" TSRMLS_CC);
+        goto error;
     }
 
-    dom=virDomainDefineXML(conn->conn, new_xml);
-    if (dom==NULL) {
-        DPRINTF("%s: Function failed, restoring original XML, new XML data: %s\n", PHPFUNC, new_xml);
-        virDomainDefineXML(conn->conn, xml);
-        RETURN_FALSE;
-    }
+    free(tmp);
+    free(xpath);
+    free(xml);
+    RETURN_TRUE;
 
-    res_domain = (php_libvirt_domain *)emalloc(sizeof(php_libvirt_domain));
-    res_domain->domain = dom;
-    res_domain->conn = conn;
-
-    DPRINTF("%s: returning %p\n", PHPFUNC, res_domain->domain);
-    resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1 TSRMLS_CC);
-    ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
+ error:
+    free(tmp);
+    free(xpath);
+    free(xml);
+    RETURN_FALSE;
 }
 
 /*
@@ -5651,92 +5589,58 @@ PHP_FUNCTION(libvirt_domain_nic_remove)
     int mac_len;
     char *new_xml = NULL;
     int new_len;
-    char newXml[4096] = { 0 };
+    char *newXml = NULL;
     long xflags = 0;
     int retval = -1;
     int pos = -1;
-    int i, idx = 0;
-    php_libvirt_domain *res_domain=NULL;
-    php_libvirt_connection *conn = NULL;
-    virDomainPtr dom = NULL;
+    char *xpath = NULL;
+    char *tmp = NULL;
 
     GET_DOMAIN_FROM_ARGS("rs|l",&zdomain,&mac,&mac_len,&xflags);
 
     DPRINTF("%s: Trying to remove NIC device with MAC address %s from domain %p\n", PHPFUNC, mac, domain->domain);
 
-    xml=virDomainGetXMLDesc(domain->domain,xflags);
-    if (xml==NULL) {
+    xml = virDomainGetXMLDesc(domain->domain,xflags);
+    if (!xml) {
         set_error_if_unset("Cannot get the XML description" TSRMLS_CC);
         RETURN_FALSE;
     }
-
-    snprintf(newXml, sizeof(newXml), "//domain/devices/interface[@type='network']/mac[@address='%s']/./@address", mac);
-    tmp1 = get_string_from_xpath(xml, newXml, NULL, &retval);
-    if (tmp1 == NULL) {
-        snprintf(newXml, sizeof(newXml), "Network card with IP address <i>%s</i> is not connected to the guest", mac);
-        set_error(newXml TSRMLS_CC);
-        RETURN_FALSE;
+    if (asprintf(&xpath, "//domain/devices/interface[@type='network']/mac[@address='%s']/./@mac", mac) < 0) {
+        set_error("Out of memory" TSRMLS_CC);
+        goto error;
+    }
+    tmp = get_string_from_xpath(xml, xpath, NULL, &retval);
+    if (!tmp) {
+        free(tmp);
+        asprintf(&tmp, "Domain has no such interface with mac %s", mac);
+        set_error(tmp TSRMLS_CC);
+        goto error;
     }
 
-    free(tmp1);
-
-    snprintf(newXml, sizeof(newXml), "<mac address='%s'", mac);
-    if (strstr(xml, newXml) == NULL)
-        snprintf(newXml, sizeof(newXml), "<mac address=\"%s\"", mac);
-
-    tmp1 = strstr(xml, newXml) + strlen(newXml);
-    pos = strlen(xml) - strlen(tmp1);
-
-    tmp2 = (char *)emalloc( ( pos + 1 )* sizeof(char) );
-    memset(tmp2, 0, pos + 1);
-    memcpy(tmp2, xml, pos);
-
-    for (i = strlen(tmp2) - 5; i > 0; i--)
-        if ((tmp2[i] == '<') && (tmp2[i+1] == 'i')
-            && (tmp2[i+2] == 'n') && (tmp2[i+3] == 't')
-            && (tmp2[i+4] == 'e')) {
-            tmp2[i-5] = 0;
-            break;
-        }
-
-    for (i = 0; i < strlen(tmp1) - 7; i++)
-        if ((tmp1[i] == '<') && (tmp1[i+1] == '/')
-            && (tmp1[i+2] == 'i') && (tmp1[i+3] == 'n')
-            && (tmp1[i+4] == 't') && (tmp1[i+5] == 'e')
-            && (tmp1[i+6] == 'r')) {
-            idx = i + 6;
-            break;
-        }
-
-    new_len = strlen(tmp2) + (strlen(tmp1) - idx);
-    new_xml = (char *)emalloc( new_len * sizeof(char) );
-    memset(new_xml, 0, new_len);
-    strcpy(new_xml, tmp2);
-    for (i = idx; i < strlen(tmp1) - 1; i++)
-        new_xml[ strlen(tmp2) + i - idx ] = tmp1[i];
-
-    conn = domain->conn;
-    virDomainUndefine(domain->domain);
-
-    retval = virDomainFree(domain->domain);
-    if (retval != 0) {
-        DPRINTF("%s: Cannot free domain %p, error code = %d (%s)\n", PHPFUNC, domain->domain, retval, LIBVIRT_G(last_error));
-    }
-    else {
-        resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, domain->domain, 0 TSRMLS_CC);
-        DPRINTF("%s: Domain %p freed\n", PHPFUNC, domain->domain);
+    if (asprintf(&newXml,
+                 "   <interface type='network'>\n"
+                 "       <mac address='%s' />\n"
+                 "   </interface>", mac) < 0) {
+        set_error("Out of memory" TSRMLS_CC);
+        goto error;
     }
 
-    dom=virDomainDefineXML(conn->conn,new_xml);
-    if (dom==NULL) RETURN_FALSE;
+    if (virDomainDetachDeviceFlags(domain->domain,
+                                   newXml, VIR_DOMAIN_AFFECT_CONFIG) < 0) {
+        set_error("Unable to detach interface" TSRMLS_CC);
+        goto error;
+    }
 
-    res_domain = (php_libvirt_domain *)emalloc(sizeof(php_libvirt_domain));
-    res_domain->domain = dom;
-    res_domain->conn = conn;
+    free(tmp);
+    free(xpath);
+    free(xml);
+    RETURN_TRUE;
 
-    DPRINTF("%s: returning %p\n", PHPFUNC, res_domain->domain);
-    resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1 TSRMLS_CC);
-    ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
+ error:
+    free(tmp);
+    free(xpath);
+    free(xml);
+    RETURN_FALSE;
 }
 
 /*
@@ -6237,40 +6141,60 @@ PHP_FUNCTION(libvirt_domain_get_network_info)
     char *xml;
     char *tmp = NULL;
     int mac_len;
-    char fnpath[1024] = { 0 };
+    char *xpath = NULL;
 
     GET_DOMAIN_FROM_ARGS("rs",&zdomain,&mac,&mac_len);
 
     /* Get XML for the domain */
-    xml=virDomainGetXMLDesc(domain->domain, VIR_DOMAIN_XML_INACTIVE);
-    if (xml==NULL) {
+    xml = virDomainGetXMLDesc(domain->domain, VIR_DOMAIN_XML_INACTIVE);
+    if (!xml) {
         set_error("Cannot get domain XML" TSRMLS_CC);
         RETURN_FALSE;
     }
 
     DPRINTF("%s: Getting network information for NIC with MAC address '%s'\n", PHPFUNC, mac);
-    snprintf(fnpath, sizeof(fnpath), "//domain/devices/interface[@type='network']/mac[@address='%s']/../source/@network", mac);
-    tmp = get_string_from_xpath(xml, fnpath, NULL, &retval);
+    if (asprintf(&xpath, "//domain/devices/interface[@type='network']/mac[@address='%s']/../source/@network", mac) < 0) {
+        set_error("Out of memory" TSRMLS_CC);
+        goto error;
+    }
+    tmp = get_string_from_xpath(xml, xpath, NULL, &retval);
     if (tmp == NULL) {
         set_error("Invalid XPath node for source network" TSRMLS_CC);
-        RETURN_FALSE;
+        goto error;
     }
 
     if (retval < 0) {
         set_error("Cannot get XPath expression result for network source" TSRMLS_CC);
-        RETURN_FALSE;
+        goto error;
     }
 
     array_init(return_value);
     add_assoc_string_ex(return_value, "mac", 4, mac, 1);
     add_assoc_string_ex(return_value, "network", 8, tmp, 1);
 
-    snprintf(fnpath, sizeof(fnpath), "//domain/devices/interface[@type='network']/mac[@address='%s']/../model/@type", mac);
-    tmp = get_string_from_xpath(xml, fnpath, NULL, &retval);
+    free(tmp);
+    free(xpath);
+
+    if (asprintf(&xpath, "//domain/devices/interface[@type='network']/mac[@address='%s']/../model/@type", mac) < 0) {
+        set_error("Out of memory" TSRMLS_CC);
+        goto error;
+    }
+    tmp = get_string_from_xpath(xml, xpath, NULL, &retval);
     if ((tmp != NULL) && (retval > 0))
         add_assoc_string_ex(return_value, "nic_type", 9, tmp, 1);
     else
         add_assoc_string_ex(return_value, "nic_type", 9, "default", 1);
+
+    free(xml);
+    free(xpath);
+    free(tmp);
+    RETURN_TRUE;
+
+ error:
+    free(xml);
+    free(xpath);
+    free(tmp);
+    RETURN_FALSE;
 }
 
 /*
@@ -6290,48 +6214,55 @@ PHP_FUNCTION(libvirt_domain_get_block_info)
     char *xml;
     char *tmp = NULL;
     int dev_len, isFile;
-    char fnpath[1024] = { 0 };
+    char *xpath = NULL;
 
     struct _virDomainBlockInfo info;
 
     GET_DOMAIN_FROM_ARGS("rs",&zdomain,&dev,&dev_len);
 
     /* Get XML for the domain */
-    xml=virDomainGetXMLDesc(domain->domain, VIR_DOMAIN_XML_INACTIVE);
-    if (xml==NULL) {
+    xml = virDomainGetXMLDesc(domain->domain, VIR_DOMAIN_XML_INACTIVE);
+    if (!xml) {
         set_error("Cannot get domain XML" TSRMLS_CC);
         RETURN_FALSE;
     }
 
     isFile = 0;
-    snprintf(fnpath, sizeof(fnpath), "//domain/devices/disk/target[@dev='%s']/../source/@dev", dev);
-    tmp = get_string_from_xpath(xml, fnpath, NULL, &retval);
 
+    if (asprintf(&xpath, "//domain/devices/disk/target[@dev='%s']/../source/@dev", dev) < 0) {
+        set_error("Out of memory" TSRMLS_CC);
+        goto error;
+    }
+    tmp = get_string_from_xpath(xml, xpath, NULL, &retval);
     if (retval < 0) {
         set_error("Cannot get XPath expression result for device storage" TSRMLS_CC);
-        RETURN_FALSE;
+        goto error;
     }
 
     if (retval == 0) {
-        snprintf(fnpath, sizeof(fnpath), "//domain/devices/disk/target[@dev='%s']/../source/@file", dev);
-        tmp = get_string_from_xpath(xml, fnpath, NULL, &retval);
+        free(xpath);
+        if (asprintf(&xpath, "//domain/devices/disk/target[@dev='%s']/../source/@file", dev) < 0) {
+            set_error("Out of memory" TSRMLS_CC);
+            goto error;
+        }
+        free(tmp);
+        tmp = get_string_from_xpath(xml, xpath, NULL, &retval);
         if (retval < 0) {
             set_error("Cannot get XPath expression result for file storage" TSRMLS_CC);
-            RETURN_FALSE;
+            goto error;
         }
         isFile = 1;
     }
 
     if (retval == 0) {
         set_error("No relevant node found" TSRMLS_CC);
-        RETURN_FALSE;
+        goto error;
     }
 
-    retval=virDomainGetBlockInfo(domain->domain, tmp, &info,0);
-
+    retval = virDomainGetBlockInfo(domain->domain, tmp, &info,0);
     if (retval == -1) {
         set_error("Cannot get domain block information" TSRMLS_CC);
-        RETURN_FALSE;
+        goto error;
     }
 
     array_init(return_value);
@@ -6343,14 +6274,30 @@ PHP_FUNCTION(libvirt_domain_get_block_info)
     else
         add_assoc_string_ex(return_value, "partition", 10, tmp, 1);
 
-    snprintf(fnpath, sizeof(fnpath), "//domain/devices/disk/target[@dev='%s']/../driver/@type", dev);
-    tmp = get_string_from_xpath(xml, fnpath, NULL, &retval);
+    free(xpath);
+    if (asprintf(&xpath, "//domain/devices/disk/target[@dev='%s']/../driver/@type", dev) < 0) {
+        set_error("Out of memory" TSRMLS_CC);
+        goto error;
+    }
+    free(tmp);
+    tmp = get_string_from_xpath(xml, xpath, NULL, &retval);
     if (tmp != NULL)
         add_assoc_string_ex(return_value, "type", 5, tmp, 1);
 
     LONGLONG_ASSOC(return_value, "capacity", info.capacity);
     LONGLONG_ASSOC(return_value, "allocation", info.allocation);
     LONGLONG_ASSOC(return_value, "physical", info.physical);
+
+    free(xpath);
+    free(tmp);
+    free(xml);
+    return;
+
+ error:
+    free(xpath);
+    free(tmp);
+    free(xml);
+    RETURN_FALSE;
 }
 
 /*
@@ -6373,8 +6320,9 @@ PHP_FUNCTION(libvirt_domain_xml_xpath)
 
     GET_DOMAIN_FROM_ARGS("rs|l",&zdomain, &zpath, &path_len, &flags);
 
-    xml=virDomainGetXMLDesc(domain->domain, flags);
-    if (xml==NULL) RETURN_FALSE;
+    xml = virDomainGetXMLDesc(domain->domain, flags);
+    if (!xml)
+        RETURN_FALSE;
 
     array_init(return_value);
 
