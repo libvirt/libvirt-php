@@ -946,12 +946,15 @@ unsigned long long size_def_to_mbytes(char *arg)
 int is_local_connection(virConnectPtr conn)
 {
 #ifndef EXTWIN
+    int ret;
     char *hostname;
     char name[1024];
 
     hostname=virConnectGetHostname(conn);
     gethostname(name, 1024);
-    return (strcmp(name, hostname) == 0);
+    ret = strcmp(name, hostname) == 0;
+    free(hostname);
+    return ret;
 #else
     // Libvirt daemon doesn't work on Windows systems so always return 0 (FALSE)
     return 0;
@@ -2145,8 +2148,10 @@ PHP_FUNCTION(libvirt_connect_get_information)
     DPRINTF("%s: Got connection URI of %s...\n", PHPFUNC, tmp);
     array_init(return_value);
     add_assoc_string_ex(return_value, "uri", 4, tmp ? tmp : "unknown", 1);
+    free(tmp);
     tmp = virConnectGetHostname(conn->conn);
     add_assoc_string_ex(return_value, "hostname", 9, tmp ? tmp : "unknown", 1);
+    free(tmp);
 
     if ((virConnectGetVersion(conn->conn, &hvVer) == 0) && (type = virConnectGetType(conn->conn)))
     {
@@ -2360,8 +2365,10 @@ PHP_FUNCTION(libvirt_image_remove)
     if (strcmp(name, hostname) != 0) {
         snprintf(msg, sizeof(msg), "%s works only on local systems!", PHPFUNC);
         set_error(msg TSRMLS_CC);
+        free(hostname);
         RETURN_FALSE;
     }
+    free(hostname);
 
     if (unlink(image) != 0) {
         snprintf(msg, sizeof(msg), "An error occured while unlinking %s: %d (%s)", image, errno, strerror(errno));
