@@ -2283,6 +2283,7 @@ PHP_FUNCTION(libvirt_image_create)
     long long size;
     char *size_str;
     int size_str_len;
+    int cmdRet;
 
     if (LIBVIRT_G(image_path_ini))
         path = strdup( LIBVIRT_G(image_path_ini) );
@@ -2316,9 +2317,9 @@ PHP_FUNCTION(libvirt_image_create)
 
     snprintf(cmd, sizeof(cmd), "%s create -f %s %s %dM > /dev/null", qemu_img_cmd, format, fpath, size);
     DPRINTF("%s: Running '%s'...\n", PHPFUNC, cmd);
-    system(cmd);
+    cmdRet = system(cmd);
 
-    if (access(fpath, F_OK) == 0) {
+    if (WEXITSTATUS(cmdRet) == 0 && access(fpath, F_OK) == 0) {
         RETURN_TRUE;
     }
     else {
@@ -4067,11 +4068,14 @@ PHP_FUNCTION(libvirt_domain_get_screenshot_api)
     if (bin) {
         char tmp[4096] = { 0 };
         char fileNew[1024] = { 0 };
+        int exitStatus;
 
         snprintf(fileNew, sizeof(fileNew), "%s.png", file);
         snprintf(tmp, sizeof(tmp), "%s %s %s > /dev/null 2> /dev/null", bin, file, fileNew);
-        system(tmp);
+        exitStatus = system(tmp);
         unlink(file);
+        if (WEXITSTATUS(exitStatus) != 0)
+            RETURN_FALSE;
 
         add_assoc_string_ex(return_value, "file", 5, fileNew, 1);
         add_assoc_string_ex(return_value, "mime", 5, "image/png", 1);
@@ -4627,7 +4631,8 @@ PHP_FUNCTION(libvirt_connect_get_nic_models)
     array_init(return_value);
     while (!feof(fp)) {
         memset(cmd, 0, sizeof(cmd));
-        fgets(cmd, sizeof(cmd), fp);
+        if (!fgets(cmd, sizeof(cmd), fp))
+            break;
 
         if ((tmp = strstr(cmd, "Supported NIC models:")) != NULL) {
             tmp = strstr(tmp, ":") + 2;
@@ -4700,7 +4705,8 @@ PHP_FUNCTION(libvirt_connect_get_soundhw_models)
     array_init(return_value);
     while (!feof(fp)) {
         memset(cmd, 0, sizeof(cmd));
-        fgets(cmd, sizeof(cmd), fp);
+        if (!fgets(cmd, sizeof(cmd), fp))
+            break;
 
         if (strncmp(cmd, "Valid ", 6)== 0) {
             inFunc = 1;
@@ -5356,8 +5362,10 @@ PHP_FUNCTION(libvirt_domain_disk_add)
     tmp = get_string_from_xpath(xml, xpath, NULL, &retval);
     if (tmp != NULL) {
         free(tmp);
-        asprintf(&tmp, "Domain already has image <i>%s</i> connected", img);
-        set_error(tmp TSRMLS_CC);
+        if (asprintf(&tmp, "Domain already has image <i>%s</i> connected", img) < 0)
+            set_error("Out of memory" TSRMLS_CC);
+        else
+            set_error(tmp TSRMLS_CC);
         goto error;
     }
 
@@ -5369,8 +5377,10 @@ PHP_FUNCTION(libvirt_domain_disk_add)
     tmp = get_string_from_xpath(xml, newXml, NULL, &retval);
     if (tmp != NULL) {
         free(tmp);
-        asprintf(&tmp, "Domain already has device <i>%s</i> connected", dev);
-        set_error(tmp TSRMLS_CC);
+        if (asprintf(&tmp, "Domain already has device <i>%s</i> connected", dev) < 0)
+            set_error("Out of memory" TSRMLS_CC);
+        else
+            set_error(tmp TSRMLS_CC);
         goto error;
     }
 
@@ -5447,8 +5457,10 @@ PHP_FUNCTION(libvirt_domain_disk_remove)
     }
     tmp = get_string_from_xpath(xml, xpath, NULL, &retval);
     if (!tmp) {
-        asprintf(&tmp, "Device <i>%s</i> is not connected to the guest", dev);
-        set_error(tmp TSRMLS_CC);
+        if (asprintf(&tmp, "Device <i>%s</i> is not connected to the guest", dev) < 0)
+            set_error("Out of memory" TSRMLS_CC);
+        else
+            set_error(tmp TSRMLS_CC);
         goto error;
     }
 
@@ -5530,8 +5542,10 @@ PHP_FUNCTION(libvirt_domain_nic_add)
     tmp = get_string_from_xpath(xml, xpath, NULL, &retval);
     if (tmp) {
         free(tmp);
-        asprintf(&tmp, "Domain already has NIC device with MAC address <i>%s</i> connected", mac);
-        set_error(tmp TSRMLS_CC);
+        if (asprintf(&tmp, "Domain already has NIC device with MAC address <i>%s</i> connected", mac) < 0)
+            set_error("Out of memory" TSRMLS_CC);
+        else
+            set_error(tmp TSRMLS_CC);
         goto error;
     }
 
@@ -5617,8 +5631,10 @@ PHP_FUNCTION(libvirt_domain_nic_remove)
     tmp = get_string_from_xpath(xml, xpath, NULL, &retval);
     if (!tmp) {
         free(tmp);
-        asprintf(&tmp, "Domain has no such interface with mac %s", mac);
-        set_error(tmp TSRMLS_CC);
+        if (asprintf(&tmp, "Domain has no such interface with mac %s", mac) < 0)
+            set_error("Out of memory" TSRMLS_CC);
+        else
+            set_error(tmp TSRMLS_CC);
         goto error;
     }
 

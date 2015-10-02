@@ -635,8 +635,8 @@ int vnc_raw_to_bmp(char *infile, char *outfile, int width, int height)
     if (fd2 == -1)
         return -EPERM;
 
-    write(fd2, "BM", 2);
-    if (write(fd2, &fBMP, hsize) < 0)
+    if (write(fd2, "BM", 2) < 0 ||
+        write(fd2, &fBMP, hsize) < 0)
         perror("Error on write");
 
     ix = 0;
@@ -666,7 +666,8 @@ int vnc_raw_to_bmp(char *infile, char *outfile, int width, int height)
 
         for (ix = start; ix < end; ix++) {
             UINT32STR(tbuf, pixels[ix]);
-            write(fd2, tbuf, 4);
+            if (write(fd2, tbuf, 4) < 0)
+                perror("Error on write");
         }
     }
 

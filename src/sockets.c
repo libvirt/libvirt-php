@@ -179,10 +179,11 @@ void socket_read(int sfd, long length)
             length = 0;
     }
 
-    if (length)
-        read(sfd, bigbuf, length);
-
-    DPRINTF("%s: All bytes read\n", PHPFUNC);
+    if (length &&
+        read(sfd, bigbuf, length) != length)
+        DPRINTF("%s: not all byes read\n", PHPFUNC);
+    else
+        DPRINTF("%s: All bytes read\n", PHPFUNC);
 }
 
 /*
@@ -221,7 +222,8 @@ int socket_read_and_save(int sfd, char *fn, long length)
         for (i = 0; i < len; i += 4)
             SWAP2_BYTES_ENDIAN(1, bigbuf[i+1], bigbuf[i+2]);
 
-        write(fd, bigbuf, len);
+        if (write(fd, bigbuf, len) != len)
+            DPRINTF("%s: unable to write to %d", PHPFUNC, fd);
 
         length -= len;
         if (length < 0)
@@ -234,10 +236,12 @@ int socket_read_and_save(int sfd, char *fn, long length)
         for (i = 0; i < len; i += 4)
             SWAP2_BYTES_ENDIAN(1, bigbuf[i+1], bigbuf[i+2]);
 
-        write(fd, bigbuf, len);
+        if (write(fd, bigbuf, len) != len)
+            DPRINTF("%s: unable to write to %d", PHPFUNC, fd);
     }
 
-    ftruncate(fd, orig_len);
+    if (ftruncate(fd, orig_len) < 0)
+        DPRINTF("%s: Unable to truncate %d", PHPFUNC, fd);
 
     close(fd);
 
