@@ -2580,11 +2580,11 @@ PHP_FUNCTION(libvirt_connect_get_sysinfo)
  */
 char *get_string_from_xpath(char *xml, char *xpath, zval **val, int *retVal)
 {
-    xmlParserCtxtPtr xp;
-    xmlDocPtr doc;
-    xmlXPathContextPtr context;
-    xmlXPathObjectPtr result;
-    xmlNodeSetPtr nodeset;
+    xmlParserCtxtPtr xp = NULL;
+    xmlDocPtr doc = NULL;
+    xmlXPathContextPtr context = NULL;
+    xmlXPathObjectPtr result = NULL;
+    xmlNodeSetPtr nodeset = NULL;
     int ret = 0, i;
     char *value = NULL;
     char key[8] = { 0 };
@@ -5172,7 +5172,6 @@ PHP_FUNCTION(libvirt_domain_change_memory)
     long xflags = 0;
     long allocMem = 0;
     long allocMax = 0;
-    int retval = -1;
     // int pos = -1;
     int len = 0;
     php_libvirt_domain *res_domain = NULL;
@@ -5255,7 +5254,6 @@ PHP_FUNCTION(libvirt_domain_change_boot_devices)
     int first_len;
     char *second = NULL;
     int second_len;
-    int retval = -1;
     // int pos = -1;
     int len = 0;
     php_libvirt_domain *res_domain = NULL;
@@ -5336,8 +5334,6 @@ PHP_FUNCTION(libvirt_domain_disk_add)
     int driver_len;
     char *typ = NULL;
     int typ_len;
-    char *new_xml = NULL;
-    int new_len;
     char *newXml = NULL;
     long xflags = 0;
     int retval = -1;
@@ -5428,16 +5424,9 @@ PHP_FUNCTION(libvirt_domain_disk_remove)
     char *xml;
     char *dev = NULL;
     int dev_len;
-    char *new_xml = NULL;
-    int new_len;
     char *newXml = NULL;
     long xflags = 0;
     int retval = -1;
-    int pos = -1;
-    int i, idx = 0;
-    php_libvirt_domain *res_domain=NULL;
-    php_libvirt_connection *conn = NULL;
-    virDomainPtr dom = NULL;
     char *xpath = NULL;
     char *tmp = NULL;
 
@@ -5512,12 +5501,9 @@ PHP_FUNCTION(libvirt_domain_nic_add)
     int net_len;
     char *model = NULL;
     int model_len;
-    char *new_xml = NULL;
-    int new_len;
     char *newXml = NULL;
     long xflags = 0;
     int retval = -1;
-    int pos = -1;
     char *xpath = NULL;
     char *tmp = NULL;
 
@@ -5601,17 +5587,12 @@ PHP_FUNCTION(libvirt_domain_nic_remove)
 {
     php_libvirt_domain *domain=NULL;
     zval *zdomain;
-    char *tmp1 = NULL;
-    char *tmp2 = NULL;
     char *xml;
     char *mac = NULL;
     int mac_len;
-    char *new_xml = NULL;
-    int new_len;
     char *newXml = NULL;
     long xflags = 0;
     int retval = -1;
-    int pos = -1;
     char *xpath = NULL;
     char *tmp = NULL;
 
@@ -8755,7 +8736,7 @@ PHP_FUNCTION(libvirt_network_set_active)
     zval *znetwork;
     long act = 0;
 
-    DPRINTF("%s: Setting network activity...\n", PHPFUNC TSRMLS_CC);
+    DPRINTF("%s: Setting network activity...\n", PHPFUNC);
 
     GET_NETWORK_FROM_ARGS("rl", &znetwork, &act);
 
