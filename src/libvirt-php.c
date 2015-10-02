@@ -5369,7 +5369,7 @@ PHP_FUNCTION(libvirt_domain_disk_add)
         goto error;
     }
 
-    if (asnprintf(&newXml,
+    if (asprintf(&newXml,
              "    <disk type='file' device='disk'>\n"
              "      <driver name='qemu' type='%s'/>\n"
              "      <source file='%s'/>\n"
@@ -5442,12 +5442,12 @@ PHP_FUNCTION(libvirt_domain_disk_remove)
     }
     tmp = get_string_from_xpath(xml, xpath, NULL, &retval);
     if (!tmp) {
-        asnprintf(&tmp, "Device <i>%s</i> is not connected to the guest", dev);
+        asprintf(&tmp, "Device <i>%s</i> is not connected to the guest", dev);
         set_error(tmp TSRMLS_CC);
         goto error;
     }
 
-    if (asnprintf(&newXml,
+    if (asprintf(&newXml,
              "    <disk type='file' device='disk'>\n"
              "      <target dev='%s'/>\n"
              "    </disk>", dev) < 0) {
