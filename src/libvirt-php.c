@@ -25,6 +25,7 @@
 #endif
 
 #include "libvirt-php.h"
+#include "stdio.h"
 
 #ifndef EXTWIN
 // From vncfunc.c
