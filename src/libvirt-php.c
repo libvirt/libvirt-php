@@ -48,11 +48,11 @@ do {} while(0)
 
 #ifndef EXTWIN
 /* Additional binaries */
-char *features[] = { "screenshot", "create-image", "screenshot-convert", NULL };
-char *features_binaries[] = { "/usr/bin/gvnccapture", "/usr/bin/qemu-img", "/bin/convert", NULL };
+const char *features[] = { "screenshot", "create-image", "screenshot-convert", NULL };
+const char *features_binaries[] = { "/usr/bin/gvnccapture", "/usr/bin/qemu-img", "/bin/convert", NULL };
 #else
-char *features[] = { NULL };
-char *features_binaries[] = { NULL };
+const char *features[] = { NULL };
+const char *features_binaries[] = { NULL };
 #endif
 
 /* ZEND thread safe per request globals definition */
@@ -542,7 +542,7 @@ int resource_change_counter(int type, virConnectPtr conn, void *memp, int inc TS
  * Arguments:               @name [string]: name of the feature to check against
  * Returns:                 Existing and executable binary name or NULL value
  */
-char *get_feature_binary(char *name)
+const char *get_feature_binary(const char *name)
 {
     int i, max;
 
@@ -552,7 +552,7 @@ char *get_feature_binary(char *name)
     for (i = 0; i < max; i++)
         if ((features[i] != NULL) && (strcmp(features[i], name) == 0)) {
             if (access(features_binaries[i], X_OK) == 0)
-                return strdup(features_binaries[i]);
+                return features_binaries[i];
         }
 
     return NULL;
@@ -626,9 +626,8 @@ PHP_MINFO_FUNCTION(libvirt)
     /* Iterate all the features supported */
     char features_supported[4096] = { 0 };
     for (i = 0; i < ARRAY_CARDINALITY(features); i++) {
-        char *tmp;
+        const char *tmp;
         if ((features[i] != NULL) && (tmp = get_feature_binary(features[i]))) {
-            free(tmp);
             strcat(features_supported, features[i]);
             strcat(features_supported, ", ");
         }
@@ -2309,14 +2308,13 @@ PHP_FUNCTION(libvirt_image_create)
 
     snprintf(fpath, sizeof(fpath), "%s/%s", path, image);
 
-    char *qemu_img_cmd = get_feature_binary("create-image");
+    const char *qemu_img_cmd = get_feature_binary("create-image");
     if (qemu_img_cmd == NULL) {
         set_error("Feature 'create-image' is not supported" TSRMLS_CC);
         RETURN_FALSE;
     }
 
     snprintf(cmd, sizeof(cmd), "%s create -f %s %s %dM > /dev/null", qemu_img_cmd, format, fpath, size);
-    free(qemu_img_cmd);
     DPRINTF("%s: Running '%s'...\n", PHPFUNC, cmd);
     system(cmd);
 
@@ -3089,7 +3087,7 @@ char *get_disk_xml(unsigned long long size, char *path, char *driver, char *bus,
             return NULL;
         }
 
-        char *qemu_img_cmd = get_feature_binary("create-image");
+        const char *qemu_img_cmd = get_feature_binary("create-image");
         if (qemu_img_cmd == NULL) {
             DPRINTF("%s: Binary for creating disk images doesn't exist\n", __FUNCTION__);
             return NULL;
@@ -3097,7 +3095,6 @@ char *get_disk_xml(unsigned long long size, char *path, char *driver, char *bus,
 
         // TODO: implement backing file handling: -o backing_file=RAW_IMG_FILE QCOW_IMG
         snprintf(cmd, sizeof(cmd), "%s create -f %s %s %ldM > /dev/null &2>/dev/null", qemu_img_cmd, driver, path, size);
-        free(qemu_img_cmd);
 
 #ifndef EXTWIN
         int cmdRet = system(cmd);
@@ -4020,6 +4017,7 @@ PHP_FUNCTION(libvirt_domain_get_screenshot_api)
     char file[] = "/tmp/libvirt-php-tmp-XXXXXX";
     virStreamPtr st = NULL;
     char *mime = NULL;
+    const char *bin = get_feature_binary("screenshot-convert");
 
 #ifdef EXTWIN
     set_error_if_unset("Cannot get domain screenshot on Windows systems" TSRMLS_CC);
@@ -4066,8 +4064,7 @@ PHP_FUNCTION(libvirt_domain_get_screenshot_api)
     virStreamFree(st);
 
     array_init(return_value);
-    if (get_feature_binary("screenshot-convert") != NULL) {
-        char *bin = get_feature_binary("screenshot-convert");
+    if (bin) {
         char tmp[4096] = { 0 };
         char fileNew[1024] = { 0 };
 
@@ -4111,15 +4108,22 @@ PHP_FUNCTION(libvirt_domain_get_screenshot)
     char *hostname = NULL;
     int hostname_len;
     long scancode = 10;
-    char *path;
+    const char *path;
+    char *pathDup = NULL;
     char name[1024] = { 0 };
     int use_builtin = 0;
 
     path = get_feature_binary("screenshot");
     DPRINTF("%s: get_feature_binary('screenshot') returned %s\n", PHPFUNC, path);
 
-    if ((path == NULL) || (access(path, X_OK) != 0))
+    if ((path == NULL) || (access(path, X_OK) != 0)) {
         use_builtin = 1;
+    } else {
+        if (!(pathDup = strdup(path))) {
+            set_error("Out of memory" TSRMLS_CC);
+            goto error;
+        }
+    }
 
     GET_DOMAIN_FROM_ARGS("rs|l",&zdomain, &hostname, &hostname_len, &scancode);
 
@@ -4166,7 +4170,7 @@ PHP_FUNCTION(libvirt_domain_get_screenshot)
             char tmpp[64] = { 0 };
 
             snprintf(tmpp, sizeof(tmpp), "%s:%d", hostname, port);
-            retval = execlp(path, basename(path), tmpp, file, NULL);
+            retval = execlp(path, basename(pathDup), tmpp, file, NULL);
             _exit( retval );
         }
         else {
@@ -4208,14 +4212,14 @@ PHP_FUNCTION(libvirt_domain_get_screenshot)
     efree(buf);
     free(tmp);
     free(xml);
-    free(path);
+    free(pathDup);
     return;
 
  error:
     efree(buf);
     free(tmp);
     free(xml);
-    free(path);
+    free(pathDup);
     RETURN_FALSE;
 #else
     set_error("Function is not supported on Windows systems" TSRMLS_CC);
@@ -8916,7 +8920,7 @@ PHP_FUNCTION(libvirt_has_feature)
 {
     char *name = NULL;
     int name_len = 0;
-    char *binary = NULL;
+    const char *binary = NULL;
     int ret = 0;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &name, &name_len) == FAILURE) {
@@ -8926,7 +8930,6 @@ PHP_FUNCTION(libvirt_has_feature)
 
     binary = get_feature_binary(name);
     ret = ((binary != NULL) || (has_builtin(name)));
-    free(binary);
 
     if (ret)
         RETURN_TRUE;
