@@ -24,7 +24,7 @@
 #define PHP_COMPILER_ID  "VC9"
 #endif
 
-#include "../src/libvirt-php.h"
+#include "libvirt-php.h"
 
 #ifndef EXTWIN
 // From vncfunc.c
