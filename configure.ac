@@ -32,7 +32,7 @@ if test "$prefix" = "/usr" && test "$sysconfdir" = '${prefix}/etc' ; then
     sysconfdir='/etc'
 fi
 
-LIBVIRT_REQUIRED=1.2.8
+LIBVIRT_REQUIRED=1.2.9
 PKG_CHECK_MODULES(LIBVIRT, libvirt >= $LIBVIRT_REQUIRED)
 PKG_CHECK_MODULES(QEMU, libvirt-qemu)
 AC_SUBST([QEMU_CFLAGS])
