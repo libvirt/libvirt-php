@@ -1238,6 +1238,8 @@ PHP_MINIT_FUNCTION(libvirt)
     REGISTER_LONG_CONSTANT("VIR_STORAGE_VOL_RESIZE_ALLOCATE",        1, CONST_CS | CONST_PERSISTENT);
     REGISTER_LONG_CONSTANT("VIR_STORAGE_VOL_RESIZE_DELTA",           2, CONST_CS | CONST_PERSISTENT);
     REGISTER_LONG_CONSTANT("VIR_STORAGE_VOL_RESIZE_SHRINK",          4, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_STORAGE_VOL_CREATE_PREALLOC_METADATA", VIR_STORAGE_VOL_CREATE_PREALLOC_METADATA, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_STORAGE_VOL_CREATE_REFLINK", VIR_STORAGE_VOL_CREATE_REFLINK, CONST_CS | CONST_PERSISTENT);
 
     /* Domain vCPU flags */
     REGISTER_LONG_CONSTANT("VIR_DOMAIN_VCPU_CONFIG",    VIR_DOMAIN_VCPU_CONFIG, CONST_CS | CONST_PERSISTENT);
@@ -7114,6 +7116,7 @@ PHP_FUNCTION(libvirt_storagevolume_get_xml_desc)
  * Description:     Function is used to create the new storage pool and return the handle to new storage pool
  * Arguments:       @res [resource]: libvirt storagepool resource
  *                  @xml [string]: XML string to create the storage volume in the storage pool
+ *                  @flags [int]: virStorageVolCreateXML flags
  * Returns:         libvirt storagevolume resource
  */
 PHP_FUNCTION(libvirt_storagevolume_create_xml)
@@ -7123,11 +7126,12 @@ PHP_FUNCTION(libvirt_storagevolume_create_xml)
     zval *zpool;
     virStorageVolPtr volume=NULL;
     char *xml;
+    long flags = 0;
     int xml_len;
 
-    GET_STORAGEPOOL_FROM_ARGS("rs",&zpool,&xml,&xml_len);
+    GET_STORAGEPOOL_FROM_ARGS("rs|l",&zpool,&xml,&xml_len, &flags);
 
-    volume=virStorageVolCreateXML(pool->pool,xml,0);
+    volume=virStorageVolCreateXML(pool->pool, xml, flags);
     DPRINTF("%s: virStorageVolCreateXML(%p, <xml>, 0) returned %p\n", PHPFUNC, pool->pool, volume);
     if (volume==NULL) RETURN_FALSE;
 
