@@ -6876,7 +6876,9 @@ PHP_FUNCTION(libvirt_storagepool_list_volumes)
 
     GET_STORAGEPOOL_FROM_ARGS("r",&zpool);
 
-    expectedcount=virStoragePoolNumOfVolumes (pool->pool);
+    if ((expectedcount=virStoragePoolNumOfVolumes (pool->pool)) < 0)
+        RETURN_FALSE;
+
     DPRINTF("%s: virStoragePoolNumOfVolumes(%p) returned %d\n", PHPFUNC, pool->pool, expectedcount);
     names=(char **)emalloc(expectedcount*sizeof(char *));
 
@@ -7741,7 +7743,8 @@ PHP_FUNCTION(libvirt_list_storagepools)
 
     GET_CONNECTION_FROM_ARGS("r",&zconn);
 
-    expectedcount=virConnectNumOfStoragePools(conn->conn);
+    if ((expectedcount=virConnectNumOfStoragePools(conn->conn)) < 0)
+        RETURN_FALSE;
 
     names=(char **)emalloc(expectedcount*sizeof(char *));
     count=virConnectListStoragePools(conn->conn,names,expectedcount);
@@ -7761,7 +7764,8 @@ PHP_FUNCTION(libvirt_list_storagepools)
     efree(names);
 
 
-    expectedcount = virConnectNumOfDefinedStoragePools (conn->conn);
+    if ((expectedcount = virConnectNumOfDefinedStoragePools (conn->conn)) < 0)
+            RETURN_FALSE;
     names = (char **)emalloc (expectedcount * sizeof(char *));
     count = virConnectListDefinedStoragePools (conn->conn, names, expectedcount);
     if ((count != expectedcount) || (count < 0))
@@ -7796,7 +7800,8 @@ PHP_FUNCTION(libvirt_list_active_storagepools)
 
     GET_CONNECTION_FROM_ARGS("r",&zconn);
 
-    expectedcount=virConnectNumOfStoragePools(conn->conn);
+    if ((expectedcount=virConnectNumOfStoragePools(conn->conn)) < 0)
+        RETURN_FALSE;
 
     names=(char **)emalloc(expectedcount*sizeof(char *));
     count=virConnectListStoragePools(conn->conn,names,expectedcount);
@@ -7833,7 +7838,9 @@ PHP_FUNCTION(libvirt_list_inactive_storagepools)
 
     GET_CONNECTION_FROM_ARGS("r",&zconn);
 
-    expectedcount = virConnectNumOfDefinedStoragePools (conn->conn);
+    if ((expectedcount = virConnectNumOfDefinedStoragePools (conn->conn)) < 0)
+        RETURN_FALSE;
+
     names= (char **)emalloc (expectedcount * sizeof(char *));
     count = virConnectListDefinedStoragePools (conn->conn, names, expectedcount);
     if ((count != expectedcount) || (count < 0))
@@ -7872,7 +7879,9 @@ PHP_FUNCTION(libvirt_list_domains)
 
     GET_CONNECTION_FROM_ARGS("r",&zconn);
 
-    expectedcount=virConnectNumOfDomains (conn->conn);
+    if ((expectedcount=virConnectNumOfDomains (conn->conn)) < 0)
+        RETURN_FALSE;
+
     DPRINTF("%s: Found %d domains\n", PHPFUNC, expectedcount);
 
     ids=(int *)emalloc(sizeof(int)*expectedcount);
@@ -7953,7 +7962,8 @@ PHP_FUNCTION(libvirt_list_domain_resources)
 
     GET_CONNECTION_FROM_ARGS("r",&zconn);
 
-    expectedcount=virConnectNumOfDomains (conn->conn);
+    if ((expectedcount=virConnectNumOfDomains (conn->conn)) < 0)
+        RETURN_FALSE;
 
     ids=(int *)emalloc(sizeof(int)*expectedcount);
     count=virConnectListDomains (conn->conn,ids,expectedcount);
@@ -7981,7 +7991,9 @@ PHP_FUNCTION(libvirt_list_domain_resources)
     }
     efree(ids);
 
-    expectedcount=virConnectNumOfDefinedDomains (conn->conn);
+    if ((expectedcount=virConnectNumOfDefinedDomains (conn->conn)) < 0)
+        RETURN_FALSE;
+
     names=(char **)emalloc(expectedcount*sizeof(char *));
     count=virConnectListDefinedDomains (conn->conn,names    ,expectedcount);
     if ((count != expectedcount) || (count<0))
@@ -8027,7 +8039,8 @@ PHP_FUNCTION(libvirt_list_active_domain_ids)
 
     GET_CONNECTION_FROM_ARGS("r",&zconn);
 
-    expectedcount=virConnectNumOfDomains (conn->conn);
+    if ((expectedcount=virConnectNumOfDomains (conn->conn)) < 0)
+        RETURN_FALSE;
 
     ids=(int *)emalloc(sizeof(int)*expectedcount);
     count=virConnectListDomains (conn->conn,ids,expectedcount);
@@ -8064,7 +8077,8 @@ PHP_FUNCTION(libvirt_list_active_domains)
 
     GET_CONNECTION_FROM_ARGS("r",&zconn);
 
-    expectedcount=virConnectNumOfDomains (conn->conn);
+    if ((expectedcount=virConnectNumOfDomains (conn->conn)) < 0)
+        RETURN_FALSE;
 
     ids=(int *)emalloc(sizeof(int)*expectedcount);
     count=virConnectListDomains (conn->conn,ids,expectedcount);
@@ -8115,7 +8129,8 @@ PHP_FUNCTION(libvirt_list_inactive_domains)
 
     GET_CONNECTION_FROM_ARGS("r",&zconn);
 
-    expectedcount=virConnectNumOfDefinedDomains (conn->conn);
+    if ((expectedcount=virConnectNumOfDefinedDomains (conn->conn)) < 0)
+        RETURN_FALSE;
 
     names=(char **)emalloc(expectedcount*sizeof(char *));
     count=virConnectListDefinedDomains (conn->conn,names    ,expectedcount);
@@ -8156,7 +8171,9 @@ PHP_FUNCTION(libvirt_list_networks)
 
     array_init(return_value);
     if (flags & VIR_NETWORKS_ACTIVE) {
-        expectedcount=virConnectNumOfNetworks(conn->conn);
+        if ((expectedcount=virConnectNumOfNetworks(conn->conn)) < 0)
+            RETURN_FALSE;
+
         names=(char **)emalloc(expectedcount*sizeof(char *));
         count=virConnectListNetworks(conn->conn,names,expectedcount);
         if ((count != expectedcount) || (count<0))
@@ -8176,7 +8193,8 @@ PHP_FUNCTION(libvirt_list_networks)
     }
 
     if (flags & VIR_NETWORKS_INACTIVE) {
-        expectedcount=virConnectNumOfDefinedNetworks(conn->conn);
+        if ((expectedcount=virConnectNumOfDefinedNetworks(conn->conn)) < 0)
+            RETURN_FALSE;
         names=(char **)emalloc(expectedcount*sizeof(char *));
         count=virConnectListDefinedNetworks(conn->conn,names,expectedcount);
         if ((count != expectedcount) || (count<0))
@@ -8219,7 +8237,8 @@ PHP_FUNCTION(libvirt_list_nodedevs)
 
     GET_CONNECTION_FROM_ARGS("r|s",&zconn,&cap,&cap_len);
 
-    expectedcount=virNodeNumOfDevices(conn->conn, cap, 0);
+    if ((expectedcount=virNodeNumOfDevices(conn->conn, cap, 0)) < 0)
+        RETURN_FALSE;
     names=(char **)emalloc(expectedcount*sizeof(char *));
     count=virNodeListDevices(conn->conn, cap, names, expectedcount, 0);
     if ((count != expectedcount) || (count<0))
@@ -8290,7 +8309,8 @@ PHP_FUNCTION(libvirt_nodedev_capabilities)
 
     GET_NODEDEV_FROM_ARGS("r",&znodedev);
 
-    expectedcount=virNodeDeviceNumOfCaps(nodedev->device);
+    if ((expectedcount=virNodeDeviceNumOfCaps(nodedev->device)) < 0)
+        RETURN_FALSE;
     names=(char **)emalloc(expectedcount*sizeof(char *));
     count=virNodeDeviceListCaps(nodedev->device, names, expectedcount);
     if ((count != expectedcount) || (count<0)) RETURN_FALSE;
