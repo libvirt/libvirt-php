@@ -403,6 +403,7 @@ PHP_FUNCTION(libvirt_domain_set_memory_flags);
 PHP_FUNCTION(libvirt_domain_memory_peek);
 PHP_FUNCTION(libvirt_domain_memory_stats);
 PHP_FUNCTION(libvirt_domain_update_device);
+PHP_FUNCTION(libvirt_domain_block_commit);
 PHP_FUNCTION(libvirt_domain_block_stats);
 PHP_FUNCTION(libvirt_domain_block_resize);
 PHP_FUNCTION(libvirt_domain_block_job_abort);
