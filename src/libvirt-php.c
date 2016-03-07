@@ -143,6 +143,7 @@ static zend_function_entry libvirt_functions[] = {
     PHP_FE(libvirt_domain_block_resize,NULL)
     PHP_FE(libvirt_domain_block_job_abort,NULL)
     PHP_FE(libvirt_domain_block_job_set_speed,NULL)
+    PHP_FE(libvirt_domain_block_job_info,NULL)
     PHP_FE(libvirt_domain_interface_stats,NULL)
     PHP_FE(libvirt_domain_get_connect, NULL)
     PHP_FE(libvirt_domain_migrate, NULL)
@@ -1370,6 +1371,8 @@ PHP_MINIT_FUNCTION(libvirt)
     REGISTER_LONG_CONSTANT("VIR_DOMAIN_BLOCK_JOB_ABORT_ASYNC",  VIR_DOMAIN_BLOCK_JOB_ABORT_ASYNC, CONST_CS | CONST_PERSISTENT);
     REGISTER_LONG_CONSTANT("VIR_DOMAIN_BLOCK_JOB_ABORT_PIVOT",  VIR_DOMAIN_BLOCK_JOB_ABORT_PIVOT, CONST_CS | CONST_PERSISTENT);
     REGISTER_LONG_CONSTANT("VIR_DOMAIN_BLOCK_JOB_SPEED_BANDWIDTH_BYTES",    VIR_DOMAIN_BLOCK_JOB_SPEED_BANDWIDTH_BYTES, CONST_CS | CONST_PERSISTENT);
+
+    REGISTER_LONG_CONSTANT("VIR_DOMAIN_BLOCK_JOB_INFO_BANDWIDTH_BYTES",    VIR_DOMAIN_BLOCK_JOB_INFO_BANDWIDTH_BYTES, CONST_CS | CONST_PERSISTENT);
 
 
     REGISTER_LONG_CONSTANT("VIR_DOMAIN_BLOCK_JOB_TYPE_UNKNOWN", VIR_DOMAIN_BLOCK_JOB_TYPE_UNKNOWN, CONST_CS | CONST_PERSISTENT);
@@ -6144,6 +6147,39 @@ PHP_FUNCTION(libvirt_domain_block_commit)
 
         RETURN_TRUE;
 }
+
+
+/*
+     * Function name:   libvirt_domain_block_job_info
+     * Since version:   0.5.2(-1)
+     * Description:     Function is used to request block job information for the given disk
+     * Arguments:       @dom [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
+     *                  @disk [string]: path to the block device, or device shorthand
+     *                  @flags [int]: bitwise-OR of VIR_DOMAIN_BLOCK_COMMIT_*
+     * Returns:         Array with status virDomainGetBlockJobInfo and blockjob information.
+*/
+PHP_FUNCTION(libvirt_domain_block_job_info)
+{
+    php_libvirt_domain *domain=NULL;
+    zval *zdomain;
+    int retval;
+    char *disk;
+    int disk_len;
+    long flags = 0;
+    virDomainBlockJobInfo info;
+
+    GET_DOMAIN_FROM_ARGS("rs|l",&zdomain, &disk, &disk_len, &flags);
+
+    retval=virDomainGetBlockJobInfo(domain->domain, disk, &info, flags);
+
+    array_init(return_value);
+    add_assoc_long(return_value, "status", (int)retval);
+    add_assoc_long(return_value, "type", (int)info.type);
+    add_assoc_long(return_value, "bandwidth", (unsigned long)info.bandwidth);
+    add_assoc_long(return_value, "cur", (unsigned long long)info.cur);
+    add_assoc_long(return_value, "end", (unsigned long long)info.end);
+}
+
 
 /*
  * Function name:   libvirt_domain_block_job_abort

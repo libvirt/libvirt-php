@@ -408,6 +408,7 @@ PHP_FUNCTION(libvirt_domain_block_stats);
 PHP_FUNCTION(libvirt_domain_block_resize);
 PHP_FUNCTION(libvirt_domain_block_job_abort);
 PHP_FUNCTION(libvirt_domain_block_job_set_speed);
+PHP_FUNCTION(libvirt_domain_block_job_info);
 PHP_FUNCTION(libvirt_domain_interface_stats);
 PHP_FUNCTION(libvirt_domain_get_connect);
 PHP_FUNCTION(libvirt_domain_migrate);
