@@ -1,14 +1,14 @@
 --TEST--
-libvirt_connect
+libvirt_connect_get_emulator
 --SKIPIF--
 <?php require_once('skipif.inc'); ?>
 --FILE--
 <?php
 	$conn = libvirt_connect('test:///default');
-    var_dump($conn);
+    var_dump(libvirt_connect_get_emulator($conn));
 	unset($conn);
 ?>
 Done
 --EXPECTF--
-resource(%d) of type (Libvirt connection)
+string(%d) "%s"
 Done

@@ -1,5 +1,5 @@
 --TEST--
-libvirt_version
+INI: libvirt.max_connections
 --SKIPIF--
 <?php require_once('skipif.inc'); ?>
 --INI--
