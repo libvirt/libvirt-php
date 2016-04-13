@@ -3107,7 +3107,11 @@ PHP_FUNCTION(libvirt_connect_get_all_domain_stats)
             }
         }
         name = virDomainGetName(retstats[i]->dom);
+#if PHP_MAJOR_VERSION >= 7
+        zend_hash_update(Z_ARRVAL_P(return_value), zend_string_init(name, strlen(name), 0), arr2);
+#else
         zend_hash_update(Z_ARRVAL_P(return_value), name, strlen(name)+1, &arr2, sizeof(arr2), NULL);
+#endif
     }
 
     virDomainStatsRecordListFree(retstats);
