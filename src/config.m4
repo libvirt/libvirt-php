@@ -44,8 +44,6 @@ if test "$PHP_LIBVIRT" != "no"; then
     PHP_EVAL_INCLINE($LIBXML_INCLUDE)
     PHP_EVAL_LIBLINE($LIBXML_LIBRARY, LIBVIRT_SHARED_LIBADD)
 
-    CFLAGS="$CFLAGS -DCOMPILE_DL_LIBVIRT=1"
-
     PHP_SUBST(LIBVIRT_SHARED_LIBADD)
     PHP_NEW_EXTENSION(libvirt, libvirt-php.c sockets.c vncfunc.c, $ext_shared)
   else

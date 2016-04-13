@@ -48,14 +48,18 @@
 #define COMPILE_DL_LIBVIRT
 #endif
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #ifdef COMPILE_DL_LIBVIRT
-#include "php.h"
 #undef PACKAGE_BUGREPORT
 #undef PACKAGE_NAME
 #undef PACKAGE_STRING
 #undef PACKAGE_TARNAME
 #undef PACKAGE_URL
 #undef PACKAGE_VERSION
+#include "php.h"
 
 #ifdef ZTS
 #include "TSRM.h"
@@ -69,13 +73,11 @@
 #endif
 #endif
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#else
-#define VERSION "0.5.0"
+#ifndef VERSION
+#define VERSION "0.5.1"
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 5
-#define VERSION_MICRO 0
+#define VERSION_MICRO 1
 #endif
 
 #include <libvirt/libvirt.h>
