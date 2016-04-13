@@ -78,6 +78,8 @@ typedef size_t strsize_t;
     add_index_string(_arg, _idx, _str)
 #define VIRT_ADD_NEXT_INDEX_STRING(_arg, _str)  \
     add_next_index_string(_arg, _str)
+#define VIRT_ADD_ASSOC_STRING(_arg, _key, _str) \
+    add_assoc_string(_arg, _key, _str)
 #define VIRT_ADD_ASSOC_STRING_EX(_arg, _key, _key_len, _value) \
     add_assoc_string_ex(_arg, _key, _key_len, _value)
 
@@ -103,6 +105,8 @@ typedef unsigned long zend_ulong;
     add_index_string(_arg, _idx, _str, 1)
 #define VIRT_ADD_NEXT_INDEX_STRING(_arg, _str)  \
     add_next_index_string(_arg, _str, 1)
+#define VIRT_ADD_ASSOC_STRING(_arg, _key, _str) \
+    add_assoc_string(_arg, _key, _str, 1)
 #define VIRT_ADD_ASSOC_STRING_EX(_arg, _key, _key_len, _value) \
     add_assoc_string_ex(_arg, _key, _key_len, _value, 1)
 
@@ -2077,7 +2081,7 @@ if ((snapshot==NULL) || (snapshot->snapshot==NULL)) RETURN_FALSE;\
 #define LONGLONG_ASSOC(out,key,in) \
     if (LIBVIRT_G(longlong_to_string_ini)) { \
         snprintf(tmpnumber,63,"%llu",in); \
-        VIRT_ADD_ASSOC_STRING_EX(out, key, strlen(key) + 1, tmpnumber); \
+        VIRT_ADD_ASSOC_STRING(out, key, tmpnumber); \
     } \
 else \
 { \
@@ -2303,7 +2307,7 @@ PHP_FUNCTION(libvirt_node_get_info)
     if (retval==-1) RETURN_FALSE;
 
     array_init(return_value);
-    VIRT_ADD_ASSOC_STRING_EX(return_value, "model", 6, info.model);
+    VIRT_ADD_ASSOC_STRING(return_value, "model", info.model);
     add_assoc_long(return_value, "memory", (long)info.memory);
     add_assoc_long(return_value, "cpus", (long)info.cpus);
     add_assoc_long(return_value, "nodes", (long)info.nodes);
@@ -2406,9 +2410,9 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats)
         add_assoc_long(return_value, "cpu", cpunr);
     else
         if (cpuNum == VIR_NODE_CPU_STATS_ALL_CPUS)
-            VIRT_ADD_ASSOC_STRING_EX(return_value, "cpu", 4, "all");
+            VIRT_ADD_ASSOC_STRING(return_value, "cpu", "all");
         else
-            VIRT_ADD_ASSOC_STRING_EX(return_value, "cpu", 4, "unknown");
+            VIRT_ADD_ASSOC_STRING(return_value, "cpu", "unknown");
 
     free(params);
     params = NULL;
@@ -2651,14 +2655,14 @@ PHP_FUNCTION(libvirt_connect_get_machine_types)
                             char tmp3[2048] = { 0 };
 
                             snprintf(key, sizeof(key), "%d", k);
-                            //VIRT_ADD_ASSOC_STRING_EX(arr2, key, strlen(key) + 1, ret3[k]);
+                            //VIRT_ADD_ASSOC_STRING(arr2, key, ret3[k]);
 
                             snprintf(tmp3, sizeof(tmp3), "//capabilities/guest/arch[@name=\"%s\"]/machine[text()=\"%s\"]/@maxCpus",
                                      ret[i], ret3[k]);
 
                             numTmp = get_string_from_xpath(caps, tmp3, NULL, NULL);
                             if (numTmp == NULL)
-                                VIRT_ADD_ASSOC_STRING_EX(arr2, key, strlen(key) + 1, ret3[k]);
+                                VIRT_ADD_ASSOC_STRING(arr2, key, ret3[k]);
                             else {
 #if PHP_MAJOR_VERSION >= 7
                                 zval *arr4, zarr4;
@@ -2669,8 +2673,8 @@ PHP_FUNCTION(libvirt_connect_get_machine_types)
 #endif
                                 array_init(arr4);
 
-                                VIRT_ADD_ASSOC_STRING_EX(arr4, "name", 5, ret3[k]);
-                                VIRT_ADD_ASSOC_STRING_EX(arr4, "maxCpus", 9, numTmp);
+                                VIRT_ADD_ASSOC_STRING(arr4, "name", ret3[k]);
+                                VIRT_ADD_ASSOC_STRING(arr4, "maxCpus", numTmp);
 
                                 add_assoc_zval_ex(arr2, key, strlen(key) + 1, arr4);
                                 free(numTmp);
@@ -2698,7 +2702,7 @@ PHP_FUNCTION(libvirt_connect_get_machine_types)
 
                             numTmp = get_string_from_xpath(caps, tmp3, NULL, NULL);
                             if (numTmp == NULL)
-                                VIRT_ADD_ASSOC_STRING_EX(arr3, key, strlen(key) + 1, ret3[k]);
+                                VIRT_ADD_ASSOC_STRING(arr3, key, ret3[k]);
                             else {
 #if PHP_MAJOR_VERSION >= 7
                                 zval *arr4, zarr4;
@@ -2709,8 +2713,8 @@ PHP_FUNCTION(libvirt_connect_get_machine_types)
 #endif
                                 array_init(arr4);
 
-                                VIRT_ADD_ASSOC_STRING_EX(arr4, "name", 5, ret3[k]);
-                                VIRT_ADD_ASSOC_STRING_EX(arr4, "maxCpus", 9, numTmp);
+                                VIRT_ADD_ASSOC_STRING(arr4, "name", ret3[k]);
+                                VIRT_ADD_ASSOC_STRING(arr4, "maxCpus", numTmp);
 
                                 add_assoc_zval_ex(arr3, key, strlen(key) + 1, arr4);
                                 free(numTmp);
@@ -2753,21 +2757,21 @@ PHP_FUNCTION(libvirt_connect_get_information)
     tmp = virConnectGetURI(conn->conn);
     DPRINTF("%s: Got connection URI of %s...\n", PHPFUNC, tmp);
     array_init(return_value);
-    VIRT_ADD_ASSOC_STRING_EX(return_value, "uri", 4, tmp ? tmp : "unknown");
+    VIRT_ADD_ASSOC_STRING(return_value, "uri", tmp ? tmp : "unknown");
     free(tmp);
     tmp = virConnectGetHostname(conn->conn);
-    VIRT_ADD_ASSOC_STRING_EX(return_value, "hostname", 9, tmp ? tmp : "unknown");
+    VIRT_ADD_ASSOC_STRING(return_value, "hostname", tmp ? tmp : "unknown");
     free(tmp);
 
     if ((virConnectGetVersion(conn->conn, &hvVer) == 0) && (type = virConnectGetType(conn->conn)))
     {
-        VIRT_ADD_ASSOC_STRING_EX(return_value, "hypervisor", 11, (char *)type);
+        VIRT_ADD_ASSOC_STRING(return_value, "hypervisor", (char *)type);
         add_assoc_long(return_value, "hypervisor_major",(long)((hvVer/1000000) % 1000));
         add_assoc_long(return_value, "hypervisor_minor",(long)((hvVer/1000) % 1000));
         add_assoc_long(return_value, "hypervisor_release",(long)(hvVer %1000));
         snprintf(hvStr, sizeof(hvStr), "%s %d.%d.%d", type,
                  (long)((hvVer/1000000) % 1000), (long)((hvVer/1000) % 1000), (long)(hvVer %1000));
-        VIRT_ADD_ASSOC_STRING_EX(return_value, "hypervisor_string", 18, hvStr);
+        VIRT_ADD_ASSOC_STRING(return_value, "hypervisor_string", hvStr);
     }
 
     if (strcmp(type, "QEMU") == 0) {
@@ -2780,21 +2784,21 @@ PHP_FUNCTION(libvirt_connect_get_information)
     add_assoc_long(return_value, "hypervisor_maxvcpus", maxvcpus);
     iTmp = virConnectIsEncrypted(conn->conn);
     if (iTmp == 1)
-        VIRT_ADD_ASSOC_STRING_EX(return_value, "encrypted", 10, "Yes");
+        VIRT_ADD_ASSOC_STRING(return_value, "encrypted", "Yes");
     else
         if (iTmp == 0)
-            VIRT_ADD_ASSOC_STRING_EX(return_value, "encrypted", 10, "No");
+            VIRT_ADD_ASSOC_STRING(return_value, "encrypted", "No");
         else
-            VIRT_ADD_ASSOC_STRING_EX(return_value, "encrypted", 10, "unknown");
+            VIRT_ADD_ASSOC_STRING(return_value, "encrypted", "unknown");
 
     iTmp = virConnectIsSecure(conn->conn);
     if (iTmp == 1)
-        VIRT_ADD_ASSOC_STRING_EX(return_value, "secure", 7, "Yes");
+        VIRT_ADD_ASSOC_STRING(return_value, "secure", "Yes");
     else
         if (iTmp == 0)
-            VIRT_ADD_ASSOC_STRING_EX(return_value, "secure", 7, "No");
+            VIRT_ADD_ASSOC_STRING(return_value, "secure", "No");
         else
-            VIRT_ADD_ASSOC_STRING_EX(return_value, "secure", 7, "unknown");
+            VIRT_ADD_ASSOC_STRING(return_value, "secure", "unknown");
 
     add_assoc_long(return_value, "num_inactive_domains", virConnectNumOfDefinedDomains(conn->conn));
     add_assoc_long(return_value, "num_inactive_interfaces", virConnectNumOfDefinedInterfaces(conn->conn));
@@ -3009,14 +3013,14 @@ PHP_FUNCTION(libvirt_connect_get_hypervisor)
     DPRINTF("%s: virConnectGetType returned %s\n", PHPFUNC, type);
 
     array_init(return_value);
-    VIRT_ADD_ASSOC_STRING_EX(return_value, "hypervisor", 11, (char *)type);
+    VIRT_ADD_ASSOC_STRING(return_value, "hypervisor", (char *)type);
     add_assoc_long(return_value, "major",(long)((hvVer/1000000) % 1000));
     add_assoc_long(return_value, "minor",(long)((hvVer/1000) % 1000));
     add_assoc_long(return_value, "release",(long)(hvVer %1000));
 
     snprintf(hvStr, sizeof(hvStr), "%s %d.%d.%d", type,
              (long)((hvVer/1000000) % 1000), (long)((hvVer/1000) % 1000), (long)(hvVer %1000));
-    VIRT_ADD_ASSOC_STRING_EX(return_value, "hypervisor_string", 18, hvStr);
+    VIRT_ADD_ASSOC_STRING(return_value, "hypervisor_string", hvStr);
 }
 
 /*
@@ -3116,7 +3120,7 @@ PHP_FUNCTION(libvirt_connect_get_all_domain_stats)
                 add_assoc_bool(arr2, params.field, params.value.b);
                 break;
             case VIR_TYPED_PARAM_STRING:
-                VIRT_ADD_ASSOC_STRING_EX(arr2, params.field, strlen(params.field)+1, params.value.s);
+                VIRT_ADD_ASSOC_STRING(arr2, params.field, params.value.s);
                 break;
             }
         }
@@ -3241,7 +3245,7 @@ char *get_string_from_xpath(char *xml, char *xpath, zval **val, int *retVal)
                 value = (char *)xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode, 1);
 
                 snprintf(key, sizeof(key), "%d", i);
-                VIRT_ADD_ASSOC_STRING_EX(*val, key, strlen(key)+1, value);
+                VIRT_ADD_ASSOC_STRING(*val, key, value);
                 ret++;
             }
         }
@@ -4722,12 +4726,12 @@ PHP_FUNCTION(libvirt_domain_get_screenshot_api)
         if (WEXITSTATUS(exitStatus) != 0)
             RETURN_FALSE;
 
-        VIRT_ADD_ASSOC_STRING_EX(return_value, "file", 5, fileNew);
-        VIRT_ADD_ASSOC_STRING_EX(return_value, "mime", 5, "image/png");
+        VIRT_ADD_ASSOC_STRING(return_value, "file", fileNew);
+        VIRT_ADD_ASSOC_STRING(return_value, "mime", "image/png");
     }
     else {
-        VIRT_ADD_ASSOC_STRING_EX(return_value, "file", 5, file);
-        VIRT_ADD_ASSOC_STRING_EX(return_value, "mime", 5, mime);
+        VIRT_ADD_ASSOC_STRING(return_value, "file", file);
+        VIRT_ADD_ASSOC_STRING(return_value, "mime", mime);
     }
 }
 
@@ -5280,7 +5284,7 @@ PHP_FUNCTION(libvirt_connect_get_nic_models)
             tTokenizer t = tokenize(tmp, ",");
             for (i = 0; i < t.numTokens; i++) {
                 snprintf(tmp2, sizeof(tmp2), "%d", i);
-                VIRT_ADD_ASSOC_STRING_EX(return_value, tmp2, strlen(tmp2) + 1, t.tokens[i]);
+                VIRT_ADD_ASSOC_STRING(return_value, tmp2, t.tokens[i]);
             }
             free_tokens(t);
         }
@@ -5378,14 +5382,14 @@ PHP_FUNCTION(libvirt_connect_get_soundhw_models)
                 }
 
                 array_init(arr);
-                VIRT_ADD_ASSOC_STRING_EX(arr, "name", 5, t.tokens[0]);
-                VIRT_ADD_ASSOC_STRING_EX(arr, "description", 12, desc);
+                VIRT_ADD_ASSOC_STRING(arr, "name", t.tokens[0]);
+                VIRT_ADD_ASSOC_STRING(arr, "description", desc);
                 add_next_index_zval(return_value, arr);
             }
             else {
                 char tmp2[16] = { 0 };
                 snprintf(tmp2, sizeof(tmp2), "%d", n++);
-                VIRT_ADD_ASSOC_STRING_EX(return_value, tmp2, strlen(tmp2) + 1, t.tokens[0]);
+                VIRT_ADD_ASSOC_STRING(return_value, tmp2, t.tokens[0]);
             }
 
             free_tokens(t);
@@ -6970,8 +6974,8 @@ PHP_FUNCTION(libvirt_domain_get_network_info)
     }
 
     array_init(return_value);
-    VIRT_ADD_ASSOC_STRING_EX(return_value, "mac", 4, mac);
-    VIRT_ADD_ASSOC_STRING_EX(return_value, "network", 8, tmp);
+    VIRT_ADD_ASSOC_STRING(return_value, "mac", mac);
+    VIRT_ADD_ASSOC_STRING(return_value, "network", tmp);
 
     free(tmp);
     free(xpath);
@@ -6982,9 +6986,9 @@ PHP_FUNCTION(libvirt_domain_get_network_info)
     }
     tmp = get_string_from_xpath(xml, xpath, NULL, &retval);
     if ((tmp != NULL) && (retval > 0))
-        VIRT_ADD_ASSOC_STRING_EX(return_value, "nic_type", 9, tmp);
+        VIRT_ADD_ASSOC_STRING(return_value, "nic_type", tmp);
     else
-        VIRT_ADD_ASSOC_STRING_EX(return_value, "nic_type", 9, "default");
+        VIRT_ADD_ASSOC_STRING(return_value, "nic_type", "default");
 
     free(xml);
     free(xpath);
@@ -7069,12 +7073,12 @@ PHP_FUNCTION(libvirt_domain_get_block_info)
 
     array_init(return_value);
     LONGLONG_INIT;
-    VIRT_ADD_ASSOC_STRING_EX(return_value, "device", 7, dev);
+    VIRT_ADD_ASSOC_STRING(return_value, "device", dev);
 
     if (isFile)
-        VIRT_ADD_ASSOC_STRING_EX(return_value, "file", 5, tmp);
+        VIRT_ADD_ASSOC_STRING(return_value, "file", tmp);
     else
-        VIRT_ADD_ASSOC_STRING_EX(return_value, "partition", 10, tmp);
+        VIRT_ADD_ASSOC_STRING(return_value, "partition", tmp);
 
     free(xpath);
     if (asprintf(&xpath, "//domain/devices/disk/target[@dev='%s']/../driver/@type", dev) < 0) {
@@ -7084,7 +7088,7 @@ PHP_FUNCTION(libvirt_domain_get_block_info)
     free(tmp);
     tmp = get_string_from_xpath(xml, xpath, NULL, &retval);
     if (tmp != NULL)
-        VIRT_ADD_ASSOC_STRING_EX(return_value, "type", 5, tmp);
+        VIRT_ADD_ASSOC_STRING(return_value, "type", tmp);
 
     LONGLONG_ASSOC(return_value, "capacity", info.capacity);
     LONGLONG_ASSOC(return_value, "allocation", info.allocation);
@@ -7141,7 +7145,7 @@ PHP_FUNCTION(libvirt_domain_xml_xpath)
     if (rc == 0)
         RETURN_FALSE;
 
-    VIRT_ADD_ASSOC_STRING_EX(return_value, "xpath", 6, (char *)zpath);
+    VIRT_ADD_ASSOC_STRING(return_value, "xpath", (char *)zpath);
     if (rc < 0)
         add_assoc_long(return_value, "error_code", (long)rc);
 }
@@ -9256,18 +9260,18 @@ PHP_FUNCTION(libvirt_nodedev_get_information)
         goto error;
     }
 
-    VIRT_ADD_ASSOC_STRING_EX(return_value, "name", 5, tmp);
+    VIRT_ADD_ASSOC_STRING(return_value, "name", tmp);
 
     /* Get parent name */
     free(tmp);
     tmp = get_string_from_xpath(xml, "//device/parent", NULL, &retval);
     if ((tmp != NULL) && (retval > 0))
-        VIRT_ADD_ASSOC_STRING_EX(return_value, "parent", 7, tmp);
+        VIRT_ADD_ASSOC_STRING(return_value, "parent", tmp);
 
     /* Get capability */
     cap = get_string_from_xpath(xml, "//device/capability/@type", NULL, &retval);
     if ((cap != NULL) && (retval > 0))
-        VIRT_ADD_ASSOC_STRING_EX(return_value, "capability", 11, cap);
+        VIRT_ADD_ASSOC_STRING(return_value, "capability", cap);
 
     /* System capability is having hardware and firmware sub-blocks */
     if (strcmp(cap, "system") == 0) {
@@ -9275,92 +9279,92 @@ PHP_FUNCTION(libvirt_nodedev_get_information)
         free(tmp);
         tmp = get_string_from_xpath(xml, "//device/capability/hardware/vendor", NULL, &retval);
         if ((tmp != NULL) && (retval > 0))
-            VIRT_ADD_ASSOC_STRING_EX(return_value, "hardware_vendor", 16, tmp);
+            VIRT_ADD_ASSOC_STRING(return_value, "hardware_vendor", tmp);
 
         /* Get hardware version */
         free(tmp);
         tmp = get_string_from_xpath(xml, "//device/capability/hardware/version", NULL, &retval);
         if ((tmp != NULL) && (retval > 0))
-            VIRT_ADD_ASSOC_STRING_EX(return_value, "hardware_version", 17, tmp);
+            VIRT_ADD_ASSOC_STRING(return_value, "hardware_version", tmp);
 
         /* Get hardware serial */
         free(tmp);
         tmp = get_string_from_xpath(xml, "//device/capability/hardware/serial", NULL, &retval);
         if ((tmp != NULL) && (retval > 0))
-            VIRT_ADD_ASSOC_STRING_EX(return_value, "hardware_serial", 16, tmp);
+            VIRT_ADD_ASSOC_STRING(return_value, "hardware_serial", tmp);
 
         /* Get hardware UUID */
         free(tmp);
         tmp = get_string_from_xpath(xml, "//device/capability/hardware/uuid", NULL, &retval);
         if (tmp != NULL)
-            VIRT_ADD_ASSOC_STRING_EX(return_value, "hardware_uuid", 15, tmp);
+            VIRT_ADD_ASSOC_STRING(return_value, "hardware_uuid", tmp);
 
         /* Get firmware vendor */
         free(tmp);
         tmp = get_string_from_xpath(xml, "//device/capability/firmware/vendor", NULL, &retval);
         if ((tmp != NULL) && (retval > 0))
-            VIRT_ADD_ASSOC_STRING_EX(return_value, "firmware_vendor", 16, tmp);
+            VIRT_ADD_ASSOC_STRING(return_value, "firmware_vendor", tmp);
 
         /* Get firmware version */
         free(tmp);
         tmp = get_string_from_xpath(xml, "//device/capability/firmware/version", NULL, &retval);
         if ((tmp != NULL) && (retval > 0))
-            VIRT_ADD_ASSOC_STRING_EX(return_value, "firmware_version", 17, tmp);
+            VIRT_ADD_ASSOC_STRING(return_value, "firmware_version", tmp);
 
         /* Get firmware release date */
         free(tmp);
         tmp = get_string_from_xpath(xml, "//device/capability/firmware/release_date", NULL, &retval);
         if ((tmp != NULL) && (retval > 0))
-            VIRT_ADD_ASSOC_STRING_EX(return_value, "firmware_release_date", 22, tmp);
+            VIRT_ADD_ASSOC_STRING(return_value, "firmware_release_date", tmp);
     }
 
     /* Get product_id */
     free(tmp);
     tmp = get_string_from_xpath(xml, "//device/capability/product/@id", NULL, &retval);
     if ((tmp != NULL) && (retval > 0))
-        VIRT_ADD_ASSOC_STRING_EX(return_value, "product_id", 11, tmp);
+        VIRT_ADD_ASSOC_STRING(return_value, "product_id", tmp);
 
     /* Get product_name */
     free(tmp);
     tmp = get_string_from_xpath(xml, "//device/capability/product", NULL, &retval);
     if ((tmp != NULL) && (retval > 0))
-        VIRT_ADD_ASSOC_STRING_EX(return_value, "product_name", 13, tmp);
+        VIRT_ADD_ASSOC_STRING(return_value, "product_name", tmp);
 
     /* Get vendor_id */
     free(tmp);
     tmp = get_string_from_xpath(xml, "//device/capability/vendor/@id", NULL, &retval);
     if ((tmp != NULL) && (retval > 0))
-        VIRT_ADD_ASSOC_STRING_EX(return_value, "vendor_id", 10, tmp);
+        VIRT_ADD_ASSOC_STRING(return_value, "vendor_id", tmp);
 
     /* Get vendor_name */
     free(tmp);
     tmp = get_string_from_xpath(xml, "//device/capability/vendor", NULL, &retval);
     if ((tmp != NULL) && (retval > 0))
-        VIRT_ADD_ASSOC_STRING_EX(return_value, "vendor_name", 12, tmp);
+        VIRT_ADD_ASSOC_STRING(return_value, "vendor_name", tmp);
 
     /* Get driver name */
     free(tmp);
     tmp = get_string_from_xpath(xml, "//device/driver/name", NULL, &retval);
     if ((tmp != NULL) && (retval > 0))
-        VIRT_ADD_ASSOC_STRING_EX(return_value, "driver_name", 12, tmp);
+        VIRT_ADD_ASSOC_STRING(return_value, "driver_name", tmp);
 
     /* Get driver name */
     free(tmp);
     tmp = get_string_from_xpath(xml, "//device/capability/interface", NULL, &retval);
     if ((tmp != NULL) && (retval > 0))
-        VIRT_ADD_ASSOC_STRING_EX(return_value, "interface_name", 15, tmp);
+        VIRT_ADD_ASSOC_STRING(return_value, "interface_name", tmp);
 
     /* Get driver name */
     free(tmp);
     tmp = get_string_from_xpath(xml, "//device/capability/address", NULL, &retval);
     if ((tmp != NULL) && (retval > 0))
-        VIRT_ADD_ASSOC_STRING_EX(return_value, "address", 8, tmp);
+        VIRT_ADD_ASSOC_STRING(return_value, "address", tmp);
 
     /* Get driver name */
     free(tmp);
     tmp = get_string_from_xpath(xml, "//device/capability/capability/@type", NULL, &retval);
     if ((tmp != NULL) && (retval > 0))
-        VIRT_ADD_ASSOC_STRING_EX(return_value, "capabilities", 11, tmp);
+        VIRT_ADD_ASSOC_STRING(return_value, "capabilities", tmp);
 
     free(cap);
     free(tmp);
@@ -9565,42 +9569,42 @@ PHP_FUNCTION(libvirt_network_get_information)
         RETURN_FALSE;
     }
 
-    VIRT_ADD_ASSOC_STRING_EX(return_value, "name", 5, name);
+    VIRT_ADD_ASSOC_STRING(return_value, "name", name);
 
     /* Get gateway IP address */
     ipaddr = get_string_from_xpath(xml, "//network/ip/@address", NULL, &retval);
     if (ipaddr && retval > 0)
-        VIRT_ADD_ASSOC_STRING_EX(return_value, "ip", 3, ipaddr);
+        VIRT_ADD_ASSOC_STRING(return_value, "ip", ipaddr);
 
     /* Get netmask */
     netmask = get_string_from_xpath(xml, "//network/ip/@netmask", NULL, &retval);
     if (netmask && retval > 0) {
         int subnet_bits = get_subnet_bits(netmask);
-        VIRT_ADD_ASSOC_STRING_EX(return_value, "netmask", 8, netmask);
+        VIRT_ADD_ASSOC_STRING(return_value, "netmask", netmask);
         add_assoc_long(return_value, "netmask_bits", (long) subnet_bits);
 
         /* Format CIDR address representation */
         ipaddr[strlen(ipaddr) - 1] = ipaddr[strlen(ipaddr) - 1] - 1;
         snprintf(fixedtemp, sizeof(fixedtemp), "%s/%d", ipaddr, subnet_bits);
-        VIRT_ADD_ASSOC_STRING_EX(return_value, "ip_range", 9, fixedtemp);
+        VIRT_ADD_ASSOC_STRING(return_value, "ip_range", fixedtemp);
     }
 
     /* Get forwarding settings */
     mode = get_string_from_xpath(xml, "//network/forward/@mode", NULL, &retval);
     if (mode && retval > 0)
-        VIRT_ADD_ASSOC_STRING_EX(return_value, "forwarding", 11, mode);
+        VIRT_ADD_ASSOC_STRING(return_value, "forwarding", mode);
 
     /* Get forwarding settings */
     dev = get_string_from_xpath(xml, "//network/forward/@dev", NULL, &retval);
     if (dev && retval > 0)
-        VIRT_ADD_ASSOC_STRING_EX(return_value, "forward_dev", 12, dev);
+        VIRT_ADD_ASSOC_STRING(return_value, "forward_dev", dev);
 
     /* Get DHCP values */
     dhcp_start = get_string_from_xpath(xml, "//network/ip/dhcp/range/@start", NULL, &retval);
     dhcp_end = get_string_from_xpath(xml, "//network/ip/dhcp/range/@end", NULL, &retval);
     if (dhcp_start && dhcp_end && retval > 0) {
-        VIRT_ADD_ASSOC_STRING_EX(return_value, "dhcp_start", 11, dhcp_start);
-        VIRT_ADD_ASSOC_STRING_EX(return_value, "dhcp_end", 9, dhcp_end);
+        VIRT_ADD_ASSOC_STRING(return_value, "dhcp_start", dhcp_start);
+        VIRT_ADD_ASSOC_STRING(return_value, "dhcp_end", dhcp_end);
     }
 
     free(dhcp_end);
@@ -9734,7 +9738,7 @@ PHP_FUNCTION(libvirt_version)
     add_assoc_long(return_value, "libvirt.minor",(long)((libVer/1000) % 1000));
     add_assoc_long(return_value, "libvirt.major",(long)((libVer/1000000) % 1000));
 
-    VIRT_ADD_ASSOC_STRING_EX(return_value, "connector.version", 18, PHP_LIBVIRT_WORLD_VERSION);
+    VIRT_ADD_ASSOC_STRING(return_value, "connector.version", PHP_LIBVIRT_WORLD_VERSION);
     add_assoc_long(return_value, "connector.major", VERSION_MAJOR);
     add_assoc_long(return_value, "connector.minor", VERSION_MINOR);
     add_assoc_long(return_value, "connector.release", VERSION_MICRO);
