@@ -5429,12 +5429,13 @@ void parse_array(zval *arr, tVMDisk *disk, tVMNetwork *network)
                     else if ((Z_TYPE_P(data) == IS_STRING) && strcmp(ZSTR_VAL(key), "dev") == 0)
                         disk->dev = strdup( Z_STRVAL_P(data) );
                     else if (strcmp(ZSTR_VAL(key), "size") == 0) {
-                        if (Z_TYPE_P(data) == IS_LONG)
+                        if (Z_TYPE_P(data) == IS_LONG) {
                             disk->size = Z_LVAL_P(data);
-                        else
+                        } else {
                             disk->size = size_def_to_mbytes(Z_STRVAL_P(data));
+                        }
                     }
-                    else if ((Z_TYPE_P(data) == IS_LONG) && strcmp(ZSTR_VAL(key), "dev") == 0)
+                    else if ((Z_TYPE_P(data) == IS_LONG) && strcmp(ZSTR_VAL(key), "flags") == 0)
                         disk->flags = Z_LVAL_P(data);
                 } else {
                     if (network != NULL) {
