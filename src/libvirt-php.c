@@ -2352,7 +2352,11 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats)
 
     array_init(return_value);
     for (i = 0; i < 2; i++) {
+#if PHP_MAJOR_VERSION >= 7
+        zval *arr, zarr;
+#else
         zval *arr;
+#endif
         if (i > 0)
 #ifdef EXTWIN
             Sleep(1000);
@@ -2365,7 +2369,11 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats)
             RETURN_FALSE;
         }
 
+#if PHP_MAJOR_VERSION >= 7
+        arr = &zarr;
+#else
         ALLOC_INIT_ZVAL(arr);
+#endif
         array_init(arr);
 
         for (j = 0; j < nparams; j++) {
@@ -2411,7 +2419,11 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats_for_each_cpu)
     int done = 0;
     int i, j, numCpus;
     time_t startTime = 0;
+#if PHP_MAJOR_VERSION >= 7
+    zval *time_array, ztime_array;
+#else
     zval *time_array;
+#endif
 
     GET_CONNECTION_FROM_ARGS("r|l", &zconn, &avg);
 
@@ -2441,19 +2453,32 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats_for_each_cpu)
     iter = 0;
     done = 0;
     while ( !done ) {
+#if PHP_MAJOR_VERSION >= 7
+        zval *arr, zarr;
+        arr = &zarr;
+#else
         zval *arr;
-
         ALLOC_INIT_ZVAL(arr);
+#endif
+
         array_init(arr);
         for (i = 0; i < numCpus; i++) {
+#if PHP_MAJOR_VERSION >= 7
+            zval *arr2, zarr2;
+#else
             zval *arr2;
+#endif
 
             if (virNodeGetCPUStats(conn->conn, i, params, &nparams, 0) != 0) {
                 set_error("Unable to get node cpu stats" TSRMLS_CC);
                 RETURN_FALSE;
             }
 
+#if PHP_MAJOR_VERSION >= 7
+            arr2 = &zarr2;
+#else
             ALLOC_INIT_ZVAL(arr2);
+#endif
             array_init(arr2);
 
             for (j = 0; j < nparams; j++)
@@ -2478,7 +2503,11 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats_for_each_cpu)
         iter++;
     }
 
+#if PHP_MAJOR_VERSION >= 7
+    time_array = &ztime_array;
+#else
     ALLOC_INIT_ZVAL(time_array);
+#endif
     array_init(time_array);
 
     add_assoc_long(time_array, "start", startTime);
@@ -2574,8 +2603,13 @@ PHP_FUNCTION(libvirt_connect_get_machine_types)
             snprintf(tmp, sizeof(tmp), "//capabilities/guest/arch[@name=\"%s\"]/domain/@type", ret[i]);
             char **ret2 = get_array_from_xpath(caps, tmp, &num2);
             if (ret2 != NULL) {
+#if PHP_MAJOR_VERSION >= 7
+                zval *arr2, zarr2;
+                arr2 = &zarr2;
+#else
                 zval *arr2;
                 ALLOC_INIT_ZVAL(arr2);
+#endif
                 array_init(arr2);
 
                 for (j = 0; j < num2; j++) {
@@ -2583,8 +2617,13 @@ PHP_FUNCTION(libvirt_connect_get_machine_types)
                     char tmp2[1024] = { 0 };
 
                     /* Common */
+#if PHP_MAJOR_VERSION >= 7
+                    zval *arr3, zarr3;
+                    arr3 = &zarr3;
+#else
                     zval *arr3;
                     ALLOC_INIT_ZVAL(arr3);
+#endif
                     array_init(arr3);
 
                     snprintf(tmp2, sizeof(tmp2), "//capabilities/guest/arch[@name=\"%s\"]/machine",
@@ -2607,8 +2646,13 @@ PHP_FUNCTION(libvirt_connect_get_machine_types)
                             if (numTmp == NULL)
                                 VIRT_ADD_ASSOC_STRING_EX(arr2, key, strlen(key) + 1, ret3[k]);
                             else {
+#if PHP_MAJOR_VERSION >= 7
+                                zval *arr4, zarr4;
+                                arr4 = &zarr4;
+#else
                                 zval *arr4;
                                 ALLOC_INIT_ZVAL(arr4);
+#endif
                                 array_init(arr4);
 
                                 VIRT_ADD_ASSOC_STRING_EX(arr4, "name", 5, ret3[k]);
@@ -2642,8 +2686,13 @@ PHP_FUNCTION(libvirt_connect_get_machine_types)
                             if (numTmp == NULL)
                                 VIRT_ADD_ASSOC_STRING_EX(arr3, key, strlen(key) + 1, ret3[k]);
                             else {
+#if PHP_MAJOR_VERSION >= 7
+                                zval *arr4, zarr4;
+                                arr4 = &zarr4;
+#else
                                 zval *arr4;
                                 ALLOC_INIT_ZVAL(arr4);
+#endif
                                 array_init(arr4);
 
                                 VIRT_ADD_ASSOC_STRING_EX(arr4, "name", 5, ret3[k]);
@@ -3023,8 +3072,13 @@ PHP_FUNCTION(libvirt_connect_get_all_domain_stats)
         RETURN_FALSE;
 
     for (i=0; i < retval; i++) {
+#if PHP_MAJOR_VERSION >= 7
+        zval *arr2, zarr2;
+        arr2 = &zarr2;
+#else
         zval *arr2;
         ALLOC_INIT_ZVAL(arr2);
+#endif
         array_init(arr2);
         for (j = 0; j < retstats[i]->nparams; j++) {
             params = retstats[i]->params[j];
@@ -5293,6 +5347,13 @@ PHP_FUNCTION(libvirt_connect_get_soundhw_models)
                 continue;
 
             if ((i > 0) && (flags & CONNECT_FLAG_SOUNDHW_GET_NAMES)) {
+#if PHP_MAJOR_VERSION >= 7
+                zval *arr, zarr;
+                arr = &zarr;
+#else
+                zval *arr;
+                ALLOC_INIT_ZVAL(arr);
+#endif
                 memset(desc, 0, sizeof(desc));
                 for (i = 1; i < t.numTokens; i++) {
                     strcat(desc, t.tokens[i]);
@@ -5300,8 +5361,6 @@ PHP_FUNCTION(libvirt_connect_get_soundhw_models)
                         strcat(desc, " ");
                 }
 
-                zval *arr;
-                ALLOC_INIT_ZVAL(arr);
                 array_init(arr);
                 VIRT_ADD_ASSOC_STRING_EX(arr, "name", 5, t.tokens[0]);
                 VIRT_ADD_ASSOC_STRING_EX(arr, "description", 12, desc);
@@ -8641,7 +8700,11 @@ PHP_FUNCTION(libvirt_list_domain_resources)
 {
     php_libvirt_connection *conn=NULL;
     zval *zconn;
+#if PHP_MAJOR_VERSION >= 7
+    zval zdomain;
+#else
     zval *zdomain;
+#endif
     int count=-1;
     int expectedcount=-1;
     int *ids;
@@ -8672,16 +8735,17 @@ PHP_FUNCTION(libvirt_list_domain_resources)
             res_domain= (php_libvirt_domain *)emalloc(sizeof(php_libvirt_domain));
             res_domain->domain = domain;
 
-            ALLOC_INIT_ZVAL(zdomain);
             res_domain->conn=conn;
 
             resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1 TSRMLS_CC);
 #if PHP_MAJOR_VERSION >= 7
-            ZVAL_RES(return_value, zend_register_resource(res_domain, le_libvirt_domain));
+            ZVAL_RES(&zdomain, zend_register_resource(res_domain, le_libvirt_domain));
+            add_next_index_zval(return_value,  &zdomain);
 #else
+            ALLOC_INIT_ZVAL(zdomain);
             ZEND_REGISTER_RESOURCE(zdomain, res_domain, le_libvirt_domain);
-#endif
             add_next_index_zval(return_value,  zdomain);
+#endif
         }
     }
     efree(ids);
@@ -8704,16 +8768,17 @@ PHP_FUNCTION(libvirt_list_domain_resources)
             res_domain = (php_libvirt_domain *)emalloc(sizeof(php_libvirt_domain));
             res_domain->domain = domain;
 
-            ALLOC_INIT_ZVAL(zdomain);
             res_domain->conn=conn;
 
 #if PHP_MAJOR_VERSION >= 7
-            ZVAL_RES(return_value, zend_register_resource(res_domain, le_libvirt_domain));
+            ZVAL_RES(&zdomain, zend_register_resource(res_domain, le_libvirt_domain));
+            add_next_index_zval(return_value,  &zdomain);
 #else
+            ALLOC_INIT_ZVAL(zdomain);
             ZEND_REGISTER_RESOURCE(zdomain, res_domain, le_libvirt_domain);
+            add_next_index_zval(return_value,  zdomain);
 #endif
             resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1 TSRMLS_CC);
-            add_next_index_zval(return_value,  zdomain);
         }
         free(names[i]);
     }
