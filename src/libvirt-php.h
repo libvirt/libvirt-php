@@ -138,6 +138,14 @@ typedef uint64_t arch_uint;
 #define UINTx PRIx64
 #endif
 
+#if PHP_MAJOR_VERSION >= 7
+typedef size_t strsize_t;
+#else /* PHP_MAJOR_VERSION < 7 */
+typedef int strsize_t;
+typedef long zend_long;
+typedef unsigned long zend_ulong;
+#endif /* PHP_MAJOR_VERSION < 7 */
+
 int connect_socket(char *server, char *port, int keepalive, int nodelay, int allow_server_override);
 int socket_has_data(int sfd, long maxtime, int ignoremsg);
 void socket_read(int sfd, long length);
@@ -166,7 +174,7 @@ typedef struct tTokenizer {
 typedef struct _resource_info {
     int type;
     virConnectPtr conn;
-    arch_uint mem;
+    void *mem;
     int overwrite;
 } resource_info;
 
@@ -176,7 +184,7 @@ ZEND_BEGIN_MODULE_GLOBALS(libvirt)
     zend_bool longlong_to_string_ini;
     char *iso_path_ini;
     char *image_path_ini;
-    char *max_connections_ini;
+    zend_long max_connections_ini;
 #ifdef DEBUG_SUPPORT
     int debug;
 #endif

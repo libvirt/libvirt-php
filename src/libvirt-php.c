@@ -729,7 +729,7 @@ PHP_INI_BEGIN()
 STD_PHP_INI_ENTRY("libvirt.longlong_to_string", "1", PHP_INI_ALL, OnUpdateBool, longlong_to_string_ini, zend_libvirt_globals, libvirt_globals)
 STD_PHP_INI_ENTRY("libvirt.iso_path", "/var/lib/libvirt/images/iso", PHP_INI_ALL, OnUpdateString, iso_path_ini, zend_libvirt_globals, libvirt_globals)
 STD_PHP_INI_ENTRY("libvirt.image_path", "/var/lib/libvirt/images", PHP_INI_ALL, OnUpdateString, image_path_ini, zend_libvirt_globals, libvirt_globals)
-STD_PHP_INI_ENTRY("libvirt.max_connections", "5", PHP_INI_ALL, OnUpdateString, max_connections_ini, zend_libvirt_globals, libvirt_globals)
+STD_PHP_INI_ENTRY("libvirt.max_connections", "5", PHP_INI_ALL, OnUpdateLong, max_connections_ini, zend_libvirt_globals, libvirt_globals)
 PHP_INI_END()
 
 void change_debug(int val TSRMLS_DC)
@@ -744,7 +744,7 @@ static void php_libvirt_init_globals(zend_libvirt_globals *libvirt_globals TSRML
     libvirt_globals->longlong_to_string_ini = 1;
     libvirt_globals->iso_path_ini = "/var/lib/libvirt/images/iso";
     libvirt_globals->image_path_ini = "/var/lib/libvirt/images";
-    libvirt_globals->max_connections_ini = "5";
+    libvirt_globals->max_connections_ini = 5;
     libvirt_globals->binding_resources_count = 0;
     libvirt_globals->binding_resources = NULL;
 #ifdef DEBUG_SUPPORT
@@ -924,17 +924,12 @@ void free_tokens(tTokenizer t)
  *                          @inc [int/bool]: Increment the counter (1 = add memory location) or decrement the counter (0 = remove memory location) from entries.
  * Returns:                 0 on success, -errno otherwise
  */
-int resource_change_counter(int type, virConnectPtr conn, void *memp, int inc TSRMLS_DC)
+int resource_change_counter(int type, virConnectPtr conn, void *mem, int inc TSRMLS_DC)
 {
     int i;
     int pos = -1;
     int binding_resources_count;
-    char tmp[64] = { 0 };
-    arch_uint mem = 0;
     resource_info *binding_resources = NULL;
-
-    snprintf(tmp, sizeof(tmp), "%p", memp);
-    sscanf(tmp, "%"UINTx, &mem);
 
     binding_resources_count = LIBVIRT_G(binding_resources_count);
     binding_resources = LIBVIRT_G(binding_resources);
@@ -1058,7 +1053,8 @@ PHP_MINFO_FUNCTION(libvirt)
         php_info_print_table_row(2, "Libvirt version", version);
     }
 
-    php_info_print_table_row(2, "Max. connections", LIBVIRT_G(max_connections_ini));
+    snprintf(path, sizeof(path), "%lu", (unsigned long)LIBVIRT_G(max_connections_ini));
+    php_info_print_table_row(2, "Max. connections", path);
 
     if (!access(LIBVIRT_G(iso_path_ini), F_OK) == 0)
         snprintf(path, sizeof(path), "%s - path is invalid. To set the valid path modify the libvirt.iso_path in your php.ini configuration!",
@@ -1179,11 +1175,11 @@ static void catch_error(void *userData,
  *                          @mem [uint]: memory location of the resource to be freed
  * Returns:                 None
  */
-void free_resource(int type, arch_uint mem TSRMLS_DC)
+void free_resource(int type, void *mem TSRMLS_DC)
 {
     int rv;
 
-    DPRINTF("%s: Freeing libvirt %s resource at 0x%"UINTx"\n", __FUNCTION__, translate_counter_type(type), mem);
+    DPRINTF("%s: Freeing libvirt %s resource at 0x%lx\n", __FUNCTION__, translate_counter_type(type), (long) mem);
 
     if (type == INT_RESOURCE_DOMAIN) {
         rv = virDomainFree( (virDomainPtr)mem );
@@ -1301,16 +1297,11 @@ void free_resources_on_connection(virConnectPtr conn TSRMLS_DC)
  *                          @memp [pointer]: pointer to the memory
  * Returns:                 1 if resource is allocated, 0 otherwise
  */
-int check_resource_allocation(virConnectPtr conn, int type, void *memp TSRMLS_DC)
+int check_resource_allocation(virConnectPtr conn, int type, void *mem TSRMLS_DC)
 {
     int binding_resources_count = 0;
     resource_info *binding_resources = NULL;
     int i, allocated = 0;
-    char tmp[64] = { 0 };
-    arch_uint mem = 0;
-
-    snprintf(tmp, sizeof(tmp), "%p", memp);
-    sscanf(tmp, "%"UINTx, &mem);
 
     binding_resources_count = LIBVIRT_G(binding_resources_count);
     binding_resources = LIBVIRT_G(binding_resources);
@@ -1325,8 +1316,8 @@ int check_resource_allocation(virConnectPtr conn, int type, void *memp TSRMLS_DC
             allocated = 1;
     }
 
-    DPRINTF("%s: libvirt %s resource 0x%"UINTx" (conn %p) is%s allocated\n", __FUNCTION__, translate_counter_type(type),
-            mem, conn, !allocated ? " not" : "");
+    DPRINTF("%s: libvirt %s resource 0x%lx (conn %p) is%s allocated\n", __FUNCTION__, translate_counter_type(type),
+            (long) mem, conn, !allocated ? " not" : "");
     return allocated;
 }
 
@@ -2194,8 +2185,8 @@ PHP_FUNCTION(libvirt_connect)
         RETURN_FALSE;
     }
 
-    if ((count_resources(INT_RESOURCE_CONNECTION TSRMLS_CC) + 1) > atoi(LIBVIRT_G(max_connections_ini))) {
-        DPRINTF("%s: maximum number of connections allowed exceeded (max %s)\n",PHPFUNC, LIBVIRT_G(max_connections_ini));
+    if ((count_resources(INT_RESOURCE_CONNECTION TSRMLS_CC) + 1) > LIBVIRT_G(max_connections_ini)) {
+        DPRINTF("%s: maximum number of connections allowed exceeded (max %lu)\n",PHPFUNC, (unsigned long)LIBVIRT_G(max_connections_ini));
         set_error("Maximum number of connections allowed exceeded" TSRMLS_CC);
         RETURN_FALSE;
     }
@@ -9898,11 +9889,11 @@ PHP_FUNCTION(libvirt_print_binding_resources)
     for (i = 0; i < binding_resources_count; i++) {
         if (binding_resources[i].overwrite == 0) {
             if (binding_resources[i].conn != NULL)
-                snprintf(tmp, sizeof(tmp), "Libvirt %s resource at 0x%"UINTx" (connection %p)", translate_counter_type(binding_resources[i].type),
-                         binding_resources[i].mem, binding_resources[i].conn);
+                snprintf(tmp, sizeof(tmp), "Libvirt %s resource at 0x%lx (connection %lx)", translate_counter_type(binding_resources[i].type),
+                         (long)binding_resources[i].mem, (long)binding_resources[i].conn);
             else
-                snprintf(tmp, sizeof(tmp), "Libvirt %s resource at 0x%"UINTx, translate_counter_type(binding_resources[i].type),
-                         binding_resources[i].mem);
+                snprintf(tmp, sizeof(tmp), "Libvirt %s resource at 0x%lx", translate_counter_type(binding_resources[i].type),
+                         (long)binding_resources[i].mem);
             VIRT_ADD_NEXT_INDEX_STRING(return_value, tmp);
         }
     }
