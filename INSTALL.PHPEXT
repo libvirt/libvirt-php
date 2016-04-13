@@ -1,0 +1,14 @@
+Installing using the PHP extension build system
+***********************************************
+
+libvirt-php supports being built using `phpize`,
+a tool that's part of the PHP SDK for building PHP
+extensions.
+
+To build this way, change into the src subdirectory
+and run `phpize`. Then run `./configure && make && make install`
+to build and install it. Refer to INSTALL for more information
+on how to use ./configure.
+
+The PHP extension build system also has its own tests,
+which can be run by doing `make test`.
