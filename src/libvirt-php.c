@@ -1358,7 +1358,13 @@ int is_local_connection(virConnectPtr conn)
 }
 
 /* Destructor for connection resource */
-static void php_libvirt_connection_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
+static void php_libvirt_connection_dtor(
+#if PHP_MAJOR_VERSION >= 7
+    zend_resource *rsrc
+#else
+    zend_rsrc_list_entry *rsrc
+#endif
+    TSRMLS_DC)
 {
     php_libvirt_connection *conn = (php_libvirt_connection*)rsrc->ptr;
     int rv = 0;
@@ -1385,7 +1391,13 @@ static void php_libvirt_connection_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 }
 
 /* Destructor for domain resource */
-static void php_libvirt_domain_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
+static void php_libvirt_domain_dtor(
+#if PHP_MAJOR_VERSION >= 7
+    zend_resource *rsrc
+#else
+    zend_rsrc_list_entry *rsrc
+#endif
+    TSRMLS_DC)
 {
     php_libvirt_domain *domain = (php_libvirt_domain*)rsrc->ptr;
     int rv = 0;
@@ -1416,7 +1428,13 @@ static void php_libvirt_domain_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 }
 
 /* Destructor for stream resource */
-static void php_libvirt_stream_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
+static void php_libvirt_stream_dtor(
+#if PHP_MAJOR_VERSION >= 7
+    zend_resource *rsrc
+#else
+    zend_rsrc_list_entry *rsrc
+#endif
+    TSRMLS_DC)
 {
     php_libvirt_stream *stream = (php_libvirt_stream*)rsrc->ptr;
     int rv = 0;
@@ -1446,7 +1464,13 @@ static void php_libvirt_stream_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 }
 
 /* Destructor for storagepool resource */
-static void php_libvirt_storagepool_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
+static void php_libvirt_storagepool_dtor(
+#if PHP_MAJOR_VERSION >= 7
+    zend_resource *rsrc
+#else
+    zend_rsrc_list_entry *rsrc
+#endif
+    TSRMLS_DC)
 {
     php_libvirt_storagepool *pool = (php_libvirt_storagepool*)rsrc->ptr;
     int rv = 0;
@@ -1476,7 +1500,13 @@ static void php_libvirt_storagepool_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 }
 
 /* Destructor for volume resource */
-static void php_libvirt_volume_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
+static void php_libvirt_volume_dtor(
+#if PHP_MAJOR_VERSION >= 7
+    zend_resource *rsrc
+#else
+    zend_rsrc_list_entry *rsrc
+#endif
+    TSRMLS_DC)
 {
     php_libvirt_volume *volume = (php_libvirt_volume*)rsrc->ptr;
     int rv = 0;
@@ -1506,7 +1536,13 @@ static void php_libvirt_volume_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 }
 
 /* Destructor for network resource */
-static void php_libvirt_network_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
+static void php_libvirt_network_dtor(
+#if PHP_MAJOR_VERSION >= 7
+    zend_resource *rsrc
+#else
+    zend_rsrc_list_entry *rsrc
+#endif
+    TSRMLS_DC)
 {
     php_libvirt_network *network = (php_libvirt_network*)rsrc->ptr;
     int rv = 0;
@@ -1536,7 +1572,13 @@ static void php_libvirt_network_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 }
 
 /* Destructor for nodedev resource */
-static void php_libvirt_nodedev_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
+static void php_libvirt_nodedev_dtor(
+#if PHP_MAJOR_VERSION >= 7
+    zend_resource *rsrc
+#else
+    zend_rsrc_list_entry *rsrc
+#endif
+    TSRMLS_DC)
 {
     php_libvirt_nodedev *nodedev = (php_libvirt_nodedev*)rsrc->ptr;
     int rv = 0;
@@ -1566,7 +1608,13 @@ static void php_libvirt_nodedev_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 }
 
 /* Destructor for snapshot resource */
-static void php_libvirt_snapshot_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
+static void php_libvirt_snapshot_dtor(
+#if PHP_MAJOR_VERSION >= 7
+    zend_resource *rsrc
+#else
+    zend_rsrc_list_entry *rsrc
+#endif
+    TSRMLS_DC)
 {
     php_libvirt_snapshot *snapshot = (php_libvirt_snapshot*)rsrc->ptr;
     int rv = 0;
@@ -1970,10 +2018,6 @@ if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, args, __VA_ARGS__) == FAILU
 ZEND_FETCH_RESOURCE(snapshot, php_libvirt_snapshot*, &zsnapshot, -1, PHP_LIBVIRT_SNAPSHOT_RES_NAME, le_libvirt_snapshot);\
 if ((snapshot==NULL) || (snapshot->snapshot==NULL)) RETURN_FALSE;\
 
-/* Macro to "recreate" string with emalloc */
-#define RECREATE_STRING_WITH_E(str_out, str_in) \
-    str_out = estrdup(str_in);
-
 #define LONGLONG_INIT \
     char tmpnumber[64]
 
@@ -2044,7 +2088,11 @@ static int libvirt_virConnectCredType[] = {
 PHP_FUNCTION(libvirt_get_last_error)
 {
     if (LIBVIRT_G (last_error) == NULL) RETURN_NULL();
+#if PHP_MAJOR_VERSION >= 7
+    RETURN_STRING(LIBVIRT_G (last_error));
+#else
     RETURN_STRING(LIBVIRT_G (last_error),1);
+#endif
 }
 
 /*
@@ -2657,7 +2705,6 @@ PHP_FUNCTION(libvirt_connect_get_uri)
 {
     zval *zconn;
     char *uri;
-    char *uri_out;
     php_libvirt_connection *conn = NULL;
 
     GET_CONNECTION_FROM_ARGS("r",&zconn);
@@ -2665,9 +2712,12 @@ PHP_FUNCTION(libvirt_connect_get_uri)
     DPRINTF("%s: virConnectGetURI returned %s\n", PHPFUNC, uri);
     if (uri == NULL) RETURN_FALSE;
 
-    RECREATE_STRING_WITH_E(uri_out, uri);
+#if PHP_MAJOR_VERSION >= 7
+    RETVAL_STRING(uri);
+#else
+    RETVAL_STRING(uri, 1);
+#endif
     free(uri);
-    RETURN_STRING(uri_out, 0);
 }
 
 /*
@@ -2682,7 +2732,6 @@ PHP_FUNCTION(libvirt_connect_get_hostname)
     php_libvirt_connection *conn=NULL;
     zval *zconn;
     char *hostname;
-    char *hostname_out;
 
     GET_CONNECTION_FROM_ARGS("r",&zconn);
 
@@ -2690,9 +2739,12 @@ PHP_FUNCTION(libvirt_connect_get_hostname)
     DPRINTF("%s: virConnectGetHostname returned %s\n", PHPFUNC, hostname);
     if (hostname==NULL) RETURN_FALSE;
 
-    RECREATE_STRING_WITH_E(hostname_out,hostname);
+#if PHP_MAJOR_VERSION >= 7
+    RETVAL_STRING(hostname);
+#else
+    RETVAL_STRING(hostname, 1);
+#endif
     free(hostname);
-    RETURN_STRING(hostname_out,0);
 }
 
 /*
@@ -2993,16 +3045,18 @@ PHP_FUNCTION(libvirt_connect_get_sysinfo)
     php_libvirt_connection *conn=NULL;
     zval *zconn;
     char *sysinfo;
-    char *sysinfo_out;
 
     GET_CONNECTION_FROM_ARGS("r",&zconn);
 
     sysinfo=virConnectGetSysinfo(conn->conn, 0);
     if (sysinfo==NULL) RETURN_FALSE;
 
-    RECREATE_STRING_WITH_E(sysinfo_out, sysinfo);
+#if PHP_MAJOR_VERSION >= 7
+    RETVAL_STRING(sysinfo);
+#else
+    RETVAL_STRING(sysinfo, 1);
+#endif
     free(sysinfo);
-    RETURN_STRING(sysinfo_out,0);
 }
 
 /*
@@ -3962,7 +4016,12 @@ PHP_FUNCTION(libvirt_domain_get_metadata)
         }
     }
     else {
-        RETURN_STRING(ret, 0);
+#if PHP_MAJOR_VERSION >= 7
+        RETVAL_STRING(ret);
+#else
+        RETVAL_STRING(ret, 1);
+#endif
+        free(ret);
     }
 }
 
@@ -4106,7 +4165,11 @@ PHP_FUNCTION(libvirt_domain_qemu_agent_command)
        ret = virDomainQemuAgentCommand(domain->domain, cmd, timeout, flags);
        if (ret == NULL) RETURN_FALSE;
 
+#if PHP_MAJOR_VERSION >= 7
+       RETURN_STRING(ret);
+#else
        RETURN_STRING(ret, 1);
+#endif
 }
 
 /*
@@ -4394,7 +4457,11 @@ PHP_FUNCTION(libvirt_domain_get_name)
     DPRINTF("%s: virDomainGetName(%p) returned %s\n", PHPFUNC, domain->domain, name);
     if (name==NULL) RETURN_FALSE;
 
+#if PHP_MAJOR_VERSION >= 7
+    RETURN_STRING(name);
+#else
     RETURN_STRING(name, 1);  //we can use the copy mechanism as we need not to free name (we even can not!)
+#endif
 }
 
 /*
@@ -4418,7 +4485,12 @@ PHP_FUNCTION(libvirt_domain_get_uuid_string)
     DPRINTF("%s: virDomainGetUUIDString(%p) returned %d (%s)\n", PHPFUNC, domain->domain, retval, uuid);
     if (retval!=0) RETURN_FALSE;
 
+#if PHP_MAJOR_VERSION >= 7
+    RETVAL_STRING(uuid);
+    efree(uuid);
+#else
     RETURN_STRING(uuid,0);
+#endif
 }
 
 /*
@@ -4893,7 +4965,12 @@ PHP_FUNCTION(libvirt_domain_get_uuid)
     DPRINTF("%s: virDomainGetUUID(%p, %p) returned %d\n", PHPFUNC, domain->domain, uuid, retval);
     if (retval!=0) RETURN_FALSE;
 
+#if PHP_MAJOR_VERSION >= 7
+    RETVAL_STRING(uuid);
+    efree(uuid);
+#else
     RETURN_STRING(uuid,0);
+#endif
 }
 
 /*
@@ -4960,7 +5037,6 @@ PHP_FUNCTION(libvirt_connect_get_capabilities)
     php_libvirt_connection *conn=NULL;
     zval *zconn;
     char *caps;
-    char *caps_out;
     char *xpath = NULL;
     int xpath_len;
     char *tmp = NULL;
@@ -4974,15 +5050,21 @@ PHP_FUNCTION(libvirt_connect_get_capabilities)
 
     tmp = get_string_from_xpath(caps, xpath, NULL, &retval);
     if ((tmp == NULL) || (retval < 0)) {
-        RECREATE_STRING_WITH_E (caps_out, caps);
+#if PHP_MAJOR_VERSION >= 7
+        RETVAL_STRING(caps);
+#else
+        RETVAL_STRING(caps, 1);
+#endif
     } else {
-        RECREATE_STRING_WITH_E (caps_out, tmp);
+#if PHP_MAJOR_VERSION >= 7
+        RETVAL_STRING(tmp);
+#else
+        RETVAL_STRING(tmp, 1);
+#endif
     }
 
     free(caps);
     free(tmp);
-
-    RETURN_STRING(caps_out,0);
 }
 
 /*
@@ -5013,9 +5095,12 @@ PHP_FUNCTION(libvirt_connect_get_emulator)
         RETURN_FALSE;
     }
 
-    RECREATE_STRING_WITH_E(emulator, tmp);
+#if PHP_MAJOR_VERSION >= 7
+    RETVAL_STRING(tmp);
+#else
+    RETVAL_STRING(tmp, 1);
+#endif
     free(tmp);
-    RETURN_STRING(emulator, 0);
 }
 
 /*
@@ -5442,7 +5527,11 @@ PHP_FUNCTION(libvirt_domain_new)
 PHP_FUNCTION(libvirt_domain_new_get_vnc)
 {
     if (LIBVIRT_G(vnc_location))
+#if PHP_MAJOR_VERSION >= 7
+        RETURN_STRING(LIBVIRT_G(vnc_location));
+#else
         RETURN_STRING(LIBVIRT_G(vnc_location),1);
+#endif
 
     RETURN_NULL();
 }
@@ -5461,7 +5550,6 @@ PHP_FUNCTION(libvirt_domain_get_xml_desc)
     zval *zdomain;
     char *tmp = NULL;
     char *xml;
-    char *xml_out;
     char *xpath = NULL;
     int xpath_len;
     long flags=0;
@@ -5481,15 +5569,21 @@ PHP_FUNCTION(libvirt_domain_get_xml_desc)
 
     tmp = get_string_from_xpath(xml, xpath, NULL, &retval);
     if ((tmp == NULL) || (retval < 0)) {
-        RECREATE_STRING_WITH_E (xml_out, xml);
+#if PHP_MAJOR_VERSION >= 7
+        RETVAL_STRING(xml);
+#else
+        RETVAL_STRING(xml, 1);
+#endif
     } else {
-        RECREATE_STRING_WITH_E (xml_out, tmp);
+#if PHP_MAJOR_VERSION >= 7
+        RETVAL_STRING(tmp);
+#else
+        RETVAL_STRING(tmp, 1);
+#endif
     }
 
     free(tmp);
     free(xml);
-
-    RETURN_STRING(xml_out,0);
 }
 
 /*
@@ -6394,7 +6488,12 @@ PHP_FUNCTION(libvirt_domain_memory_peek)
     buff=(char *)emalloc(size);
     retval=virDomainMemoryPeek(domain->domain,start,size,buff,flags);
     if (retval != 0) RETURN_FALSE;
+#if PHP_MAJOR_VERSION >= 7
+    RETURN_STRINGL(buff, size);
+    efree(buff);
+#else
     RETURN_STRINGL(buff,size,0);
+#endif
 }
 
 /*
@@ -7193,7 +7292,6 @@ PHP_FUNCTION(libvirt_domain_snapshot_create)
 PHP_FUNCTION(libvirt_domain_snapshot_get_xml)
 {
     char *xml;
-    char *xml_out;
     zval *zsnapshot;
     php_libvirt_snapshot *snapshot;
     long flags = 0;
@@ -7203,9 +7301,12 @@ PHP_FUNCTION(libvirt_domain_snapshot_get_xml)
     xml = virDomainSnapshotGetXMLDesc(snapshot->snapshot, flags);
     if (xml==NULL) RETURN_FALSE;
 
-    RECREATE_STRING_WITH_E(xml_out,xml);
+#if PHP_MAJOR_VERSION >= 7
+    RETVAL_STRING(xml);
+#else
+    RETVAL_STRING(xml, 1);
+#endif
     free(xml);
-    RETURN_STRING(xml_out,0);
 }
 
 /*
@@ -7519,7 +7620,11 @@ PHP_FUNCTION(libvirt_storagevolume_get_name)
     DPRINTF("%s: virStorageVolGetName(%p) returned %s\n", PHPFUNC, volume->volume, retval);
     if (retval == NULL) RETURN_FALSE;
 
+#if PHP_MAJOR_VERSION >= 7
+    RETURN_STRING(retval);
+#else
     RETURN_STRING (retval, 1);
+#endif
 }
 
 /*
@@ -7541,7 +7646,11 @@ PHP_FUNCTION(libvirt_storagevolume_get_path)
     DPRINTF("%s: virStorageVolGetPath(%p) returned %s\n", PHPFUNC, volume->volume, retval);
     if (retval == NULL) RETURN_FALSE;
 
+#if PHP_MAJOR_VERSION >= 7
+    RETURN_STRING(retval);
+#else
     RETURN_STRING (retval, 1);
+#endif
 }
 
 /*
@@ -7586,7 +7695,6 @@ PHP_FUNCTION(libvirt_storagevolume_get_xml_desc)
     zval *zvolume;
     char *tmp = NULL;
     char *xml;
-    char *xml_out;
     char *xpath = NULL;
     int xpath_len;
     long flags=0;
@@ -7606,15 +7714,21 @@ PHP_FUNCTION(libvirt_storagevolume_get_xml_desc)
 
     tmp = get_string_from_xpath(xml, xpath, NULL, &retval);
     if ((tmp == NULL) || (retval < 0)) {
-        RECREATE_STRING_WITH_E (xml_out, xml);
+#if PHP_MAJOR_VERSION >= 7
+        RETVAL_STRING(xml);
+#else
+        RETVAL_STRING(xml, 1);
+#endif
     } else {
-        RECREATE_STRING_WITH_E(xml_out, tmp);
+#if PHP_MAJOR_VERSION >= 7
+        RETVAL_STRING(tmp);
+#else
+        RETVAL_STRING(tmp, 1);
+#endif
     }
 
     free(xml);
     free(tmp);
-
-    RETURN_STRING(xml_out,0);
 }
 
 /*
@@ -7858,7 +7972,12 @@ PHP_FUNCTION(libvirt_storagepool_get_uuid_string)
     if (retval != 0)
         RETURN_FALSE;
 
-    RETURN_STRING(uuid, 0);
+#if PHP_MAJOR_VERSION >= 7
+    RETVAL_STRING(uuid);
+    efree(uuid);
+#else
+    RETURN_STRING(uuid,0);
+#endif
 }
 
 /*
@@ -7881,7 +8000,11 @@ PHP_FUNCTION(libvirt_storagepool_get_name)
     if (name == NULL)
         RETURN_FALSE;
 
+#if PHP_MAJOR_VERSION >= 7
+    RETURN_STRING(name);
+#else
     RETURN_STRING(name, 1);
+#endif
 }
 
 /*
@@ -7933,7 +8056,6 @@ PHP_FUNCTION(libvirt_storagepool_get_xml_desc)
     php_libvirt_storagepool *pool = NULL;
     zval *zpool;
     char *xml;
-    char *xml_out;
     char *xpath = NULL;
     char *tmp = NULL;
     long flags = 0;
@@ -7955,15 +8077,21 @@ PHP_FUNCTION(libvirt_storagepool_get_xml_desc)
 
     tmp = get_string_from_xpath(xml, xpath, NULL, &retval);
     if ((tmp == NULL) || (retval < 0)) {
-        RECREATE_STRING_WITH_E (xml_out, xml);
+#if PHP_MAJOR_VERSION >= 7
+        RETVAL_STRING(xml);
+#else
+        RETVAL_STRING(xml, 1);
+#endif
     } else {
-        RECREATE_STRING_WITH_E (xml_out, tmp);
+#if PHP_MAJOR_VERSION >= 7
+        RETVAL_STRING(tmp);
+#else
+        RETVAL_STRING(tmp, 1);
+#endif
     }
 
     free(xml);
     free(tmp);
-
-    RETURN_STRING (xml_out, 0);
 }
 
 /*
@@ -8844,7 +8972,6 @@ PHP_FUNCTION(libvirt_nodedev_get_xml_desc)
     zval *znodedev;
     char *tmp = NULL;
     char *xml = NULL;
-    char *xml_out = NULL;
     char *xpath = NULL;
     int xpath_len;
     int retval = -1;
@@ -8863,15 +8990,21 @@ PHP_FUNCTION(libvirt_nodedev_get_xml_desc)
 
     tmp = get_string_from_xpath(xml, xpath, NULL, &retval);
     if ((tmp == NULL) || (retval < 0)) {
-        RECREATE_STRING_WITH_E (xml_out, xml);
+#if PHP_MAJOR_VERSION >= 7
+        RETVAL_STRING(xml);
+#else
+        RETVAL_STRING(xml, 1);
+#endif
     } else {
-        RECREATE_STRING_WITH_E (xml_out, tmp);
+#if PHP_MAJOR_VERSION >= 7
+        RETVAL_STRING(tmp);
+#else
+        RETVAL_STRING(tmp, 1);
+#endif
     }
 
     free(xml);
     free(tmp);
-
-    RETURN_STRING(xml_out, 0);
 }
 
 /*
@@ -9140,7 +9273,11 @@ PHP_FUNCTION(libvirt_network_get_bridge)
         RETURN_FALSE;
     }
 
+#if PHP_MAJOR_VERSION >= 7
+    RETURN_STRING(name);
+#else
     RETURN_STRING(name, 1);
+#endif
 }
 
 /*
@@ -9320,7 +9457,6 @@ PHP_FUNCTION(libvirt_network_get_xml_desc)
     php_libvirt_network *network;
     zval *znetwork;
     char *xml = NULL;
-    char *xml_out = NULL;
     char *xpath = NULL;
     char *tmp;
     int xpath_len;
@@ -9341,15 +9477,21 @@ PHP_FUNCTION(libvirt_network_get_xml_desc)
 
     tmp = get_string_from_xpath(xml, xpath, NULL, &retval);
     if ((tmp == NULL) || (retval < 0)) {
-        RECREATE_STRING_WITH_E (xml_out, xml);
+#if PHP_MAJOR_VERSION >= 7
+        RETVAL_STRING(xml);
+#else
+        RETVAL_STRING(xml, 1);
+#endif
     } else {
-        RECREATE_STRING_WITH_E (xml_out, tmp);
+#if PHP_MAJOR_VERSION >= 7
+        RETVAL_STRING(tmp);
+#else
+        RETVAL_STRING(tmp, 1);
+#endif
     }
 
     free(xml);
     free(tmp);
-
-    RETURN_STRING(xml_out, 0);
 }
 
 /*
