@@ -55,6 +55,12 @@ const char *features[] = { NULL };
 const char *features_binaries[] = { NULL };
 #endif
 
+#if PHP_MAJOR_VERSION >= 7
+typedef size_t strsize_t;
+#else
+typedef int strsize_t;
+typedef long zend_long;
+#endif
 /* ZEND thread safe per request globals definition */
 int le_libvirt_connection;
 int le_libvirt_domain;
@@ -2117,8 +2123,8 @@ PHP_FUNCTION(libvirt_connect)
     virConnectAuth libvirt_virConnectAuth= { libvirt_virConnectCredType, sizeof(libvirt_virConnectCredType)/sizeof(int), libvirt_virConnectAuthCallback, NULL};
 
     char *url=NULL;
-    int url_len=0;
-    int readonly=1;
+    strsize_t url_len=0;
+    zend_bool readonly=1;
 
     HashTable *arr_hash;
     HashPosition pointer;
@@ -4336,7 +4342,7 @@ PHP_FUNCTION(libvirt_stream_recv)
     char *recv_buf;
     php_libvirt_stream *stream=NULL;
     int retval = -1;
-    long length = 0;
+    zend_long length = 0;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rz|l", &zstream, &zbuf, &length) == FAILURE) {
         RETURN_LONG(retval);
@@ -4383,7 +4389,7 @@ PHP_FUNCTION(libvirt_stream_send)
     zval *zstream, *zbuf;
     php_libvirt_stream *stream=NULL;
     int retval = -1;
-    long length = 0;
+    zend_long length = 0;
     char *cstr;
     //int cstrlen;
 
@@ -7785,7 +7791,7 @@ PHP_FUNCTION(libvirt_storagevolume_create_xml_from)
 
     virStorageVolPtr volume=NULL;
     char *xml;
-    int xml_len;
+    strsize_t xml_len;
 
     if (zend_parse_parameters (ZEND_NUM_ARGS() TSRMLS_CC, "rsr", &zpool, &xml, &xml_len, &zvolume) == FAILURE)
     {
@@ -7885,9 +7891,9 @@ PHP_FUNCTION(libvirt_storagevolume_download)
     php_libvirt_stream *stream=NULL;
     zval *zvolume;
     zval *zstream;
-    long flags = 0;
-    long offset = 0;
-    long length = 0;
+    zend_long flags = 0;
+    zend_long offset = 0;
+    zend_long length = 0;
     int retval = -1;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rr|l|l|l", &zvolume, &zstream, &offset, &length, &flags) == FAILURE) {
@@ -7926,9 +7932,9 @@ PHP_FUNCTION(libvirt_storagevolume_upload)
     php_libvirt_stream *stream=NULL;
     zval *zvolume;
     zval *zstream;
-    long flags = 0;
-    long offset = 0;
-    long length = 0;
+    zend_long flags = 0;
+    zend_long offset = 0;
+    zend_long length = 0;
     int retval = -1;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rr|l|l|l", &zvolume, &zstream, &offset, &length, &flags) == FAILURE) {
@@ -9505,7 +9511,7 @@ PHP_FUNCTION(libvirt_version)
 {
     unsigned long libVer;
     unsigned long typeVer;
-    int type_len;
+    strsize_t type_len;
     char *type=NULL;
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &type,&type_len) == FAILURE) {
         set_error("Invalid arguments" TSRMLS_CC);
@@ -9552,7 +9558,7 @@ PHP_FUNCTION(libvirt_version)
 PHP_FUNCTION(libvirt_check_version)
 {
     unsigned long libVer;
-    unsigned long major = 0, minor = 0, micro = 0, type = VIR_VERSION_BINDING;
+    zend_long major = 0, minor = 0, micro = 0, type = VIR_VERSION_BINDING;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "lll|l", &major, &minor, &micro, &type) == FAILURE) {
         set_error("Invalid arguments" TSRMLS_CC);
@@ -9597,7 +9603,7 @@ PHP_FUNCTION(libvirt_check_version)
 PHP_FUNCTION(libvirt_has_feature)
 {
     char *name = NULL;
-    int name_len = 0;
+    strsize_t name_len = 0;
     const char *binary = NULL;
     int ret = 0;
 
@@ -9625,7 +9631,7 @@ PHP_FUNCTION(libvirt_has_feature)
 PHP_FUNCTION(libvirt_get_iso_images)
 {
     char *path = NULL;
-    int path_len = 0;
+    strsize_t path_len = 0;
 #ifndef EXTWIN
     struct dirent *entry;
     DIR *d = NULL;
@@ -9712,8 +9718,8 @@ PHP_FUNCTION(libvirt_print_binding_resources)
 PHP_FUNCTION(libvirt_logfile_set)
 {
     char *filename = NULL;
-    long maxsize = DEFAULT_LOG_MAXSIZE;
-    int filename_len = 0;
+    zend_long maxsize = DEFAULT_LOG_MAXSIZE;
+    strsize_t filename_len = 0;
     int err;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|l", &filename, &filename_len, &maxsize) == FAILURE) {
