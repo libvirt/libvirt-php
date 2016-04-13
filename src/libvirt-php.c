@@ -2274,11 +2274,12 @@ PHP_FUNCTION(libvirt_connect)
     DPRINTF("%s: Connection to %s established, returning %p\n", PHPFUNC, url, conn->conn);
 
 #if PHP_MAJOR_VERSION >= 7
-    ZVAL_RES(return_value, zend_register_resource(conn, le_libvirt_connection));
+    conn->resource_id = zend_register_resource(conn, le_libvirt_connection);
+    ZVAL_RES(return_value, conn->resource_id);
 #else
     ZEND_REGISTER_RESOURCE(return_value, conn, le_libvirt_connection);
+    conn->resource_id = Z_LVAL_P(return_value);
 #endif
-    conn->resource_id=Z_LVAL_P(return_value);
 }
 
 /*
@@ -4488,7 +4489,7 @@ PHP_FUNCTION(libvirt_stream_recv)
     if (retval < 0) {
         efree(recv_buf);
         zval_dtor(zbuf);
-        Z_TYPE_P(zbuf) = IS_NULL;
+        ZVAL_NULL(zbuf);
     } else {
         recv_buf[retval] = '\0';
 #if PHP_MAJOR_VERSION >= 7
@@ -5202,7 +5203,6 @@ PHP_FUNCTION(libvirt_connect_get_emulator)
     char *arch = NULL;
     strsize_t arch_len;
     char *tmp;
-    char *emulator;
 
     GET_CONNECTION_FROM_ARGS("r|s",&zconn,&arch,&arch_len);
 
@@ -5399,10 +5399,15 @@ void parse_array(zval *arr, tVMDisk *disk, tVMNetwork *network)
 {
     HashTable *arr_hash;
     // int array_count;
+#if PHP_MAJOR_VERSION >= 7
+    zval *data;
+    zend_string *key;
+#else
     zval **data; // removed **zvalue
-    HashPosition pointer;
     char *key;
     unsigned int key_len;
+#endif
+    HashPosition pointer;
     unsigned long index;
 
     arr_hash = Z_ARRVAL_P(arr);
@@ -5413,6 +5418,43 @@ void parse_array(zval *arr, tVMDisk *disk, tVMNetwork *network)
     if (network != NULL)
         memset(network, 0, sizeof(tVMNetwork));
 
+#if PHP_MAJOR_VERSION >= 7
+    for (zend_hash_internal_pointer_reset_ex(arr_hash, &pointer);
+         (data = zend_hash_get_current_data_ex(arr_hash, &pointer)) != NULL;
+         zend_hash_move_forward_ex(arr_hash, &pointer)) {
+        if ((Z_TYPE_P(data) == IS_STRING) || (Z_TYPE_P(data) == IS_LONG)) {
+            if (zend_hash_get_current_key_ex(arr_hash, &key, &index, &pointer) == HASH_KEY_IS_STRING) {
+                if (disk != NULL) {
+                    if ((Z_TYPE_P(data) == IS_STRING) && strcmp(ZSTR_VAL(key), "path") == 0)
+                        disk->path = strdup( Z_STRVAL_P(data) );
+                    else if ((Z_TYPE_P(data) == IS_STRING) && strcmp(ZSTR_VAL(key), "driver") == 0)
+                        disk->driver = strdup( Z_STRVAL_P(data) );
+                    else if ((Z_TYPE_P(data) == IS_STRING) && strcmp(ZSTR_VAL(key), "bus") == 0)
+                        disk->bus = strdup( Z_STRVAL_P(data) );
+                    else if ((Z_TYPE_P(data) == IS_STRING) && strcmp(ZSTR_VAL(key), "dev") == 0)
+                        disk->dev = strdup( Z_STRVAL_P(data) );
+                    else if (strcmp(ZSTR_VAL(key), "size") == 0) {
+                        if (Z_TYPE_P(data) == IS_LONG)
+                            disk->size = Z_LVAL_P(data);
+                        else
+                            disk->size = size_def_to_mbytes(Z_STRVAL_P(data));
+                    }
+                    else if ((Z_TYPE_P(data) == IS_LONG) && strcmp(ZSTR_VAL(key), "dev") == 0)
+                        disk->flags = Z_LVAL_P(data);
+                } else {
+                    if (network != NULL) {
+                        if ((Z_TYPE_P(data) == IS_STRING) && strcmp(ZSTR_VAL(key), "mac") == 0)
+                            network->mac = strdup( Z_STRVAL_P(data) );
+                        else if ((Z_TYPE_P(data) == IS_STRING) && strcmp(ZSTR_VAL(key), "network") == 0)
+                            network->network = strdup( Z_STRVAL_P(data) );
+                        else if ((Z_TYPE_P(data) == IS_STRING) && strcmp(ZSTR_VAL(key), "model") == 0)
+                            network->model = strdup( Z_STRVAL_P(data) );
+                    }
+                }
+            }
+        }
+    }
+#else
     for (zend_hash_internal_pointer_reset_ex(arr_hash, &pointer);
          zend_hash_get_current_data_ex(arr_hash, (void**) &data, &pointer) == SUCCESS;
          zend_hash_move_forward_ex(arr_hash, &pointer)) {
@@ -5451,6 +5493,7 @@ void parse_array(zval *arr, tVMDisk *disk, tVMNetwork *network)
             }
         }
     }
+#endif
 }
 
 /*
@@ -5492,7 +5535,11 @@ PHP_FUNCTION(libvirt_domain_new)
     zend_long maxmemMB = -1;
     HashTable *arr_hash;
     int numDisks, numNets, i;
+#if PHP_MAJOR_VERSION >= 7
+    zval *data;
+#else
     zval **data; // removed **zvalue
+#endif
     HashPosition pointer;
     char vncl[2048] = { 0 };
     char tmpname[1024] = { 0 };
@@ -5523,12 +5570,19 @@ PHP_FUNCTION(libvirt_domain_new)
     memset(vmDisks, 0, numDisks * sizeof(tVMDisk));
     i = 0;
     for(zend_hash_internal_pointer_reset_ex(arr_hash, &pointer);
+#if PHP_MAJOR_VERSION >= 7
+        (data = zend_hash_get_current_data_ex(arr_hash, &pointer)) != NULL;
+        zend_hash_move_forward_ex(arr_hash, &pointer)) {
+        if (Z_TYPE_P(data) == IS_ARRAY) {
+            tVMDisk disk;
+            parse_array(data, &disk, NULL);
+#else
         zend_hash_get_current_data_ex(arr_hash, (void**) &data, &pointer) == SUCCESS;
         zend_hash_move_forward_ex(arr_hash, &pointer)) {
         if (Z_TYPE_PP(data) == IS_ARRAY) {
             tVMDisk disk;
             parse_array(*data, &disk, NULL);
-
+#endif
             if (disk.path != NULL) {
                 //DPRINTF("Disk => path = '%s', driver = '%s', bus = '%s', dev = '%s', size = %ld MB, flags = %d\n",
                 //  disk.path, disk.driver, disk.bus, disk.dev, disk.size, disk.flags);
@@ -5545,12 +5599,19 @@ PHP_FUNCTION(libvirt_domain_new)
     memset(vmNetworks, 0, numNets * sizeof(tVMNetwork));
     i = 0;
     for(zend_hash_internal_pointer_reset_ex(arr_hash, &pointer);
+#if PHP_MAJOR_VERSION >= 7
+        (data = zend_hash_get_current_data_ex(arr_hash, &pointer)) != NULL;
+        zend_hash_move_forward_ex(arr_hash, &pointer)) {
+        if (Z_TYPE_P(data) == IS_ARRAY) {
+            tVMNetwork network;
+            parse_array(data, NULL, &network);
+#else
         zend_hash_get_current_data_ex(arr_hash, (void**) &data, &pointer) == SUCCESS;
         zend_hash_move_forward_ex(arr_hash, &pointer)) {
         if (Z_TYPE_PP(data) == IS_ARRAY) {
             tVMNetwork network;
             parse_array(*data, NULL, &network);
-
+#endif
             if (network.mac != NULL) {
                 //DPRINTF("Network => mac = '%s', network = '%s', model = '%s'\n", network.mac, network.network, network.model);
                 vmNetworks[i++] = network;
@@ -7140,7 +7201,11 @@ PHP_FUNCTION(libvirt_domain_get_connect)
 
     conn= domain->conn;
     if (conn->conn == NULL) RETURN_FALSE;
+#if PHP_MAJOR_VERSION >= 7
+    ZVAL_RES(return_value, conn->resource_id);
+#else
     RETURN_RESOURCE(conn->resource_id);
+#endif
 }
 
 /*

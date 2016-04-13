@@ -258,7 +258,11 @@ typedef struct tBMPFile {
 /* Libvirt-php types */
 typedef struct _php_libvirt_connection {
     virConnectPtr conn;
+#if PHP_MAJOR_VERSION >= 7
+    zend_resource *resource_id;
+#else
     long resource_id;
+#endif
 } php_libvirt_connection;
 
 typedef struct _php_libvirt_stream {
