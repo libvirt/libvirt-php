@@ -6666,11 +6666,15 @@ PHP_FUNCTION(libvirt_domain_memory_peek)
     zval *zdomain;
     int retval;
     zend_long flags=0;
-    zend_ulong64 start;
+    zend_long start;
     zend_long size;
     char *buff;
 
     GET_DOMAIN_FROM_ARGS("rlll",&zdomain,&start,&size,&flags);
+    if (start < 0) {
+        set_error("Negative argument start" TSRMLS_CC);
+        RETURN_FALSE;
+    }
     buff=(char *)emalloc(size);
     retval=virDomainMemoryPeek(domain->domain,start,size,buff,flags);
     if (retval != 0) RETURN_FALSE;
