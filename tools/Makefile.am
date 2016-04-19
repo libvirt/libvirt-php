@@ -12,7 +12,7 @@ doc_generated_files = \
 
 $(doc_generated_files): $(APIBUILD_STAMP)
 
-$(APIBUILD_STAMP): $(srcdir)/generate-api-docs
+$(APIBUILD_STAMP): generate-api-docs
 	./generate-api-docs $(top_srcdir)/src/libvirt-php.c ../docs/api-reference.html.in
 	./generate-api-docs --private $(top_srcdir)/src/libvirt-php.c ../docs/dev-api-reference.html.in
 	touch $@
