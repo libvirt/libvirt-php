@@ -4307,7 +4307,8 @@ PHP_FUNCTION(libvirt_domain_qemu_agent_command)
        ret = virDomainQemuAgentCommand(domain->domain, cmd, timeout, flags);
        if (ret == NULL) RETURN_FALSE;
 
-       VIRT_RETURN_STRING(ret);
+       VIRT_RETVAL_STRING(ret);
+       free(ret);
 }
 
 /*
@@ -6691,7 +6692,7 @@ PHP_FUNCTION(libvirt_domain_memory_peek)
     buff=(char *)emalloc(size);
     retval=virDomainMemoryPeek(domain->domain,start,size,buff,flags);
     if (retval != 0) RETURN_FALSE;
-    VIRT_RETURN_STRINGL(buff, size);
+    VIRT_RETVAL_STRINGL(buff, size);
     efree(buff);
 }
 
@@ -7872,7 +7873,8 @@ PHP_FUNCTION(libvirt_storagevolume_get_path)
     DPRINTF("%s: virStorageVolGetPath(%p) returned %s\n", PHPFUNC, volume->volume, retval);
     if (retval == NULL) RETURN_FALSE;
 
-    VIRT_RETURN_STRING(retval);
+    VIRT_RETVAL_STRING(retval);
+    free(retval);
 }
 
 /*
@@ -9506,7 +9508,8 @@ PHP_FUNCTION(libvirt_network_get_bridge)
         RETURN_FALSE;
     }
 
-    VIRT_RETURN_STRING(name);
+    VIRT_RETVAL_STRING(name);
+    free(name);
 }
 
 /*
