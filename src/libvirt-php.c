@@ -3232,19 +3232,17 @@ char *get_string_from_xpath(char *xml, char *xpath, zval **val, int *retVal)
     if (val != NULL) {
         ret = 0;
         for (i = 0; i < nodeset->nodeNr; i++) {
-            if (xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode, 1) != NULL) {
-                value = (char *)xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode, 1);
-
+            if ((value = xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode, 1))) {
                 snprintf(key, sizeof(key), "%d", i);
                 VIRT_ADD_ASSOC_STRING(*val, key, value);
+                free(value);
+                value = NULL;
                 ret++;
             }
         }
         add_assoc_long(*val, "num", (long)ret);
-    }
-    else {
-        if (xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode, 1) != NULL)
-            value = (char *)xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode, 1);
+    } else {
+        value = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode, 1);
     }
 
  cleanup:
@@ -3255,7 +3253,7 @@ char *get_string_from_xpath(char *xml, char *xpath, zval **val, int *retVal)
     xmlFreeParserCtxt(xp);
     xmlFreeDoc(doc);
     xmlCleanupParser();
-    return (value != NULL) ? strdup(value) : NULL;
+    return value;
 }
 
 /*
@@ -3327,11 +3325,8 @@ char **get_array_from_xpath(char *xml, char *xpath, int *num)
     ret = 0;
     val = (char **)malloc( nodeset->nodeNr  * sizeof(char *) );
     for (i = 0; i < nodeset->nodeNr; i++) {
-        if (xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode, 1) != NULL) {
-            value = (char *)xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode, 1);
-
-            val[ret++] = strdup(value);
-        }
+        if ((value = xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode, 1)))
+            val[ret++] = value;
     }
 
     xmlXPathFreeContext(context);
@@ -3506,20 +3501,23 @@ long get_next_free_numeric_value(virDomainPtr domain, char *xpath)
  */
 char *connection_get_domain_type(virConnectPtr conn, char *arch TSRMLS_DC)
 {
-    int retval = -1;
+    char *ret = NULL;
     char *tmp = NULL;
     char *caps = NULL;
+    char *tmpArch = NULL;
     char xpath[1024] = { 0 };
+    int retval = -1;
 
     caps = virConnectGetCapabilities(conn);
     if (caps == NULL)
         return NULL;
 
     if (arch == NULL) {
-        arch = get_string_from_xpath(caps, "//capabilities/host/cpu/arch", NULL, &retval);
-        DPRINTF("%s: No architecture defined, got '%s' from capabilities XML\n", __FUNCTION__, arch);
-        if ((arch == NULL) || (retval < 0))
-            return NULL;
+        tmpArch = get_string_from_xpath(caps, "//capabilities/host/cpu/arch", NULL, &retval);
+        DPRINTF("%s: No architecture defined, got '%s' from capabilities XML\n", __FUNCTION__, tmpArch);
+        if (!tmpArch || retval < 0)
+            goto cleanup;
+        arch = tmpArch;
     }
 
     DPRINTF("%s: Requested domain type for arch '%s'\n",  __FUNCTION__, arch);
@@ -3529,12 +3527,17 @@ char *connection_get_domain_type(virConnectPtr conn, char *arch TSRMLS_DC)
     tmp = get_string_from_xpath(caps, xpath, NULL, &retval);
     if ((tmp == NULL) || (retval < 0)) {
         DPRINTF("%s: No domain type found in XML...\n", __FUNCTION__);
-        return NULL;
+        goto cleanup;
     }
 
-    DPRINTF("%s: Domain type is '%s'\n",  __FUNCTION__, tmp);
-
-    return tmp;
+    ret = tmp;
+    tmp = NULL;
+    DPRINTF("%s: Domain type is '%s'\n",  __FUNCTION__, ret);
+ cleanup:
+    free(tmpArch);
+    free(caps);
+    free(tmp);
+    return ret;
 }
 
 /*
@@ -3547,20 +3550,23 @@ char *connection_get_domain_type(virConnectPtr conn, char *arch TSRMLS_DC)
  */
 char *connection_get_emulator(virConnectPtr conn, char *arch TSRMLS_DC)
 {
-    int retval = -1;
+    char *ret = NULL;
     char *tmp = NULL;
     char *caps = NULL;
+    char *tmpArch = NULL;
     char xpath[1024] = { 0 };
+    int retval = -1;
 
     caps = virConnectGetCapabilities(conn);
     if (caps == NULL)
         return NULL;
 
     if (arch == NULL) {
-        arch = get_string_from_xpath(caps, "//capabilities/host/cpu/arch", NULL, &retval);
-        DPRINTF("%s: No architecture defined, got '%s' from capabilities XML\n", __FUNCTION__, arch);
-        if ((arch == NULL) || (retval < 0))
-            return NULL;
+        tmpArch = get_string_from_xpath(caps, "//capabilities/host/cpu/arch", NULL, &retval);
+        DPRINTF("%s: No architecture defined, got '%s' from capabilities XML\n", __FUNCTION__, tmpArch);
+        if (!tmpArch || retval < 0)
+            goto cleanup;
+        arch = tmpArch;
     }
 
     DPRINTF("%s: Requested emulator for arch '%s'\n",  __FUNCTION__, arch);
@@ -3568,26 +3574,30 @@ char *connection_get_emulator(virConnectPtr conn, char *arch TSRMLS_DC)
     snprintf(xpath, sizeof(xpath), "//capabilities/guest/arch[@name='%s']/domain/emulator", arch);
     DPRINTF("%s: Applying xPath '%s' to capabilities XML output\n", __FUNCTION__, xpath);
     tmp = get_string_from_xpath(caps, xpath, NULL, &retval);
-    if ((tmp == NULL) || (retval < 0)) {
-        DPRINTF("%s: No emulator found. Trying next location ...\n", __FUNCTION__);
-        snprintf(xpath, sizeof(xpath), "//capabilities/guest/arch[@name='%s']/emulator", arch);
-    }
-    else {
+    if (tmp && retval >= 0) {
         DPRINTF("%s: Emulator is '%s'\n",  __FUNCTION__, tmp);
-        return tmp;
+        goto done;
     }
 
+    DPRINTF("%s: No emulator found. Trying next location ...\n", __FUNCTION__);
+    snprintf(xpath, sizeof(xpath), "//capabilities/guest/arch[@name='%s']/emulator", arch);
     DPRINTF("%s: Applying xPath '%s' to capabilities XML output\n",  __FUNCTION__, xpath);
-
+    free(tmp);
     tmp = get_string_from_xpath(caps, xpath, NULL, &retval);
-    if ((tmp == NULL) || (retval < 0)) {
-        DPRINTF("%s: Emulator is '%s'\n",  __FUNCTION__, tmp);
-        return NULL;
+    if (!tmp || retval < 0) {
+        DPRINTF("%s: None emulator found\n",  __FUNCTION__);
+        goto cleanup;
     }
 
-    DPRINTF("%s: Emulator is '%s'\n",  __FUNCTION__, tmp);
-
-    return tmp;
+ done:
+    ret = tmp;
+    tmp = NULL;
+    DPRINTF("%s: Emulator is '%s'\n",  __FUNCTION__, ret);
+ cleanup:
+    free(tmpArch);
+    free(caps);
+    free(tmp);
+    return ret;
 }
 
 /*
@@ -3599,26 +3609,29 @@ char *connection_get_emulator(virConnectPtr conn, char *arch TSRMLS_DC)
  */
 char *connection_get_arch(virConnectPtr conn TSRMLS_DC)
 {
-    int retval = -1;
+    char *ret = NULL;
     char *tmp = NULL;
     char *caps = NULL;
-    // char xpath[1024] = { 0 };
+    int retval = -1;
 
     caps = virConnectGetCapabilities(conn);
     if (caps == NULL)
         return NULL;
 
     tmp = get_string_from_xpath(caps, "//capabilities/host/cpu/arch", NULL, &retval);
-    free(caps);
-
     if ((tmp == NULL) || (retval < 0)) {
         DPRINTF("%s: Cannot get host CPU architecture from capabilities XML\n", __FUNCTION__);
-        return NULL;
+        goto cleanup;
     }
 
-    DPRINTF("%s: Host CPU architecture is '%s'\n",  __FUNCTION__, tmp);
+    ret = tmp;
+    tmp = NULL;
+    DPRINTF("%s: Host CPU architecture is '%s'\n",  __FUNCTION__, ret);
 
-    return tmp;
+ cleanup:
+    free(caps);
+    free(tmp);
+    return ret;
 }
 
 /*
@@ -7130,7 +7143,8 @@ PHP_FUNCTION(libvirt_domain_xml_xpath)
 
     array_init(return_value);
 
-    if ((tmp = get_string_from_xpath(xml, (char *)zpath, &return_value, &rc)) == NULL) {
+    free(get_string_from_xpath(xml, (char *)zpath, &return_value, &rc));
+    if (return_value < 0) {
         free(xml);
         RETURN_FALSE;
     }
