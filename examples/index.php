@@ -1,9 +1,11 @@
 <?php
 	require('libvirt.php');
 	$lv = new Libvirt('qemu:///system');
+	if ($lv == false)
+		die('<html><body>Cannot open connection to hypervisor</body></html>');
 	$hn = $lv->get_hostname();
 	if ($hn == false)
-		die('Cannot open connection to hypervisor</body></html>');
+		die('<html><body>Cannot get hostname</body></html>');
 
 	$action = array_key_exists('action', $_GET) ? $_GET['action'] : false;
 	$subaction = array_key_exists('subaction', $_GET) ? $_GET['subaction'] : false;
