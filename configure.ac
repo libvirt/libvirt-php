@@ -1,6 +1,7 @@
-AC_INIT([libvirt-php], [0.5.1], [http://libvirt.org])
+AC_INIT([libvirt-php], [0.5.1], [libvir-list@redhat.com], [], [http://libvirt.org])
+AC_CONFIG_SRCDIR([src/libvirt-php.c])
+AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([-Wall -Werror -Wno-portability])
-AC_CONFIG_FILES([Makefile tools/Makefile src/Makefile tests/Makefile docs/Makefile])
 AM_MAINTAINER_MODE([enable])
 
 m4_ifndef([LT_INIT], [
@@ -157,10 +158,10 @@ if test "$OS" = "Darwin"; then
 else
     SHLIB_FLAGS="-shared -rdynamic"
 fi
-AC_SUBST([SHLIB_FLAGS])
 
+AC_SUBST([SHLIB_FLAGS])
 AC_SUBST([PHPIZE])
 AC_SUBST([PHPCONFIG])
-AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_FILES([libvirt-php.spec])
+AC_CONFIG_FILES([Makefile tools/Makefile src/Makefile \
+                 tests/Makefile docs/Makefile libvirt-php.spec])
 AC_OUTPUT
