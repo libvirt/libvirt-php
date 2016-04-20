@@ -1,25 +1,7 @@
 PHPINC=$(shell $(PHPCONFIG) --includes)
-PHPCDIR=$(shell $(PHPCONFIG) --configure-options | sed -n 's|.*--with-config-file-scan-dir=\([^ ]*\).*|\1|p')
 DEFINES=-DHAVE_CONFIG_H
 WL=@WL@
 SHLIB_FLAGS=@SHLIB_FLAGS@
-
-install-exec-local:
-	$(MKDIR_P) $(DESTDIR)$(PHPCDIR)
-	$(INSTALL) -m 755 -d $(DESTDIR)$(PHPCDIR)
-	$(ECHO) "extension=$(PACKAGE).so" > libvirt-php.ini
-	$(ECHO) >> libvirt-php.ini
-	$(ECHO) "[libvirt]" >> libvirt-php.ini
-	$(ECHO) "; Path to ISO images for VM installations" >> libvirt-php.ini
-	$(ECHO) "libvirt.iso_path=/var/lib/libvirt/images" >> libvirt-php.ini
-	$(ECHO) "; Path where disk images for new VMs should be created" >> libvirt-php.ini
-	$(ECHO) "libvirt.image_path=/var/lib/libvirt/images" >> libvirt-php.ini
-	$(ECHO) "; Limit maximum number of libvirt connections" >> libvirt-php.ini
-	$(ECHO) "libvirt.max_connections=5" >> libvirt-php.ini
-	$(INSTALL) -m 644 -D libvirt-php.ini $(DESTDIR)$(PHPCDIR)/$(PACKAGE).ini
-
-uninstall-local:
-	$(RM) -f $(DESTDIR)$(PHPCDIR)/$(PACKAGE).ini
 
 AM_CFLAGS = \
 	$(PHPINC) $(LIBXML_CFLAGS) \
@@ -42,4 +24,7 @@ libvirt_php_la_CFLAGS = \
 	$(AM_CFLAGS) \
 	-DCOMPILE_DL_LIBVIRT=1
 
-CLEANFILES = libvirt-php.ini
+php_confdir = $(confdir)
+php_conf_DATA = libvirt-php.ini
+
+EXTRA_DIST = $(php_conf_DATA)

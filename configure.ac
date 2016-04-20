@@ -152,6 +152,7 @@ if test "x$PHPIZE" = "xno"; then
 fi
 
 LIBVIRT_CHECK_PHP_EXTENSIONDIR
+LIBVIRT_CHECK_PHP_CONFDIR
 
 OS=`uname`
 if test "$OS" = "Darwin"; then
@@ -170,3 +171,4 @@ AC_CONFIG_FILES([Makefile tools/Makefile src/Makefile \
 AC_OUTPUT
 
 LIBVIRT_RESULT_PHP_EXTENSIONDIR
+LIBVIRT_RESULT_PHP_CONFDIR
