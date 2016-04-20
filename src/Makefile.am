@@ -1,14 +1,11 @@
 PHPINC=$(shell $(PHPCONFIG) --includes)
-PHPEDIR=$(shell $(PHPCONFIG) --extension-dir)
 PHPCDIR=$(shell $(PHPCONFIG) --configure-options | sed -n 's|.*--with-config-file-scan-dir=\([^ ]*\).*|\1|p')
 DEFINES=-DHAVE_CONFIG_H
 WL=@WL@
 SHLIB_FLAGS=@SHLIB_FLAGS@
 
 install-exec-local:
-	$(MKDIR_P) $(DESTDIR)$(PHPEDIR)
 	$(MKDIR_P) $(DESTDIR)$(PHPCDIR)
-	$(INSTALL) -m 644 -D .libs/$(PACKAGE).so $(DESTDIR)$(PHPEDIR)/$(PACKAGE).so
 	$(INSTALL) -m 755 -d $(DESTDIR)$(PHPCDIR)
 	$(ECHO) "extension=$(PACKAGE).so" > libvirt-php.ini
 	$(ECHO) >> libvirt-php.ini
@@ -23,7 +20,6 @@ install-exec-local:
 
 uninstall-local:
 	$(RM) -f $(DESTDIR)$(PHPCDIR)/$(PACKAGE).ini
-	$(RM) -f $(DESTDIR)$(PHPEDIR)/$(PACKAGE).so
 
 AM_CFLAGS = \
 	$(PHPINC) $(LIBXML_CFLAGS) \
@@ -36,8 +32,8 @@ AM_LDFLAGS = \
 	$(LIBVIRT_LIBS) \
 	$(QEMU_LIBS)
 
-lib_LTLIBRARIES = libvirt-php.la
-
+php_plugindir = $(extensiondir)
+php_plugin_LTLIBRARIES = libvirt-php.la
 libvirt_php_la_SOURCES = \
 	vncfunc.c \
 	sockets.c \

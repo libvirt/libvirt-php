@@ -30,9 +30,10 @@ depcomp
 docs/*.html
 docs/*.html.in
 autom4te.cache/
-m4/
+m4/*
 src/*.so
 stamp-h1
 tools/generate-api-docs
 libvirt-php-*.tar.gz
 *~
+!/m4/virt-*.m4

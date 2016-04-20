@@ -1,6 +1,7 @@
 AC_INIT([libvirt-php], [0.5.1], [libvir-list@redhat.com], [], [http://libvirt.org])
 AC_CONFIG_SRCDIR([src/libvirt-php.c])
 AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([-Wall -Werror -Wno-portability])
 AM_MAINTAINER_MODE([enable])
 
@@ -150,6 +151,8 @@ if test "x$PHPIZE" = "xno"; then
     AC_MSG_ERROR([phpize not found; please install the PHP SDK])
 fi
 
+LIBVIRT_CHECK_PHP_EXTENSIONDIR
+
 OS=`uname`
 if test "$OS" = "Darwin"; then
     WL=-Wl,
@@ -165,3 +168,5 @@ AC_SUBST([PHPCONFIG])
 AC_CONFIG_FILES([Makefile tools/Makefile src/Makefile \
                  tests/Makefile docs/Makefile libvirt-php.spec])
 AC_OUTPUT
+
+LIBVIRT_RESULT_PHP_EXTENSIONDIR
