@@ -1,14 +1,4 @@
-
-
-h1 {
-    font-weight: normal;
-    color: #3c857c;
-}
-h1 strong {
-    font-weight: bold;
-}
-
-h2, h3, h4, h5, h6 {
+h1, h2, h3, h4, h5, h6 {
     color: #3c857c;
 }
 
@@ -57,12 +47,6 @@ h2, h3, h4, h5, h6 {
     padding: 0px;
     margin: 0px;
     border: 0px;
-    font-weight: bold;
-    font-size: 1.2em;
-}
-
-#menu li ul li {
-    font-size: 1em;
 }
 
 #menu ul li a, #menu ul li span {
@@ -96,6 +80,7 @@ h2, h3, h4, h5, h6 {
 #menu ul.l1 li .inactive {
     border-left: 6px solid #dfebea;
 }
+
 #menu ul.l1 li .active {
     border-left: 6px solid #a5c6c2;
 }
@@ -111,7 +96,6 @@ h2, h3, h4, h5, h6 {
     padding-left: 3em;
 }
 
-
 #headerLogo {
     position: absolute;
     top: 0px;
@@ -120,6 +104,7 @@ h2, h3, h4, h5, h6 {
     width: 400px;
     background: url(graphics/libvirt-php-header-logo.png);
 }
+
 #headerSearch {
     position: absolute;
     top: 0px;
@@ -143,7 +128,6 @@ h2, h3, h4, h5, h6 {
     padding: 3px;
     font-size: 1em;
 }
-
 
 #sitemap ul li {
     list-style: none;
@@ -179,26 +163,30 @@ a {
     color: #566866;
 }
 
-
 div.api {
     border: 1px solid #999999;
     background: #eeeeee;
     color: black;
+    padding: 3px;
 }
 
 div.api pre {
     margin: 0px;
     border: 0px;
     background: inherit;
+    padding: inherit;
 }
 
 div.api table {
     margin: 0px;
     padding-left: 2em;
-    font-family: fixed;
-    whitespace: pre;
+    border-spacing: 0px;
 }
 
+div.api table td, div.variablelist table td {
+    vertical-align: top;
+    padding-left: 1em;
+}
 
 h1 a, h2 a, h3 a, h4 a, h5 a {
     color: inherit;
@@ -211,16 +199,6 @@ h1 a, h2 a, h3 a, h4 a, h5 a {
 }
 
 p.image {
-    text-align: center;
-}
-
-#ref-table {
-    margin-left:auto;
-    margin-right:auto;
-}
-
-#ref-table td {
-    padding: 0 25px 0 25px;
     text-align: center;
 }
 
@@ -249,36 +227,6 @@ p.image {
     background: #c5dbd8;
 }
 
-#footer {
-    clear: both;
-    position: relative;
-    margin: 0px;
-    padding: 0px;
-    border: 0px;
-    width: 100%;
-    height: 180px;
-    background: #FFFFFF;
-/*    background: #757575; */
-}
-/* This is hidden from IE <= 6 because it can't do transparency */
-/* body > #footer {
-    background: #757575 url(graphics/footer_pattern.png) repeat-x;
-} */
-
-#footer p {
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    margin: 0px;
-    border: 0px solid red;
-    width: 220px;
-    text-align: center;
-}
-
-#footer p a img {
-    border: 0px;
-}
-
 #projects {
     margin: 0px;
     border: 0px;
@@ -288,7 +236,6 @@ p.image {
     width: 100%;
 }
 
-
 #projects dl {
     margin: 0px;
     border: 0px solid white;
@@ -296,10 +243,6 @@ p.image {
     position: absolute;
     top: 0px;
     left: 0px;
-}
-/* This is hidden from IE <= 6 because it can't do transparency */
-head:first-child+body #projects dl {
-    background: url(graphics/footer_corner.png) no-repeat ! important;
 }
 
 #projects #p1 {
@@ -325,14 +268,13 @@ head:first-child+body #projects dl {
 #projects #p1 dt, #projects #p1 dd {
     width: 33%;
 }
+
 #projects #p2 dt, #projects #p2 dd {
     width: 50%;
 }
+
 #projects #p3 dt, #projects #p3 dd {
     width: 99%;
-}
-
-#projects {
 }
 
 #projects span {
@@ -358,15 +300,154 @@ head:first-child+body #projects dl {
     color: #ccc;
 }
 
-
-#sponsor {
-    color: #757575;
-    text-decoration: inherit;
-    font-size: 1.2em;
-}
-
 span.since {
     color: #3c857c;
     font-style: italic;
     font-weight: bold;
+}
+
+img.diagram {
+    background: rgb(230,230,230);
+    border: 2px dotted rgb(178,178,178);
+    padding: 1em;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+table.data th, table.data td {
+    padding: 0.3em;
+}
+
+table.data {
+    border-spacing: 0px;
+}
+
+table.data thead th {
+    background: rgb(178,178,178);
+    text-align: center;
+}
+
+table.data {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+table.data thead tr th {
+    border: 1px solid black;
+}
+
+table.data tr.head th {
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+}
+
+table.data tbody td {
+    background: rgb(240,240,240);
+}
+
+table.data tbody td.y {
+    background: rgb(220,255,220);
+    text-align: center;
+}
+table.data tbody td.n {
+    background: rgb(255,220,220);
+    text-align: center;
+}
+
+.api {
+    font-family: monospace;
+}
+
+.api .type {
+    font-weight: bold;
+    white-space: nowrap;
+    color: darkslateblue;
+}
+
+.api .keyword {
+    font-weight: bold;
+    color: #A2F;
+}
+
+.api .comment {
+    color: #080;
+    margin-left: 2em;
+    position: relative;
+}
+
+.api .comment:before {
+    content: ": ";
+    position: absolute;
+    left: -1.3em;
+}
+
+.api .undisclosed {
+    font-style: italic;
+    letter-spacing: .3ex;
+    font-weight: bolder;
+    text-transform: uppercase;
+    margin-left: 2em;
+}
+
+.api .directive {
+    color: teal;
+}
+
+.api :link:hover, .api :link:focus {
+    color: blue;
+    border-color: blue;
+}
+
+.api :link {
+    text-decoration: none;
+}
+
+dl.variablelist > dt {
+    display: block;
+    float: left;
+    font-style: italic;
+    font-weight: inherit;
+}
+
+.variablelist dd {
+    padding-left: 10em;
+}
+
+dl.variablelist > dt:after {
+    content: ": ";
+}
+
+table.acl {
+    margin: 1em;
+    border-spacing: 0px;
+    border: 1px solid #ccc;
+}
+
+table.acl tr, table.acl td {
+    padding: 0.3em;
+}
+
+table.acl thead {
+    background: #ddd;
+}
+
+div.description pre.code {
+    border: 1px dashed grey;
+    background-color: inherit;
+    padding: 5px 10px 5px 10px;
+    margin-left: 2.5em;
+}
+
+a.headerlink {
+    text-decoration: none!important;
+    visibility: hidden;
+}
+
+h2:hover > a.headerlink,
+h3:hover > a.headerlink,
+h4:hover > a.headerlink,
+h5:hover > a.headerlink,
+h6:hover > a.headerlink {
+    visibility: visible;
 }
