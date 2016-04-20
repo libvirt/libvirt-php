@@ -34,6 +34,10 @@ AC_DEFUN([LIBVIRT_CHECK_PHP_EXTENSIONDIR],[
     fi
   fi
 
+  if test "x$with_distcheck" == "xyes" ; then
+     extensiondir=${prefix}${extensiondir}
+  fi
+
   AC_SUBST([extensiondir])
 ])
 

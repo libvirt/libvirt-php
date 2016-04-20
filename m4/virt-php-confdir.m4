@@ -34,6 +34,10 @@ AC_DEFUN([LIBVIRT_CHECK_PHP_CONFDIR],[
     fi
   fi
 
+  if test "x$with_distcheck" == "xyes" ; then
+     confdir=${prefix}${confdir}
+  fi
+
   AC_SUBST([confdir])
 ])
 

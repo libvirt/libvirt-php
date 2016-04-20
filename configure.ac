@@ -20,6 +20,11 @@ AC_PROG_AWK
 AC_PATH_PROG([ECHO], [echo], [])
 AC_CHECK_TOOL([RM], [rm])
 
+AC_ARG_WITH([distcheck],
+  [AS_HELP_STRING([--with-distcheck],
+    [this is an internal switch that is enabled when building under distcheck. Do NOT enable this by hand!])],
+    [], [with_distcheck=no])
+
 dnl Need to test if pkg-config exists
 PKG_PROG_PKG_CONFIG
 
