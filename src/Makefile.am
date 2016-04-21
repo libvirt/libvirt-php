@@ -22,6 +22,9 @@ libvirt_php_la_SOURCES = \
 libvirt_php_la_CFLAGS = \
 	$(AM_CFLAGS) \
 	-DCOMPILE_DL_LIBVIRT=1
+libvirt_php_la_LDFLAGS = \
+	$(AM_LDFLAGS)	\
+	-module -avoid-version
 
 php_confdir = $(confdir)
 php_conf_DATA = libvirt-php.ini
