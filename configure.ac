@@ -156,6 +156,11 @@ if test "x$PHPIZE" = "xno"; then
     AC_MSG_ERROR([phpize not found; please install the PHP SDK])
 fi
 
+PHP_CFLAGS=$($PHPCONFIG --includes)
+PHP_LDFLAGS=$($PHPCONFIG --ldflags)
+AC_SUBST(PHP_CFLAGS)
+AC_SUBST(PHP_LDFLAGS)
+
 LIBVIRT_CHECK_PHP_EXTENSIONDIR
 LIBVIRT_CHECK_PHP_CONFDIR
 
