@@ -26,4 +26,5 @@ libvirt_php_la_CFLAGS = \
 php_confdir = $(confdir)
 php_conf_DATA = libvirt-php.ini
 
-EXTRA_DIST = $(php_conf_DATA)
+EXTRA_DIST = $(php_conf_DATA) \
+	config.m4
