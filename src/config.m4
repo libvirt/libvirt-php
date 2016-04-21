@@ -5,7 +5,7 @@ if test "$PHP_LIBVIRT" != "no"; then
 
   AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
 
-  LIBVIRT_REQUIRED=1.2.8
+  LIBVIRT_REQUIRED=1.2.13
 
   if test -x "$PKG_CONFIG" && $PKG_CONFIG libvirt --exists ; then
     AC_MSG_CHECKING(libvirt version)
