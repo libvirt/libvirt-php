@@ -252,6 +252,18 @@ ZEND_ARG_INFO(0, conn)
 ZEND_ARG_INFO(0, flags)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_libvirt_domain_xml_from_native, 0, 0, 3)
+ZEND_ARG_INFO(0, conn)
+ZEND_ARG_INFO(0, format)
+ZEND_ARG_INFO(0, config_data)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_libvirt_domain_xml_to_native, 0, 0, 3)
+ZEND_ARG_INFO(0, conn)
+ZEND_ARG_INFO(0, format)
+ZEND_ARG_INFO(0, xml_data)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_libvirt_domain_memory_peek, 0, 0, 4)
 ZEND_ARG_INFO(0, conn)
 ZEND_ARG_INFO(0, start)
@@ -580,6 +592,8 @@ static zend_function_entry libvirt_functions[] = {
     PHP_FE(libvirt_domain_reboot,                arginfo_libvirt_conn_flags)
     PHP_FE(libvirt_domain_define_xml,            arginfo_libvirt_conn_xml)
     PHP_FE(libvirt_domain_create_xml,            arginfo_libvirt_conn_xml)
+    PHP_FE(libvirt_domain_xml_from_native,       arginfo_libvirt_domain_xml_from_native)
+    PHP_FE(libvirt_domain_xml_to_native,         arginfo_libvirt_domain_xml_to_native)
     PHP_FE(libvirt_domain_memory_peek,           arginfo_libvirt_domain_memory_peek)
     PHP_FE(libvirt_domain_memory_stats,          arginfo_libvirt_conn_flags)
     PHP_FE(libvirt_domain_set_memory,            arginfo_libvirt_domain_set_memory)
@@ -6692,6 +6706,72 @@ PHP_FUNCTION(libvirt_domain_create_xml)
 #else
     ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
 #endif
+}
+
+/*
+ * Function name:   libvirt_domain_xml_from_native
+ * Since version:   0.5.3
+ * Description:     Function is used to convert native configuration data to libvirt domain XML
+ * Arguments:       @conn [resource]: libvirt connection resource
+ *                  @format [string]: configuration format converting from
+ *                  @config_data [string]: content of the native config file
+ * Returns:         libvirt domain XML, FALSE on error
+ */
+PHP_FUNCTION(libvirt_domain_xml_from_native)
+{
+    php_libvirt_connection *conn = NULL;
+    zval *zconn;
+    char *config_data = NULL;
+    char *format = NULL;
+    char *xml = NULL;
+    strsize_t config_data_len;
+    strsize_t format_len;
+    unsigned int flags = 0;
+
+    GET_CONNECTION_FROM_ARGS("rss", &zconn, &format, &format_len, &config_data, &config_data_len);
+
+    xml = virConnectDomainXMLFromNative(conn->conn, format, config_data, flags);
+
+    if (xml == NULL) {
+        set_error_if_unset("Cannot convert native format to XML" TSRMLS_CC);
+        RETURN_FALSE;
+    }
+
+    VIRT_RETVAL_STRING(xml);
+    free(xml);
+}
+
+/*
+ * Function name:   libvirt_domain_xml_to_native
+ * Since version:   0.5.3
+ * Description:     Function is used to convert libvirt domain XML to native configuration
+ * Arguments:       @conn [resource]: libvirt connection resource
+ *                  @format [string]: configuration format converting to
+ *                  @xml_data [string]: content of the libvirt domain xml file
+ * Returns:         contents of the native data file, FALSE on error
+*/
+PHP_FUNCTION(libvirt_domain_xml_to_native)
+{
+    php_libvirt_connection *conn = NULL;
+    zval *zconn;
+    char *xml_data = NULL;
+    char *format  = NULL;
+    char *config_data = NULL;
+    strsize_t xml_data_len;
+    strsize_t format_len;
+    unsigned int flags = 0;
+
+    GET_CONNECTION_FROM_ARGS("rss", &zconn, &format, &format_len, &xml_data, &xml_data_len);
+
+    config_data = virConnectDomainXMLToNative(conn->conn, format, xml_data, flags);
+
+    if (config_data == NULL) {
+        set_error_if_unset("Cannot convert to native format from XML" TSRMLS_CC);
+        RETURN_FALSE;
+    }
+
+    VIRT_RETVAL_STRING(config_data);
+    free(config_data);
 }
 
 /*

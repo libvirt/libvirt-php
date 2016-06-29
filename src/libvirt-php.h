@@ -412,6 +412,8 @@ PHP_FUNCTION(libvirt_domain_undefine);
 PHP_FUNCTION(libvirt_domain_reboot);
 PHP_FUNCTION(libvirt_domain_define_xml);
 PHP_FUNCTION(libvirt_domain_create_xml);
+PHP_FUNCTION(libvirt_domain_xml_from_native);
+PHP_FUNCTION(libvirt_domain_xml_to_native);
 PHP_FUNCTION(libvirt_domain_set_max_memory);
 PHP_FUNCTION(libvirt_domain_set_memory);
 PHP_FUNCTION(libvirt_domain_set_memory_flags);
