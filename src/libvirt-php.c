@@ -664,6 +664,7 @@ static zend_function_entry libvirt_functions[] = {
     PHP_FE(libvirt_node_get_cpu_stats,           arginfo_libvirt_conn_optcpunr)
     PHP_FE(libvirt_node_get_cpu_stats_for_each_cpu, arginfo_libvirt_conn_opttime)
     PHP_FE(libvirt_node_get_mem_stats,           arginfo_libvirt_conn)
+    PHP_FE(libvirt_node_get_free_memory,         arginfo_libvirt_conn)
     /* Nodedev functions */
     PHP_FE(libvirt_nodedev_get,                  arginfo_libvirt_conn)
     PHP_FE(libvirt_nodedev_capabilities,         arginfo_libvirt_conn)
@@ -2089,6 +2090,11 @@ else \
     add_index_long(out, key,in); \
 }
 
+#define LONGLONG_RETURN_AS_STRING(in) \
+    snprintf(tmpnumber, 63, "%llu", in); \
+    VIRT_RETURN_STRING(tmpnumber);
+
+
 /* Authentication callback function. Should receive list of credentials via cbdata and pass the requested one to libvirt */
 static int libvirt_virConnectAuthCallback(virConnectCredentialPtr cred, unsigned int ncred, void *cbdata)
 {
@@ -2576,6 +2582,30 @@ PHP_FUNCTION(libvirt_node_get_mem_stats)
 
     free(params);
     params = NULL;
+}
+
+/*
+ * Function name:   libvirt_node_get_free_memory
+ * Since version:   0.5.3
+ * Description:     Function is used to get free memory available on the node.
+ * Arguments:       @conn [resource]: resource for connection.
+ * Returns:         The available free memery in bytes as string or FALSE for error.
+ */
+PHP_FUNCTION(libvirt_node_get_free_memory)
+{
+    php_libvirt_connection *conn = NULL;
+    zval *zconn;
+    unsigned long long ret;
+    LONGLONG_INIT;
+
+    GET_CONNECTION_FROM_ARGS("r", &zconn);
+
+    if ((ret = virNodeGetFreeMemory(conn->conn)) != 0) {
+        LONGLONG_RETURN_AS_STRING(ret);
+    } else {
+        set_error("Cannot get the free memory for the node" TSRMLS_CC);
+        RETURN_FALSE;
+    }
 }
 
 //virsh capabilities | xpath '//capabilities/guest/arch[@name="x86_64"]/machine[@maxCpus=1]'

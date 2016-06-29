@@ -366,6 +366,7 @@ PHP_FUNCTION(libvirt_node_get_info);
 PHP_FUNCTION(libvirt_node_get_cpu_stats);
 PHP_FUNCTION(libvirt_node_get_cpu_stats_for_each_cpu);
 PHP_FUNCTION(libvirt_node_get_mem_stats);
+PHP_FUNCTION(libvirt_node_get_free_memory);
 /* Stream functions */
 PHP_FUNCTION(libvirt_stream_create);
 PHP_FUNCTION(libvirt_stream_close);
