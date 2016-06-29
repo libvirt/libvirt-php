@@ -393,6 +393,8 @@ PHP_FUNCTION(libvirt_domain_disk_add);
 PHP_FUNCTION(libvirt_domain_disk_remove);
 PHP_FUNCTION(libvirt_domain_nic_add);
 PHP_FUNCTION(libvirt_domain_nic_remove);
+PHP_FUNCTION(libvirt_domain_attach_device);
+PHP_FUNCTION(libvirt_domain_detach_device);
 PHP_FUNCTION(libvirt_domain_get_info);
 PHP_FUNCTION(libvirt_domain_get_uuid);
 PHP_FUNCTION(libvirt_domain_get_uuid_string);

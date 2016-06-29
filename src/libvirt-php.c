@@ -227,6 +227,18 @@ ZEND_ARG_INFO(0, dev)
 ZEND_ARG_INFO(0, flags)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_libvirt_domain_attach_device, 0, 0, 2)
+ZEND_ARG_INFO(0, conn)
+ZEND_ARG_INFO(0, xml)
+ZEND_ARG_INFO(0, flags)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_libvirt_domain_detach_device, 0, 0, 2)
+ZEND_ARG_INFO(0, conn)
+ZEND_ARG_INFO(0, xml)
+ZEND_ARG_INFO(0, flags)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_libvirt_domain_lookup_by_id, 0, 0, 2)
 ZEND_ARG_INFO(0, conn)
 ZEND_ARG_INFO(0, id)
@@ -581,6 +593,8 @@ static zend_function_entry libvirt_functions[] = {
     PHP_FE(libvirt_domain_disk_remove,           arginfo_libvirt_domain_disk_remove)
     PHP_FE(libvirt_domain_nic_add,               arginfo_libvirt_domain_nic_add)
     PHP_FE(libvirt_domain_nic_remove,            arginfo_libvirt_domain_nic_remove)
+    PHP_FE(libvirt_domain_attach_device,         arginfo_libvirt_domain_attach_device)
+    PHP_FE(libvirt_domain_detach_device,         arginfo_libvirt_domain_detach_device)
     PHP_FE(libvirt_domain_get_info,              arginfo_libvirt_conn)
     PHP_FE(libvirt_domain_get_name,              arginfo_libvirt_conn)
     PHP_FE(libvirt_domain_get_uuid,              arginfo_libvirt_conn)
@@ -1968,9 +1982,9 @@ PHP_MINIT_FUNCTION(libvirt)
     REGISTER_LONG_CONSTANT("VIR_DOMAIN_METADATA_DESCRIPTION",   0, CONST_CS | CONST_PERSISTENT);
     REGISTER_LONG_CONSTANT("VIR_DOMAIN_METADATA_TITLE",     1, CONST_CS | CONST_PERSISTENT);
     REGISTER_LONG_CONSTANT("VIR_DOMAIN_METADATA_ELEMENT",       2, CONST_CS | CONST_PERSISTENT);
-    REGISTER_LONG_CONSTANT("VIR_DOMAIN_AFFECT_CURRENT",     0, CONST_CS | CONST_PERSISTENT);
-    REGISTER_LONG_CONSTANT("VIR_DOMAIN_AFFECT_LIVE",        1, CONST_CS | CONST_PERSISTENT);
-    REGISTER_LONG_CONSTANT("VIR_DOMAIN_AFFECT_CONFIG",      2, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_DOMAIN_AFFECT_CURRENT",     VIR_DOMAIN_AFFECT_CURRENT, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_DOMAIN_AFFECT_LIVE",        VIR_DOMAIN_AFFECT_LIVE, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_DOMAIN_AFFECT_CONFIG",      VIR_DOMAIN_AFFECT_CONFIG, CONST_CS | CONST_PERSISTENT);
 
     REGISTER_LONG_CONSTANT("VIR_DOMAIN_STATS_STATE",        VIR_DOMAIN_STATS_STATE, CONST_CS | CONST_PERSISTENT);
     REGISTER_LONG_CONSTANT("VIR_DOMAIN_STATS_CPU_TOTAL",        VIR_DOMAIN_STATS_CPU_TOTAL, CONST_CS | CONST_PERSISTENT);
@@ -6489,6 +6503,56 @@ PHP_FUNCTION(libvirt_domain_nic_remove)
     free(xpath);
     free(xml);
     RETURN_FALSE;
+}
+
+/*
+ * Function name:   libvirt_domain_attach_device
+ * Since version:   0.5.3
+ * Description:     Function is used to attach a virtual device to a domain.
+ * Arguments:       @res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
+ *                  @xml [string]: XML description of one device.
+ *                  @flags [int]: optional flags to control how the device is attached. Defaults to VIR_DOMAIN_AFFECT_LIVE
+ * Returns:         TRUE for success, FALSE on error.
+ */
+PHP_FUNCTION(libvirt_domain_attach_device)
+{
+    php_libvirt_domain *domain = NULL;
+    zval *zdomain = NULL;
+    char *xml = NULL;
+    strsize_t xml_len = 0;
+    zend_long flags = VIR_DOMAIN_AFFECT_LIVE;
+
+    GET_DOMAIN_FROM_ARGS("rs|l", &zdomain, &xml, &xml_len, &flags);
+
+    if (virDomainAttachDeviceFlags(domain->domain, xml, flags) < 0)
+        RETURN_FALSE;
+
+    RETURN_TRUE;
+}
+
+/*
+ * Function name:   libvirt_domain_detach_device
+ * Since version:   0.5.3
+ * Description:     Function is used to detach a virtual device from a domain.
+ * Arguments:       @res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
+ *                  @xml [string]: XML description of one device.
+ *                  @flags [int]: optional flags to control how the device is attached. Defaults to VIR_DOMAIN_AFFECT_LIVE
+ * Returns:         TRUE for success, FALSE on error.
+ */
+PHP_FUNCTION(libvirt_domain_detach_device)
+{
+    php_libvirt_domain *domain = NULL;
+    zval *zdomain = NULL;
+    char *xml = NULL;
+    strsize_t xml_len = 0;
+    zend_long flags = VIR_DOMAIN_AFFECT_LIVE;
+
+    GET_DOMAIN_FROM_ARGS("rs|l", &zdomain, &xml, &xml_len, &flags);
+
+    if (virDomainDetachDeviceFlags(domain->domain, xml, flags) < 0)
+        RETURN_FALSE;
+
+    RETURN_TRUE;
 }
 
 /*
