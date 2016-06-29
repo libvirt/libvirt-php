@@ -440,6 +440,7 @@ PHP_FUNCTION(libvirt_domain_set_autostart);
 PHP_FUNCTION(libvirt_domain_is_active);
 PHP_FUNCTION(libvirt_domain_get_next_dev_ids);
 PHP_FUNCTION(libvirt_domain_send_keys);
+PHP_FUNCTION(libvirt_domain_send_key_api);
 PHP_FUNCTION(libvirt_domain_send_pointer_event);
 PHP_FUNCTION(libvirt_domain_get_metadata);
 PHP_FUNCTION(libvirt_domain_set_metadata);

@@ -405,6 +405,14 @@ ZEND_ARG_INFO(0, server)
 ZEND_ARG_INFO(0, scancode)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_libvirt_domain_send_key_api, 0, 0, 4)
+ZEND_ARG_INFO(0, conn)
+ZEND_ARG_INFO(0, codeset)
+ZEND_ARG_INFO(0, holdime)
+ZEND_ARG_INFO(0, keycodes)
+ZEND_ARG_INFO(0, flags)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_libvirt_domain_send_pointer_event, 0, 0, 5)
 ZEND_ARG_INFO(0, conn)
 ZEND_ARG_INFO(0, server)
@@ -624,6 +632,7 @@ static zend_function_entry libvirt_functions[] = {
     PHP_FE(libvirt_domain_get_screenshot_api,    arginfo_libvirt_domain_get_screenshot_api)
     PHP_FE(libvirt_domain_get_screen_dimensions, arginfo_libvirt_domain_get_screen_dimensions)
     PHP_FE(libvirt_domain_send_keys,             arginfo_libvirt_domain_send_keys)
+    PHP_FE(libvirt_domain_send_key_api,          arginfo_libvirt_domain_send_key_api)
     PHP_FE(libvirt_domain_send_pointer_event,    arginfo_libvirt_domain_send_pointer_event)
     PHP_FE(libvirt_domain_update_device,         arginfo_libvirt_domain_update_device)
     /* Domain snapshot functions */
@@ -1987,6 +1996,18 @@ PHP_MINIT_FUNCTION(libvirt)
 
     /* Connect flags */
     REGISTER_LONG_CONSTANT("VIR_CONNECT_FLAG_SOUNDHW_GET_NAMES",    CONNECT_FLAG_SOUNDHW_GET_NAMES, CONST_CS | CONST_PERSISTENT);
+
+    /* Keycodeset constants */
+    REGISTER_LONG_CONSTANT("VIR_KEYCODE_SET_LINUX", VIR_KEYCODE_SET_LINUX, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_KEYCODE_SET_XT", VIR_KEYCODE_SET_XT, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_KEYCODE_SET_ATSET1", VIR_KEYCODE_SET_ATSET1, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_KEYCODE_SET_ATSET2", VIR_KEYCODE_SET_ATSET2, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_KEYCODE_SET_ATSET3", VIR_KEYCODE_SET_ATSET3, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_KEYCODE_SET_OSX", VIR_KEYCODE_SET_OSX, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_KEYCODE_SET_XT_KBD", VIR_KEYCODE_SET_XT_KBD, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_KEYCODE_SET_USB", VIR_KEYCODE_SET_USB, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_KEYCODE_SET_WIN32", VIR_KEYCODE_SET_WIN32, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_KEYCODE_SET_RFB", VIR_KEYCODE_SET_RFB, CONST_CS | CONST_PERSISTENT);
 
     REGISTER_INI_ENTRIES();
 
@@ -5058,6 +5079,61 @@ PHP_FUNCTION(libvirt_domain_send_keys)
     set_error("Function is not supported on Windows systems" TSRMLS_CC);
     RETURN_FALSE;
 #endif
+}
+
+/*
+ * Function name:   libvirt_domain_send_key_api
+ * Since version:   0.5.3
+ * Description:     Function sends keys to domain via libvirt API
+ * Arguments:       @res[resource]: libvirt domain resource, e.g. from libvirt_domaing_lookup_by_*()
+ *                  @codeset [int]: the codeset of keycodes, from virKeycodeSet
+ *                  @holdtime [int]: the duration (in miliseconds) that the keys will be held
+ *                  @keycodes [array]: array of keycodes
+ *                  @flags [int]: extra flags; not used yet so callers should alway pass 0
+ * Returns:         TRUE for success, FALSE for failure
+ */
+PHP_FUNCTION(libvirt_domain_send_key_api)
+{
+    php_libvirt_domain *domain = NULL;
+    zval *zdomain;
+    zend_long codeset;
+    zend_long holdtime = 0;
+    zend_long flags = 0;
+    zval *zkeycodes, *data = NULL;
+    HashTable *arr_hash = NULL;
+    HashPosition pointer;
+    int count, i;
+    uint *keycodes = NULL;
+
+    GET_DOMAIN_FROM_ARGS("rlla|l", &zdomain, &codeset, &holdtime, &zkeycodes,
+                         &flags);
+
+    arr_hash = Z_ARRVAL_P(zkeycodes);
+    count = zend_hash_num_elements(arr_hash);
+
+    keycodes = (uint *) emalloc(count * sizeof(uint));
+
+    i = 0;
+    for (zend_hash_internal_pointer_reset_ex(arr_hash, &pointer);
+#if PHP_MAJOR_VERSION >= 7
+         (data = zend_hash_get_current_data_ex(arr_hash, &pointer)) != NULL;
+#else
+         zend_hash_get_current_data_ex(arr_hash, (void **) &data, &pointer) == SUCCESS;
+#endif
+         zend_hash_move_forward_ex(arr_hash, &pointer)) {
+        if (Z_TYPE_P(data) == IS_LONG) {
+            keycodes[i++] = (uint) Z_LVAL_P(data);
+        }
+    }
+
+    if (virDomainSendKey(domain->domain, codeset, holdtime, keycodes, count,
+                         flags) != 0) {
+        efree(keycodes);
+        RETURN_FALSE;
+    }
+
+    efree(keycodes);
+    RETURN_TRUE;
 }
 
 /*
