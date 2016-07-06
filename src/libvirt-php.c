@@ -83,6 +83,21 @@ typedef size_t strsize_t;
 #define VIRT_ADD_ASSOC_STRING_EX(_arg, _key, _key_len, _value) \
     add_assoc_string_ex(_arg, _key, _key_len, _value)
 
+#define VIRT_FOREACH(_ht, _pos, _zv) \
+    for (zend_hash_internal_pointer_reset_ex(_ht, &_pos); \
+         (_zv = zend_hash_get_current_data_ex(_ht, &_pos)) != NULL; \
+         zend_hash_move_forward_ex(_ht, &_pos)) \
+
+#define VIRT_FOREACH_END(_dummy)
+
+#define VIRT_HASH_CURRENT_KEY_INFO(_ht, _pos, _idx, _info) \
+    do { \
+    zend_string *tmp_key_info; \
+    _info.type = zend_hash_get_current_key_ex(_ht, &tmp_key_info, &_idx, &_pos); \
+    _info.name = ZSTR_VAL(tmp_key_info); \
+    _info.length = ZSTR_LEN(tmp_key_info); \
+    } while(0)
+
 #else /* PHP_MAJOR_VERSION < 7 */
 typedef int strsize_t;
 typedef long zend_long;
@@ -109,6 +124,22 @@ typedef unsigned long zend_ulong;
     add_assoc_string(_arg, _key, _str, 1)
 #define VIRT_ADD_ASSOC_STRING_EX(_arg, _key, _key_len, _value) \
     add_assoc_string_ex(_arg, _key, _key_len, _value, 1)
+
+#define VIRT_FOREACH(_ht, _pos, _zv) \
+    { \
+    zval **pzv = &_zv; \
+    for (zend_hash_internal_pointer_reset_ex(_ht, &_pos); \
+         zend_hash_get_current_data_ex(_ht, (void **) &pzv, &_pos) == SUCCESS; \
+         zend_hash_move_forward_ex(_ht, &_pos)) { \
+        _zv = *pzv;
+
+#define VIRT_FOREACH_END(_dummy) \
+    }}
+
+#define VIRT_HASH_CURRENT_KEY_INFO(_ht, _pos, _idx, _info) \
+    do { \
+    _info.type = zend_hash_get_current_key_ex(_ht, &_info.name, &_info.length, &_idx, 0, &_pos); \
+    } while(0)
 
 #endif /* PHP_MAJOR_VERSION < 7 */
 

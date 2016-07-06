@@ -315,6 +315,12 @@ typedef struct _php_libvirt_cred_value {
     unsigned int    resultlen;
 } php_libvirt_cred_value;
 
+typedef struct _php_libvirt_hash_key_info {
+    char *name;
+    unsigned int length;
+    unsigned int type;
+} php_libvirt_hash_key_info;
+
 /* Private definitions */
 int vnc_refresh_screen(char *server, char *port, int scancode);
 int vnc_send_keys(char *server, char *port, char *keys);
