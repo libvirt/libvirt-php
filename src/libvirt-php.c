@@ -2298,31 +2298,13 @@ PHP_FUNCTION(libvirt_connect)
         creds=(php_libvirt_cred_value *)emalloc( credscount * sizeof(php_libvirt_cred_value) );
         j=0;
         /* parse the input Array and create list of credentials. The list (array) is passed to callback function. */
-#if PHP_MAJOR_VERSION >= 7
-        for (zend_hash_internal_pointer_reset_ex(arr_hash, &pointer);
-             (data = zend_hash_get_current_data_ex(arr_hash, &pointer)) != NULL;
-             zend_hash_move_forward_ex(arr_hash, &pointer)) {
+        VIRT_FOREACH(arr_hash, pointer, data) {
             if (Z_TYPE_P(data) == IS_STRING) {
-                zend_string *key;
-                if (zend_hash_get_current_key_ex(arr_hash, &key, &index, &pointer) == HASH_KEY_IS_STRING) {
-                    PHPWRITE(ZSTR_VAL(key), ZSTR_LEN(key));
-                } else {
-                    DPRINTF("%s: credentials index %d\n", PHPFUNC, (int)index);
-                    creds[j].type=index;
-                    creds[j].result=(char *)emalloc( Z_STRLEN_P(data) + 1 );
-                    memset(creds[j].result, 0, Z_STRLEN_P(data) + 1);
-                    creds[j].resultlen=Z_STRLEN_P(data);
-                    strncpy(creds[j].result,Z_STRVAL_P(data),Z_STRLEN_P(data));
-                    j++;
-#else
-        for (zend_hash_internal_pointer_reset_ex(arr_hash, &pointer);
-             zend_hash_get_current_data_ex(arr_hash, (void**) &data, &pointer) == SUCCESS;
-             zend_hash_move_forward_ex(arr_hash, &pointer)) {
-            if (Z_TYPE_P(data) == IS_STRING) {
-                char *key;
-                unsigned int key_len;
-                if (zend_hash_get_current_key_ex(arr_hash, &key, &key_len, &index, 0, &pointer) == HASH_KEY_IS_STRING) {
-                    PHPWRITE(key, key_len);
+                php_libvirt_hash_key_info info;
+                VIRT_HASH_CURRENT_KEY_INFO(arr_hash, pointer, index, info);
+
+                if (info.type == HASH_KEY_IS_STRING) {
+                    PHPWRITE(info.name, info.length);
                 } else {
                     DPRINTF("%s: credentials index %d\n", PHPFUNC, (int)index);
                     creds[j].type=index;
@@ -2331,10 +2313,9 @@ PHP_FUNCTION(libvirt_connect)
                     creds[j].resultlen = Z_STRLEN_P(data);
                     strncpy(creds[j].result, Z_STRVAL_P(data), Z_STRLEN_P(data));
                     j++;
-#endif
                 }
             }
-        }
+        } VIRT_FOREACH_END();
         DPRINTF("%s: Found %d elements for credentials\n", PHPFUNC, j);
         creds[0].count=j;
         libvirt_virConnectAuth.cbdata = (void*)creds;
