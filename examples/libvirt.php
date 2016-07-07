@@ -94,8 +94,7 @@ class Libvirt {
             $img = imagecreatefrompng($imgFile);
             imagecopyresampled($new,$img,0,0,0,0, $w,$h,$width,$height);
             imagedestroy($img);
-        }
-        else {
+        } else {
             $c = imagecolorallocate($new, 255, 255, 255);
             imagefill($new, 0, 0, $c);
         }
@@ -167,15 +166,17 @@ class Libvirt {
         if (!$seed)
             $seed = 1;
 
-        if ($this->get_hypervisor_name() == 'qemu')
+        if ($this->get_hypervisor_name() == 'qemu') {
             $prefix = '52:54:00';
-        else
-            if ($this->get_hypervisor_name() == 'xen')
+        } else {
+            if ($this->get_hypervisor_name() == 'xen') {
                 $prefix = '00:16:3e';
-            else
+            } else {
                 $prefix = $this->macbyte(($seed * rand()) % 256).':'.
-                $this->macbyte(($seed * rand()) % 256).':'.
-                $this->macbyte(($seed * rand()) % 256);
+                    $this->macbyte(($seed * rand()) % 256).':'.
+                    $this->macbyte(($seed * rand()) % 256);
+            }
+        }
 
         return $prefix.':'.
             $this->macbyte(($seed * rand()) % 256).':'.
@@ -247,9 +248,9 @@ class Libvirt {
             if ($tmp) {
                 $tmp['bus'] = $buses[$i];
                 $ret[] = $tmp;
-            }
-            else
+            } else {
                 $this->_set_last_error();
+            }
         }
 
         if ($sort) {
@@ -283,9 +284,9 @@ class Libvirt {
             if ($tmp) {
                 $tmp['bus'] = $buses[$i];
                 $ret[] = $tmp;
-            }
-            else
+            } else {
                 $this->_set_last_error();
+            }
         }
 
         if ($sort) {
@@ -393,17 +394,14 @@ class Libvirt {
             /* (1 << 40) is not working correctly on i386 systems */
             if ($value > 1099511627776)
                 $unit = 'T';
+            else if ($value > (1 << 30))
+                $unit = 'G';
+            else if ($value > (1 << 20))
+                $unit = 'M';
+            else if ($value > (1 << 10))
+                $unit = 'K';
             else
-                if ($value > (1 << 30))
-                    $unit = 'G';
-                else
-                    if ($value > (1 << 20))
-                        $unit = 'M';
-                    else
-                        if ($value > (1 << 10))
-                            $unit = 'K';
-                        else
-                            $unit = 'B';
+                $unit = 'B';
         }
 
         $unit = strtoupper($unit);
@@ -1012,41 +1010,35 @@ class Libvirt {
                 return $type.' ('.$targetType.' on port '.$targetPort.')';
             else
                 return array('type' => $type, 'targetType' => $targetType, 'targetPort' => $targetPort);
-        }
-        else
-            if ($type == 'input') {
-                $type = $this->_get_single_xpath_result($domain, '//domain/devices/input/@type');
-                $bus  = $this->_get_single_xpath_result($domain, '//domain/devices/input/@bus');
+        } else if ($type == 'input') {
+            $type = $this->_get_single_xpath_result($domain, '//domain/devices/input/@type');
+            $bus  = $this->_get_single_xpath_result($domain, '//domain/devices/input/@bus');
 
-                if ($display)
-                    return $type.' on '.$bus;
-                else
-                    return array('type' => $type, 'bus' => $bus);
-            }
+            if ($display)
+                return $type.' on '.$bus;
             else
-                if ($type == 'graphics') {
-                    $type = $this->_get_single_xpath_result($domain, '//domain/devices/graphics/@type');
-                    $port = $this->_get_single_xpath_result($domain, '//domain/devices/graphics/@port');
-                    $autoport = $this->_get_single_xpath_result($domain, '//domain/devices/graphics/@autoport');
+                return array('type' => $type, 'bus' => $bus);
+        } else if ($type == 'graphics') {
+            $type = $this->_get_single_xpath_result($domain, '//domain/devices/graphics/@type');
+            $port = $this->_get_single_xpath_result($domain, '//domain/devices/graphics/@port');
+            $autoport = $this->_get_single_xpath_result($domain, '//domain/devices/graphics/@autoport');
 
-                    if ($display)
-                        return $type.' on port '.$port.' with'.($autoport ? '' : 'out').' autoport enabled';
-                    else
-                        return array('type' => $type, 'port' => $port, 'autoport' => $autoport);
-                }
-                else
-                    if ($type == 'video') {
-                        $type  = $this->_get_single_xpath_result($domain, '//domain/devices/video/model/@type');
-                        $vram  = $this->_get_single_xpath_result($domain, '//domain/devices/video/model/@vram');
-                        $heads = $this->_get_single_xpath_result($domain, '//domain/devices/video/model/@heads');
+            if ($display)
+                return $type.' on port '.$port.' with'.($autoport ? '' : 'out').' autoport enabled';
+            else
+                return array('type' => $type, 'port' => $port, 'autoport' => $autoport);
+        } else if ($type == 'video') {
+            $type  = $this->_get_single_xpath_result($domain, '//domain/devices/video/model/@type');
+            $vram  = $this->_get_single_xpath_result($domain, '//domain/devices/video/model/@vram');
+            $heads = $this->_get_single_xpath_result($domain, '//domain/devices/video/model/@heads');
 
-                        if ($display)
-                            return $type.' with '.($vram / 1024).' MB VRAM, '.$heads.' head(s)';
-                        else
-                            return array('type' => $type, 'vram' => $vram, 'heads' => $heads);
-                    }
-                    else
-                        return false;
+            if ($display)
+                return $type.' with '.($vram / 1024).' MB VRAM, '.$heads.' head(s)';
+            else
+                return array('type' => $type, 'vram' => $vram, 'heads' => $heads);
+        } else {
+            return false;
+        }
     }
 
     function domain_get_host_devices_pci($domain) {
@@ -1128,9 +1120,9 @@ class Libvirt {
                 $xml = str_replace('<features>', "<features>\n<$feature/>", $xml);
             else
                 $xml = str_replace('</os>', "</os><features>\n<$feature/></features>", $xml);
-        }
-        else
+        } else {
             $xml = str_replace("<$feature/>\n", '', $xml);
+        }
 
         return $this->domain_change_xml($domain, $xml);
     }
@@ -1155,9 +1147,9 @@ class Libvirt {
             return true;
 
         $xml = $this->domain_get_xml($domain, true);
-        if (!$description)
+        if (!$description) {
             $xml = str_replace("</uuid>", "</uuid><description>$desc</description>", $xml);
-        else {
+        } else {
             $tmp = explode("\n", $xml);
             for ($i = 0; $i < sizeof($tmp); $i++)
                 if (strpos('.'.$tmp[$i], '<description'))
