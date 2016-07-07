@@ -12,14 +12,12 @@ class Libvirt {
             $this->connect($uri);
     }
 
-    function _set_last_error()
-    {
+    function _set_last_error() {
         $this->last_error = libvirt_get_last_error();
         return false;
     }
 
-    function set_logfile($filename)
-    {
+    function set_logfile($filename) {
         if (!libvirt_logfile_set($filename))
             return $this->_set_last_error();
 
