@@ -210,9 +210,9 @@ class Libvirt {
         if (is_resource($nameRes))
             return $nameRes;
 
-        $dom=libvirt_domain_lookup_by_name($this->conn, $nameRes);
+        $dom=@libvirt_domain_lookup_by_name($this->conn, $nameRes);
         if (!$dom) {
-            $dom=libvirt_domain_lookup_by_uuid_string($this->conn, $nameRes);
+            $dom=@libvirt_domain_lookup_by_uuid_string($this->conn, $nameRes);
             if (!$dom)
                 return $this->_set_last_error();
         }
