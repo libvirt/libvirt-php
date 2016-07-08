@@ -58,7 +58,10 @@ This package contain the document for libvirt-php.
 %setup -q -n libvirt-php-%{version}
 
 %build
-%configure --with-html-dir=%{_datadir}/doc --with-html-subdir=%{name}-%{version}/html --libdir=%{php_extdir}
+%configure --with-html-dir=%{_datadir}/doc \
+           --with-html-subdir=%{name}-%{version}/html \
+           --with-php-extensiondir=%{php_extdir} \
+           --with-php-confdir=%{php_confdir}
 make %{?_smp_mflags}
 
 %install
@@ -72,7 +75,6 @@ rm -rf %{buildroot}
 %files
 %defattr(-,root,root)
 %{php_extdir}/libvirt-php.so
-%{php_extdir}/libvirt-php.so.*
 %config(noreplace) %{php_confdir}/libvirt-php.ini
 
 %files -n libvirt-php-doc
