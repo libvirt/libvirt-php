@@ -668,16 +668,16 @@
              "<th>State</th>" .
              "<th>ID / VNC port</th>";
 
-        if (($tmp['active'] > 0) && ($lv->supports('screenshot')))
+        if ($lv->supports('screenshot'))
             echo "<th>Domain screenshot</th>";
 
 		echo "<th>Action</th>" .
             "</tr>";
 
-        $active = $tmp['active'];
         foreach ($doms as $name) {
             $dom = $lv->get_domain_object($name);
             $uuid = libvirt_domain_get_uuid_string($dom);
+            $active = $lv->domain_is_active($dom);
             $info = $lv->domain_get_info($dom);
             $mem = number_format($info['memory'] / 1024, 2, '.', ' ').' MB';
             $cpu = $info['nrVirtCpu'];
@@ -716,8 +716,10 @@
                  "<td>$spaces$state$spaces</td>" .
                  "<td align=\"center\">$spaces$id / $vnc$spaces</td>";
 
-            if (($active > 0) && ($lv->supports('screenshot')))
-                echo "<td align=\"center\"><img src=\"?action=get-screenshot&uuid=$uuid&width=120\" id=\"screenshot$i\"></td>";
+            if ($lv->supports('screenshot') && $active)
+                echo "<td align=\"center\"><img src=\"?action=get-screenshot&uuid=$uuid&width=120\" id=\"screenshot$id\"></td>";
+            else
+                echo "<td>$spaces</td>";
 
             echo "<td align=\"center\">$spaces";
 
@@ -735,7 +737,7 @@
 
             echo "$spaces" .
                   "</td>" .
-                  "</tr>";
+                  "</tr>\n";
         }
         echo "</table>";
 

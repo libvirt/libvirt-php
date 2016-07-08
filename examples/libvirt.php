@@ -1162,5 +1162,10 @@ class Libvirt {
         $tmp = libvirt_node_get_info($this->conn);
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
+
+    function domain_is_active($domain) {
+        $dom = $this->get_domain_object($domain);
+        return libvirt_domain_is_active($dom);
+    }
 }
 ?>
