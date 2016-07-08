@@ -27,6 +27,10 @@ AC_DEFUN([LIBVIRT_CHECK_PHP_CONFDIR],[
   if test "x$with_php_confdir" != "xno" ; then
     if test "x$with_php_confdir" = "xcheck" ; then
       confdir="$($PHPCONFIG --configure-options | sed -n 's/.*--with-config-file-scan-dir=\(\S*\).*/\1/p')"
+      if test "x$confdir" == "x" ; then
+        dnl There's no usable result from phpconfig. Use some default.
+        confdir="/etc/php.d/"
+      fi
     elif test "x$with_php_confdir" = "xno" || test "x$with_php_confdir" = "xyes"; then
       AC_MSG_ERROR([php-confdir must be used only with valid path])
     else
