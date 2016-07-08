@@ -33,6 +33,7 @@ autom4te.cache/
 m4/*
 src/*.so
 stamp-h1
+tags
 tools/generate-api-docs
 libvirt-php-*.tar.gz
 *~
