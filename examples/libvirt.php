@@ -61,50 +61,50 @@ class Libvirt {
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function domain_get_screenshot($domain) {
+    function domain_get_screenshot($domain, $convert = 1) {
         $dom = $this->get_domain_object($domain);
 
-        $tmp = libvirt_domain_get_screenshot($dom, $this->get_hostname() );
-        return ($tmp) ? $tmp : $this->_set_last_error();
+        $tmp = libvirt_domain_get_screenshot_api($dom);
+        if ($tmp == false)
+            return $this->_set_last_error();
+
+        $mime = $tmp['mime'];
+
+        if ($convert && $tmp['mime'] != "image/png") {
+            $image = new Imagick();
+            $image->readImage($tmp['file']);
+            $image->setImageFormat("png");
+            $data = $image->getImageBlob();
+            $mime = "image/png";
+        } else {
+            $fp = fopen($tmp['file'], "rb");
+            $data = fread($fp, filesize($tmp['file']));
+            fclose($fp);
+        }
+        unlink($tmp['file']);
+        unset($tmp['file']);
+        $tmp['data'] = $data;
+        $tmp['mime'] = $mime;
+
+        return $tmp;
     }
 
     function domain_get_screenshot_thumbnail($domain, $w=120) {
         $screen = $this->domain_get_screenshot($domain);
-        $imgFile = tempnam("/tmp", "libvirt-php-tmp-resize-XXXXXX");;
 
-        if ($screen) {
-            $fp = fopen($imgFile, "wb");
-            fwrite($fp, $screen);
-            fclose($fp);
-        }
+        if (!$screen)
+            return false;
 
-        if (file_exists($imgFile) && $screen) {
-            list($width, $height) = getimagesize($imgFile);
-            $h = ($height / $width) * $w;
-        } else {
-            $w = $h = 1;
-            //$h = $w * (3 / 4.5);
-        }
+        $image = new Imagick();
+        $image->readImageBlob($screen['data']);
+        $origW = $image->getImageWidth();
+        $origH = $image->getImageHeight();
+        $h = ($w / $origW) * $origH;
+        $image->resizeImage($w, $h, 0, 0);
 
-        $new = imagecreatetruecolor($w, $h);
-        if ($screen) {
-            $img = imagecreatefrompng($imgFile);
-            imagecopyresampled($new,$img,0,0,0,0, $w,$h,$width,$height);
-            imagedestroy($img);
-        } else {
-            $c = imagecolorallocate($new, 255, 255, 255);
-            imagefill($new, 0, 0, $c);
-        }
+        $screen['data'] = $image->getImageBlob();
 
-        imagepng($new, $imgFile);
-        imagedestroy($new);
-
-        $fp = fopen($imgFile, "rb");
-        $data = fread($fp, filesize($imgFile));
-        fclose($fp);
-
-        unlink($imgFile);
-        return $data;
+        return $screen;
     }
 
     function domain_get_screen_dimensions($domain) {

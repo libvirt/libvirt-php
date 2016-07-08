@@ -14,13 +14,13 @@
         if (array_key_exists('width', $_GET) && $_GET['width'])
             $tmp = $lv->domain_get_screenshot_thumbnail($_GET['uuid'], $_GET['width']);
         else
-            $tmp = $lv->domain_get_screenshot($_GET['uuid']);
+            $tmp = $lv->domain_get_screenshot($_GET['uuid'], 0);
 
         if (!$tmp) {
             echo $lv->get_last_error().'<br/>';
         } else {
-            Header('Content-Type: image/png');
-            die($tmp);
+            Header('Content-Type: ' . $tmp['mime']);
+            die($tmp['data']);
         }
     }
 ?>
