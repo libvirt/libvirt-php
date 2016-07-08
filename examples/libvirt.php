@@ -502,12 +502,13 @@ class Libvirt {
     }
 
     function translate_perms($mode) {
-        $mode = (string)((int)$mode);
+        $mode = (int)$mode;
 
         $tmp = '---------';
 
-        for ($i = 0; $i < 3; $i++) {
-            $bits = (int)$mode[$i];
+        for ($i = 2; $i >=0 ; $i--) {
+            $bits = $mode % 10;
+            $mode /= 10;
             if ($bits & 4)
                 $tmp[ ($i * 3) ] = 'r';
             if ($bits & 2)
