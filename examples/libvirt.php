@@ -456,12 +456,16 @@ class Libvirt {
         if (!is_string($otmp2))
             return $this->_set_last_error();
         $tmp = libvirt_storagepool_get_info($res);
-        $tmp['volume_count'] = sizeof( libvirt_storagepool_list_volumes($res) );
         $tmp['active'] = libvirt_storagepool_is_active($res);
         $tmp['path'] = $path;
         $tmp['permissions'] = $perms;
         $tmp['id_user'] = $otmp1;
         $tmp['id_group'] = $otmp2;
+        if ($tmp['active']) {
+            $tmp['volume_count'] = sizeof( libvirt_storagepool_list_volumes($res) );
+        } else {
+            $tmp['volume_count'] = 0;
+        }
 
         return $tmp;
     }
