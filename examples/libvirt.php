@@ -5,11 +5,9 @@ class Libvirt {
     private $allow_cached = true;
     private $dominfos = array();
 
-    function Libvirt($uri = false, $debug=false) {
+    function Libvirt($debug = false) {
         if ($debug)
             $this->set_logfile($debug);
-        if ($uri != false)
-            $this->connect($uri);
     }
 
     function _set_last_error() {
@@ -32,6 +30,7 @@ class Libvirt {
         $this->conn=libvirt_connect($uri, false);
         if ($this->conn==false)
             return $this->_set_last_error();
+        return true;
     }
 
     function domain_disk_add($domain, $img, $dev, $type='scsi', $driver='raw') {
