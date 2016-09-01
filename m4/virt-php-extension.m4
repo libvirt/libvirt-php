@@ -25,7 +25,18 @@ dnl
 AC_DEFUN([LIBVIRT_CHECK_PHP_EXTENSION],[
   AC_MSG_CHECKING([for php module $1])
 
-  module="$(php -m | grep $1)"
+  phpbinary="$($PHPCONFIG --php-binary)"
+  if test "x$phpbinary" = "x"; then
+    phpbinary="$($PHPCONFIG --prefix)/bin/php"
+  fi
+
+  if test ! -x "$phpbinary"; then
+    AC_MSG_ERROR([php binary not found])
+  fi
+
+  AC_SUBST([phpbinary])
+
+  module="$($phpbinary -m | grep $1)"
 
   if test "x$module" = "x"; then
     AC_MSG_ERROR([php module $1 not found])
