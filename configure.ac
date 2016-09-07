@@ -44,6 +44,7 @@ VERSION_SCRIPT_FLAGS=-Wl,--version-script=
 `$LD --help 2>&1 | grep -- --version-script >/dev/null` || \
     VERSION_SCRIPT_FLAGS="-Wl,-M -Wl,"
 AC_MSG_RESULT([$VERSION_SCRIPT_FLAGS])
+AC_SUBST([VERSION_SCRIPT_FLAGS])
 
 LIBVIRT_REQUIRED=1.2.13
 PKG_CHECK_MODULES(LIBVIRT, libvirt >= $LIBVIRT_REQUIRED)

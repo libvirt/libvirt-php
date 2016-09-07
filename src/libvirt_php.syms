@@ -1,0 +1,10 @@
+#
+# Officially exported symbols.
+#
+
+{
+global:
+    get_module;
+
+local: *;
+};

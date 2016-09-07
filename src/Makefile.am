@@ -13,6 +13,8 @@ AM_LDFLAGS = \
 	$(LIBVIRT_LIBS) \
 	$(QEMU_LIBS)
 
+LIBVIRT_PHP_SYMBOL_FILE = \
+	$(srcdir)/libvirt_php.syms
 php_plugindir = $(extensiondir)
 php_plugin_LTLIBRARIES = libvirt-php.la
 libvirt_php_la_SOURCES = \
@@ -23,11 +25,16 @@ libvirt_php_la_CFLAGS = \
 	$(AM_CFLAGS) \
 	-DCOMPILE_DL_LIBVIRT=1
 libvirt_php_la_LDFLAGS = \
+	$(VERSION_SCRIPT_FLAGS)$(LIBVIRT_PHP_SYMBOL_FILE)	\
 	$(AM_LDFLAGS)	\
-	-module -avoid-version
+	-module	\
+	-avoid-version	\
+	-export-dynamic	\
+	-shared
 
 php_confdir = $(confdir)
 php_conf_DATA = libvirt-php.ini
 
 EXTRA_DIST = $(php_conf_DATA) \
-	config.m4
+	config.m4	\
+	$(LIBVIRT_PHP_SYMBOL_FILE)
