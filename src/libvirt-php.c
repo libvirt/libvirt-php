@@ -9128,18 +9128,15 @@ PHP_FUNCTION(libvirt_list_active_domains)
         domain=virDomainLookupByID(conn->conn,ids[i]);
         if (domain!=NULL)
         {
-            name=virDomainGetName(domain);
-
-            if (virDomainFree (domain))
-                resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, domain, 0 TSRMLS_CC);
-
-            if (name==NULL)
-            {
-                efree (ids);
+            if (!(name = virDomainGetName(domain))) {
+                efree(ids);
                 RETURN_FALSE;
             }
 
             VIRT_ADD_NEXT_INDEX_STRING(return_value, name);
+
+            if (virDomainFree(domain))
+                resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, domain, 0 TSRMLS_CC);
         }
     }
     efree(ids);
