@@ -4373,21 +4373,21 @@ PHP_FUNCTION(libvirt_domain_lookup_by_uuid)
  */
 PHP_FUNCTION(libvirt_domain_qemu_agent_command)
 {
-       php_libvirt_domain *domain=NULL;
-       zval *zdomain;
-       const char *cmd;
-       strsize_t cmd_len;
-       char *ret;
-       zend_long timeout = -1;
-       zend_long flags = 0;
+    php_libvirt_domain *domain=NULL;
+    zval *zdomain;
+    const char *cmd;
+    strsize_t cmd_len;
+    char *ret;
+    zend_long timeout = -1;
+    zend_long flags = 0;
 
-       GET_DOMAIN_FROM_ARGS("rs|ll", &zdomain, &cmd, &cmd_len, &timeout, &flags);
+    GET_DOMAIN_FROM_ARGS("rs|ll", &zdomain, &cmd, &cmd_len, &timeout, &flags);
 
-       ret = virDomainQemuAgentCommand(domain->domain, cmd, timeout, flags);
-       if (ret == NULL) RETURN_FALSE;
+    ret = virDomainQemuAgentCommand(domain->domain, cmd, timeout, flags);
+    if (ret == NULL) RETURN_FALSE;
 
-       VIRT_RETVAL_STRING(ret);
-       free(ret);
+    VIRT_RETVAL_STRING(ret);
+    free(ret);
 }
 
 /*
