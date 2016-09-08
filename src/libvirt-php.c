@@ -6243,9 +6243,9 @@ PHP_FUNCTION(libvirt_domain_disk_remove)
     }
 
     if (asprintf(&newXml,
-             "    <disk type='file' device='disk'>\n"
-             "      <target dev='%s'/>\n"
-             "    </disk>", dev) < 0) {
+                 "    <disk type='file' device='disk'>\n"
+                 "      <target dev='%s'/>\n"
+                 "    </disk>", dev) < 0) {
         set_error("Out of memory" TSRMLS_CC);
         goto error;
     }
