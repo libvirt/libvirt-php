@@ -7181,7 +7181,7 @@ PHP_FUNCTION(libvirt_domain_get_network_info)
     free(xml);
     free(xpath);
     free(tmp);
-    RETURN_TRUE;
+    return;
 
  error:
     free(xml);
