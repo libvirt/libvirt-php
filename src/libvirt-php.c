@@ -6170,11 +6170,11 @@ PHP_FUNCTION(libvirt_domain_disk_add)
     }
 
     if (asprintf(&newXml,
-             "    <disk type='file' device='disk'>\n"
-             "      <driver name='qemu' type='%s'/>\n"
-             "      <source file='%s'/>\n"
-             "      <target dev='%s' bus='%s'/>\n"
-             "    </disk>", driver, img, dev, typ) < 0) {
+                 "    <disk type='file' device='disk'>\n"
+                 "      <driver name='qemu' type='%s'/>\n"
+                 "      <source file='%s'/>\n"
+                 "      <target dev='%s' bus='%s'/>\n"
+                 "    </disk>", driver, img, dev, typ) < 0) {
         set_error("Out of memory" TSRMLS_CC);
         goto error;
     }
