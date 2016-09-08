@@ -8684,23 +8684,15 @@ PHP_FUNCTION(libvirt_storagepool_get_autostart)
 {
     php_libvirt_storagepool *pool = NULL;
     zval *zpool;
-    int flags = 0;
+    int autostart;
 
     GET_STORAGEPOOL_FROM_ARGS ("r", &zpool);
 
-    if (virStoragePoolGetAutostart (pool->pool, &flags) == 0)
-    {
-        if (flags == 0) {
-            RETURN_FALSE;
-        }
-        else {
-            RETURN_TRUE;
-        }
-    }
-    else
-    {
-        RETURN_FALSE;
-    }
+    if (virStoragePoolGetAutostart(pool->pool, &autostart) == 0 &&
+        autostart != 0)
+        RETURN_TRUE;
+
+    RETURN_FALSE;
 }
 
 /*
