@@ -7009,24 +7009,24 @@ PHP_FUNCTION(libvirt_domain_block_resize)
  */
 PHP_FUNCTION(libvirt_domain_block_commit)
 {
-        php_libvirt_domain *domain=NULL;
-        zval *zdomain;
-        int retval;
-        char *disk;
-        int disk_len;
-        char *base = NULL;
-        int base_len;
-        char *top = NULL;
-        int top_len;
-        long bandwidth = 0;
-        long flags = 0;
+    php_libvirt_domain *domain=NULL;
+    zval *zdomain;
+    int retval;
+    char *disk;
+    int disk_len;
+    char *base = NULL;
+    int base_len;
+    char *top = NULL;
+    int top_len;
+    long bandwidth = 0;
+    long flags = 0;
 
-        GET_DOMAIN_FROM_ARGS("rsssll",&zdomain, &disk, &disk_len, &base, &base_len, &top, &top_len, &bandwidth, &flags);
+    GET_DOMAIN_FROM_ARGS("rsssll",&zdomain, &disk, &disk_len, &base, &base_len, &top, &top_len, &bandwidth, &flags);
 
-        retval=virDomainBlockCommit(domain->domain, disk, base, top, bandwidth, flags);
-        if (retval == -1) RETURN_FALSE;
+    retval=virDomainBlockCommit(domain->domain, disk, base, top, bandwidth, flags);
+    if (retval == -1) RETURN_FALSE;
 
-        RETURN_TRUE;
+    RETURN_TRUE;
 }
 
 
