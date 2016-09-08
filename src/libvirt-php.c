@@ -904,25 +904,26 @@ int set_logfile(char *filename, long maxsize TSRMLS_DC)
  * Arguments:               @type [int]: integer identifier of the counter type
  * Returns:                 string interpretation of the counter type
  */
-char *translate_counter_type(int type)
+static const char *
+translate_counter_type(int type)
 {
     switch (type) {
-    case INT_RESOURCE_CONNECTION:   return "connection";
-                                    break;
-    case INT_RESOURCE_DOMAIN:   return "domain";
-                                break;
-    case INT_RESOURCE_STREAM:   return "stream";
-                                break;
-    case INT_RESOURCE_NETWORK:  return "network";
-                                break;
-    case INT_RESOURCE_NODEDEV:  return "node device";
-                                break;
-    case INT_RESOURCE_STORAGEPOOL:  return "storage pool";
-                                    break;
-    case INT_RESOURCE_VOLUME:   return "storage volume";
-                                break;
-    case INT_RESOURCE_SNAPSHOT: return "snapshot";
-                                break;
+    case INT_RESOURCE_CONNECTION:
+        return "connection";
+    case INT_RESOURCE_DOMAIN:
+        return "domain";
+    case INT_RESOURCE_STREAM:
+        return "stream";
+    case INT_RESOURCE_NETWORK:
+        return "network";
+    case INT_RESOURCE_NODEDEV:
+        return "node device";
+    case INT_RESOURCE_STORAGEPOOL:
+        return "storage pool";
+    case INT_RESOURCE_VOLUME:
+        return "storage volume";
+    case INT_RESOURCE_SNAPSHOT:
+        return "snapshot";
     }
 
     return "unknown";
