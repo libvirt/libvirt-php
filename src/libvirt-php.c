@@ -4767,8 +4767,10 @@ PHP_FUNCTION(libvirt_domain_get_screenshot_api)
     }
 
 #ifndef EXTWIN
-    if (mkstemp(file) == 0)
+    if (mkstemp(file) == 0) {
+        free(mime);
         RETURN_FALSE;
+    }
 #endif
 
     if ((fd = open(file, O_WRONLY|O_CREAT|O_EXCL, 0666)) < 0) {
@@ -4776,6 +4778,7 @@ PHP_FUNCTION(libvirt_domain_get_screenshot_api)
             (fd = open(file, O_WRONLY|O_TRUNC, 0666)) < 0) {
             virStreamFree(st);
             set_error_if_unset("Cannot get create file to save domain screenshot" TSRMLS_CC);
+            free(mime);
             RETURN_FALSE;
         }
     }
@@ -4783,6 +4786,7 @@ PHP_FUNCTION(libvirt_domain_get_screenshot_api)
     if (virStreamRecvAll(st, streamSink, &fd) < 0) {
         virStreamFree(st);
         set_error_if_unset("Cannot receive screenshot data" TSRMLS_CC);
+        free(mime);
         RETURN_FALSE;
     }
 
@@ -4791,6 +4795,7 @@ PHP_FUNCTION(libvirt_domain_get_screenshot_api)
     if (virStreamFinish(st) < 0) {
         virStreamFree(st);
         set_error_if_unset("Cannot close stream for domain" TSRMLS_CC);
+        free(mime);
         RETURN_FALSE;
     }
 
@@ -4816,6 +4821,8 @@ PHP_FUNCTION(libvirt_domain_get_screenshot_api)
         VIRT_ADD_ASSOC_STRING(return_value, "file", file);
         VIRT_ADD_ASSOC_STRING(return_value, "mime", mime);
     }
+
+    free(mime);
 }
 
 /*
