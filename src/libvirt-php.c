@@ -8785,7 +8785,7 @@ PHP_FUNCTION(libvirt_list_storagepools)
 
 
     if ((expectedcount = virConnectNumOfDefinedStoragePools (conn->conn)) < 0)
-            RETURN_FALSE;
+        RETURN_FALSE;
     names = (char **)emalloc (expectedcount * sizeof(char *));
     count = virConnectListDefinedStoragePools (conn->conn, names, expectedcount);
     if ((count != expectedcount) || (count < 0))
