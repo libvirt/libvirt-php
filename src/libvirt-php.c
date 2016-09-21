@@ -4758,49 +4758,38 @@ PHP_FUNCTION(libvirt_domain_get_screenshot_api)
     RETURN_FALSE;
 #endif
 
-    GET_DOMAIN_FROM_ARGS("r|l",&zdomain, &screen);
+    GET_DOMAIN_FROM_ARGS("r|l", &zdomain, &screen);
 
-    st = virStreamNew(domain->conn->conn, 0);
+    if (!(st = virStreamNew(domain->conn->conn, 0))) {
+        set_error("Cannot create new stream" TSRMLS_CC);
+        goto error;
+    }
+
     mime = virDomainScreenshot(domain->domain, st, screen, 0);
     if (!mime) {
         set_error_if_unset("Cannot get domain screenshot" TSRMLS_CC);
-        RETURN_FALSE;
+        goto error;
     }
 
-#ifndef EXTWIN
-    if (mkstemp(file) == 0) {
-        free(mime);
-        RETURN_FALSE;
-    }
-#endif
-
-    if ((fd = open(file, O_WRONLY|O_CREAT|O_EXCL, 0666)) < 0) {
-        if (errno != EEXIST ||
-            (fd = open(file, O_WRONLY|O_TRUNC, 0666)) < 0) {
-            virStreamFree(st);
-            set_error_if_unset("Cannot get create file to save domain screenshot" TSRMLS_CC);
-            free(mime);
-            RETURN_FALSE;
-        }
+    if (!(fd = mkstemp(file))) {
+        virStreamAbort(st);
+        set_error_if_unset("Cannot get create file to save domain screenshot" TSRMLS_CC);
+        goto error;
     }
 
     if (virStreamRecvAll(st, streamSink, &fd) < 0) {
-        virStreamFree(st);
         set_error_if_unset("Cannot receive screenshot data" TSRMLS_CC);
-        free(mime);
-        RETURN_FALSE;
+        virStreamAbort(st);
+        goto error;
     }
 
-    close(fd);
-
     if (virStreamFinish(st) < 0) {
-        virStreamFree(st);
         set_error_if_unset("Cannot close stream for domain" TSRMLS_CC);
-        free(mime);
-        RETURN_FALSE;
+        goto error;
     }
 
     virStreamFree(st);
+    st = NULL;
 
     array_init(return_value);
     if (bin) {
@@ -4811,19 +4800,34 @@ PHP_FUNCTION(libvirt_domain_get_screenshot_api)
         snprintf(fileNew, sizeof(fileNew), "%s.png", file);
         snprintf(tmp, sizeof(tmp), "%s %s %s > /dev/null 2> /dev/null", bin, file, fileNew);
         exitStatus = system(tmp);
-        unlink(file);
         if (WEXITSTATUS(exitStatus) != 0)
-            RETURN_FALSE;
+            goto error;
 
+        unlink(file);
+        close(fd);
+        fd = -1;
         VIRT_ADD_ASSOC_STRING(return_value, "file", fileNew);
         VIRT_ADD_ASSOC_STRING(return_value, "mime", "image/png");
-    }
-    else {
+    } else {
+        unlink(file);
+        close(fd);
+        fd = -1;
         VIRT_ADD_ASSOC_STRING(return_value, "file", file);
         VIRT_ADD_ASSOC_STRING(return_value, "mime", mime);
     }
 
     free(mime);
+    return;
+
+ error:
+    free(mime);
+    if (fd != -1) {
+        unlink(file);
+        close(fd);
+    }
+    if (st)
+        virStreamFree(st);
+    RETURN_FALSE;
 }
 
 /*
