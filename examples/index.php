@@ -17,7 +17,7 @@
             $tmp = $lv->domain_get_screenshot($_GET['uuid'], 0);
 
         if (!$tmp) {
-            echo $lv->get_last_error().'<br/>';
+            die($lv->get_last_error().'<br/>');
         } else {
             Header('Content-Type: ' . $tmp['mime']);
             die($tmp['data']);
