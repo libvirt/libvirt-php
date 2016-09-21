@@ -426,6 +426,8 @@ class Libvirt {
 
     function get_storagepools() {
         $tmp = libvirt_list_storagepools($this->conn);
+        if ($tmp)
+            sort($tmp, SORT_NATURAL);
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
@@ -635,6 +637,8 @@ class Libvirt {
 
     function get_domains() {
         $tmp = libvirt_list_domains($this->conn);
+        if ($tmp)
+            sort($tmp, SORT_NATURAL);
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
@@ -645,6 +649,8 @@ class Libvirt {
 
     function get_networks($type = VIR_NETWORKS_ALL) {
         $tmp = libvirt_list_networks($this->conn, $type);
+        if ($tmp)
+            sort($tmp, SORT_NATURAL);
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
@@ -714,6 +720,8 @@ class Libvirt {
 
     function get_node_devices($dev = false) {
         $tmp = ($dev == false) ? libvirt_list_nodedevs($this->conn) : libvirt_list_nodedevs($this->conn, $dev);
+        if ($tmp)
+            sort($tmp, SORT_NATURAL);
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
