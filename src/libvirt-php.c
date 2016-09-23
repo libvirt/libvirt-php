@@ -2149,12 +2149,10 @@ static int libvirt_virConnectAuthCallback(virConnectCredentialPtr cred, unsigned
 
     unsigned int i, j;
     php_libvirt_cred_value *creds=(php_libvirt_cred_value*) cbdata;
-    for (i = 0; i < (unsigned int)ncred; i++)
-    {
+    for (i = 0; i < (unsigned int)ncred; i++) {
         DPRINTF("%s: cred %d, type %d, prompt %s challenge %s\n ", __FUNCTION__, i, cred[i].type, cred[i].prompt, cred[i].challenge);
         if (creds != NULL)
-            for (j = 0; j < (unsigned int)creds[0].count; j++)
-            {
+            for (j = 0; j < (unsigned int)creds[0].count; j++) {
                 if (creds[j].type == cred[i].type) {
                     cred[i].resultlen=creds[j].resultlen;
                     cred[i].result=(char *)malloc(creds[j].resultlen + 1);
@@ -2806,8 +2804,7 @@ PHP_FUNCTION(libvirt_connect_get_information)
     VIRT_ADD_ASSOC_STRING(return_value, "hostname", tmp ? tmp : "unknown");
     free(tmp);
 
-    if ((virConnectGetVersion(conn->conn, &hvVer) == 0) && (type = virConnectGetType(conn->conn)))
-    {
+    if ((virConnectGetVersion(conn->conn, &hvVer) == 0) && (type = virConnectGetType(conn->conn))) {
         VIRT_ADD_ASSOC_STRING(return_value, "hypervisor", (char *)type);
         add_assoc_long(return_value, "hypervisor_major", (long)((hvVer/1000000) % 1000));
         add_assoc_long(return_value, "hypervisor_minor", (long)((hvVer/1000) % 1000));
@@ -3410,8 +3407,7 @@ void dec_to_bin(long long decimal, char *binary)
         decimal = -decimal;
         neg_flag = 1;
     }
-    do
-    {
+    do {
         // old_decimal = decimal;
         remain    = decimal % 2;
         decimal   = decimal / 2;
@@ -7720,8 +7716,7 @@ PHP_FUNCTION(libvirt_list_domain_snapshots)
         RETURN_FALSE;
     } else {
         array_init(return_value);
-        for (i=0;i<count;i++)
-        {
+        for (i=0;i<count;i++) {
             VIRT_ADD_NEXT_INDEX_STRING(return_value, names[i]);
             free(names[i]);
         }
@@ -7833,8 +7828,7 @@ PHP_FUNCTION(libvirt_storagepool_list_volumes)
     array_init(return_value);
 
     if ((count != expectedcount) || (count<0)) RETURN_FALSE;
-    for (i=0;i<count;i++)
-    {
+    for (i=0;i<count;i++) {
         VIRT_ADD_NEXT_INDEX_STRING(return_value,  names[i]);
         free(names[i]);
     }
@@ -8709,8 +8703,7 @@ PHP_FUNCTION(libvirt_list_storagepools)
     }
 
     array_init(return_value);
-    for (i=0;i<count;i++)
-    {
+    for (i=0;i<count;i++) {
         VIRT_ADD_NEXT_INDEX_STRING(return_value,  names[i]);
         free(names[i]);
     }
@@ -8726,8 +8719,7 @@ PHP_FUNCTION(libvirt_list_storagepools)
         RETURN_FALSE;
     }
 
-    for (i = 0; i < count; i++)
-    {
+    for (i = 0; i < count; i++) {
         VIRT_ADD_NEXT_INDEX_STRING(return_value, names[i]);
         free(names[i]);
     }
@@ -8763,8 +8755,7 @@ PHP_FUNCTION(libvirt_list_active_storagepools)
         RETURN_FALSE;
     }
     array_init(return_value);
-    for (i=0;i<count;i++)
-    {
+    for (i=0;i<count;i++) {
         VIRT_ADD_NEXT_INDEX_STRING(return_value,  names[i]);
         free(names[i]);
     }
@@ -8800,8 +8791,7 @@ PHP_FUNCTION(libvirt_list_inactive_storagepools)
     }
 
     array_init(return_value);
-    for (i = 0; i < count; i++)
-    {
+    for (i = 0; i < count; i++) {
         VIRT_ADD_NEXT_INDEX_STRING(return_value, names[i]);
         free(names[i]);
     }
@@ -8839,8 +8829,7 @@ PHP_FUNCTION(libvirt_list_domains)
     DPRINTF("%s: virConnectListDomains returned %d domains\n", PHPFUNC, count);
 
     array_init(return_value);
-    for (i=0;i<count;i++)
-    {
+    for (i=0;i<count;i++) {
         domain=virDomainLookupByID(conn->conn, ids[i]);
         resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, domain, 1 TSRMLS_CC);
         if (domain != NULL) {
@@ -8878,8 +8867,7 @@ PHP_FUNCTION(libvirt_list_domains)
         RETURN_FALSE;
     }
 
-    for (i=0;i<count;i++)
-    {
+    for (i=0;i<count;i++) {
         VIRT_ADD_NEXT_INDEX_STRING(return_value, names[i]);
         DPRINTF("%s: Found inactive domain %s\n", PHPFUNC, names[i]);
         free(names[i]);
@@ -8924,8 +8912,7 @@ PHP_FUNCTION(libvirt_list_domain_resources)
         RETURN_FALSE;
     }
     array_init(return_value);
-    for (i=0;i<count;i++)
-    {
+    for (i=0;i<count;i++) {
         domain=virDomainLookupByID(conn->conn, ids[i]);
         if (domain != NULL) {
             res_domain= (php_libvirt_domain *)emalloc(sizeof(php_libvirt_domain));
@@ -8955,8 +8942,7 @@ PHP_FUNCTION(libvirt_list_domain_resources)
         efree(names);
         RETURN_FALSE;
     }
-    for (i=0;i<count;i++)
-    {
+    for (i=0;i<count;i++) {
         domain=virDomainLookupByName(conn->conn, names[i]);
         if (domain != NULL) {
             res_domain = (php_libvirt_domain *)emalloc(sizeof(php_libvirt_domain));
@@ -9007,8 +8993,7 @@ PHP_FUNCTION(libvirt_list_active_domain_ids)
         RETURN_FALSE;
     }
     array_init(return_value);
-    for (i=0;i<count;i++)
-    {
+    for (i=0;i<count;i++) {
         add_next_index_long(return_value,  ids[i]);
     }
     efree(ids);
@@ -9045,11 +9030,9 @@ PHP_FUNCTION(libvirt_list_active_domains)
     }
 
     array_init(return_value);
-    for (i=0;i<count;i++)
-    {
+    for (i=0;i<count;i++) {
         domain=virDomainLookupByID(conn->conn, ids[i]);
-        if (domain != NULL)
-        {
+        if (domain != NULL) {
             if (!(name = virDomainGetName(domain))) {
                 efree(ids);
                 RETURN_FALSE;
@@ -9093,8 +9076,7 @@ PHP_FUNCTION(libvirt_list_inactive_domains)
     }
 
     array_init(return_value);
-    for (i=0;i<count;i++)
-    {
+    for (i=0;i<count;i++) {
         VIRT_ADD_NEXT_INDEX_STRING(return_value,  names[i]);
         free(names[i]);
     }
@@ -9133,8 +9115,7 @@ PHP_FUNCTION(libvirt_list_networks)
             RETURN_FALSE;
         }
 
-        for (i=0;i<count;i++)
-        {
+        for (i=0;i<count;i++) {
             VIRT_ADD_NEXT_INDEX_STRING(return_value,  names[i]);
             free(names[i]);
         }
@@ -9153,8 +9134,7 @@ PHP_FUNCTION(libvirt_list_networks)
             RETURN_FALSE;
         }
 
-        for (i=0;i<count;i++)
-        {
+        for (i=0;i<count;i++) {
             VIRT_ADD_NEXT_INDEX_STRING(return_value, names[i]);
             free(names[i]);
         }
@@ -9198,8 +9178,7 @@ PHP_FUNCTION(libvirt_list_nodedevs)
     }
 
     array_init(return_value);
-    for (i=0;i<count;i++)
-    {
+    for (i=0;i<count;i++) {
         VIRT_ADD_NEXT_INDEX_STRING(return_value,  names[i]);
         free(names[i]);
     }
@@ -9270,8 +9249,7 @@ PHP_FUNCTION(libvirt_nodedev_capabilities)
     if ((count != expectedcount) || (count<0)) RETURN_FALSE;
 
     array_init(return_value);
-    for (i=0;i<count;i++)
-    {
+    for (i=0;i<count;i++) {
         VIRT_ADD_NEXT_INDEX_STRING(return_value, names[i]);
         free(names[i]);
     }
