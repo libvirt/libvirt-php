@@ -1153,7 +1153,7 @@ PHP_MINFO_FUNCTION(libvirt)
     }
 
     if (strlen(features_supported) > 0) {
-        features_supported[ strlen(features_supported) - 2 ] = 0;
+        features_supported[strlen(features_supported) - 2] = 0;
         php_info_print_table_row(2, "Features supported", features_supported);
     }
 
@@ -3732,7 +3732,7 @@ char *generate_uuid_any()
         if ((i == 8) || (i == 13) || (i == 18) || (i == 23))
             a[i] = '-';
         else
-            a[i] = hexa[ rand() % strlen(hexa) ];
+            a[i] = hexa[rand() % strlen(hexa)];
     }
 
     return strdup(a);
