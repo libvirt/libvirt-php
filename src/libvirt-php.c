@@ -2239,7 +2239,7 @@ PHP_FUNCTION(libvirt_connect)
     if (virGetVersion(&libVer, NULL, NULL)!= 0)
         RETURN_FALSE;
 
-    if (libVer<6002) {
+    if (libVer < 6002) {
         set_error("Only libvirt 0.6.2 and higher supported. Please upgrade your libvirt" TSRMLS_CC);
         RETURN_FALSE;
     }
@@ -4267,7 +4267,7 @@ PHP_FUNCTION(libvirt_domain_lookup_by_name)
     php_libvirt_domain *res_domain;
 
     GET_CONNECTION_FROM_ARGS("rs", &zconn, &name, &name_len);
-    if ((name == NULL) || (name_len<1))
+    if ((name == NULL) || (name_len < 1))
         RETURN_FALSE;
     domain = virDomainLookupByName(conn->conn, name);
     if (domain == NULL)
@@ -4305,7 +4305,7 @@ PHP_FUNCTION(libvirt_domain_lookup_by_uuid)
 
     GET_CONNECTION_FROM_ARGS("rs", &zconn, &uuid, &uuid_len);
 
-    if ((uuid == NULL) || (uuid_len<1))
+    if ((uuid == NULL) || (uuid_len < 1))
         RETURN_FALSE;
     domain = virDomainLookupByUUID(conn->conn, uuid);
     if (domain == NULL)
@@ -4373,7 +4373,7 @@ PHP_FUNCTION(libvirt_domain_lookup_by_uuid_string)
 
     GET_CONNECTION_FROM_ARGS("rs", &zconn, &uuid, &uuid_len);
 
-    if ((uuid == NULL) || (uuid_len<1))
+    if ((uuid == NULL) || (uuid_len < 1))
         RETURN_FALSE;
     domain = virDomainLookupByUUIDString(conn->conn, uuid);
     if (domain == NULL)
@@ -7623,7 +7623,7 @@ PHP_FUNCTION(libvirt_domain_snapshot_lookup_by_name)
 
     GET_DOMAIN_FROM_ARGS("rs|l", &zdomain, &name, &name_len, &flags);
 
-    if ((name == NULL) || (name_len<1))
+    if ((name == NULL) || (name_len < 1))
         RETURN_FALSE;
     snapshot=virDomainSnapshotLookupByName(domain->domain, name, flags);
     if (snapshot == NULL)
@@ -7779,7 +7779,7 @@ PHP_FUNCTION(libvirt_list_domain_snapshots)
         count = virDomainSnapshotListNames(domain->domain, names, expectedcount, 0);
     }
 
-    if ((count != expectedcount) || (count<0)) {
+    if ((count != expectedcount) || (count < 0)) {
         RETURN_FALSE;
     } else {
         array_init(return_value);
@@ -7812,7 +7812,7 @@ PHP_FUNCTION(libvirt_storagepool_lookup_by_name)
 
     GET_CONNECTION_FROM_ARGS("rs", &zconn, &name, &name_len);
 
-    if ((name == NULL) || (name_len<1))
+    if ((name == NULL) || (name_len < 1))
         RETURN_FALSE;
     pool = virStoragePoolLookupByName(conn->conn, name);
     DPRINTF("%s: virStoragePoolLookupByName(%p, %s) returned %p\n", PHPFUNC, conn->conn, name, pool);
@@ -7896,7 +7896,7 @@ PHP_FUNCTION(libvirt_storagepool_list_volumes)
     DPRINTF("%s: virStoragePoolListVolumes(%p, %p, %d) returned %d\n", PHPFUNC, pool->pool, names, expectedcount, count);
     array_init(return_value);
 
-    if ((count != expectedcount) || (count<0))
+    if ((count != expectedcount) || (count < 0))
 		RETURN_FALSE;
     for (i = 0; i < count; i++) {
         VIRT_ADD_NEXT_INDEX_STRING(return_value,  names[i]);
@@ -7955,7 +7955,7 @@ PHP_FUNCTION(libvirt_storagevolume_lookup_by_name)
     virStorageVolPtr volume = NULL;
 
     GET_STORAGEPOOL_FROM_ARGS("rs", &zpool, &name, &name_len);
-    if ((name == NULL) || (name_len<1))
+    if ((name == NULL) || (name_len < 1))
         RETURN_FALSE;
 
     volume = virStorageVolLookupByName(pool->pool, name);
@@ -7994,7 +7994,7 @@ PHP_FUNCTION(libvirt_storagevolume_lookup_by_path)
     virStorageVolPtr volume = NULL;
 
     GET_CONNECTION_FROM_ARGS("rs", &zconn, &name, &name_len);
-    if ((name == NULL) || (name_len<1))
+    if ((name == NULL) || (name_len < 1))
         RETURN_FALSE;
 
     volume = virStorageVolLookupByPath(conn->conn, name);
@@ -8576,7 +8576,7 @@ PHP_FUNCTION(libvirt_storagepool_create)
 
     GET_STORAGEPOOL_FROM_ARGS("r", &zpool);
 
-    retval = virStoragePoolCreate (pool->pool, 0);
+    retval = virStoragePoolCreate(pool->pool, 0);
     DPRINTF("%s: virStoragePoolCreate(%p, 0) returned %d\n", PHPFUNC, pool->pool, retval);
     if (retval != 0)
         RETURN_FALSE;
@@ -8782,7 +8782,7 @@ PHP_FUNCTION(libvirt_list_storagepools)
     names = (char **)emalloc(expectedcount*sizeof(char *));
     count = virConnectListStoragePools(conn->conn, names, expectedcount);
 
-    if ((count != expectedcount) || (count<0)) {
+    if ((count != expectedcount) || (count < 0)) {
         efree(names);
         RETURN_FALSE;
     }
@@ -8835,7 +8835,7 @@ PHP_FUNCTION(libvirt_list_active_storagepools)
     names = (char **)emalloc(expectedcount*sizeof(char *));
     count = virConnectListStoragePools(conn->conn, names, expectedcount);
 
-    if ((count != expectedcount) || (count<0)) {
+    if ((count != expectedcount) || (count < 0)) {
         efree(names);
         RETURN_FALSE;
     }
@@ -8992,7 +8992,7 @@ PHP_FUNCTION(libvirt_list_domain_resources)
 
     ids = (int *)emalloc(sizeof(int) * expectedcount);
     count = virConnectListDomains(conn->conn, ids, expectedcount);
-    if ((count != expectedcount) || (count<0)) {
+    if ((count != expectedcount) || (count < 0)) {
         efree(ids);
         RETURN_FALSE;
     }
@@ -9023,7 +9023,7 @@ PHP_FUNCTION(libvirt_list_domain_resources)
 
     names = (char **)emalloc(expectedcount*sizeof(char *));
     count = virConnectListDefinedDomains(conn->conn, names, expectedcount);
-    if ((count != expectedcount) || (count<0)) {
+    if ((count != expectedcount) || (count < 0)) {
         efree(names);
         RETURN_FALSE;
     }
@@ -9068,12 +9068,12 @@ PHP_FUNCTION(libvirt_list_active_domain_ids)
 
     GET_CONNECTION_FROM_ARGS("r", &zconn);
 
-    if ((expectedcount = virConnectNumOfDomains (conn->conn)) < 0)
+    if ((expectedcount = virConnectNumOfDomains(conn->conn)) < 0)
         RETURN_FALSE;
 
     ids = (int *)emalloc(sizeof(int) * expectedcount);
     count = virConnectListDomains(conn->conn, ids, expectedcount);
-    if ((count != expectedcount) || (count<0)) {
+    if ((count != expectedcount) || (count < 0)) {
         efree(ids);
         RETURN_FALSE;
     }
@@ -9103,12 +9103,12 @@ PHP_FUNCTION(libvirt_list_active_domains)
 
     GET_CONNECTION_FROM_ARGS("r", &zconn);
 
-    if ((expectedcount = virConnectNumOfDomains (conn->conn)) < 0)
+    if ((expectedcount = virConnectNumOfDomains(conn->conn)) < 0)
         RETURN_FALSE;
 
     ids = (int *)emalloc(sizeof(int) * expectedcount);
     count = virConnectListDomains(conn->conn, ids, expectedcount);
-    if ((count != expectedcount) || (count<0)) {
+    if ((count != expectedcount) || (count < 0)) {
         efree(ids);
         RETURN_FALSE;
     }
@@ -9154,7 +9154,7 @@ PHP_FUNCTION(libvirt_list_inactive_domains)
 
     names = (char **)emalloc(expectedcount*sizeof(char *));
     count = virConnectListDefinedDomains(conn->conn, names, expectedcount);
-    if ((count != expectedcount) || (count<0)) {
+    if ((count != expectedcount) || (count < 0)) {
         efree(names);
         RETURN_FALSE;
     }
@@ -9194,7 +9194,7 @@ PHP_FUNCTION(libvirt_list_networks)
 
         names = (char **)emalloc(expectedcount*sizeof(char *));
         count = virConnectListNetworks(conn->conn, names, expectedcount);
-        if ((count != expectedcount) || (count<0)) {
+        if ((count != expectedcount) || (count < 0)) {
             efree(names);
             RETURN_FALSE;
         }
@@ -9213,7 +9213,7 @@ PHP_FUNCTION(libvirt_list_networks)
             RETURN_FALSE;
         names = (char **)emalloc(expectedcount*sizeof(char *));
         count = virConnectListDefinedNetworks(conn->conn, names, expectedcount);
-        if ((count != expectedcount) || (count<0)) {
+        if ((count != expectedcount) || (count < 0)) {
             efree(names);
             RETURN_FALSE;
         }
@@ -9256,7 +9256,7 @@ PHP_FUNCTION(libvirt_list_nodedevs)
         RETURN_FALSE;
     names = (char **)emalloc(expectedcount*sizeof(char *));
     count = virNodeListDevices(conn->conn, cap, names, expectedcount, 0);
-    if ((count != expectedcount) || (count<0)) {
+    if ((count != expectedcount) || (count < 0)) {
         efree(names);
         RETURN_FALSE;
     }
@@ -9330,7 +9330,7 @@ PHP_FUNCTION(libvirt_nodedev_capabilities)
         RETURN_FALSE;
     names = (char **)emalloc(expectedcount*sizeof(char *));
     count = virNodeDeviceListCaps(nodedev->device, names, expectedcount);
-    if ((count != expectedcount) || (count<0))
+    if ((count != expectedcount) || (count < 0))
         RETURN_FALSE;
 
     array_init(return_value);
