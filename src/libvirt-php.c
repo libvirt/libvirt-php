@@ -858,7 +858,7 @@ char *get_datetime(void)
     if (tmp == NULL)
         return NULL;
 
-    outstr = (char *)malloc( 32 * sizeof(char) );
+    outstr = (char *)malloc(32 * sizeof(char));
     if (strftime(outstr, 32, "%Y-%m-%d %H:%M:%S", tmp) == 0)
         return NULL;
 
@@ -948,13 +948,13 @@ tTokenizer tokenize(char *string, char *by)
     tTokenizer t;
 
     tmp = strdup(string);
-    t.tokens = (char **)malloc( sizeof(char *) );
+    t.tokens = (char **)malloc(sizeof(char *));
     for (str = tmp; ; str = NULL) {
         token = strtok_r(str, by, &save);
         if (token == NULL)
             break;
 
-        t.tokens = realloc( t.tokens, (i + 1) * sizeof(char *) );
+        t.tokens = realloc(t.tokens, (i + 1) * sizeof(char *));
         t.tokens[i++] = strdup(token);
     }
 
@@ -1022,11 +1022,11 @@ int resource_change_counter(int type, virConnectPtr conn, void *mem, int inc TSR
         if (pos == -1) {
             if (binding_resources == NULL) {
                 binding_resources_count = 1;
-                binding_resources = (resource_info *)malloc( sizeof(resource_info) );
+                binding_resources = (resource_info *)malloc(sizeof(resource_info));
             }
             else {
                 binding_resources_count++;
-                binding_resources = (resource_info *)realloc( binding_resources, binding_resources_count * sizeof(resource_info) );
+                binding_resources = (resource_info *)realloc(binding_resources, binding_resources_count * sizeof(resource_info));
             }
 
             if (binding_resources == NULL)
@@ -1252,7 +1252,7 @@ void free_resource(int type, void *mem TSRMLS_DC)
     DPRINTF("%s: Freeing libvirt %s resource at 0x%lx\n", __FUNCTION__, translate_counter_type(type), (long) mem);
 
     if (type == INT_RESOURCE_DOMAIN) {
-        rv = virDomainFree( (virDomainPtr)mem );
+        rv = virDomainFree((virDomainPtr)mem);
         if (rv != 0) {
             DPRINTF("%s: virDomainFree(%p) returned %d (%s)\n", __FUNCTION__, (virDomainPtr)mem, rv, LIBVIRT_G(last_error));
             php_error_docref(NULL TSRMLS_CC, E_WARNING, "virDomainFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
@@ -1264,7 +1264,7 @@ void free_resource(int type, void *mem TSRMLS_DC)
     }
 
     if (type == INT_RESOURCE_STREAM) {
-        rv = virStreamFree( (virStreamPtr)mem );
+        rv = virStreamFree((virStreamPtr)mem);
         if (rv != 0) {
             DPRINTF("%s: virStreamFree(%p) returned %d (%s)\n", __FUNCTION__, (virStreamPtr)mem, rv, LIBVIRT_G(last_error));
             php_error_docref(NULL TSRMLS_CC, E_WARNING, "virStreamFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
@@ -1276,7 +1276,7 @@ void free_resource(int type, void *mem TSRMLS_DC)
     }
 
     if (type == INT_RESOURCE_NETWORK) {
-        rv = virNetworkFree( (virNetworkPtr)mem );
+        rv = virNetworkFree((virNetworkPtr)mem);
         if (rv != 0) {
             DPRINTF("%s: virNetworkFree(%p) returned %d (%s)\n", __FUNCTION__, (virNetworkPtr)mem, rv, LIBVIRT_G(last_error));
             php_error_docref(NULL TSRMLS_CC, E_WARNING, "virNetworkFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
@@ -1288,7 +1288,7 @@ void free_resource(int type, void *mem TSRMLS_DC)
     }
 
     if (type == INT_RESOURCE_NODEDEV) {
-        rv = virNodeDeviceFree( (virNodeDevicePtr)mem );
+        rv = virNodeDeviceFree((virNodeDevicePtr)mem);
         if (rv != 0) {
             DPRINTF("%s: virNodeDeviceFree(%p) returned %d (%s)\n", __FUNCTION__, (virNodeDevicePtr)mem, rv, LIBVIRT_G(last_error));
             php_error_docref(NULL TSRMLS_CC, E_WARNING, "virNodeDeviceFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
@@ -1300,7 +1300,7 @@ void free_resource(int type, void *mem TSRMLS_DC)
     }
 
     if (type == INT_RESOURCE_STORAGEPOOL) {
-        rv = virStoragePoolFree( (virStoragePoolPtr)mem );
+        rv = virStoragePoolFree((virStoragePoolPtr)mem);
         if (rv != 0) {
             DPRINTF("%s: virStoragePoolFree(%p) returned %d (%s)\n", __FUNCTION__, (virStoragePoolPtr)mem, rv, LIBVIRT_G(last_error));
             php_error_docref(NULL TSRMLS_CC, E_WARNING, "virStoragePoolFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
@@ -1312,7 +1312,7 @@ void free_resource(int type, void *mem TSRMLS_DC)
     }
 
     if (type == INT_RESOURCE_VOLUME) {
-        rv = virStorageVolFree( (virStorageVolPtr)mem );
+        rv = virStorageVolFree((virStorageVolPtr)mem);
         if (rv != 0) {
             DPRINTF("%s: virStorageVolFree(%p) returned %d (%s)\n", __FUNCTION__, (virStorageVolPtr)mem, rv, LIBVIRT_G(last_error));
             php_error_docref(NULL TSRMLS_CC, E_WARNING, "virStorageVolFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
@@ -1324,7 +1324,7 @@ void free_resource(int type, void *mem TSRMLS_DC)
     }
 
     if (type == INT_RESOURCE_SNAPSHOT) {
-        rv = virDomainSnapshotFree( (virDomainSnapshotPtr)mem );
+        rv = virDomainSnapshotFree((virDomainSnapshotPtr)mem);
         if (rv != 0) {
             DPRINTF("%s: virDomainSnapshotFree(%p) returned %d (%s)\n", __FUNCTION__, (virDomainSnapshotPtr)mem, rv, LIBVIRT_G(last_error));
             php_error_docref(NULL TSRMLS_CC, E_WARNING, "virDomainSnapshotFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
@@ -2296,7 +2296,7 @@ PHP_FUNCTION(libvirt_connect)
         array_count = zend_hash_num_elements(arr_hash);
 
         credscount=array_count;
-        creds=(php_libvirt_cred_value *)emalloc( credscount * sizeof(php_libvirt_cred_value) );
+        creds=(php_libvirt_cred_value *)emalloc(credscount * sizeof(php_libvirt_cred_value));
         j=0;
         /* parse the input Array and create list of credentials. The list (array) is passed to callback function. */
         VIRT_FOREACH(arr_hash, pointer, data) {
@@ -2309,7 +2309,7 @@ PHP_FUNCTION(libvirt_connect)
                 } else {
                     DPRINTF("%s: credentials index %d\n", PHPFUNC, (int)index);
                     creds[j].type=index;
-                    creds[j].result = (char *)emalloc( Z_STRLEN_P(data) + 1 );
+                    creds[j].result = (char *)emalloc(Z_STRLEN_P(data) + 1);
                     memset(creds[j].result, 0, Z_STRLEN_P(data) + 1);
                     creds[j].resultlen = Z_STRLEN_P(data);
                     strncpy(creds[j].result, Z_STRVAL_P(data), Z_STRLEN_P(data));
@@ -2529,7 +2529,7 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats_for_each_cpu)
 
     iter = 0;
     done = 0;
-    while ( !done ) {
+    while (!done) {
 #if PHP_MAJOR_VERSION >= 7
         zval *arr, zarr;
         arr = &zarr;
@@ -2975,7 +2975,7 @@ PHP_FUNCTION(libvirt_image_create)
     int cmdRet;
 
     if (LIBVIRT_G(image_path_ini))
-        path = strdup( LIBVIRT_G(image_path_ini) );
+        path = strdup(LIBVIRT_G(image_path_ini));
 
     if ((path == NULL) || (path[0] != '/')) {
         set_error("Invalid argument, path must be set and absolute (start by slash character [/])" TSRMLS_CC);
@@ -3120,7 +3120,7 @@ PHP_FUNCTION(libvirt_connect_get_encrypted)
 
     GET_CONNECTION_FROM_ARGS("r", &zconn);
 
-    RETURN_LONG( virConnectIsEncrypted(conn->conn) );
+    RETURN_LONG(virConnectIsEncrypted(conn->conn));
 }
 
 
@@ -3138,7 +3138,7 @@ PHP_FUNCTION(libvirt_connect_get_secure)
 
     GET_CONNECTION_FROM_ARGS("r", &zconn);
 
-    RETURN_LONG( virConnectIsSecure(conn->conn) );
+    RETURN_LONG(virConnectIsSecure(conn->conn));
 }
 
 
@@ -3288,7 +3288,7 @@ char *get_string_from_xpath(char *xml, char *xpath, zval **val, int *retVal)
     if (!xpath || !xml)
         return NULL;
 
-    xp = xmlCreateDocParserCtxt( (xmlChar *)xml );
+    xp = xmlCreateDocParserCtxt((xmlChar *)xml);
     if (!xp) {
         ret = -1;
         goto cleanup;
@@ -3306,7 +3306,7 @@ char *get_string_from_xpath(char *xml, char *xpath, zval **val, int *retVal)
         goto cleanup;
     }
 
-    result = xmlXPathEvalExpression( (xmlChar *)xpath, context);
+    result = xmlXPathEvalExpression((xmlChar *)xpath, context);
     if (!result) {
         ret = -4;
         goto cleanup;
@@ -3371,7 +3371,7 @@ char **get_array_from_xpath(char *xml, char *xpath, int *num)
     if ((xpath == NULL) || (xml == NULL))
         return NULL;
 
-    xp = xmlCreateDocParserCtxt( (xmlChar *)xml );
+    xp = xmlCreateDocParserCtxt((xmlChar *)xml);
     if (!xp)
         return NULL;
 
@@ -3387,7 +3387,7 @@ char **get_array_from_xpath(char *xml, char *xpath, int *num)
         return NULL;
     }
 
-    result = xmlXPathEvalExpression( (xmlChar *)xpath, context);
+    result = xmlXPathEvalExpression((xmlChar *)xpath, context);
     if (!result) {
         xmlXPathFreeContext(context);
         xmlCleanupParser();
@@ -3415,7 +3415,7 @@ char **get_array_from_xpath(char *xml, char *xpath, int *num)
     }
 
     ret = 0;
-    val = (char **)malloc( nodeset->nodeNr  * sizeof(char *) );
+    val = (char **)malloc(nodeset->nodeNr  * sizeof(char *));
     for (i = 0; i < nodeset->nodeNr; i++) {
         if ((value = xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode, 1)))
             val[ret++] = value;
@@ -3501,7 +3501,7 @@ int get_subnet_bits(char *ip)
     }
 
     retval += (atoi(tmp) * pow(256, 3 - part));
-    binary = (char *)malloc( maxBits * sizeof(char) );
+    binary = (char *)malloc(maxBits * sizeof(char));
     dec_to_bin(retval, binary);
 
     for (i = 0; i < (int)strlen(binary); i++) {
@@ -3544,9 +3544,9 @@ long get_next_free_numeric_value(virDomainPtr domain, char *xpath)
     long max_slot = -1;
 
     xml = virDomainGetXMLDesc(domain, VIR_DOMAIN_XML_INACTIVE);
-    output = (zval *)emalloc( sizeof(zval) );
+    output = (zval *)emalloc(sizeof(zval));
     array_init(output);
-    free( get_string_from_xpath(xml, xpath, &output, &retval) );
+    free(get_string_from_xpath(xml, xpath, &output, &retval));
 
     arr_hash = Z_ARRVAL_P(output);
     // array_count = zend_hash_num_elements(arr_hash);
@@ -3735,7 +3735,7 @@ char *generate_uuid_any()
             a[i] = hexa[ rand() % strlen(hexa) ];
     }
 
-    return strdup( a );
+    return strdup(a);
 }
 
 /*
@@ -3829,7 +3829,7 @@ char *get_disk_xml(unsigned long long size, char *path, char *driver, char *bus,
              (disk_flags & DOMAIN_DISK_FILE) ? "file" :
              ((disk_flags & DOMAIN_DISK_BLOCK) ? "block" : ""),
              driver, path, bus, dev);
-    return strdup( xml );
+    return strdup(xml);
 }
 
 /*
@@ -3862,7 +3862,7 @@ char *get_network_xml(char *mac, char *network, char *model)
                  "\t\t</interface>\n",
                  mac, network, model);
 
-    return strdup( xml );
+    return strdup(xml);
 }
 
 /*
@@ -4308,7 +4308,7 @@ PHP_FUNCTION(libvirt_domain_lookup_by_name)
     php_libvirt_domain *res_domain;
 
     GET_CONNECTION_FROM_ARGS("rs", &zconn, &name, &name_len);
-    if ( (name == NULL) || (name_len<1)) RETURN_FALSE;
+    if ((name == NULL) || (name_len<1)) RETURN_FALSE;
     domain=virDomainLookupByName(conn->conn, name);
     if (domain == NULL) RETURN_FALSE;
 
@@ -4344,7 +4344,7 @@ PHP_FUNCTION(libvirt_domain_lookup_by_uuid)
 
     GET_CONNECTION_FROM_ARGS("rs", &zconn, &uuid, &uuid_len);
 
-    if ( (uuid == NULL) || (uuid_len<1)) RETURN_FALSE;
+    if ((uuid == NULL) || (uuid_len<1)) RETURN_FALSE;
     domain=virDomainLookupByUUID(conn->conn, uuid);
     if (domain == NULL) RETURN_FALSE;
 
@@ -4409,7 +4409,7 @@ PHP_FUNCTION(libvirt_domain_lookup_by_uuid_string)
 
     GET_CONNECTION_FROM_ARGS("rs", &zconn, &uuid, &uuid_len);
 
-    if ( (uuid == NULL) || (uuid_len<1)) RETURN_FALSE;
+    if ((uuid == NULL) || (uuid_len<1)) RETURN_FALSE;
     domain=virDomainLookupByUUIDString(conn->conn, uuid);
     if (domain == NULL) RETURN_FALSE;
 
@@ -4919,7 +4919,7 @@ PHP_FUNCTION(libvirt_domain_get_screenshot)
 
             snprintf(tmpp, sizeof(tmpp), "%s:%d", hostname, port);
             retval = execlp(path, basename(pathDup), tmpp, file, NULL);
-            _exit( retval );
+            _exit(retval);
         }
         else {
             do {
@@ -4938,7 +4938,7 @@ PHP_FUNCTION(libvirt_domain_get_screenshot)
     fd = open(file, O_RDONLY);
     fsize = lseek(fd, 0, SEEK_END);
     lseek(fd, 0, SEEK_SET);
-    buf = emalloc( (fsize + 1) * sizeof(char) );
+    buf = emalloc((fsize + 1) * sizeof(char));
     memset(buf, 0, fsize + 1);
     if (read(fd, buf, fsize) < 0) {
         close(fd);
@@ -5566,13 +5566,13 @@ void parse_array(zval *arr, tVMDisk *disk, tVMNetwork *network)
             if (key.type == HASH_KEY_IS_STRING) {
                 if (disk != NULL) {
                     if ((Z_TYPE_P(data) == IS_STRING) && strcmp(key.name, "path") == 0)
-                        disk->path = strdup( Z_STRVAL_P(data) );
+                        disk->path = strdup(Z_STRVAL_P(data));
                     else if ((Z_TYPE_P(data) == IS_STRING) && strcmp(key.name, "driver") == 0)
-                        disk->driver = strdup( Z_STRVAL_P(data) );
+                        disk->driver = strdup(Z_STRVAL_P(data));
                     else if ((Z_TYPE_P(data) == IS_STRING) && strcmp(key.name, "bus") == 0)
-                        disk->bus = strdup( Z_STRVAL_P(data) );
+                        disk->bus = strdup(Z_STRVAL_P(data));
                     else if ((Z_TYPE_P(data) == IS_STRING) && strcmp(key.name, "dev") == 0)
-                        disk->dev = strdup( Z_STRVAL_P(data) );
+                        disk->dev = strdup(Z_STRVAL_P(data));
                     else if (strcmp(key.name, "size") == 0) {
                         if (Z_TYPE_P(data) == IS_LONG) {
                             disk->size = Z_LVAL_P(data);
@@ -5585,11 +5585,11 @@ void parse_array(zval *arr, tVMDisk *disk, tVMNetwork *network)
                 } else {
                     if (network != NULL) {
                         if ((Z_TYPE_P(data) == IS_STRING) && strcmp(key.name, "mac") == 0)
-                            network->mac = strdup( Z_STRVAL_P(data) );
+                            network->mac = strdup(Z_STRVAL_P(data));
                         else if ((Z_TYPE_P(data) == IS_STRING) && strcmp(key.name, "network") == 0)
-                            network->network = strdup( Z_STRVAL_P(data) );
+                            network->network = strdup(Z_STRVAL_P(data));
                         else if ((Z_TYPE_P(data) == IS_STRING) && strcmp(key.name, "model") == 0)
-                            network->model = strdup( Z_STRVAL_P(data) );
+                            network->model = strdup(Z_STRVAL_P(data));
                     }
                 }
             }
@@ -5663,7 +5663,7 @@ PHP_FUNCTION(libvirt_domain_new)
     /* Parse all disks from array */
     arr_hash = Z_ARRVAL_P(disks);
     numDisks = zend_hash_num_elements(arr_hash);
-    vmDisks = (tVMDisk *)malloc( numDisks * sizeof(tVMDisk) );
+    vmDisks = (tVMDisk *)malloc(numDisks * sizeof(tVMDisk));
     memset(vmDisks, 0, numDisks * sizeof(tVMDisk));
     i = 0;
     VIRT_FOREACH(arr_hash, pointer, data) {
@@ -5682,7 +5682,7 @@ PHP_FUNCTION(libvirt_domain_new)
     /* Parse all networks from array */
     arr_hash = Z_ARRVAL_P(networks);
     numNets = zend_hash_num_elements(arr_hash);
-    vmNetworks = (tVMNetwork *)malloc( numNets * sizeof(tVMNetwork) );
+    vmNetworks = (tVMNetwork *)malloc(numNets * sizeof(tVMNetwork));
     memset(vmNetworks, 0, numNets * sizeof(tVMNetwork));
     i = 0;
     VIRT_FOREACH(arr_hash, pointer, data) {
@@ -5863,7 +5863,7 @@ PHP_FUNCTION(libvirt_domain_get_disk_devices)
 
     array_init(return_value);
 
-    free( get_string_from_xpath(xml, "//domain/devices/disk/target/@dev", &return_value, &retval) );
+    free(get_string_from_xpath(xml, "//domain/devices/disk/target/@dev", &return_value, &retval));
     free(xml);
 
     if (retval < 0)
@@ -5898,7 +5898,7 @@ PHP_FUNCTION(libvirt_domain_get_interface_devices)
 
     array_init(return_value);
 
-    free( get_string_from_xpath(xml, "//domain/devices/interface/target/@dev", &return_value, &retval) );
+    free(get_string_from_xpath(xml, "//domain/devices/interface/target/@dev", &return_value, &retval));
     free(xml);
 
     if (retval < 0)
@@ -5913,7 +5913,7 @@ PHP_FUNCTION(libvirt_domain_get_interface_devices)
  * Description:     Function is used to change the VCPU count for the domain
  * Arguments:       @res [resource]: libvirt domain resource
  *                  @numCpus [int]: number of VCPUs to be set for the guest
- *                  @flags [int]: flags for virDomainSetVcpusFlags (available at http://libvirt.org/html/libvirt-libvirt.html#virDomainVcpuFlags )
+ *                  @flags [int]: flags for virDomainSetVcpusFlags (available at http://libvirt.org/html/libvirt-libvirt.html#virDomainVcpuFlags)
  * Returns:         true on success, false on error
  */
 PHP_FUNCTION(libvirt_domain_change_vcpus)
@@ -5985,12 +5985,12 @@ PHP_FUNCTION(libvirt_domain_change_memory)
     // pos = strlen(xml) - strlen(tmp1);
     len = strlen(xml) - strlen(tmpA);
 
-    tmp2 = (char *)emalloc( ( len + 1 )* sizeof(char) );
+    tmp2 = (char *)emalloc((len + 1)* sizeof(char));
     memset(tmp2, 0, len + 1);
     memcpy(tmp2, xml, len);
 
     new_len = strlen(tmp1) + strlen(tmp2) + strlen(newXml) + 2;
-    new_xml = (char *)emalloc( new_len * sizeof(char) );
+    new_xml = (char *)emalloc(new_len * sizeof(char));
     snprintf(new_xml, new_len, "%s\n%s%s", tmp2, newXml, tmp1);
 
     conn = domain->conn;
@@ -6069,12 +6069,12 @@ PHP_FUNCTION(libvirt_domain_change_boot_devices)
     // pos = strlen(xml) - strlen(tmp1);
     len = strlen(xml) - strlen(tmpA);
 
-    tmp2 = (char *)emalloc( ( len + 1 )* sizeof(char) );
+    tmp2 = (char *)emalloc((len + 1)* sizeof(char));
     memset(tmp2, 0, len + 1);
     memcpy(tmp2, xml, len);
 
     new_len = strlen(tmp1) + strlen(tmp2) + strlen(newXml) + 2;
-    new_xml = (char *)emalloc( new_len * sizeof(char) );
+    new_xml = (char *)emalloc(new_len * sizeof(char));
     snprintf(new_xml, new_len, "%s\n%s%s", tmp2, newXml, tmp1);
 
     conn = domain->conn;
@@ -7631,7 +7631,7 @@ PHP_FUNCTION(libvirt_domain_snapshot_lookup_by_name)
 
     GET_DOMAIN_FROM_ARGS("rs|l", &zdomain, &name, &name_len, &flags);
 
-    if ( (name == NULL) || (name_len<1)) RETURN_FALSE;
+    if ((name == NULL) || (name_len<1)) RETURN_FALSE;
     snapshot=virDomainSnapshotLookupByName(domain->domain, name, flags);
     if (snapshot == NULL) RETURN_FALSE;
 
@@ -7776,8 +7776,8 @@ PHP_FUNCTION(libvirt_list_domain_snapshots)
     expectedcount=virDomainSnapshotNum(domain->domain, flags);
     DPRINTF("%s: virDomainSnapshotNum(%p, 0) returned %d\n", PHPFUNC, domain->domain, expectedcount);
 
-    if (expectedcount != -1 ) {
-        names=(char **)emalloc( expectedcount * sizeof(char *) );
+    if (expectedcount != -1) {
+        names=(char **)emalloc(expectedcount * sizeof(char *));
         count=virDomainSnapshotListNames(domain->domain, names, expectedcount, 0);
     }
 
@@ -7815,7 +7815,7 @@ PHP_FUNCTION(libvirt_storagepool_lookup_by_name)
 
     GET_CONNECTION_FROM_ARGS("rs", &zconn, &name, &name_len);
 
-    if ( (name == NULL) || (name_len<1)) RETURN_FALSE;
+    if ((name == NULL) || (name_len<1)) RETURN_FALSE;
     pool=virStoragePoolLookupByName(conn->conn, name);
     DPRINTF("%s: virStoragePoolLookupByName(%p, %s) returned %p\n", PHPFUNC, conn->conn, name, pool);
     if (pool == NULL) RETURN_FALSE;
@@ -7955,7 +7955,7 @@ PHP_FUNCTION(libvirt_storagevolume_lookup_by_name)
     virStorageVolPtr volume=NULL;
 
     GET_STORAGEPOOL_FROM_ARGS("rs", &zpool, &name, &name_len);
-    if ( (name == NULL) || (name_len<1)) RETURN_FALSE;
+    if ((name == NULL) || (name_len<1)) RETURN_FALSE;
 
     volume=virStorageVolLookupByName(pool->pool, name);
     DPRINTF("%s: virStorageVolLookupByName(%p, %s) returned %p\n", PHPFUNC, pool->pool, name, volume);
@@ -7992,7 +7992,7 @@ PHP_FUNCTION(libvirt_storagevolume_lookup_by_path)
     virStorageVolPtr volume=NULL;
 
     GET_CONNECTION_FROM_ARGS("rs", &zconn, &name, &name_len);
-    if ( (name == NULL) || (name_len<1)) RETURN_FALSE;
+    if ((name == NULL) || (name_len<1)) RETURN_FALSE;
 
     volume=virStorageVolLookupByPath(conn->conn, name);
     DPRINTF("%s: virStorageVolLookupByPath(%p, %s) returned %p\n", PHPFUNC, conn->conn, name, volume);
@@ -10034,7 +10034,7 @@ PHP_FUNCTION(libvirt_get_iso_images)
     }
 
     if (LIBVIRT_G(iso_path_ini))
-        path = strdup( LIBVIRT_G(iso_path_ini) );
+        path = strdup(LIBVIRT_G(iso_path_ini));
 
     if ((path == NULL) || (path[0] != '/')) {
         set_error("Invalid argument, path must be set and absolute (start by slash character [/])" TSRMLS_CC);
