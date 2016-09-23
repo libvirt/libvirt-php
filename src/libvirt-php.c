@@ -2819,9 +2819,9 @@ PHP_FUNCTION(libvirt_connect_get_information)
         VIRT_ADD_ASSOC_STRING(return_value, "hypervisor", (char *)type);
         add_assoc_long(return_value, "hypervisor_major", (long)((hvVer/1000000) % 1000));
         add_assoc_long(return_value, "hypervisor_minor", (long)((hvVer/1000) % 1000));
-        add_assoc_long(return_value, "hypervisor_release", (long)(hvVer %1000));
+        add_assoc_long(return_value, "hypervisor_release", (long)(hvVer % 1000));
         snprintf(hvStr, sizeof(hvStr), "%s %d.%d.%d", type,
-                 (long)((hvVer/1000000) % 1000), (long)((hvVer/1000) % 1000), (long)(hvVer %1000));
+                 (long)((hvVer/1000000) % 1000), (long)((hvVer/1000) % 1000), (long)(hvVer % 1000));
         VIRT_ADD_ASSOC_STRING(return_value, "hypervisor_string", hvStr);
     }
 
@@ -3067,10 +3067,10 @@ PHP_FUNCTION(libvirt_connect_get_hypervisor)
     VIRT_ADD_ASSOC_STRING(return_value, "hypervisor", (char *)type);
     add_assoc_long(return_value, "major", (long)((hvVer/1000000) % 1000));
     add_assoc_long(return_value, "minor", (long)((hvVer/1000) % 1000));
-    add_assoc_long(return_value, "release", (long)(hvVer %1000));
+    add_assoc_long(return_value, "release", (long)(hvVer % 1000));
 
     snprintf(hvStr, sizeof(hvStr), "%s %d.%d.%d", type,
-             (long)((hvVer/1000000) % 1000), (long)((hvVer/1000) % 1000), (long)(hvVer %1000));
+             (long)((hvVer/1000000) % 1000), (long)((hvVer/1000) % 1000), (long)(hvVer % 1000));
     VIRT_ADD_ASSOC_STRING(return_value, "hypervisor_string", hvStr);
 }
 
@@ -4409,7 +4409,7 @@ PHP_FUNCTION(libvirt_stream_create)
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zconn) == FAILURE)
         RETURN_FALSE;
     VIRT_FETCH_RESOURCE(conn, php_libvirt_connection*, &zconn, PHP_LIBVIRT_CONNECTION_RES_NAME, le_libvirt_connection);
-    if ((conn == NULL)||(conn->conn == NULL))
+    if ((conn == NULL) || (conn->conn == NULL))
         RETURN_FALSE;
 
     stream = virStreamNew(conn->conn, 0);
@@ -4446,7 +4446,7 @@ PHP_FUNCTION(libvirt_stream_close)
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zstream) == FAILURE)
         RETURN_LONG(retval);
     VIRT_FETCH_RESOURCE(stream, php_libvirt_stream*, &zstream, PHP_LIBVIRT_STREAM_RES_NAME, le_libvirt_stream);
-    if ((stream == NULL)||(stream->stream == NULL))
+    if ((stream == NULL) || (stream->stream == NULL))
         RETURN_LONG(retval);
 
     retval = virStreamFree(stream->stream);
@@ -4475,7 +4475,7 @@ PHP_FUNCTION(libvirt_stream_abort)
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zstream) == FAILURE)
         RETURN_LONG(retval);
     VIRT_FETCH_RESOURCE(stream, php_libvirt_stream*, &zstream, PHP_LIBVIRT_STREAM_RES_NAME, le_libvirt_stream);
-    if ((stream == NULL)||(stream->stream == NULL))
+    if ((stream == NULL) || (stream->stream == NULL))
         RETURN_LONG(retval);
 
     retval = virStreamAbort(stream->stream);
@@ -4502,7 +4502,7 @@ PHP_FUNCTION(libvirt_stream_finish)
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zstream) == FAILURE)
         RETURN_LONG(retval);
     VIRT_FETCH_RESOURCE(stream, php_libvirt_stream*, &zstream, PHP_LIBVIRT_STREAM_RES_NAME, le_libvirt_stream);
-    if ((stream == NULL)||(stream->stream == NULL))
+    if ((stream == NULL) || (stream->stream == NULL))
         RETURN_LONG(retval);
 
     retval = virStreamFinish(stream->stream);
@@ -4533,7 +4533,7 @@ PHP_FUNCTION(libvirt_stream_recv)
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rz|l", &zstream, &zbuf, &length) == FAILURE)
         RETURN_LONG(retval);
     VIRT_FETCH_RESOURCE(stream, php_libvirt_stream*, &zstream, PHP_LIBVIRT_STREAM_RES_NAME, le_libvirt_stream);
-    if ((stream == NULL)||(stream->stream == NULL))
+    if ((stream == NULL) || (stream->stream == NULL))
         RETURN_LONG(retval);
 
     recv_buf = emalloc(length + 1);
@@ -4583,7 +4583,7 @@ PHP_FUNCTION(libvirt_stream_send)
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rz|l", &zstream, &zbuf, &length) == FAILURE)
         RETURN_LONG(retval);
     VIRT_FETCH_RESOURCE(stream, php_libvirt_stream*, &zstream, PHP_LIBVIRT_STREAM_RES_NAME, le_libvirt_stream);
-    if ((stream == NULL)||(stream->stream == NULL))
+    if ((stream == NULL) || (stream->stream == NULL))
         RETURN_LONG(retval);
 
     cstr = Z_STRVAL_P(zbuf);
@@ -5949,7 +5949,7 @@ PHP_FUNCTION(libvirt_domain_change_memory)
     // pos = strlen(xml) - strlen(tmp1);
     len = strlen(xml) - strlen(tmpA);
 
-    tmp2 = (char *)emalloc((len + 1)* sizeof(char));
+    tmp2 = (char *)emalloc((len + 1) * sizeof(char));
     memset(tmp2, 0, len + 1);
     memcpy(tmp2, xml, len);
 
@@ -6033,7 +6033,7 @@ PHP_FUNCTION(libvirt_domain_change_boot_devices)
     // pos = strlen(xml) - strlen(tmp1);
     len = strlen(xml) - strlen(tmpA);
 
-    tmp2 = (char *)emalloc((len + 1)* sizeof(char));
+    tmp2 = (char *)emalloc((len + 1) * sizeof(char));
     memset(tmp2, 0, len + 1);
     memcpy(tmp2, xml, len);
 
@@ -8202,10 +8202,10 @@ PHP_FUNCTION(libvirt_storagevolume_create_xml_from)
     }
 
     VIRT_FETCH_RESOURCE(pool, php_libvirt_storagepool*, &zpool, PHP_LIBVIRT_STORAGEPOOL_RES_NAME, le_libvirt_storagepool);
-    if ((pool == NULL)||(pool->pool == NULL))
+    if ((pool == NULL) || (pool->pool == NULL))
         RETURN_FALSE;
     VIRT_FETCH_RESOURCE(pl_volume, php_libvirt_volume*, &zvolume, PHP_LIBVIRT_VOLUME_RES_NAME, le_libvirt_volume);
-    if ((pl_volume == NULL)||(pl_volume->volume == NULL))
+    if ((pl_volume == NULL) || (pl_volume->volume == NULL))
         RETURN_FALSE;
     resource_change_counter(INT_RESOURCE_VOLUME, NULL, pl_volume->volume, 1 TSRMLS_CC);
 
@@ -8308,10 +8308,10 @@ PHP_FUNCTION(libvirt_storagevolume_download)
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rr|l|l|l", &zvolume, &zstream, &offset, &length, &flags) == FAILURE)
         RETURN_LONG(retval);
     VIRT_FETCH_RESOURCE(volume, php_libvirt_volume*, &zvolume, PHP_LIBVIRT_VOLUME_RES_NAME, le_libvirt_volume);
-    if ((volume == NULL)||(volume->volume == NULL))
+    if ((volume == NULL) || (volume->volume == NULL))
         RETURN_LONG(retval);
     VIRT_FETCH_RESOURCE(stream, php_libvirt_stream*, &zstream, PHP_LIBVIRT_STREAM_RES_NAME, le_libvirt_stream);
-    if ((stream == NULL)||(stream->stream == NULL))
+    if ((stream == NULL) || (stream->stream == NULL))
         RETURN_LONG(retval);
 
     retval = virStorageVolDownload(volume->volume, stream->stream, offset, length, flags);
@@ -8350,10 +8350,10 @@ PHP_FUNCTION(libvirt_storagevolume_upload)
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rr|l|l|l", &zvolume, &zstream, &offset, &length, &flags) == FAILURE)
         RETURN_LONG(retval);
     VIRT_FETCH_RESOURCE(volume, php_libvirt_volume*, &zvolume, PHP_LIBVIRT_VOLUME_RES_NAME, le_libvirt_volume);
-    if ((volume == NULL)||(volume->volume == NULL))
+    if ((volume == NULL) || (volume->volume == NULL))
         RETURN_LONG(retval);
     VIRT_FETCH_RESOURCE(stream, php_libvirt_stream*, &zstream, PHP_LIBVIRT_STREAM_RES_NAME, le_libvirt_stream);
-    if ((stream == NULL)||(stream->stream == NULL))
+    if ((stream == NULL) || (stream->stream == NULL))
         RETURN_LONG(retval);
 
     retval = virStorageVolUpload(volume->volume, stream->stream, offset, length, flags);
@@ -8909,7 +8909,7 @@ PHP_FUNCTION(libvirt_list_domains)
 
     DPRINTF("%s: Found %d domains\n", PHPFUNC, expectedcount);
 
-    ids = (int *)emalloc(sizeof(int)*expectedcount);
+    ids = (int *)emalloc(sizeof(int) * expectedcount);
     count = virConnectListDomains(conn->conn, ids, expectedcount);
     DPRINTF("%s: virConnectListDomains returned %d domains\n", PHPFUNC, count);
 
@@ -8990,7 +8990,7 @@ PHP_FUNCTION(libvirt_list_domain_resources)
     if ((expectedcount = virConnectNumOfDomains(conn->conn)) < 0)
         RETURN_FALSE;
 
-    ids = (int *)emalloc(sizeof(int)*expectedcount);
+    ids = (int *)emalloc(sizeof(int) * expectedcount);
     count = virConnectListDomains(conn->conn, ids, expectedcount);
     if ((count != expectedcount) || (count<0)) {
         efree(ids);
@@ -9071,7 +9071,7 @@ PHP_FUNCTION(libvirt_list_active_domain_ids)
     if ((expectedcount = virConnectNumOfDomains (conn->conn)) < 0)
         RETURN_FALSE;
 
-    ids = (int *)emalloc(sizeof(int)*expectedcount);
+    ids = (int *)emalloc(sizeof(int) * expectedcount);
     count = virConnectListDomains(conn->conn, ids, expectedcount);
     if ((count != expectedcount) || (count<0)) {
         efree(ids);
@@ -9106,7 +9106,7 @@ PHP_FUNCTION(libvirt_list_active_domains)
     if ((expectedcount = virConnectNumOfDomains (conn->conn)) < 0)
         RETURN_FALSE;
 
-    ids = (int *)emalloc(sizeof(int)*expectedcount);
+    ids = (int *)emalloc(sizeof(int) * expectedcount);
     count = virConnectListDomains(conn->conn, ids, expectedcount);
     if ((count != expectedcount) || (count<0)) {
         efree(ids);
@@ -9889,7 +9889,7 @@ PHP_FUNCTION(libvirt_version)
     /* The version is returned as: major * 1,000,000 + minor * 1,000 + release. */
     array_init(return_value);
 
-    add_assoc_long(return_value, "libvirt.release", (long)(libVer %1000));
+    add_assoc_long(return_value, "libvirt.release", (long)(libVer % 1000));
     add_assoc_long(return_value, "libvirt.minor", (long)((libVer/1000) % 1000));
     add_assoc_long(return_value, "libvirt.major", (long)((libVer/1000000) % 1000));
 
@@ -9899,7 +9899,7 @@ PHP_FUNCTION(libvirt_version)
     add_assoc_long(return_value, "connector.release", VERSION_MICRO);
 
     if (ZEND_NUM_ARGS() > 0) {
-        add_assoc_long(return_value, "type.release", (long)(typeVer %1000));
+        add_assoc_long(return_value, "type.release", (long)(typeVer % 1000));
         add_assoc_long(return_value, "type.minor", (long)((typeVer/1000) % 1000));
         add_assoc_long(return_value, "type.major", (long)((typeVer/1000000) % 1000));
     }
@@ -9943,7 +9943,7 @@ PHP_FUNCTION(libvirt_check_version)
             if ((((libVer/1000000) % 1000) > major) ||
                 ((((libVer/1000000) % 1000) == major) && (((libVer/1000) % 1000) > minor)) ||
                 ((((libVer/1000000) % 1000) == major) && (((libVer/1000) % 1000) == minor) &&
-                 ((libVer %1000) >= micro)))
+                 ((libVer % 1000) >= micro)))
                 RETURN_TRUE;
         } else {
             set_error("Invalid version type" TSRMLS_CC);
