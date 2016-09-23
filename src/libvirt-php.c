@@ -1177,7 +1177,7 @@ void set_error(char *msg TSRMLS_DC)
     }
 
     php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", msg);
-    LIBVIRT_G(last_error)=estrndup(msg, strlen(msg));
+    LIBVIRT_G(last_error) = estrndup(msg, strlen(msg));
 }
 
 /*
@@ -1197,7 +1197,7 @@ void set_vnc_location(char *msg TSRMLS_DC)
         return;
     }
 
-    LIBVIRT_G(vnc_location)=estrndup(msg, strlen(msg));
+    LIBVIRT_G(vnc_location) = estrndup(msg, strlen(msg));
 
     DPRINTF("set_vnc_location: VNC server location set to '%s'\n", LIBVIRT_G(vnc_location));
 }
@@ -1456,7 +1456,7 @@ int is_local_connection(virConnectPtr conn)
     char *hostname;
     char name[1024];
 
-    hostname=virConnectGetHostname(conn);
+    hostname = virConnectGetHostname(conn);
     gethostname(name, 1024);
     ret = strcmp(name, hostname) == 0;
     free(hostname);
@@ -1491,7 +1491,7 @@ static void php_libvirt_connection_dtor(
                 DPRINTF("%s: virConnectClose(%p) completed successfully\n", __FUNCTION__, conn->conn);
                 resource_change_counter(INT_RESOURCE_CONNECTION, NULL, conn->conn, 0 TSRMLS_CC);
             }
-            conn->conn=NULL;
+            conn->conn = NULL;
         }
         efree(conn);
     }
@@ -1512,7 +1512,7 @@ static void php_libvirt_domain_dtor(
     if (domain != NULL) {
         if (domain->domain != NULL) {
             if (!check_resource_allocation(domain->conn->conn, INT_RESOURCE_DOMAIN, domain->domain TSRMLS_CC)) {
-                domain->domain=NULL;
+                domain->domain = NULL;
                 efree(domain);
                 return;
             }
@@ -1525,7 +1525,7 @@ static void php_libvirt_domain_dtor(
                 DPRINTF("%s: virDomainFree(%p) completed successfully\n", __FUNCTION__, domain->domain);
                 resource_change_counter(INT_RESOURCE_DOMAIN, domain->conn->conn, domain->domain, 0 TSRMLS_CC);
             }
-            domain->domain=NULL;
+            domain->domain = NULL;
         }
         efree(domain);
     }
@@ -1546,7 +1546,7 @@ static void php_libvirt_stream_dtor(
     if (stream != NULL) {
         if (stream->stream != NULL) {
             if (!check_resource_allocation(NULL, INT_RESOURCE_STREAM, stream->stream TSRMLS_CC)) {
-                stream->stream=NULL;
+                stream->stream = NULL;
                 efree(stream);
                 return;
             }
@@ -1558,7 +1558,7 @@ static void php_libvirt_stream_dtor(
                 DPRINTF("%s: virStreamFree(%p) completed successfully\n", __FUNCTION__, stream->stream);
                 resource_change_counter(INT_RESOURCE_STREAM, NULL, stream->stream, 0 TSRMLS_CC);
             }
-            stream->stream=NULL;
+            stream->stream = NULL;
         }
         efree(stream);
     }
@@ -1579,7 +1579,7 @@ static void php_libvirt_storagepool_dtor(
     if (pool != NULL) {
         if (pool->pool != NULL) {
             if (!check_resource_allocation(NULL, INT_RESOURCE_STORAGEPOOL, pool->pool TSRMLS_CC)) {
-                pool->pool=NULL;
+                pool->pool = NULL;
                 efree(pool);
                 return;
             }
@@ -1591,7 +1591,7 @@ static void php_libvirt_storagepool_dtor(
                 DPRINTF("%s: virStoragePoolFree(%p) completed successfully\n", __FUNCTION__, pool->pool);
                 resource_change_counter(INT_RESOURCE_STORAGEPOOL, NULL, pool->pool, 0 TSRMLS_CC);
             }
-            pool->pool=NULL;
+            pool->pool = NULL;
         }
         efree(pool);
     }
@@ -1612,7 +1612,7 @@ static void php_libvirt_volume_dtor(
     if (volume != NULL) {
         if (volume->volume != NULL) {
             if (!check_resource_allocation(NULL, INT_RESOURCE_VOLUME, volume->volume TSRMLS_CC)) {
-                volume->volume=NULL;
+                volume->volume = NULL;
                 efree(volume);
                 return;
             }
@@ -1624,7 +1624,7 @@ static void php_libvirt_volume_dtor(
                 DPRINTF("%s: virStorageVolFree(%p) completed successfully\n", __FUNCTION__, volume->volume);
                 resource_change_counter(INT_RESOURCE_VOLUME, NULL, volume->volume, 0 TSRMLS_CC);
             }
-            volume->volume=NULL;
+            volume->volume = NULL;
         }
         efree(volume);
     }
@@ -1645,7 +1645,7 @@ static void php_libvirt_network_dtor(
     if (network != NULL) {
         if (network->network != NULL) {
             if (!check_resource_allocation(network->conn->conn, INT_RESOURCE_NETWORK, network->network TSRMLS_CC)) {
-                network->network=NULL;
+                network->network = NULL;
                 efree(network);
                 return;
             }
@@ -1657,7 +1657,7 @@ static void php_libvirt_network_dtor(
                 DPRINTF("%s: virNetworkFree(%p) completed successfully\n", __FUNCTION__, network->network);
                 resource_change_counter(INT_RESOURCE_NETWORK, NULL, network->network, 0 TSRMLS_CC);
             }
-            network->network=NULL;
+            network->network = NULL;
         }
         efree(network);
     }
@@ -1678,7 +1678,7 @@ static void php_libvirt_nodedev_dtor(
     if (nodedev != NULL) {
         if (nodedev->device != NULL) {
             if (!check_resource_allocation(nodedev->conn->conn, INT_RESOURCE_NODEDEV, nodedev->device TSRMLS_CC)) {
-                nodedev->device=NULL;
+                nodedev->device = NULL;
                 efree(nodedev);
                 return;
             }
@@ -1690,7 +1690,7 @@ static void php_libvirt_nodedev_dtor(
                 DPRINTF("%s: virNodeDeviceFree(%p) completed successfully\n", __FUNCTION__, nodedev->device);
                 resource_change_counter(INT_RESOURCE_NODEDEV, nodedev->conn->conn, nodedev->device, 0 TSRMLS_CC);
             }
-            nodedev->device=NULL;
+            nodedev->device = NULL;
         }
         efree(nodedev);
     }
@@ -1711,7 +1711,7 @@ static void php_libvirt_snapshot_dtor(
     if (snapshot != NULL) {
         if (snapshot->snapshot != NULL) {
             if (!check_resource_allocation(NULL, INT_RESOURCE_SNAPSHOT, snapshot->snapshot TSRMLS_CC)) {
-                snapshot->snapshot=NULL;
+                snapshot->snapshot = NULL;
                 efree(snapshot);
                 return;
             }
@@ -1723,7 +1723,7 @@ static void php_libvirt_snapshot_dtor(
                 DPRINTF("%s: virDomainSnapshotFree(%p) completed successfully\n", __FUNCTION__, snapshot->snapshot);
                 resource_change_counter(INT_RESOURCE_SNAPSHOT, snapshot->domain->conn->conn, snapshot->snapshot, 0 TSRMLS_CC);
             }
-            snapshot->snapshot=NULL;
+            snapshot->snapshot = NULL;
         }
         efree(snapshot);
     }
@@ -2157,14 +2157,14 @@ static int libvirt_virConnectAuthCallback(virConnectCredentialPtr cred, unsigned
     TSRMLS_FETCH();
 
     unsigned int i, j;
-    php_libvirt_cred_value *creds=(php_libvirt_cred_value*) cbdata;
+    php_libvirt_cred_value *creds = (php_libvirt_cred_value*) cbdata;
     for (i = 0; i < (unsigned int)ncred; i++) {
         DPRINTF("%s: cred %d, type %d, prompt %s challenge %s\n ", __FUNCTION__, i, cred[i].type, cred[i].prompt, cred[i].challenge);
         if (creds != NULL)
             for (j = 0; j < (unsigned int)creds[0].count; j++) {
                 if (creds[j].type == cred[i].type) {
-                    cred[i].resultlen=creds[j].resultlen;
-                    cred[i].result=(char *)malloc(creds[j].resultlen + 1);
+                    cred[i].resultlen = creds[j].resultlen;
+                    cred[i].result = (char *)malloc(creds[j].resultlen + 1);
                     memset(cred[i].result, 0, creds[j].resultlen + 1);
                     strncpy(cred[i].result, creds[j].result, creds[j].resultlen);
                 }
@@ -2211,18 +2211,18 @@ PHP_FUNCTION(libvirt_get_last_error)
 PHP_FUNCTION(libvirt_connect)
 {
     php_libvirt_connection *conn;
-    php_libvirt_cred_value *creds=NULL;
-    zval* zcreds=NULL;
+    php_libvirt_cred_value *creds = NULL;
+    zval* zcreds = NULL;
     zval *data;
     int i;
     int j;
-    int credscount=0;
+    int credscount = 0;
 
-    virConnectAuth libvirt_virConnectAuth= { libvirt_virConnectCredType, sizeof(libvirt_virConnectCredType)/sizeof(int), libvirt_virConnectAuthCallback, NULL};
+    virConnectAuth libvirt_virConnectAuth = { libvirt_virConnectCredType, sizeof(libvirt_virConnectCredType)/sizeof(int), libvirt_virConnectAuthCallback, NULL};
 
-    char *url=NULL;
-    strsize_t url_len=0;
-    zend_bool readonly=1;
+    char *url = NULL;
+    strsize_t url_len = 0;
+    zend_bool readonly = 1;
 
     HashTable *arr_hash;
     HashPosition pointer;
@@ -2254,7 +2254,7 @@ PHP_FUNCTION(libvirt_connect)
     if ((url == NULL) || (strcasecmp(url, "NULL") == 0))
         url = NULL;
 
-    conn=(php_libvirt_connection *)emalloc(sizeof(php_libvirt_connection));
+    conn = (php_libvirt_connection *)emalloc(sizeof(php_libvirt_connection));
     if (zcreds == NULL) {
         /* connecting without providing authentication */
         if (readonly)
@@ -2266,9 +2266,9 @@ PHP_FUNCTION(libvirt_connect)
         arr_hash = Z_ARRVAL_P(zcreds);
         array_count = zend_hash_num_elements(arr_hash);
 
-        credscount=array_count;
-        creds=(php_libvirt_cred_value *)emalloc(credscount * sizeof(php_libvirt_cred_value));
-        j=0;
+        credscount = array_count;
+        creds = (php_libvirt_cred_value *)emalloc(credscount * sizeof(php_libvirt_cred_value));
+        j = 0;
         /* parse the input Array and create list of credentials. The list (array) is passed to callback function. */
         VIRT_FOREACH(arr_hash, pointer, data) {
             if (Z_TYPE_P(data) == IS_STRING) {
@@ -2279,7 +2279,7 @@ PHP_FUNCTION(libvirt_connect)
                     PHPWRITE(info.name, info.length);
                 } else {
                     DPRINTF("%s: credentials index %d\n", PHPFUNC, (int)index);
-                    creds[j].type=index;
+                    creds[j].type = index;
                     creds[j].result = (char *)emalloc(Z_STRLEN_P(data) + 1);
                     memset(creds[j].result, 0, Z_STRLEN_P(data) + 1);
                     creds[j].resultlen = Z_STRLEN_P(data);
@@ -2289,10 +2289,10 @@ PHP_FUNCTION(libvirt_connect)
             }
         } VIRT_FOREACH_END();
         DPRINTF("%s: Found %d elements for credentials\n", PHPFUNC, j);
-        creds[0].count=j;
+        creds[0].count = j;
         libvirt_virConnectAuth.cbdata = (void*)creds;
         conn->conn = virConnectOpenAuth(url, &libvirt_virConnectAuth, readonly ? VIR_CONNECT_RO : 0);
-        for (i=0;i < creds[0].count;i++)
+        for (i = 0;i < creds[0].count;i++)
             efree(creds[i].result);
         efree(creds);
     }
@@ -2325,13 +2325,13 @@ PHP_FUNCTION(libvirt_connect)
 PHP_FUNCTION(libvirt_node_get_info)
 {
     virNodeInfo info;
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
     int retval;
 
     GET_CONNECTION_FROM_ARGS("r", &zconn);
 
-    retval=virNodeGetInfo   (conn->conn, &info);
+    retval = virNodeGetInfo   (conn->conn, &info);
     DPRINTF("%s: virNodeGetInfo returned %d\n", PHPFUNC, retval);
     if (retval == -1)
         RETURN_FALSE;
@@ -2357,7 +2357,7 @@ PHP_FUNCTION(libvirt_node_get_info)
  */
 PHP_FUNCTION(libvirt_node_get_cpu_stats)
 {
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
     int cpuNum = VIR_NODE_CPU_STATS_ALL_CPUS;
     virNodeCPUStatsPtr params;
@@ -2458,7 +2458,7 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats)
  */
 PHP_FUNCTION(libvirt_node_get_cpu_stats_for_each_cpu)
 {
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
     virNodeCPUStatsPtr params;
     virNodeInfo info;
@@ -2576,7 +2576,7 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats_for_each_cpu)
  */
 PHP_FUNCTION(libvirt_node_get_mem_stats)
 {
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
     int memNum = VIR_NODE_MEMORY_STATS_ALL_CELLS;
     virNodeMemoryStatsPtr params;
@@ -2902,13 +2902,13 @@ PHP_FUNCTION(libvirt_connect_get_uri)
  */
 PHP_FUNCTION(libvirt_connect_get_hostname)
 {
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
     char *hostname;
 
     GET_CONNECTION_FROM_ARGS("r", &zconn);
 
-    hostname=virConnectGetHostname(conn->conn);
+    hostname = virConnectGetHostname(conn->conn);
     DPRINTF("%s: virConnectGetHostname returned %s\n", PHPFUNC, hostname);
     if (hostname == NULL)
         RETURN_FALSE;
@@ -2929,7 +2929,7 @@ PHP_FUNCTION(libvirt_connect_get_hostname)
  */
 PHP_FUNCTION(libvirt_image_create)
 {
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
     char msg[1024];
     char cmd[4096] = { 0 };
@@ -2997,7 +2997,7 @@ PHP_FUNCTION(libvirt_image_create)
  */
 PHP_FUNCTION(libvirt_image_remove)
 {
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
     char *hostname;
     char name[1024];
@@ -3013,7 +3013,7 @@ PHP_FUNCTION(libvirt_image_remove)
         RETURN_FALSE;
     }
 
-    hostname=virConnectGetHostname(conn->conn);
+    hostname = virConnectGetHostname(conn->conn);
 
 #ifndef EXTWIN
     /* Code should never go there for Windows systems however we need to allow compilation */
@@ -3046,7 +3046,7 @@ PHP_FUNCTION(libvirt_image_remove)
  */
 PHP_FUNCTION(libvirt_connect_get_hypervisor)
 {
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
     unsigned long hvVer = 0;
     const char *type = NULL;
@@ -3083,7 +3083,7 @@ PHP_FUNCTION(libvirt_connect_get_hypervisor)
  */
 PHP_FUNCTION(libvirt_connect_get_encrypted)
 {
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
 
     GET_CONNECTION_FROM_ARGS("r", &zconn);
@@ -3101,7 +3101,7 @@ PHP_FUNCTION(libvirt_connect_get_encrypted)
  */
 PHP_FUNCTION(libvirt_connect_get_secure)
 {
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
 
     GET_CONNECTION_FROM_ARGS("r", &zconn);
@@ -3140,7 +3140,7 @@ PHP_FUNCTION(libvirt_connect_get_all_domain_stats)
     if (retval < 0)
         RETURN_FALSE;
 
-    for (i=0; i < retval; i++) {
+    for (i = 0; i < retval; i++) {
 #if PHP_MAJOR_VERSION >= 7
         zval *arr2, zarr2;
         arr2 = &zarr2;
@@ -3197,7 +3197,7 @@ PHP_FUNCTION(libvirt_connect_get_all_domain_stats)
  */
 PHP_FUNCTION(libvirt_connect_get_maxvcpus)
 {
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
     const char *type = NULL;
 
@@ -3219,13 +3219,13 @@ PHP_FUNCTION(libvirt_connect_get_maxvcpus)
  */
 PHP_FUNCTION(libvirt_connect_get_sysinfo)
 {
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
     char *sysinfo;
 
     GET_CONNECTION_FROM_ARGS("r", &zconn);
 
-    sysinfo=virConnectGetSysinfo(conn->conn, 0);
+    sysinfo = virConnectGetSysinfo(conn->conn, 0);
     if (sysinfo == NULL)
         RETURN_FALSE;
 
@@ -3691,7 +3691,7 @@ char *generate_uuid_any()
     int i;
     char a[37] = { 0 };
     char hexa[] = "0123456789abcdef";
-    // virDomainPtr domain=NULL;
+    // virDomainPtr domain = NULL;
 
     srand(time(NULL));
     for (i = 0; i < 36; i++) {
@@ -3713,7 +3713,7 @@ char *generate_uuid_any()
  */
 char *generate_uuid(virConnectPtr conn TSRMLS_DC)
 {
-    virDomainPtr domain=NULL;
+    virDomainPtr domain = NULL;
     char *uuid = NULL;
     int old_error_reporting = EG(error_reporting);
     EG(error_reporting) = 0;
@@ -3768,7 +3768,7 @@ char *get_disk_xml(unsigned long long size, char *path, char *driver, char *bus,
             return NULL;
         }
 
-        // TODO: implement backing file handling: -o backing_file=RAW_IMG_FILE QCOW_IMG
+        // TODO: implement backing file handling: -o backing_file = RAW_IMG_FILE QCOW_IMG
         snprintf(cmd, sizeof(cmd), "%s create -f %s %s %ldM > /dev/null &2>/dev/null", qemu_img_cmd, driver, path, size);
 
 #ifndef EXTWIN
@@ -4010,7 +4010,7 @@ char *installation_get_xml(int step, virConnectPtr conn, char *name, int memMB, 
  */
 PHP_FUNCTION(libvirt_domain_get_counts)
 {
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
     int count_defined;
     int count_active;
@@ -4259,17 +4259,17 @@ PHP_FUNCTION(libvirt_domain_is_active)
  */
 PHP_FUNCTION(libvirt_domain_lookup_by_name)
 {
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
     strsize_t name_len;
-    char *name=NULL;
-    virDomainPtr domain=NULL;
+    char *name = NULL;
+    virDomainPtr domain = NULL;
     php_libvirt_domain *res_domain;
 
     GET_CONNECTION_FROM_ARGS("rs", &zconn, &name, &name_len);
     if ((name == NULL) || (name_len<1))
         RETURN_FALSE;
-    domain=virDomainLookupByName(conn->conn, name);
+    domain = virDomainLookupByName(conn->conn, name);
     if (domain == NULL)
         RETURN_FALSE;
 
@@ -4296,24 +4296,24 @@ PHP_FUNCTION(libvirt_domain_lookup_by_name)
  */
 PHP_FUNCTION(libvirt_domain_lookup_by_uuid)
 {
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
     strsize_t uuid_len;
-    unsigned char *uuid=NULL;
-    virDomainPtr domain=NULL;
+    unsigned char *uuid = NULL;
+    virDomainPtr domain = NULL;
     php_libvirt_domain *res_domain;
 
     GET_CONNECTION_FROM_ARGS("rs", &zconn, &uuid, &uuid_len);
 
     if ((uuid == NULL) || (uuid_len<1))
         RETURN_FALSE;
-    domain=virDomainLookupByUUID(conn->conn, uuid);
+    domain = virDomainLookupByUUID(conn->conn, uuid);
     if (domain == NULL)
         RETURN_FALSE;
 
     res_domain = (php_libvirt_domain *)emalloc(sizeof(php_libvirt_domain));
     res_domain->domain = domain;
-    res_domain->conn=conn;
+    res_domain->conn = conn;
 
     DPRINTF("%s: domain UUID = '%s', returning %p\n", PHPFUNC, uuid, res_domain->domain);
     resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1 TSRMLS_CC);
@@ -4336,7 +4336,7 @@ PHP_FUNCTION(libvirt_domain_lookup_by_uuid)
  */
 PHP_FUNCTION(libvirt_domain_qemu_agent_command)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     const char *cmd;
     strsize_t cmd_len;
@@ -4364,22 +4364,22 @@ PHP_FUNCTION(libvirt_domain_qemu_agent_command)
  */
 PHP_FUNCTION(libvirt_domain_lookup_by_uuid_string)
 {
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
     strsize_t uuid_len;
-    char *uuid=NULL;
-    virDomainPtr domain=NULL;
+    char *uuid = NULL;
+    virDomainPtr domain = NULL;
     php_libvirt_domain *res_domain;
 
     GET_CONNECTION_FROM_ARGS("rs", &zconn, &uuid, &uuid_len);
 
     if ((uuid == NULL) || (uuid_len<1))
         RETURN_FALSE;
-    domain=virDomainLookupByUUIDString(conn->conn, uuid);
+    domain = virDomainLookupByUUIDString(conn->conn, uuid);
     if (domain == NULL)
         RETURN_FALSE;
 
-    res_domain =(php_libvirt_domain *)emalloc(sizeof(php_libvirt_domain));
+    res_domain = (php_libvirt_domain *)emalloc(sizeof(php_libvirt_domain));
     res_domain->domain = domain;
     res_domain->conn = conn;
 
@@ -4401,7 +4401,7 @@ PHP_FUNCTION(libvirt_domain_lookup_by_uuid_string)
  */
 PHP_FUNCTION(libvirt_stream_create)
 {
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
     virStreamPtr stream = NULL;
     php_libvirt_stream *res_stream;
@@ -4440,7 +4440,7 @@ PHP_FUNCTION(libvirt_stream_create)
 PHP_FUNCTION(libvirt_stream_close)
 {
     zval *zstream;
-    php_libvirt_stream *stream=NULL;
+    php_libvirt_stream *stream = NULL;
     int retval = -1;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zstream) == FAILURE)
@@ -4469,7 +4469,7 @@ PHP_FUNCTION(libvirt_stream_close)
 PHP_FUNCTION(libvirt_stream_abort)
 {
     zval *zstream;
-    php_libvirt_stream *stream=NULL;
+    php_libvirt_stream *stream = NULL;
     int retval = -1;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zstream) == FAILURE)
@@ -4496,7 +4496,7 @@ PHP_FUNCTION(libvirt_stream_abort)
 PHP_FUNCTION(libvirt_stream_finish)
 {
     zval *zstream;
-    php_libvirt_stream *stream=NULL;
+    php_libvirt_stream *stream = NULL;
     int retval = -1;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zstream) == FAILURE)
@@ -4526,7 +4526,7 @@ PHP_FUNCTION(libvirt_stream_recv)
 {
     zval *zstream, *zbuf;
     char *recv_buf;
-    php_libvirt_stream *stream=NULL;
+    php_libvirt_stream *stream = NULL;
     int retval = -1;
     zend_long length = 0;
 
@@ -4574,7 +4574,7 @@ PHP_FUNCTION(libvirt_stream_recv)
 PHP_FUNCTION(libvirt_stream_send)
 {
     zval *zstream, *zbuf;
-    php_libvirt_stream *stream=NULL;
+    php_libvirt_stream *stream = NULL;
     int retval = -1;
     zend_long length = 0;
     char *cstr;
@@ -4608,21 +4608,21 @@ PHP_FUNCTION(libvirt_stream_send)
  */
 PHP_FUNCTION(libvirt_domain_lookup_by_id)
 {
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
     zend_long id;
-    virDomainPtr domain=NULL;
+    virDomainPtr domain = NULL;
     php_libvirt_domain *res_domain;
 
     GET_CONNECTION_FROM_ARGS("rl", &zconn, &id);
 
-    domain=virDomainLookupByID(conn->conn, (int)id);
+    domain = virDomainLookupByID(conn->conn, (int)id);
     if (domain == NULL)
         RETURN_FALSE;
 
     res_domain = (php_libvirt_domain *)emalloc(sizeof(php_libvirt_domain));
     res_domain->domain = domain;
-    res_domain->conn=conn;
+    res_domain->conn = conn;
 
     DPRINTF("%s: domain id = '%d', returning %p\n", PHPFUNC, (int)id, res_domain->domain);
     resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1 TSRMLS_CC);
@@ -4642,9 +4642,9 @@ PHP_FUNCTION(libvirt_domain_lookup_by_id)
  */
 PHP_FUNCTION(libvirt_domain_get_name)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
-    const char *name=NULL;
+    const char *name = NULL;
 
     GET_DOMAIN_FROM_ARGS("r", &zdomain);
 
@@ -4668,7 +4668,7 @@ PHP_FUNCTION(libvirt_domain_get_name)
  */
 PHP_FUNCTION(libvirt_domain_get_uuid_string)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     char *uuid;
     int retval;
@@ -4676,7 +4676,7 @@ PHP_FUNCTION(libvirt_domain_get_uuid_string)
     GET_DOMAIN_FROM_ARGS("r", &zdomain);
 
     uuid = (char *)emalloc(VIR_UUID_STRING_BUFLEN);
-    retval=virDomainGetUUIDString(domain->domain, uuid);
+    retval = virDomainGetUUIDString(domain->domain, uuid);
     DPRINTF("%s: virDomainGetUUIDString(%p) returned %d (%s)\n", PHPFUNC, domain->domain, retval, uuid);
     if (retval != 0)
         RETURN_FALSE;
@@ -4713,7 +4713,7 @@ static int streamSink(virStreamPtr st ATTRIBUTE_UNUSED,
  */
 PHP_FUNCTION(libvirt_domain_get_screenshot_api)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     zend_long screen = 0;
     int fd = -1;
@@ -4811,7 +4811,7 @@ PHP_FUNCTION(libvirt_domain_get_screenshot_api)
 PHP_FUNCTION(libvirt_domain_get_screenshot)
 {
 #ifndef EXTWIN
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     pid_t childpid = -1;
     pid_t w = -1;
@@ -4951,7 +4951,7 @@ PHP_FUNCTION(libvirt_domain_get_screenshot)
 PHP_FUNCTION(libvirt_domain_get_screen_dimensions)
 {
 #ifndef EXTWIN
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     int retval = -1;
     char *tmp = NULL;
@@ -5020,7 +5020,7 @@ PHP_FUNCTION(libvirt_domain_get_screen_dimensions)
 PHP_FUNCTION(libvirt_domain_send_keys)
 {
 #ifndef EXTWIN
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     int retval = -1;
     char *tmp = NULL;
@@ -5137,7 +5137,7 @@ PHP_FUNCTION(libvirt_domain_send_key_api)
 PHP_FUNCTION(libvirt_domain_send_pointer_event)
 {
 #ifndef EXTWIN
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     int retval = -1;
     char *tmp = NULL;
@@ -5201,15 +5201,15 @@ PHP_FUNCTION(libvirt_domain_send_pointer_event)
 PHP_FUNCTION(libvirt_domain_get_uuid)
 {
 
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     char *uuid;
     int retval;
 
     GET_DOMAIN_FROM_ARGS("r", &zdomain);
 
-    uuid=(char *)emalloc(VIR_UUID_BUFLEN);
-    retval=virDomainGetUUID(domain->domain, (unsigned char *)uuid);
+    uuid = (char *)emalloc(VIR_UUID_BUFLEN);
+    retval = virDomainGetUUID(domain->domain, (unsigned char *)uuid);
     DPRINTF("%s: virDomainGetUUID(%p, %p) returned %d\n", PHPFUNC, domain->domain, uuid, retval);
     if (retval != 0)
         RETURN_FALSE;
@@ -5228,13 +5228,13 @@ PHP_FUNCTION(libvirt_domain_get_uuid)
 PHP_FUNCTION(libvirt_domain_get_id)
 {
 
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     int retval;
 
     GET_DOMAIN_FROM_ARGS("r", &zdomain);
 
-    retval=virDomainGetID(domain->domain);
+    retval = virDomainGetID(domain->domain);
     DPRINTF("%s: virDomainGetID(%p) returned %d\n", PHPFUNC, domain->domain, retval);
 
     RETURN_LONG(retval);
@@ -5250,7 +5250,7 @@ PHP_FUNCTION(libvirt_domain_get_id)
 PHP_FUNCTION(libvirt_domain_get_next_dev_ids)
 {
     long dom, bus, slot, func;
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
 
     GET_DOMAIN_FROM_ARGS("r", &zdomain);
@@ -5279,7 +5279,7 @@ PHP_FUNCTION(libvirt_domain_get_next_dev_ids)
  */
 PHP_FUNCTION(libvirt_connect_get_capabilities)
 {
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
     char *caps;
     char *xpath = NULL;
@@ -5314,7 +5314,7 @@ PHP_FUNCTION(libvirt_connect_get_capabilities)
  */
 PHP_FUNCTION(libvirt_connect_get_emulator)
 {
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
     char *arch = NULL;
     strsize_t arch_len;
@@ -5345,7 +5345,7 @@ PHP_FUNCTION(libvirt_connect_get_emulator)
  */
 PHP_FUNCTION(libvirt_connect_get_nic_models)
 {
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
     char *arch = NULL;
     strsize_t arch_len;
@@ -5416,7 +5416,7 @@ PHP_FUNCTION(libvirt_connect_get_nic_models)
  */
 PHP_FUNCTION(libvirt_connect_get_soundhw_models)
 {
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
     char *arch = NULL;
     strsize_t arch_len;
@@ -5580,16 +5580,16 @@ void parse_array(zval *arr, tVMDisk *disk, tVMNetwork *network)
  */
 PHP_FUNCTION(libvirt_domain_new)
 {
-    php_libvirt_connection *conn=NULL;
-    php_libvirt_domain *res_domain=NULL;
-    virDomainPtr domain2=NULL;
-    virDomainPtr domain=NULL;
+    php_libvirt_connection *conn = NULL;
+    php_libvirt_domain *res_domain = NULL;
+    virDomainPtr domain2 = NULL;
+    virDomainPtr domain = NULL;
     zval *zconn;
     char *arch = NULL;
     strsize_t arch_len;
     char *tmp;
     char *name;
-    strsize_t name_len=0;
+    strsize_t name_len = 0;
     // char *emulator;
     char *iso_image = NULL;
     strsize_t iso_image_len;
@@ -5770,13 +5770,13 @@ PHP_FUNCTION(libvirt_domain_new_get_vnc)
  */
 PHP_FUNCTION(libvirt_domain_get_xml_desc)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     char *tmp = NULL;
     char *xml;
     char *xpath = NULL;
     strsize_t xpath_len;
-    zend_long flags=0;
+    zend_long flags = 0;
     int retval = -1;
 
     GET_DOMAIN_FROM_ARGS("rs|l", &zdomain, &xpath, &xpath_len, &flags);
@@ -5811,7 +5811,7 @@ PHP_FUNCTION(libvirt_domain_get_xml_desc)
  */
 PHP_FUNCTION(libvirt_domain_get_disk_devices)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     char *xml;
     int retval = -1;
@@ -5846,7 +5846,7 @@ PHP_FUNCTION(libvirt_domain_get_disk_devices)
  */
 PHP_FUNCTION(libvirt_domain_get_interface_devices)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     char *xml;
     int retval = -1;
@@ -5884,7 +5884,7 @@ PHP_FUNCTION(libvirt_domain_get_interface_devices)
 PHP_FUNCTION(libvirt_domain_change_vcpus)
 {
     zend_long numCpus, flags = 0;
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
 
     GET_DOMAIN_FROM_ARGS("rl|l", &zdomain, &numCpus, &flags);
@@ -5908,7 +5908,7 @@ PHP_FUNCTION(libvirt_domain_change_vcpus)
  */
 PHP_FUNCTION(libvirt_domain_change_memory)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     char *tmpA = NULL;
     char *tmp1 = NULL;
@@ -5959,7 +5959,7 @@ PHP_FUNCTION(libvirt_domain_change_memory)
 
     conn = domain->conn;
 
-    dom=virDomainDefineXML(conn->conn, new_xml);
+    dom = virDomainDefineXML(conn->conn, new_xml);
     if (dom == NULL) {
         free(xml);
         efree(new_xml);
@@ -5993,7 +5993,7 @@ PHP_FUNCTION(libvirt_domain_change_memory)
  */
 PHP_FUNCTION(libvirt_domain_change_boot_devices)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     char *tmpA = NULL;
     char *tmp1 = NULL;
@@ -6043,7 +6043,7 @@ PHP_FUNCTION(libvirt_domain_change_boot_devices)
 
     conn = domain->conn;
 
-    dom=virDomainDefineXML(conn->conn, new_xml);
+    dom = virDomainDefineXML(conn->conn, new_xml);
     if (dom == NULL) {
         DPRINTF("%s: Function failed, restoring original XML\n", PHPFUNC);
         free(xml);
@@ -6080,7 +6080,7 @@ PHP_FUNCTION(libvirt_domain_change_boot_devices)
  */
 PHP_FUNCTION(libvirt_domain_disk_add)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     char *xml;
     char *img = NULL;
@@ -6176,7 +6176,7 @@ PHP_FUNCTION(libvirt_domain_disk_add)
  */
 PHP_FUNCTION(libvirt_domain_disk_remove)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     char *xml;
     char *dev = NULL;
@@ -6249,7 +6249,7 @@ PHP_FUNCTION(libvirt_domain_disk_remove)
  */
 PHP_FUNCTION(libvirt_domain_nic_add)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     char *xml;
     char *mac = NULL;
@@ -6342,7 +6342,7 @@ PHP_FUNCTION(libvirt_domain_nic_add)
  */
 PHP_FUNCTION(libvirt_domain_nic_remove)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     char *xml;
     char *mac = NULL;
@@ -6461,14 +6461,14 @@ PHP_FUNCTION(libvirt_domain_detach_device)
  */
 PHP_FUNCTION(libvirt_domain_get_info)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     virDomainInfo domainInfo;
     int retval;
 
     GET_DOMAIN_FROM_ARGS("r", &zdomain);
 
-    retval=virDomainGetInfo(domain->domain, &domainInfo);
+    retval = virDomainGetInfo(domain->domain, &domainInfo);
     DPRINTF("%s: virDomainGetInfo(%p) returned %d\n", PHPFUNC, domain->domain, retval);
     if (retval != 0)
         RETURN_FALSE;
@@ -6490,13 +6490,13 @@ PHP_FUNCTION(libvirt_domain_get_info)
  */
 PHP_FUNCTION(libvirt_domain_create)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     int retval;
 
     GET_DOMAIN_FROM_ARGS("r", &zdomain);
 
-    retval=virDomainCreate(domain->domain);
+    retval = virDomainCreate(domain->domain);
     DPRINTF("%s: virDomainCreate(%p) returned %d\n", PHPFUNC, domain->domain, retval);
     if (retval != 0)
         RETURN_FALSE;
@@ -6512,13 +6512,13 @@ PHP_FUNCTION(libvirt_domain_create)
  */
 PHP_FUNCTION(libvirt_domain_destroy)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     int retval;
 
     GET_DOMAIN_FROM_ARGS("r", &zdomain);
 
-    retval=virDomainDestroy(domain->domain);
+    retval = virDomainDestroy(domain->domain);
     DPRINTF("%s: virDomainDestroy(%p) returned %d\n", PHPFUNC, domain->domain, retval);
     if (retval != 0)
         RETURN_FALSE;
@@ -6534,13 +6534,13 @@ PHP_FUNCTION(libvirt_domain_destroy)
  */
 PHP_FUNCTION(libvirt_domain_resume)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     int retval;
 
     GET_DOMAIN_FROM_ARGS("r", &zdomain);
 
-    retval=virDomainResume(domain->domain);
+    retval = virDomainResume(domain->domain);
     DPRINTF("%s: virDomainResume(%p) returned %d\n", PHPFUNC, domain->domain, retval);
     if (retval != 0)
         RETURN_FALSE;
@@ -6557,7 +6557,7 @@ PHP_FUNCTION(libvirt_domain_resume)
  */
 PHP_FUNCTION(libvirt_domain_core_dump)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     int retval;
     strsize_t to_len;
@@ -6565,7 +6565,7 @@ PHP_FUNCTION(libvirt_domain_core_dump)
 
     GET_DOMAIN_FROM_ARGS("rs", &zdomain, &to, &to_len);
 
-    retval=virDomainCoreDump(domain->domain, to, 0);
+    retval = virDomainCoreDump(domain->domain, to, 0);
     DPRINTF("%s: virDomainCoreDump(%p, %s, 0) returned %d\n", PHPFUNC, domain->domain, to, retval);
     if (retval != 0)
         RETURN_FALSE;
@@ -6581,13 +6581,13 @@ PHP_FUNCTION(libvirt_domain_core_dump)
  */
 PHP_FUNCTION(libvirt_domain_shutdown)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     int retval;
 
     GET_DOMAIN_FROM_ARGS("r", &zdomain);
 
-    retval=virDomainShutdown(domain->domain);
+    retval = virDomainShutdown(domain->domain);
     DPRINTF("%s: virDomainShutdown(%p) returned %d\n", PHPFUNC, domain->domain, retval);
     if (retval != 0)
         RETURN_FALSE;
@@ -6603,12 +6603,12 @@ PHP_FUNCTION(libvirt_domain_shutdown)
  */
 PHP_FUNCTION(libvirt_domain_managedsave)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     int retval;
 
     GET_DOMAIN_FROM_ARGS("r", &zdomain);
-    retval=virDomainManagedSave(domain->domain, 0);
+    retval = virDomainManagedSave(domain->domain, 0);
     DPRINTF("%s: virDomainManagedSave(%p) returned %d\n", PHPFUNC, domain->domain, retval);
     if (retval != 0)
         RETURN_FALSE;
@@ -6624,13 +6624,13 @@ PHP_FUNCTION(libvirt_domain_managedsave)
  */
 PHP_FUNCTION(libvirt_domain_suspend)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     int retval;
 
     GET_DOMAIN_FROM_ARGS("r", &zdomain);
 
-    retval=virDomainSuspend(domain->domain);
+    retval = virDomainSuspend(domain->domain);
     DPRINTF("%s: virDomainSuspend(%p) returned %d\n", PHPFUNC, domain->domain, retval);
     if (retval != 0)
         RETURN_FALSE;
@@ -6646,13 +6646,13 @@ PHP_FUNCTION(libvirt_domain_suspend)
  */
 PHP_FUNCTION(libvirt_domain_undefine)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     int retval;
 
     GET_DOMAIN_FROM_ARGS("r", &zdomain);
 
-    retval=virDomainUndefine(domain->domain);
+    retval = virDomainUndefine(domain->domain);
     DPRINTF("%s: virDomainUndefine(%p) returned %d\n", PHPFUNC, domain->domain, retval);
     if (retval != 0)
         RETURN_FALSE;
@@ -6669,14 +6669,14 @@ PHP_FUNCTION(libvirt_domain_undefine)
  */
 PHP_FUNCTION(libvirt_domain_reboot)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     int retval;
-    zend_long flags=0;
+    zend_long flags = 0;
 
     GET_DOMAIN_FROM_ARGS("r|l", &zdomain, &flags);
 
-    retval=virDomainReboot(domain->domain, flags);
+    retval = virDomainReboot(domain->domain, flags);
     DPRINTF("%s: virDomainReboot(%p) returned %d\n", PHPFUNC, domain->domain, retval);
     if (retval != 0)
         RETURN_FALSE;
@@ -6693,22 +6693,22 @@ PHP_FUNCTION(libvirt_domain_reboot)
  */
 PHP_FUNCTION(libvirt_domain_define_xml)
 {
-    php_libvirt_domain *res_domain=NULL;
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_domain *res_domain = NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
-    virDomainPtr domain=NULL;
+    virDomainPtr domain = NULL;
     char *xml;
     strsize_t xml_len;
 
     GET_CONNECTION_FROM_ARGS("rs", &zconn, &xml, &xml_len);
 
-    domain=virDomainDefineXML(conn->conn, xml);
+    domain = virDomainDefineXML(conn->conn, xml);
     if (domain == NULL)
         RETURN_FALSE;
 
     res_domain = (php_libvirt_domain *)emalloc(sizeof(php_libvirt_domain));
     res_domain->domain = domain;
-    res_domain->conn=conn;
+    res_domain->conn = conn;
 
     DPRINTF("%s: returning %p\n", PHPFUNC, res_domain->domain);
     resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1 TSRMLS_CC);
@@ -6729,24 +6729,24 @@ PHP_FUNCTION(libvirt_domain_define_xml)
  */
 PHP_FUNCTION(libvirt_domain_create_xml)
 {
-    php_libvirt_domain *res_domain=NULL;
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_domain *res_domain = NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
-    virDomainPtr domain=NULL;
+    virDomainPtr domain = NULL;
     char *xml;
     strsize_t xml_len;
-    zend_long flags=0;
+    zend_long flags = 0;
 
     GET_CONNECTION_FROM_ARGS("rs|l", &zconn, &xml, &xml_len, &flags);
 
-    domain=virDomainCreateXML(conn->conn, xml, flags);
+    domain = virDomainCreateXML(conn->conn, xml, flags);
     DPRINTF("%s: virDomainCreateXML(%p, <xml>, 0) returned %p\n", PHPFUNC, conn->conn, domain);
     if (domain == NULL)
         RETURN_FALSE;
 
     res_domain = (php_libvirt_domain *)emalloc(sizeof(php_libvirt_domain));
     res_domain->domain = domain;
-    res_domain->conn=conn;
+    res_domain->conn = conn;
 
     DPRINTF("%s: returning %p\n", PHPFUNC, res_domain->domain);
     resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1 TSRMLS_CC);
@@ -6835,10 +6835,10 @@ PHP_FUNCTION(libvirt_domain_xml_to_native)
  */
 PHP_FUNCTION(libvirt_domain_memory_peek)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     int retval;
-    zend_long flags=0;
+    zend_long flags = 0;
     zend_long start;
     zend_long size;
     char *buff;
@@ -6848,8 +6848,8 @@ PHP_FUNCTION(libvirt_domain_memory_peek)
         set_error("Negative argument start" TSRMLS_CC);
         RETURN_FALSE;
     }
-    buff=(char *)emalloc(size);
-    retval=virDomainMemoryPeek(domain->domain, start, size, buff, flags);
+    buff = (char *)emalloc(size);
+    retval = virDomainMemoryPeek(domain->domain, start, size, buff, flags);
     if (retval != 0)
         RETURN_FALSE;
     VIRT_RETVAL_STRINGL(buff, size);
@@ -6866,23 +6866,23 @@ PHP_FUNCTION(libvirt_domain_memory_peek)
  */
 PHP_FUNCTION(libvirt_domain_memory_stats)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     int retval;
-    zend_long flags=0;
+    zend_long flags = 0;
     int i;
     struct _virDomainMemoryStat stats[VIR_DOMAIN_MEMORY_STAT_NR];
 
     GET_DOMAIN_FROM_ARGS("r|l", &zdomain, &flags);
 
-    retval=virDomainMemoryStats(domain->domain, stats, VIR_DOMAIN_MEMORY_STAT_NR, flags);
+    retval = virDomainMemoryStats(domain->domain, stats, VIR_DOMAIN_MEMORY_STAT_NR, flags);
     DPRINTF("%s: virDomainMemoryStats(%p...) returned %d\n", PHPFUNC, domain->domain, retval);
 
     if (retval == -1)
         RETURN_FALSE;
     LONGLONG_INIT;
     array_init(return_value);
-    for (i=0;i<retval;i++)
+    for (i = 0;i<retval;i++)
         LONGLONG_INDEX(return_value, stats[i].tag, stats[i].val)
 }
 
@@ -6897,7 +6897,7 @@ PHP_FUNCTION(libvirt_domain_memory_stats)
  */
 PHP_FUNCTION(libvirt_domain_update_device)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     char *xml;
     strsize_t xml_len;
@@ -6906,7 +6906,7 @@ PHP_FUNCTION(libvirt_domain_update_device)
 
     GET_DOMAIN_FROM_ARGS("rsl", &zdomain, &xml, &xml_len, &flags);
 
-    res=virDomainUpdateDeviceFlags(domain->domain, xml, flags);
+    res = virDomainUpdateDeviceFlags(domain->domain, xml, flags);
     DPRINTF("%s: virDomainUpdateDeviceFlags(%p) returned %d\n", PHPFUNC, domain->domain, res);
     if (res != 0)
         RETURN_FALSE;
@@ -6924,7 +6924,7 @@ PHP_FUNCTION(libvirt_domain_update_device)
  */
 PHP_FUNCTION(libvirt_domain_block_stats)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     int retval;
     char *path;
@@ -6934,7 +6934,7 @@ PHP_FUNCTION(libvirt_domain_block_stats)
 
     GET_DOMAIN_FROM_ARGS("rs", &zdomain, &path, &path_len);
 
-    retval=virDomainBlockStats(domain->domain, path, &stats, sizeof stats);
+    retval = virDomainBlockStats(domain->domain, path, &stats, sizeof stats);
     DPRINTF("%s: virDomainBlockStats(%p, %s, <stats>, <size>) returned %d\n", PHPFUNC, domain->domain, path, retval);
     if (retval == -1)
         RETURN_FALSE;
@@ -6960,7 +6960,7 @@ PHP_FUNCTION(libvirt_domain_block_stats)
  */
 PHP_FUNCTION(libvirt_domain_block_resize)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     int retval;
     char *path;
@@ -6970,7 +6970,7 @@ PHP_FUNCTION(libvirt_domain_block_resize)
 
     GET_DOMAIN_FROM_ARGS("rsl|l", &zdomain, &path, &path_len, &size, &flags);
 
-    retval=virDomainBlockResize(domain->domain, path, size, flags);
+    retval = virDomainBlockResize(domain->domain, path, size, flags);
     if (retval == -1)
         RETURN_FALSE;
 
@@ -6991,7 +6991,7 @@ PHP_FUNCTION(libvirt_domain_block_resize)
  */
 PHP_FUNCTION(libvirt_domain_block_commit)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     int retval;
     char *disk;
@@ -7005,7 +7005,7 @@ PHP_FUNCTION(libvirt_domain_block_commit)
 
     GET_DOMAIN_FROM_ARGS("rsssll", &zdomain, &disk, &disk_len, &base, &base_len, &top, &top_len, &bandwidth, &flags);
 
-    retval=virDomainBlockCommit(domain->domain, disk, base, top, bandwidth, flags);
+    retval = virDomainBlockCommit(domain->domain, disk, base, top, bandwidth, flags);
     if (retval == -1)
         RETURN_FALSE;
 
@@ -7024,7 +7024,7 @@ PHP_FUNCTION(libvirt_domain_block_commit)
 */
 PHP_FUNCTION(libvirt_domain_block_job_info)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     int retval;
     char *disk;
@@ -7034,7 +7034,7 @@ PHP_FUNCTION(libvirt_domain_block_job_info)
 
     GET_DOMAIN_FROM_ARGS("rs|l", &zdomain, &disk, &disk_len, &flags);
 
-    retval=virDomainGetBlockJobInfo(domain->domain, disk, &info, flags);
+    retval = virDomainGetBlockJobInfo(domain->domain, disk, &info, flags);
 
     array_init(return_value);
     add_assoc_long(return_value, "status", (int)retval);
@@ -7056,7 +7056,7 @@ PHP_FUNCTION(libvirt_domain_block_job_info)
  */
 PHP_FUNCTION(libvirt_domain_block_job_abort)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     int retval;
     char *path;
@@ -7065,7 +7065,7 @@ PHP_FUNCTION(libvirt_domain_block_job_abort)
 
     GET_DOMAIN_FROM_ARGS("rs|l", &zdomain, &path, &path_len, &flags);
 
-    retval=virDomainBlockJobAbort(domain->domain, path, flags);
+    retval = virDomainBlockJobAbort(domain->domain, path, flags);
     if (retval == -1)
         RETURN_FALSE;
 
@@ -7084,7 +7084,7 @@ PHP_FUNCTION(libvirt_domain_block_job_abort)
  */
 PHP_FUNCTION(libvirt_domain_block_job_set_speed)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     int retval;
     char *path;
@@ -7094,7 +7094,7 @@ PHP_FUNCTION(libvirt_domain_block_job_set_speed)
 
     GET_DOMAIN_FROM_ARGS("rsl|l", &zdomain, &path, &path_len, &bandwidth, &flags);
 
-    retval=virDomainBlockJobSetSpeed(domain->domain, path, bandwidth, flags);
+    retval = virDomainBlockJobSetSpeed(domain->domain, path, bandwidth, flags);
     if (retval == -1)
         RETURN_FALSE;
 
@@ -7113,7 +7113,7 @@ PHP_FUNCTION(libvirt_domain_block_job_set_speed)
  */
 PHP_FUNCTION(libvirt_domain_get_network_info)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     int retval;
     char *mac;
@@ -7186,7 +7186,7 @@ PHP_FUNCTION(libvirt_domain_get_network_info)
  */
 PHP_FUNCTION(libvirt_domain_get_block_info)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     int retval;
     char *dev;
@@ -7291,7 +7291,7 @@ PHP_FUNCTION(libvirt_domain_get_block_info)
  */
 PHP_FUNCTION(libvirt_domain_xml_xpath)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     zval *zpath;
     char *xml;
@@ -7335,7 +7335,7 @@ PHP_FUNCTION(libvirt_domain_xml_xpath)
  */
 PHP_FUNCTION(libvirt_domain_interface_stats)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     int retval;
     char *path;
@@ -7345,7 +7345,7 @@ PHP_FUNCTION(libvirt_domain_interface_stats)
 
     GET_DOMAIN_FROM_ARGS("rs", &zdomain, &path, &path_len);
 
-    retval=virDomainInterfaceStats(domain->domain, path, &stats, sizeof stats);
+    retval = virDomainInterfaceStats(domain->domain, path, &stats, sizeof stats);
     DPRINTF("%s: virDomainInterfaceStats(%p, %s, <stats>, <size>) returned %d\n", PHPFUNC, domain->domain, path, retval);
     if (retval == -1)
         RETURN_FALSE;
@@ -7371,7 +7371,7 @@ PHP_FUNCTION(libvirt_domain_interface_stats)
  */
 PHP_FUNCTION(libvirt_domain_get_connect)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     php_libvirt_connection *conn;
 
@@ -7379,7 +7379,7 @@ PHP_FUNCTION(libvirt_domain_get_connect)
 
     GET_DOMAIN_FROM_ARGS("r", &zdomain);
 
-    conn= domain->conn;
+    conn = domain->conn;
     if (conn->conn == NULL)
         RETURN_FALSE;
 #if PHP_MAJOR_VERSION >= 7
@@ -7402,22 +7402,22 @@ PHP_FUNCTION(libvirt_domain_get_connect)
  */
 PHP_FUNCTION(libvirt_domain_migrate_to_uri)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     int retval;
-    long flags=0;
+    long flags = 0;
     char *duri;
     strsize_t duri_len;
     char *dname;
     strsize_t dname_len;
     zend_long bandwidth;
 
-    dname=NULL;
-    dname_len=0;
-    bandwidth=0;
+    dname = NULL;
+    dname_len = 0;
+    bandwidth = 0;
     GET_DOMAIN_FROM_ARGS("rsl|sl", &zdomain, &duri, &duri_len, &flags, &dname, &dname_len, &bandwidth);
 
-    retval=virDomainMigrateToURI(domain->domain, duri, flags, dname, bandwidth);
+    retval = virDomainMigrateToURI(domain->domain, duri, flags, dname, bandwidth);
     DPRINTF("%s: virDomainMigrateToURI() returned %d\n", PHPFUNC, retval);
 
     if (retval == 0)
@@ -7440,7 +7440,7 @@ PHP_FUNCTION(libvirt_domain_migrate_to_uri)
  */
 PHP_FUNCTION(libvirt_domain_migrate_to_uri2)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     int retval;
     char *dconnuri;
@@ -7449,20 +7449,20 @@ PHP_FUNCTION(libvirt_domain_migrate_to_uri2)
     strsize_t miguri_len;
     char *dxml;
     strsize_t dxml_len;
-    zend_long flags=0;
+    zend_long flags = 0;
     char *dname;
     strsize_t dname_len;
     zend_long bandwidth;
 
-    dconnuri=NULL;
-    dconnuri_len=0;
-    miguri=NULL;
-    miguri_len=0;
-    dxml=NULL;
-    dxml_len=0;
-    dname=NULL;
-    dname_len=0;
-    bandwidth=0;
+    dconnuri = NULL;
+    dconnuri_len = 0;
+    miguri = NULL;
+    miguri_len = 0;
+    dxml = NULL;
+    dxml_len = 0;
+    dname = NULL;
+    dname_len = 0;
+    bandwidth = 0;
     GET_DOMAIN_FROM_ARGS("r|ssslsl", &zdomain, &dconnuri, &dconnuri_len, &miguri, &miguri_len, &dxml, &dxml_len, &flags, &dname, &dname_len, &bandwidth);
 
     // set to NULL if empty string
@@ -7475,7 +7475,7 @@ PHP_FUNCTION(libvirt_domain_migrate_to_uri2)
     if (dname_len == 0)
         dname=NULL;
 
-    retval=virDomainMigrateToURI2(domain->domain, dconnuri, miguri, dxml, flags, dname, bandwidth);
+    retval = virDomainMigrateToURI2(domain->domain, dconnuri, miguri, dxml, flags, dname, bandwidth);
     DPRINTF("%s: virDomainMigrateToURI2() returned %d\n", PHPFUNC, retval);
 
     if (retval == 0)
@@ -7496,21 +7496,21 @@ PHP_FUNCTION(libvirt_domain_migrate_to_uri2)
  */
 PHP_FUNCTION(libvirt_domain_migrate)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
-    php_libvirt_connection *dconn=NULL;
+    php_libvirt_connection *dconn = NULL;
     zval *zdconn;
-    virDomainPtr destdomain=NULL;
+    virDomainPtr destdomain = NULL;
     php_libvirt_domain *res_domain;
 
-    zend_long flags=0;
+    zend_long flags = 0;
     char *dname;
     strsize_t dname_len;
     zend_long bandwidth;
 
-    dname=NULL;
-    dname_len=0;
-    bandwidth=0;
+    dname = NULL;
+    dname_len = 0;
+    bandwidth = 0;
 
     GET_DOMAIN_FROM_ARGS("rrl|sl", &zdomain, &zdconn, &flags, &dname, &dname_len, &bandwidth);
 
@@ -7525,13 +7525,13 @@ PHP_FUNCTION(libvirt_domain_migrate)
         RETURN_FALSE;
     }
 
-    destdomain=virDomainMigrate(domain->domain, dconn->conn, flags, dname, NULL, bandwidth);
+    destdomain = virDomainMigrate(domain->domain, dconn->conn, flags, dname, NULL, bandwidth);
     if (destdomain == NULL)
         RETURN_FALSE;
 
-    res_domain= (php_libvirt_domain *)emalloc(sizeof(php_libvirt_domain));
+    res_domain = (php_libvirt_domain *)emalloc(sizeof(php_libvirt_domain));
     res_domain->domain = destdomain;
-    res_domain->conn=dconn;
+    res_domain->conn = dconn;
 
     DPRINTF("%s: returning %p\n", PHPFUNC, res_domain->domain);
     resource_change_counter(INT_RESOURCE_DOMAIN, dconn->conn, res_domain->domain, 1 TSRMLS_CC);
@@ -7551,7 +7551,7 @@ PHP_FUNCTION(libvirt_domain_migrate)
  */
 PHP_FUNCTION(libvirt_domain_get_job_info)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     int retval;
 
@@ -7559,7 +7559,7 @@ PHP_FUNCTION(libvirt_domain_get_job_info)
 
     GET_DOMAIN_FROM_ARGS("r", &zdomain);
 
-    retval=virDomainGetJobInfo(domain->domain, &jobinfo);
+    retval = virDomainGetJobInfo(domain->domain, &jobinfo);
     if (retval == -1)
         RETURN_FALSE;
 
@@ -7589,14 +7589,14 @@ PHP_FUNCTION(libvirt_domain_get_job_info)
  */
 PHP_FUNCTION(libvirt_domain_has_current_snapshot)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     int retval;
     zend_long flags = 0;
 
     GET_DOMAIN_FROM_ARGS("r|l", &zdomain, &flags);
 
-    retval=virDomainHasCurrentSnapshot(domain->domain, flags);
+    retval = virDomainHasCurrentSnapshot(domain->domain, flags);
     if (retval <= 0)
         RETURN_FALSE;
     RETURN_TRUE;
@@ -7613,10 +7613,10 @@ PHP_FUNCTION(libvirt_domain_has_current_snapshot)
  */
 PHP_FUNCTION(libvirt_domain_snapshot_lookup_by_name)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
     strsize_t name_len;
-    char *name=NULL;
+    char *name = NULL;
     zend_long flags = 0;
     php_libvirt_snapshot *res_snapshot;
     virDomainSnapshotPtr snapshot = NULL;
@@ -7652,7 +7652,7 @@ PHP_FUNCTION(libvirt_domain_snapshot_lookup_by_name)
  */
 PHP_FUNCTION(libvirt_domain_snapshot_create)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     php_libvirt_snapshot *res_snapshot;
     zval *zdomain;
     virDomainSnapshotPtr snapshot = NULL;
@@ -7660,7 +7660,7 @@ PHP_FUNCTION(libvirt_domain_snapshot_create)
 
     GET_DOMAIN_FROM_ARGS("r|l", &zdomain, &flags);
 
-    snapshot=virDomainSnapshotCreateXML(domain->domain, "<domainsnapshot/>", flags);
+    snapshot = virDomainSnapshotCreateXML(domain->domain, "<domainsnapshot/>", flags);
     DPRINTF("%s: virDomainSnapshotCreateXML(%p, <xml>) returned %p\n", PHPFUNC, domain->domain, snapshot);
     if (snapshot == NULL)
         RETURN_FALSE;
@@ -7761,29 +7761,29 @@ PHP_FUNCTION(libvirt_domain_snapshot_delete)
  */
 PHP_FUNCTION(libvirt_list_domain_snapshots)
 {
-    php_libvirt_domain *domain=NULL;
+    php_libvirt_domain *domain = NULL;
     zval *zdomain;
-    int count=-1;
-    int expectedcount=-1;
+    int count = -1;
+    int expectedcount = -1;
     char **names;
     zend_long flags = 0;
     int i;
 
     GET_DOMAIN_FROM_ARGS("r|l", &zdomain, &flags);
 
-    expectedcount=virDomainSnapshotNum(domain->domain, flags);
+    expectedcount = virDomainSnapshotNum(domain->domain, flags);
     DPRINTF("%s: virDomainSnapshotNum(%p, 0) returned %d\n", PHPFUNC, domain->domain, expectedcount);
 
     if (expectedcount != -1) {
-        names=(char **)emalloc(expectedcount * sizeof(char *));
-        count=virDomainSnapshotListNames(domain->domain, names, expectedcount, 0);
+        names = (char **)emalloc(expectedcount * sizeof(char *));
+        count = virDomainSnapshotListNames(domain->domain, names, expectedcount, 0);
     }
 
     if ((count != expectedcount) || (count<0)) {
         RETURN_FALSE;
     } else {
         array_init(return_value);
-        for (i=0;i<count;i++) {
+        for (i = 0;i<count;i++) {
             VIRT_ADD_NEXT_INDEX_STRING(return_value, names[i]);
             free(names[i]);
         }
@@ -7803,18 +7803,18 @@ PHP_FUNCTION(libvirt_list_domain_snapshots)
  */
 PHP_FUNCTION(libvirt_storagepool_lookup_by_name)
 {
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
     strsize_t name_len;
-    char *name=NULL;
-    virStoragePoolPtr pool=NULL;
+    char *name = NULL;
+    virStoragePoolPtr pool = NULL;
     php_libvirt_storagepool *res_pool;
 
     GET_CONNECTION_FROM_ARGS("rs", &zconn, &name, &name_len);
 
     if ((name == NULL) || (name_len<1))
         RETURN_FALSE;
-    pool=virStoragePoolLookupByName(conn->conn, name);
+    pool = virStoragePoolLookupByName(conn->conn, name);
     DPRINTF("%s: virStoragePoolLookupByName(%p, %s) returned %p\n", PHPFUNC, conn->conn, name, pool);
     if (pool == NULL)
         RETURN_FALSE;
@@ -7845,7 +7845,7 @@ PHP_FUNCTION(libvirt_storagepool_lookup_by_volume)
 {
     php_libvirt_volume *volume;
     zval *zvolume;
-    virStoragePoolPtr pool=NULL;
+    virStoragePoolPtr pool = NULL;
     php_libvirt_storagepool *res_pool;
 
     GET_VOLUME_FROM_ARGS("r", &zvolume);
@@ -7877,28 +7877,28 @@ PHP_FUNCTION(libvirt_storagepool_lookup_by_volume)
  */
 PHP_FUNCTION(libvirt_storagepool_list_volumes)
 {
-    php_libvirt_storagepool *pool=NULL;
+    php_libvirt_storagepool *pool = NULL;
     zval *zpool;
-    char **names=NULL;
-    int expectedcount=-1;
+    char **names = NULL;
+    int expectedcount = -1;
     int i;
-    int count=-1;
+    int count = -1;
 
     GET_STORAGEPOOL_FROM_ARGS("r", &zpool);
 
-    if ((expectedcount=virStoragePoolNumOfVolumes(pool->pool)) < 0)
+    if ((expectedcount = virStoragePoolNumOfVolumes(pool->pool)) < 0)
         RETURN_FALSE;
 
     DPRINTF("%s: virStoragePoolNumOfVolumes(%p) returned %d\n", PHPFUNC, pool->pool, expectedcount);
-    names=(char **)emalloc(expectedcount*sizeof(char *));
+    names = (char **)emalloc(expectedcount*sizeof(char *));
 
-    count=virStoragePoolListVolumes(pool->pool, names, expectedcount);
+    count = virStoragePoolListVolumes(pool->pool, names, expectedcount);
     DPRINTF("%s: virStoragePoolListVolumes(%p, %p, %d) returned %d\n", PHPFUNC, pool->pool, names, expectedcount, count);
     array_init(return_value);
 
     if ((count != expectedcount) || (count<0))
-        RETURN_FALSE;
-    for (i=0;i<count;i++) {
+		RETURN_FALSE;
+    for (i = 0;i<count;i++) {
         VIRT_ADD_NEXT_INDEX_STRING(return_value,  names[i]);
         free(names[i]);
     }
@@ -7915,14 +7915,14 @@ PHP_FUNCTION(libvirt_storagepool_list_volumes)
  */
 PHP_FUNCTION(libvirt_storagepool_get_info)
 {
-    php_libvirt_storagepool *pool=NULL;
+    php_libvirt_storagepool *pool = NULL;
     zval *zpool;
     virStoragePoolInfo poolInfo;
     int retval;
 
     GET_STORAGEPOOL_FROM_ARGS("r", &zpool);
 
-    retval=virStoragePoolGetInfo(pool->pool, &poolInfo);
+    retval = virStoragePoolGetInfo(pool->pool, &poolInfo);
     DPRINTF("%s: virStoragePoolGetInfo(%p, <info>) returned %d\n", PHPFUNC, pool->pool, retval);
     if (retval != 0)
         RETURN_FALSE;
@@ -7947,18 +7947,18 @@ PHP_FUNCTION(libvirt_storagepool_get_info)
  */
 PHP_FUNCTION(libvirt_storagevolume_lookup_by_name)
 {
-    php_libvirt_storagepool *pool=NULL;
+    php_libvirt_storagepool *pool = NULL;
     php_libvirt_volume *res_volume;
     zval *zpool;
     strsize_t name_len;
-    char *name=NULL;
-    virStorageVolPtr volume=NULL;
+    char *name = NULL;
+    virStorageVolPtr volume = NULL;
 
     GET_STORAGEPOOL_FROM_ARGS("rs", &zpool, &name, &name_len);
     if ((name == NULL) || (name_len<1))
         RETURN_FALSE;
 
-    volume=virStorageVolLookupByName(pool->pool, name);
+    volume = virStorageVolLookupByName(pool->pool, name);
     DPRINTF("%s: virStorageVolLookupByName(%p, %s) returned %p\n", PHPFUNC, pool->pool, name, volume);
     if (volume == NULL)
         RETURN_FALSE;
@@ -7986,18 +7986,18 @@ PHP_FUNCTION(libvirt_storagevolume_lookup_by_name)
  */
 PHP_FUNCTION(libvirt_storagevolume_lookup_by_path)
 {
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     php_libvirt_volume *res_volume;
     zval *zconn;
     strsize_t name_len;
-    char *name=NULL;
-    virStorageVolPtr volume=NULL;
+    char *name = NULL;
+    virStorageVolPtr volume = NULL;
 
     GET_CONNECTION_FROM_ARGS("rs", &zconn, &name, &name_len);
     if ((name == NULL) || (name_len<1))
         RETURN_FALSE;
 
-    volume=virStorageVolLookupByPath(conn->conn, name);
+    volume = virStorageVolLookupByPath(conn->conn, name);
     DPRINTF("%s: virStorageVolLookupByPath(%p, %s) returned %p\n", PHPFUNC, conn->conn, name, volume);
     if (volume == NULL) {
         set_error_if_unset("Cannot find storage volume on requested path" TSRMLS_CC);
@@ -8073,14 +8073,14 @@ PHP_FUNCTION(libvirt_storagevolume_get_path)
  */
 PHP_FUNCTION(libvirt_storagevolume_get_info)
 {
-    php_libvirt_volume *volume=NULL;
+    php_libvirt_volume *volume = NULL;
     zval *zvolume;
     virStorageVolInfo volumeInfo;
     int retval;
 
     GET_VOLUME_FROM_ARGS("r", &zvolume);
 
-    retval=virStorageVolGetInfo(volume->volume, &volumeInfo);
+    retval = virStorageVolGetInfo(volume->volume, &volumeInfo);
     DPRINTF("%s: virStorageVolGetInfo(%p, <info>) returned %d\n", PHPFUNC, volume->volume, retval);
     if (retval != 0)
         RETURN_FALSE;
@@ -8103,13 +8103,13 @@ PHP_FUNCTION(libvirt_storagevolume_get_info)
  */
 PHP_FUNCTION(libvirt_storagevolume_get_xml_desc)
 {
-    php_libvirt_volume *volume=NULL;
+    php_libvirt_volume *volume = NULL;
     zval *zvolume;
     char *tmp = NULL;
     char *xml;
     char *xpath = NULL;
     strsize_t xpath_len;
-    zend_long flags=0;
+    zend_long flags = 0;
     int retval = -1;
 
     GET_VOLUME_FROM_ARGS("rs|l", &zvolume, &xpath, &xpath_len, &flags);
@@ -8118,7 +8118,7 @@ PHP_FUNCTION(libvirt_storagevolume_get_xml_desc)
 
     DPRINTF("%s: volume = %p, xpath = %s, flags = %ld\n", PHPFUNC, volume->volume, xpath, flags);
 
-    xml=virStorageVolGetXMLDesc(volume->volume, flags);
+    xml = virStorageVolGetXMLDesc(volume->volume, flags);
     if (xml == NULL) {
         set_error_if_unset("Cannot get the XML description" TSRMLS_CC);
         RETURN_FALSE;
@@ -8146,22 +8146,22 @@ PHP_FUNCTION(libvirt_storagevolume_get_xml_desc)
  */
 PHP_FUNCTION(libvirt_storagevolume_create_xml)
 {
-    php_libvirt_volume *res_volume=NULL;
-    php_libvirt_storagepool *pool=NULL;
+    php_libvirt_volume *res_volume = NULL;
+    php_libvirt_storagepool *pool = NULL;
     zval *zpool;
-    virStorageVolPtr volume=NULL;
+    virStorageVolPtr volume = NULL;
     char *xml;
     zend_long flags = 0;
     strsize_t xml_len;
 
     GET_STORAGEPOOL_FROM_ARGS("rs|l", &zpool, &xml, &xml_len, &flags);
 
-    volume=virStorageVolCreateXML(pool->pool, xml, flags);
+    volume = virStorageVolCreateXML(pool->pool, xml, flags);
     DPRINTF("%s: virStorageVolCreateXML(%p, <xml>, 0) returned %p\n", PHPFUNC, pool->pool, volume);
     if (volume == NULL)
         RETURN_FALSE;
 
-    res_volume= (php_libvirt_volume *)emalloc(sizeof(php_libvirt_volume));
+    res_volume = (php_libvirt_volume *)emalloc(sizeof(php_libvirt_volume));
     res_volume->volume = volume;
     res_volume->conn   = pool->conn;
 
@@ -8185,14 +8185,14 @@ PHP_FUNCTION(libvirt_storagevolume_create_xml)
  */
 PHP_FUNCTION(libvirt_storagevolume_create_xml_from)
 {
-    php_libvirt_volume *res_volume=NULL;
-    php_libvirt_storagepool *pool=NULL;
+    php_libvirt_volume *res_volume = NULL;
+    php_libvirt_storagepool *pool = NULL;
     zval *zpool;
 
-    php_libvirt_volume *pl_volume=NULL;
+    php_libvirt_volume *pl_volume = NULL;
     zval *zvolume;
 
-    virStorageVolPtr volume=NULL;
+    virStorageVolPtr volume = NULL;
     char *xml;
     strsize_t xml_len;
 
@@ -8209,7 +8209,7 @@ PHP_FUNCTION(libvirt_storagevolume_create_xml_from)
         RETURN_FALSE;
     resource_change_counter(INT_RESOURCE_VOLUME, NULL, pl_volume->volume, 1 TSRMLS_CC);
 
-    volume=virStorageVolCreateXMLFrom(pool->pool, xml, pl_volume->volume, 0);
+    volume = virStorageVolCreateXMLFrom(pool->pool, xml, pl_volume->volume, 0);
     DPRINTF("%s: virStorageVolCreateXMLFrom(%p, <xml>, %p, 0) returned %p\n", PHPFUNC, pool->pool, pl_volume->volume, volume);
     if (volume == NULL)
         RETURN_FALSE;
@@ -8237,7 +8237,7 @@ PHP_FUNCTION(libvirt_storagevolume_create_xml_from)
  */
 PHP_FUNCTION(libvirt_storagevolume_delete)
 {
-    php_libvirt_volume *volume=NULL;
+    php_libvirt_volume *volume = NULL;
     zval *zvolume;
     zend_long flags = 0;
     int retval = 0;
@@ -8265,7 +8265,7 @@ PHP_FUNCTION(libvirt_storagevolume_delete)
  */
 PHP_FUNCTION(libvirt_storagevolume_resize)
 {
-    php_libvirt_volume *volume=NULL;
+    php_libvirt_volume *volume = NULL;
     zval *zvolume;
     zend_long flags = 0;
     zend_long capacity = 0;
@@ -8296,8 +8296,8 @@ PHP_FUNCTION(libvirt_storagevolume_resize)
  */
 PHP_FUNCTION(libvirt_storagevolume_download)
 {
-    php_libvirt_volume *volume=NULL;
-    php_libvirt_stream *stream=NULL;
+    php_libvirt_volume *volume = NULL;
+    php_libvirt_stream *stream = NULL;
     zval *zvolume;
     zval *zstream;
     zend_long flags = 0;
@@ -8338,8 +8338,8 @@ PHP_FUNCTION(libvirt_storagevolume_download)
  */
 PHP_FUNCTION(libvirt_storagevolume_upload)
 {
-    php_libvirt_volume *volume=NULL;
-    php_libvirt_stream *stream=NULL;
+    php_libvirt_volume *volume = NULL;
+    php_libvirt_stream *stream = NULL;
     zval *zvolume;
     zval *zstream;
     zend_long flags = 0;
@@ -8376,7 +8376,7 @@ PHP_FUNCTION(libvirt_storagevolume_upload)
  */
 PHP_FUNCTION(libvirt_storagepool_get_uuid_string)
 {
-    php_libvirt_storagepool *pool=NULL;
+    php_libvirt_storagepool *pool = NULL;
     zval *zpool;
     char *uuid;
     int retval;
@@ -8404,7 +8404,7 @@ PHP_FUNCTION(libvirt_storagepool_get_name)
 {
     php_libvirt_storagepool *pool = NULL;
     zval *zpool;
-    const char *name=NULL;
+    const char *name = NULL;
 
     GET_STORAGEPOOL_FROM_ARGS("r", &zpool);
 
@@ -8430,7 +8430,7 @@ PHP_FUNCTION(libvirt_storagepool_lookup_by_uuid_string)
     zval *zconn;
     char *uuid = NULL;
     strsize_t uuid_len;
-    virStoragePoolPtr storage=NULL;
+    virStoragePoolPtr storage = NULL;
     php_libvirt_storagepool *res_pool;
 
     GET_CONNECTION_FROM_ARGS("rs", &zconn, &uuid, &uuid_len);
@@ -8767,20 +8767,20 @@ PHP_FUNCTION(libvirt_storagepool_delete)
  */
 PHP_FUNCTION(libvirt_list_storagepools)
 {
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
-    int count=-1;
-    int expectedcount=-1;
+    int count = -1;
+    int expectedcount = -1;
     char **names;
     int i;
 
     GET_CONNECTION_FROM_ARGS("r", &zconn);
 
-    if ((expectedcount=virConnectNumOfStoragePools(conn->conn)) < 0)
+    if ((expectedcount = virConnectNumOfStoragePools(conn->conn)) < 0)
         RETURN_FALSE;
 
-    names=(char **)emalloc(expectedcount*sizeof(char *));
-    count=virConnectListStoragePools(conn->conn, names, expectedcount);
+    names = (char **)emalloc(expectedcount*sizeof(char *));
+    count = virConnectListStoragePools(conn->conn, names, expectedcount);
 
     if ((count != expectedcount) || (count<0)) {
         efree(names);
@@ -8788,7 +8788,7 @@ PHP_FUNCTION(libvirt_list_storagepools)
     }
 
     array_init(return_value);
-    for (i=0;i<count;i++) {
+    for (i = 0;i<count;i++) {
         VIRT_ADD_NEXT_INDEX_STRING(return_value,  names[i]);
         free(names[i]);
     }
@@ -8820,27 +8820,27 @@ PHP_FUNCTION(libvirt_list_storagepools)
  */
 PHP_FUNCTION(libvirt_list_active_storagepools)
 {
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
-    int count=-1;
-    int expectedcount=-1;
+    int count = -1;
+    int expectedcount = -1;
     char **names;
     int i;
 
     GET_CONNECTION_FROM_ARGS("r", &zconn);
 
-    if ((expectedcount=virConnectNumOfStoragePools(conn->conn)) < 0)
+    if ((expectedcount = virConnectNumOfStoragePools(conn->conn)) < 0)
         RETURN_FALSE;
 
-    names=(char **)emalloc(expectedcount*sizeof(char *));
-    count=virConnectListStoragePools(conn->conn, names, expectedcount);
+    names = (char **)emalloc(expectedcount*sizeof(char *));
+    count = virConnectListStoragePools(conn->conn, names, expectedcount);
 
     if ((count != expectedcount) || (count<0)) {
         efree(names);
         RETURN_FALSE;
     }
     array_init(return_value);
-    for (i=0;i<count;i++) {
+    for (i = 0;i<count;i++) {
         VIRT_ADD_NEXT_INDEX_STRING(return_value,  names[i]);
         free(names[i]);
     }
@@ -8856,10 +8856,10 @@ PHP_FUNCTION(libvirt_list_active_storagepools)
  */
 PHP_FUNCTION(libvirt_list_inactive_storagepools)
 {
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
-    int count=-1;
-    int expectedcount=-1;
+    int count = -1;
+    int expectedcount = -1;
     char **names;
     int i;
 
@@ -8868,7 +8868,7 @@ PHP_FUNCTION(libvirt_list_inactive_storagepools)
     if ((expectedcount = virConnectNumOfDefinedStoragePools(conn->conn)) < 0)
         RETURN_FALSE;
 
-    names= (char **)emalloc(expectedcount * sizeof(char *));
+    names = (char **)emalloc(expectedcount * sizeof(char *));
     count = virConnectListDefinedStoragePools(conn->conn, names, expectedcount);
     if ((count != expectedcount) || (count < 0)) {
         efree(names);
@@ -8892,33 +8892,33 @@ PHP_FUNCTION(libvirt_list_inactive_storagepools)
  */
 PHP_FUNCTION(libvirt_list_domains)
 {
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
-    int count=-1;
-    int expectedcount=-1;
+    int count = -1;
+    int expectedcount = -1;
     int *ids;
     char **names;
     const char *name;
     int i, rv;
-    virDomainPtr domain=NULL;
+    virDomainPtr domain = NULL;
 
     GET_CONNECTION_FROM_ARGS("r", &zconn);
 
-    if ((expectedcount=virConnectNumOfDomains(conn->conn)) < 0)
+    if ((expectedcount = virConnectNumOfDomains(conn->conn)) < 0)
         RETURN_FALSE;
 
     DPRINTF("%s: Found %d domains\n", PHPFUNC, expectedcount);
 
-    ids=(int *)emalloc(sizeof(int)*expectedcount);
-    count=virConnectListDomains(conn->conn, ids, expectedcount);
+    ids = (int *)emalloc(sizeof(int)*expectedcount);
+    count = virConnectListDomains(conn->conn, ids, expectedcount);
     DPRINTF("%s: virConnectListDomains returned %d domains\n", PHPFUNC, count);
 
     array_init(return_value);
-    for (i=0;i<count;i++) {
-        domain=virDomainLookupByID(conn->conn, ids[i]);
+    for (i = 0;i<count;i++) {
+        domain = virDomainLookupByID(conn->conn, ids[i]);
         resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, domain, 1 TSRMLS_CC);
         if (domain != NULL) {
-            name=virDomainGetName(domain);
+            name = virDomainGetName(domain);
             if (name != NULL) {
                 DPRINTF("%s: Found running domain %s with ID = %d\n", PHPFUNC, name, ids[i]);
                 VIRT_ADD_NEXT_INDEX_STRING(return_value, name);
@@ -8937,22 +8937,22 @@ PHP_FUNCTION(libvirt_list_domains)
     }
     efree(ids);
 
-    expectedcount=virConnectNumOfDefinedDomains(conn->conn);
+    expectedcount = virConnectNumOfDefinedDomains(conn->conn);
     DPRINTF("%s: virConnectNumOfDefinedDomains returned %d domains\n", PHPFUNC, expectedcount);
     if (expectedcount < 0) {
         DPRINTF("%s: virConnectNumOfDefinedDomains failed with error code %d\n", PHPFUNC, expectedcount);
         RETURN_FALSE;
     }
 
-    names=(char **)emalloc(expectedcount*sizeof(char *));
-    count=virConnectListDefinedDomains(conn->conn, names, expectedcount);
+    names = (char **)emalloc(expectedcount*sizeof(char *));
+    count = virConnectListDefinedDomains(conn->conn, names, expectedcount);
     DPRINTF("%s: virConnectListDefinedDomains returned %d domains\n", PHPFUNC, count);
     if (count < 0) {
         DPRINTF("%s: virConnectListDefinedDomains failed with error code %d\n", PHPFUNC, count);
         RETURN_FALSE;
     }
 
-    for (i=0;i<count;i++) {
+    for (i = 0;i<count;i++) {
         VIRT_ADD_NEXT_INDEX_STRING(return_value, names[i]);
         DPRINTF("%s: Found inactive domain %s\n", PHPFUNC, names[i]);
         free(names[i]);
@@ -8969,41 +8969,41 @@ PHP_FUNCTION(libvirt_list_domains)
  */
 PHP_FUNCTION(libvirt_list_domain_resources)
 {
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
 #if PHP_MAJOR_VERSION >= 7
     zval zdomain;
 #else
     zval *zdomain;
 #endif
-    int count=-1;
-    int expectedcount=-1;
+    int count = -1;
+    int expectedcount = -1;
     int *ids;
     char **names;
     int i;
 
-    virDomainPtr domain=NULL;
+    virDomainPtr domain = NULL;
     php_libvirt_domain *res_domain;
 
     GET_CONNECTION_FROM_ARGS("r", &zconn);
 
-    if ((expectedcount=virConnectNumOfDomains(conn->conn)) < 0)
+    if ((expectedcount = virConnectNumOfDomains(conn->conn)) < 0)
         RETURN_FALSE;
 
-    ids=(int *)emalloc(sizeof(int)*expectedcount);
-    count=virConnectListDomains(conn->conn, ids, expectedcount);
+    ids = (int *)emalloc(sizeof(int)*expectedcount);
+    count = virConnectListDomains(conn->conn, ids, expectedcount);
     if ((count != expectedcount) || (count<0)) {
         efree(ids);
         RETURN_FALSE;
     }
     array_init(return_value);
-    for (i=0;i<count;i++) {
-        domain=virDomainLookupByID(conn->conn, ids[i]);
+    for (i = 0;i<count;i++) {
+        domain = virDomainLookupByID(conn->conn, ids[i]);
         if (domain != NULL) {
-            res_domain= (php_libvirt_domain *)emalloc(sizeof(php_libvirt_domain));
+            res_domain = (php_libvirt_domain *)emalloc(sizeof(php_libvirt_domain));
             res_domain->domain = domain;
 
-            res_domain->conn=conn;
+            res_domain->conn = conn;
 
             resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1 TSRMLS_CC);
 #if PHP_MAJOR_VERSION >= 7
@@ -9018,22 +9018,22 @@ PHP_FUNCTION(libvirt_list_domain_resources)
     }
     efree(ids);
 
-    if ((expectedcount=virConnectNumOfDefinedDomains(conn->conn)) < 0)
+    if ((expectedcount = virConnectNumOfDefinedDomains(conn->conn)) < 0)
         RETURN_FALSE;
 
-    names=(char **)emalloc(expectedcount*sizeof(char *));
-    count=virConnectListDefinedDomains(conn->conn, names , expectedcount);
+    names = (char **)emalloc(expectedcount*sizeof(char *));
+    count = virConnectListDefinedDomains(conn->conn, names, expectedcount);
     if ((count != expectedcount) || (count<0)) {
         efree(names);
         RETURN_FALSE;
     }
-    for (i=0;i<count;i++) {
-        domain=virDomainLookupByName(conn->conn, names[i]);
+    for (i = 0;i<count;i++) {
+        domain = virDomainLookupByName(conn->conn, names[i]);
         if (domain != NULL) {
             res_domain = (php_libvirt_domain *)emalloc(sizeof(php_libvirt_domain));
             res_domain->domain = domain;
 
-            res_domain->conn=conn;
+            res_domain->conn = conn;
 
 #if PHP_MAJOR_VERSION >= 7
             ZVAL_RES(&zdomain, zend_register_resource(res_domain, le_libvirt_domain));
@@ -9059,26 +9059,26 @@ PHP_FUNCTION(libvirt_list_domain_resources)
  */
 PHP_FUNCTION(libvirt_list_active_domain_ids)
 {
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
-    int count=-1;
-    int expectedcount=-1;
+    int count = -1;
+    int expectedcount = -1;
     int *ids;
     int i;
 
     GET_CONNECTION_FROM_ARGS("r", &zconn);
 
-    if ((expectedcount=virConnectNumOfDomains(conn->conn)) < 0)
+    if ((expectedcount = virConnectNumOfDomains (conn->conn)) < 0)
         RETURN_FALSE;
 
-    ids=(int *)emalloc(sizeof(int)*expectedcount);
-    count=virConnectListDomains(conn->conn, ids, expectedcount);
+    ids = (int *)emalloc(sizeof(int)*expectedcount);
+    count = virConnectListDomains(conn->conn, ids, expectedcount);
     if ((count != expectedcount) || (count<0)) {
         efree(ids);
         RETURN_FALSE;
     }
     array_init(return_value);
-    for (i=0;i<count;i++) {
+    for (i = 0;i<count;i++) {
         add_next_index_long(return_value,  ids[i]);
     }
     efree(ids);
@@ -9093,10 +9093,10 @@ PHP_FUNCTION(libvirt_list_active_domain_ids)
  */
 PHP_FUNCTION(libvirt_list_active_domains)
 {
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
-    int count=-1;
-    int expectedcount=-1;
+    int count = -1;
+    int expectedcount = -1;
     int *ids;
     int i;
     virDomainPtr domain = NULL;
@@ -9104,19 +9104,19 @@ PHP_FUNCTION(libvirt_list_active_domains)
 
     GET_CONNECTION_FROM_ARGS("r", &zconn);
 
-    if ((expectedcount=virConnectNumOfDomains(conn->conn)) < 0)
+    if ((expectedcount = virConnectNumOfDomains (conn->conn)) < 0)
         RETURN_FALSE;
 
-    ids=(int *)emalloc(sizeof(int)*expectedcount);
-    count=virConnectListDomains(conn->conn, ids, expectedcount);
+    ids = (int *)emalloc(sizeof(int)*expectedcount);
+    count = virConnectListDomains(conn->conn, ids, expectedcount);
     if ((count != expectedcount) || (count<0)) {
         efree(ids);
         RETURN_FALSE;
     }
 
     array_init(return_value);
-    for (i=0;i<count;i++) {
-        domain=virDomainLookupByID(conn->conn, ids[i]);
+    for (i = 0;i<count;i++) {
+        domain = virDomainLookupByID(conn->conn, ids[i]);
         if (domain != NULL) {
             if (!(name = virDomainGetName(domain))) {
                 efree(ids);
@@ -9141,27 +9141,27 @@ PHP_FUNCTION(libvirt_list_active_domains)
  */
 PHP_FUNCTION(libvirt_list_inactive_domains)
 {
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
-    int count=-1;
-    int expectedcount=-1;
+    int count = -1;
+    int expectedcount = -1;
     char **names;
     int i;
 
     GET_CONNECTION_FROM_ARGS("r", &zconn);
 
-    if ((expectedcount=virConnectNumOfDefinedDomains(conn->conn)) < 0)
+    if ((expectedcount = virConnectNumOfDefinedDomains(conn->conn)) < 0)
         RETURN_FALSE;
 
-    names=(char **)emalloc(expectedcount*sizeof(char *));
-    count=virConnectListDefinedDomains(conn->conn, names, expectedcount);
+    names = (char **)emalloc(expectedcount*sizeof(char *));
+    count = virConnectListDefinedDomains(conn->conn, names, expectedcount);
     if ((count != expectedcount) || (count<0)) {
         efree(names);
         RETURN_FALSE;
     }
 
     array_init(return_value);
-    for (i=0;i<count;i++) {
+    for (i = 0;i<count;i++) {
         VIRT_ADD_NEXT_INDEX_STRING(return_value,  names[i]);
         free(names[i]);
     }
@@ -9178,11 +9178,11 @@ PHP_FUNCTION(libvirt_list_inactive_domains)
  */
 PHP_FUNCTION(libvirt_list_networks)
 {
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
     zend_long flags = VIR_NETWORKS_ACTIVE | VIR_NETWORKS_INACTIVE;
-    int count=-1;
-    int expectedcount=-1;
+    int count = -1;
+    int expectedcount = -1;
     char **names;
     int i, done = 0;
 
@@ -9190,17 +9190,17 @@ PHP_FUNCTION(libvirt_list_networks)
 
     array_init(return_value);
     if (flags & VIR_NETWORKS_ACTIVE) {
-        if ((expectedcount=virConnectNumOfNetworks(conn->conn)) < 0)
+        if ((expectedcount = virConnectNumOfNetworks(conn->conn)) < 0)
             RETURN_FALSE;
 
-        names=(char **)emalloc(expectedcount*sizeof(char *));
-        count=virConnectListNetworks(conn->conn, names, expectedcount);
+        names = (char **)emalloc(expectedcount*sizeof(char *));
+        count = virConnectListNetworks(conn->conn, names, expectedcount);
         if ((count != expectedcount) || (count<0)) {
             efree(names);
             RETURN_FALSE;
         }
 
-        for (i=0;i<count;i++) {
+        for (i = 0;i<count;i++) {
             VIRT_ADD_NEXT_INDEX_STRING(return_value,  names[i]);
             free(names[i]);
         }
@@ -9210,16 +9210,16 @@ PHP_FUNCTION(libvirt_list_networks)
     }
 
     if (flags & VIR_NETWORKS_INACTIVE) {
-        if ((expectedcount=virConnectNumOfDefinedNetworks(conn->conn)) < 0)
+        if ((expectedcount = virConnectNumOfDefinedNetworks(conn->conn)) < 0)
             RETURN_FALSE;
-        names=(char **)emalloc(expectedcount*sizeof(char *));
-        count=virConnectListDefinedNetworks(conn->conn, names, expectedcount);
+        names = (char **)emalloc(expectedcount*sizeof(char *));
+        count = virConnectListDefinedNetworks(conn->conn, names, expectedcount);
         if ((count != expectedcount) || (count<0)) {
             efree(names);
             RETURN_FALSE;
         }
 
-        for (i=0;i<count;i++) {
+        for (i = 0;i<count;i++) {
             VIRT_ADD_NEXT_INDEX_STRING(return_value, names[i]);
             free(names[i]);
         }
@@ -9242,10 +9242,10 @@ PHP_FUNCTION(libvirt_list_networks)
  */
 PHP_FUNCTION(libvirt_list_nodedevs)
 {
-    php_libvirt_connection *conn=NULL;
+    php_libvirt_connection *conn = NULL;
     zval *zconn;
-    int count=-1;
-    int expectedcount=-1;
+    int count = -1;
+    int expectedcount = -1;
     char *cap = NULL;
     char **names;
     int i;
@@ -9253,17 +9253,17 @@ PHP_FUNCTION(libvirt_list_nodedevs)
 
     GET_CONNECTION_FROM_ARGS("r|s", &zconn, &cap, &cap_len);
 
-    if ((expectedcount=virNodeNumOfDevices(conn->conn, cap, 0)) < 0)
+    if ((expectedcount = virNodeNumOfDevices(conn->conn, cap, 0)) < 0)
         RETURN_FALSE;
-    names=(char **)emalloc(expectedcount*sizeof(char *));
-    count=virNodeListDevices(conn->conn, cap, names, expectedcount, 0);
+    names = (char **)emalloc(expectedcount*sizeof(char *));
+    count = virNodeListDevices(conn->conn, cap, names, expectedcount, 0);
     if ((count != expectedcount) || (count<0)) {
         efree(names);
         RETURN_FALSE;
     }
 
     array_init(return_value);
-    for (i=0;i<count;i++) {
+    for (i = 0;i<count;i++) {
         VIRT_ADD_NEXT_INDEX_STRING(return_value,  names[i]);
         free(names[i]);
     }
@@ -9318,24 +9318,24 @@ PHP_FUNCTION(libvirt_nodedev_get)
  */
 PHP_FUNCTION(libvirt_nodedev_capabilities)
 {
-    php_libvirt_nodedev *nodedev=NULL;
+    php_libvirt_nodedev *nodedev = NULL;
     zval *znodedev;
-    int count=-1;
-    int expectedcount=-1;
+    int count = -1;
+    int expectedcount = -1;
     char **names;
     int i;
 
     GET_NODEDEV_FROM_ARGS("r", &znodedev);
 
-    if ((expectedcount=virNodeDeviceNumOfCaps(nodedev->device)) < 0)
+    if ((expectedcount = virNodeDeviceNumOfCaps(nodedev->device)) < 0)
         RETURN_FALSE;
-    names=(char **)emalloc(expectedcount*sizeof(char *));
-    count=virNodeDeviceListCaps(nodedev->device, names, expectedcount);
+    names = (char **)emalloc(expectedcount*sizeof(char *));
+    count = virNodeDeviceListCaps(nodedev->device, names, expectedcount);
     if ((count != expectedcount) || (count<0))
         RETURN_FALSE;
 
     array_init(return_value);
-    for (i=0;i<count;i++) {
+    for (i = 0;i<count;i++) {
         VIRT_ADD_NEXT_INDEX_STRING(return_value, names[i]);
         free(names[i]);
     }
@@ -9353,7 +9353,7 @@ PHP_FUNCTION(libvirt_nodedev_capabilities)
  */
 PHP_FUNCTION(libvirt_nodedev_get_xml_desc)
 {
-    php_libvirt_nodedev *nodedev=NULL;
+    php_libvirt_nodedev *nodedev = NULL;
     zval *znodedev;
     char *tmp = NULL;
     char *xml = NULL;
@@ -9390,7 +9390,7 @@ PHP_FUNCTION(libvirt_nodedev_get_xml_desc)
  */
 PHP_FUNCTION(libvirt_nodedev_get_information)
 {
-    php_libvirt_nodedev *nodedev=NULL;
+    php_libvirt_nodedev *nodedev = NULL;
     zval *znodedev;
     int retval = -1;
     char *xml = NULL;
@@ -9708,7 +9708,7 @@ PHP_FUNCTION(libvirt_network_get_information)
 
     GET_NETWORK_FROM_ARGS("r", &znetwork);
 
-    xml=virNetworkGetXMLDesc(network->network, 0);
+    xml = virNetworkGetXMLDesc(network->network, 0);
 
     if (xml == NULL) {
         set_error_if_unset("Cannot get network XML" TSRMLS_CC);
@@ -9843,7 +9843,7 @@ PHP_FUNCTION(libvirt_network_get_xml_desc)
     if (xpath_len < 1)
         xpath = NULL;
 
-    xml=virNetworkGetXMLDesc(network->network, 0);
+    xml = virNetworkGetXMLDesc(network->network, 0);
 
     if (xml == NULL) {
         set_error_if_unset("Cannot get network XML" TSRMLS_CC);
@@ -9873,7 +9873,7 @@ PHP_FUNCTION(libvirt_version)
     unsigned long libVer;
     unsigned long typeVer;
     strsize_t type_len;
-    char *type=NULL;
+    char *type = NULL;
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &type, &type_len) == FAILURE) {
         set_error("Invalid arguments" TSRMLS_CC);
         RETURN_FALSE;
