@@ -2046,109 +2046,121 @@ PHP_MSHUTDOWN_FUNCTION(libvirt)
 }
 
 /* Macros for obtaining resources from arguments */
-#define GET_CONNECTION_FROM_ARGS(args, ...) \
-    reset_error(TSRMLS_C);  \
-if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, args, __VA_ARGS__) == FAILURE) {\
-    set_error("Invalid arguments" TSRMLS_CC);   \
-    RETURN_FALSE;\
-}\
-\
-VIRT_FETCH_RESOURCE(conn, php_libvirt_connection*, &zconn, PHP_LIBVIRT_CONNECTION_RES_NAME, le_libvirt_connection);\
-if ((conn == NULL) || (conn->conn == NULL)) \
-    RETURN_FALSE;\
+#define GET_CONNECTION_FROM_ARGS(args, ...)                                                     \
+    do {                                                                                        \
+        reset_error(TSRMLS_C);                                                                  \
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, args, __VA_ARGS__) == FAILURE) {   \
+           set_error("Invalid arguments" TSRMLS_CC);                                            \
+           RETURN_FALSE;                                                                        \
+        }                                                                                       \
+                                                                                                \
+        VIRT_FETCH_RESOURCE(conn, php_libvirt_connection*, &zconn, PHP_LIBVIRT_CONNECTION_RES_NAME, le_libvirt_connection);\
+        if ((conn == NULL) || (conn->conn == NULL))                                             \
+            RETURN_FALSE;                                                                       \
+    } while (0)                                                                                 \
 
-#define GET_DOMAIN_FROM_ARGS(args, ...) \
-    reset_error(TSRMLS_C);  \
-if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, args, __VA_ARGS__) == FAILURE) {\
-    set_error("Invalid arguments" TSRMLS_CC); \
-    RETURN_FALSE;\
-}\
-\
-VIRT_FETCH_RESOURCE(domain, php_libvirt_domain*, &zdomain, PHP_LIBVIRT_DOMAIN_RES_NAME, le_libvirt_domain);\
-if ((domain == NULL) || (domain->domain == NULL)) \
-    RETURN_FALSE;\
+#define GET_DOMAIN_FROM_ARGS(args, ...)                                                         \
+    do {                                                                                        \
+        reset_error(TSRMLS_C);                                                                  \
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, args, __VA_ARGS__) == FAILURE) {   \
+            set_error("Invalid arguments" TSRMLS_CC);                                           \
+            RETURN_FALSE;                                                                       \
+        }                                                                                       \
+                                                                                                \
+        VIRT_FETCH_RESOURCE(domain, php_libvirt_domain*, &zdomain, PHP_LIBVIRT_DOMAIN_RES_NAME, le_libvirt_domain);\
+        if ((domain == NULL) || (domain->domain == NULL))                                       \
+            RETURN_FALSE;                                                                       \
+    } while (0)                                                                                 \
 
-#define GET_NETWORK_FROM_ARGS(args, ...) \
-    reset_error(TSRMLS_C);  \
-if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, args, __VA_ARGS__) == FAILURE) {\
-    set_error("Invalid arguments" TSRMLS_CC);\
-    RETURN_FALSE;\
-}\
-\
-VIRT_FETCH_RESOURCE(network, php_libvirt_network*, &znetwork, PHP_LIBVIRT_NETWORK_RES_NAME, le_libvirt_network);\
-if ((network == NULL) || (network->network == NULL)) \
-    RETURN_FALSE;\
+#define GET_NETWORK_FROM_ARGS(args, ...)                                                        \
+    do {                                                                                        \
+        reset_error(TSRMLS_C);                                                                  \
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, args, __VA_ARGS__) == FAILURE) {   \
+            set_error("Invalid arguments" TSRMLS_CC);                                           \
+            RETURN_FALSE;                                                                       \
+        }                                                                                       \
+                                                                                                \
+        VIRT_FETCH_RESOURCE(network, php_libvirt_network*, &znetwork, PHP_LIBVIRT_NETWORK_RES_NAME, le_libvirt_network);\
+        if ((network == NULL) || (network->network == NULL))                                    \
+            RETURN_FALSE;                                                                       \
+    } while (0)                                                                                 \
 
-#define GET_NODEDEV_FROM_ARGS(args, ...) \
-    reset_error(TSRMLS_C);  \
-if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, args, __VA_ARGS__) == FAILURE) {\
-    set_error("Invalid arguments" TSRMLS_CC);\
-    RETURN_FALSE;\
-}\
-\
-VIRT_FETCH_RESOURCE(nodedev, php_libvirt_nodedev*, &znodedev, PHP_LIBVIRT_NODEDEV_RES_NAME, le_libvirt_nodedev);\
-if ((nodedev == NULL) || (nodedev->device == NULL)) \
-    RETURN_FALSE;\
+#define GET_NODEDEV_FROM_ARGS(args, ...)                                                        \
+    do {                                                                                        \
+        reset_error(TSRMLS_C);                                                                  \
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, args, __VA_ARGS__) == FAILURE) {   \
+            set_error("Invalid arguments" TSRMLS_CC);                                           \
+            RETURN_FALSE;                                                                       \
+        }                                                                                       \
+                                                                                                \
+        VIRT_FETCH_RESOURCE(nodedev, php_libvirt_nodedev*, &znodedev, PHP_LIBVIRT_NODEDEV_RES_NAME, le_libvirt_nodedev);\
+        if ((nodedev == NULL) || (nodedev->device == NULL))                                     \
+            RETURN_FALSE;                                                                       \
+    } while (0)
 
-#define GET_STORAGEPOOL_FROM_ARGS(args, ...) \
-    reset_error(TSRMLS_C);  \
-if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, args, __VA_ARGS__) == FAILURE) {\
-    set_error("Invalid arguments" TSRMLS_CC);\
-    RETURN_FALSE;\
-}\
-\
-VIRT_FETCH_RESOURCE(pool, php_libvirt_storagepool*, &zpool, PHP_LIBVIRT_STORAGEPOOL_RES_NAME, le_libvirt_storagepool);\
-if ((pool == NULL) || (pool->pool == NULL)) \
-    RETURN_FALSE;\
+#define GET_STORAGEPOOL_FROM_ARGS(args, ...)                                                    \
+    do {                                                                                        \
+        reset_error(TSRMLS_C);                                                                  \
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, args, __VA_ARGS__) == FAILURE) {   \
+            set_error("Invalid arguments" TSRMLS_CC);                                           \
+            RETURN_FALSE;                                                                       \
+        }                                                                                       \
+                                                                                                \
+        VIRT_FETCH_RESOURCE(pool, php_libvirt_storagepool*, &zpool, PHP_LIBVIRT_STORAGEPOOL_RES_NAME, le_libvirt_storagepool);\
+        if ((pool == NULL) || (pool->pool == NULL))                                             \
+            RETURN_FALSE;                                                                       \
+    } while (0)                                                                                 \
 
-#define GET_VOLUME_FROM_ARGS(args, ...) \
-    reset_error(TSRMLS_C);  \
-if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, args, __VA_ARGS__) == FAILURE) {\
-    set_error("Invalid arguments" TSRMLS_CC);\
-    RETURN_FALSE;\
-}\
-\
-VIRT_FETCH_RESOURCE(volume, php_libvirt_volume*, &zvolume, PHP_LIBVIRT_VOLUME_RES_NAME, le_libvirt_volume);\
-if ((volume == NULL) || (volume->volume == NULL)) \
-    RETURN_FALSE;\
+#define GET_VOLUME_FROM_ARGS(args, ...)                                                         \
+    do {                                                                                        \
+        reset_error(TSRMLS_C);                                                                  \
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, args, __VA_ARGS__) == FAILURE) {   \
+            set_error("Invalid arguments" TSRMLS_CC);                                           \
+            RETURN_FALSE;                                                                       \
+        }                                                                                       \
+                                                                                                \
+        VIRT_FETCH_RESOURCE(volume, php_libvirt_volume*, &zvolume, PHP_LIBVIRT_VOLUME_RES_NAME, le_libvirt_volume);\
+        if ((volume == NULL) || (volume->volume == NULL))                                       \
+            RETURN_FALSE;                                                                       \
+    } while (0)                                                                                 \
 
-#define GET_SNAPSHOT_FROM_ARGS(args, ...) \
-    reset_error(TSRMLS_C);  \
-if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, args, __VA_ARGS__) == FAILURE) {\
-    set_error("Invalid arguments" TSRMLS_CC);\
-    RETURN_FALSE;\
-}\
-\
-VIRT_FETCH_RESOURCE(snapshot, php_libvirt_snapshot*, &zsnapshot, PHP_LIBVIRT_SNAPSHOT_RES_NAME, le_libvirt_snapshot);\
-if ((snapshot == NULL) || (snapshot->snapshot == NULL)) \
-    RETURN_FALSE;\
+#define GET_SNAPSHOT_FROM_ARGS(args, ...)                                                       \
+    do {                                                                                        \
+        reset_error(TSRMLS_C);                                                                  \
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, args, __VA_ARGS__) == FAILURE) {   \
+            set_error("Invalid arguments" TSRMLS_CC);                                           \
+            RETURN_FALSE;                                                                       \
+        }                                                                                       \
+                                                                                                \
+        VIRT_FETCH_RESOURCE(snapshot, php_libvirt_snapshot*, &zsnapshot, PHP_LIBVIRT_SNAPSHOT_RES_NAME, le_libvirt_snapshot);\
+        if ((snapshot == NULL) || (snapshot->snapshot == NULL))                                 \
+            RETURN_FALSE;                                                                       \
+} while (0)                                                                                     \
 
 #define LONGLONG_INIT \
     char tmpnumber[64]
 
-#define LONGLONG_ASSOC(out, key, in) \
-    if (LIBVIRT_G(longlong_to_string_ini)) { \
-        snprintf(tmpnumber, 63, "%llu", in); \
-        VIRT_ADD_ASSOC_STRING(out, key, tmpnumber); \
-    } \
-else \
-{ \
-    add_assoc_long(out, key, in); \
-}
+#define LONGLONG_ASSOC(out, key, in)                        \
+    if (LIBVIRT_G(longlong_to_string_ini)) {                \
+        snprintf(tmpnumber, 63, "%llu", in);                \
+        VIRT_ADD_ASSOC_STRING(out, key, tmpnumber);         \
+    } else {                                                \
+        add_assoc_long(out, key, in);                       \
+    }
 
-#define LONGLONG_INDEX(out, key, in) \
-    if (LIBVIRT_G(longlong_to_string_ini)) { \
-        snprintf(tmpnumber, 63, "%llu", in); \
-        VIRT_ADD_INDEX_STRING(out, key, tmpnumber); \
-    } \
-else \
-{ \
-    add_index_long(out, key, in); \
-}
+#define LONGLONG_INDEX(out, key, in)                        \
+    if (LIBVIRT_G(longlong_to_string_ini)) {                \
+        snprintf(tmpnumber, 63, "%llu", in);                \
+        VIRT_ADD_INDEX_STRING(out, key, tmpnumber);         \
+    } else {                                                \
+        add_index_long(out, key, in);                       \
+    }
 
-#define LONGLONG_RETURN_AS_STRING(in) \
-    snprintf(tmpnumber, 63, "%llu", in); \
-    VIRT_RETURN_STRING(tmpnumber);
+#define LONGLONG_RETURN_AS_STRING(in)                       \
+    do {                                                    \
+        snprintf(tmpnumber, 63, "%llu", in);                \
+        VIRT_RETURN_STRING(tmpnumber);                      \
+    } while (0)
 
 
 /* Authentication callback function. Should receive list of credentials via cbdata and pass the requested one to libvirt */
@@ -7897,7 +7909,7 @@ PHP_FUNCTION(libvirt_storagepool_list_volumes)
     array_init(return_value);
 
     if ((count != expectedcount) || (count < 0))
-		RETURN_FALSE;
+        RETURN_FALSE;
     for (i = 0; i < count; i++) {
         VIRT_ADD_NEXT_INDEX_STRING(return_value,  names[i]);
         free(names[i]);
