@@ -1476,7 +1476,7 @@ static void php_libvirt_connection_dtor(
 #endif
     TSRMLS_DC)
 {
-    php_libvirt_connection *conn = (php_libvirt_connection*)rsrc->ptr;
+    php_libvirt_connection *conn = (php_libvirt_connection *)rsrc->ptr;
     int rv = 0;
 
     if (conn != NULL) {
@@ -1506,7 +1506,7 @@ static void php_libvirt_domain_dtor(
 #endif
     TSRMLS_DC)
 {
-    php_libvirt_domain *domain = (php_libvirt_domain*)rsrc->ptr;
+    php_libvirt_domain *domain = (php_libvirt_domain *)rsrc->ptr;
     int rv = 0;
 
     if (domain != NULL) {
@@ -1540,7 +1540,7 @@ static void php_libvirt_stream_dtor(
 #endif
     TSRMLS_DC)
 {
-    php_libvirt_stream *stream = (php_libvirt_stream*)rsrc->ptr;
+    php_libvirt_stream *stream = (php_libvirt_stream *)rsrc->ptr;
     int rv = 0;
 
     if (stream != NULL) {
@@ -1573,7 +1573,7 @@ static void php_libvirt_storagepool_dtor(
 #endif
     TSRMLS_DC)
 {
-    php_libvirt_storagepool *pool = (php_libvirt_storagepool*)rsrc->ptr;
+    php_libvirt_storagepool *pool = (php_libvirt_storagepool *)rsrc->ptr;
     int rv = 0;
 
     if (pool != NULL) {
@@ -1606,7 +1606,7 @@ static void php_libvirt_volume_dtor(
 #endif
     TSRMLS_DC)
 {
-    php_libvirt_volume *volume = (php_libvirt_volume*)rsrc->ptr;
+    php_libvirt_volume *volume = (php_libvirt_volume *)rsrc->ptr;
     int rv = 0;
 
     if (volume != NULL) {
@@ -1639,7 +1639,7 @@ static void php_libvirt_network_dtor(
 #endif
     TSRMLS_DC)
 {
-    php_libvirt_network *network = (php_libvirt_network*)rsrc->ptr;
+    php_libvirt_network *network = (php_libvirt_network *)rsrc->ptr;
     int rv = 0;
 
     if (network != NULL) {
@@ -1672,7 +1672,7 @@ static void php_libvirt_nodedev_dtor(
 #endif
     TSRMLS_DC)
 {
-    php_libvirt_nodedev *nodedev = (php_libvirt_nodedev*)rsrc->ptr;
+    php_libvirt_nodedev *nodedev = (php_libvirt_nodedev *)rsrc->ptr;
     int rv = 0;
 
     if (nodedev != NULL) {
@@ -1705,7 +1705,7 @@ static void php_libvirt_snapshot_dtor(
 #endif
     TSRMLS_DC)
 {
-    php_libvirt_snapshot *snapshot = (php_libvirt_snapshot*)rsrc->ptr;
+    php_libvirt_snapshot *snapshot = (php_libvirt_snapshot *)rsrc->ptr;
     int rv = 0;
 
     if (snapshot != NULL) {
@@ -2157,7 +2157,7 @@ static int libvirt_virConnectAuthCallback(virConnectCredentialPtr cred, unsigned
     TSRMLS_FETCH();
 
     unsigned int i, j;
-    php_libvirt_cred_value *creds = (php_libvirt_cred_value*) cbdata;
+    php_libvirt_cred_value *creds = (php_libvirt_cred_value *) cbdata;
     for (i = 0; i < (unsigned int)ncred; i++) {
         DPRINTF("%s: cred %d, type %d, prompt %s challenge %s\n ", __FUNCTION__, i, cred[i].type, cred[i].prompt, cred[i].challenge);
         if (creds != NULL)
@@ -2212,7 +2212,7 @@ PHP_FUNCTION(libvirt_connect)
 {
     php_libvirt_connection *conn;
     php_libvirt_cred_value *creds = NULL;
-    zval* zcreds = NULL;
+    zval *zcreds = NULL;
     zval *data;
     int i;
     int j;
@@ -2290,7 +2290,7 @@ PHP_FUNCTION(libvirt_connect)
         } VIRT_FOREACH_END();
         DPRINTF("%s: Found %d elements for credentials\n", PHPFUNC, j);
         creds[0].count = j;
-        libvirt_virConnectAuth.cbdata = (void*)creds;
+        libvirt_virConnectAuth.cbdata = (void *)creds;
         conn->conn = virConnectOpenAuth(url, &libvirt_virConnectAuth, readonly ? VIR_CONNECT_RO : 0);
         for (i = 0; i < creds[0].count; i++)
             efree(creds[i].result);
