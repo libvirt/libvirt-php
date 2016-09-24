@@ -48,7 +48,8 @@ typedef struct tServerFBParams {
  * Arguments:               @sfd [int]: socket descriptor connected to the VNC server
  * Returns:                 0 on success, -errno on error
  */
-int vnc_write_client_version(int sfd)
+static int
+vnc_write_client_version(int sfd)
 {
     unsigned char buf[12];
 
@@ -84,7 +85,8 @@ int vnc_write_client_version(int sfd)
  * Arguments:               @sfd [int]: socket descriptor connected to the VNC server
  * Returns:                 0 on success, -errno on error (incl. -EIO on invalid authorization)
  */
-int vnc_authorize(int sfd)
+static int
+vnc_authorize(int sfd)
 {
     unsigned char buf[4] = { 0 };
     unsigned char buf2[32] = { 0 };
@@ -158,7 +160,8 @@ int vnc_authorize(int sfd)
  *                          @len [int]: length of the buffer
  * Returns:                 parameters structure of tServerFBParams
  */
-tServerFBParams vnc_parse_fb_params(unsigned char *buf, int len)
+static tServerFBParams
+vnc_parse_fb_params(unsigned char *buf, int len)
 {
     int nlen, little_endian = 0;
     int w1, w2, h1, h2, h, w;
@@ -222,7 +225,8 @@ tServerFBParams vnc_parse_fb_params(unsigned char *buf, int len)
  *                          @release [bool]: flag to release the key immediately
  * Returns:                 0 on success, -errno otherwise
  */
-int vnc_send_key(int sfd, unsigned char key, int modifier, int release)
+static int
+vnc_send_key(int sfd, unsigned char key, int modifier, int release)
 {
     unsigned char buf[8];
 
@@ -262,7 +266,8 @@ int vnc_send_key(int sfd, unsigned char key, int modifier, int release)
  *                          @pos_y [int]: Y position of mouse cursor
  * Returns:                 0 on success, -errno otherwise
  */
-int vnc_send_client_pointer(int sfd, int clicked, int pos_x, int pos_y)
+static int
+vnc_send_client_pointer(int sfd, int clicked, int pos_x, int pos_y)
 {
     unsigned char buf[6] = { 0 };
 
@@ -299,7 +304,8 @@ int vnc_send_client_pointer(int sfd, int clicked, int pos_x, int pos_y)
  *                          @params [struct]: structure of parameters to set the data
  * Returns:                 0 on success, -errno otherwise
  */
-int vnc_set_pixel_format(int sfd, tServerFBParams params)
+static int
+vnc_set_pixel_format(int sfd, tServerFBParams params)
 {
     unsigned char buf[20];
 
@@ -355,7 +361,8 @@ int vnc_set_pixel_format(int sfd, tServerFBParams params)
  * Arguments:               @sfd [int]: socket descriptor for existing VNC client socket
  * Returns:                 0 on success, -errno otherwise
  */
-int vnc_set_encoding(int sfd)
+static int
+vnc_set_encoding(int sfd)
 {
     unsigned char buf[8];
 
@@ -400,7 +407,8 @@ int vnc_set_encoding(int sfd)
  *                          @h [int]: height of frame
  * Returns:                 0 on success, -errno otherwise
  */
-int vnc_send_framebuffer_update(int sfd, int incrementalUpdate, int x, int y, int w, int h)
+static int
+vnc_send_framebuffer_update(int sfd, int incrementalUpdate, int x, int y, int w, int h)
 {
     unsigned char buf[10];
 
@@ -440,7 +448,8 @@ int vnc_send_framebuffer_update(int sfd, int incrementalUpdate, int x, int y, in
  *                          @params [struct]: structure of parameters to request the update for full screen
  * Returns:                 0 on success, -errno otherwise
  */
-int vnc_send_framebuffer_update_request(int sfd, int incrementalUpdate, tServerFBParams params)
+static int
+vnc_send_framebuffer_update_request(int sfd, int incrementalUpdate, tServerFBParams params)
 {
     return vnc_send_framebuffer_update(sfd, incrementalUpdate, 0, 0, params.width, params.height);
 }
@@ -454,7 +463,8 @@ int vnc_send_framebuffer_update_request(int sfd, int incrementalUpdate, tServerF
  *                          @share [bool]: flag whether to share desktop or not
  * Returns:                 socket descriptor on success, -errno otherwise
  */
-int vnc_connect(char *server, char *port, int share)
+static int
+vnc_connect(char *server, char *port, int share)
 {
     int sfd, err;
     unsigned char buf[1024] = { 0 };
@@ -498,7 +508,8 @@ int vnc_connect(char *server, char *port, int share)
  * Arguments:               @sfd [int]: socket file descriptor acquired by vnc_connect() call
  * Returns:                 parameters block
  */
-tServerFBParams vnc_read_server_init(int sfd)
+static tServerFBParams
+vnc_read_server_init(int sfd)
 {
     unsigned char *buf = NULL;
     unsigned char tmpbuf[25] = { 0 };
@@ -597,7 +608,8 @@ int vnc_get_dimensions(char *server, char *port, int *width, int *height)
  *                          @height [int]: height of the output image (for bitmap headers)
  * Returns:                 0 on success, -errno otherwise
  */
-int vnc_raw_to_bmp(char *infile, char *outfile, int width, int height)
+static int
+vnc_raw_to_bmp(char *infile, char *outfile, int width, int height)
 {
     int i, ix, fd, fd2;
     tBMPFile fBMP = { 0 };
