@@ -8,6 +8,7 @@
  */
 
 #include "libvirt-php.h"
+#include "util.h"
 
 #ifdef DEBUG_VNC
 #define DPRINTF(fmt, ...) \

@@ -27,12 +27,17 @@
 #endif
 
 #include "libvirt-php.h"
+#include "util.h"
 
 #ifndef EXTWIN
 // From vncfunc.c
 int vnc_get_dimensions(char *server, char *port, int *width, int *height);
 // From sockets.c
 int connect_socket(char *server, char *port, int keepalive, int nodelay, int allow_server_override);
+#endif
+
+#ifdef DEBUG_SUPPORT
+int gdebug;
 #endif
 
 #ifdef DEBUG_CORE
@@ -153,8 +158,6 @@ int le_libvirt_network;
 int le_libvirt_nodedev;
 int le_libvirt_stream;
 int le_libvirt_snapshot;
-
-ZEND_DECLARE_MODULE_GLOBALS(libvirt)
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_libvirt_connect, 0, 0, 0)
 ZEND_ARG_INFO(0, url)
@@ -793,6 +796,22 @@ zend_module_entry libvirt_module_entry = {
 #ifdef COMPILE_DL_LIBVIRT
 ZEND_GET_MODULE(libvirt)
 #endif
+
+ZEND_BEGIN_MODULE_GLOBALS(libvirt)
+    char *last_error;
+    char *vnc_location;
+    zend_bool longlong_to_string_ini;
+    char *iso_path_ini;
+    char *image_path_ini;
+    zend_long max_connections_ini;
+#ifdef DEBUG_SUPPORT
+    int debug;
+#endif
+    resource_info *binding_resources;
+    int binding_resources_count;
+ZEND_END_MODULE_GLOBALS(libvirt)
+
+ZEND_DECLARE_MODULE_GLOBALS(libvirt)
 
 /* PHP init options */
 PHP_INI_BEGIN()

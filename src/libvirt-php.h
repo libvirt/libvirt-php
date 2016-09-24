@@ -17,14 +17,6 @@
 #ifndef PHP_LIBVIRT_H
 #define PHP_LIBVIRT_H 1
 
-#define DEBUG_SUPPORT
-
-#ifdef DEBUG_SUPPORT
-#define DEBUG_CORE
-#define DEBUG_VNC
-#endif
-
-#define ARRAY_CARDINALITY(array)    (sizeof(array) / sizeof(array[0]))
 
 /* Network constants */
 #define VIR_NETWORKS_ACTIVE     1
@@ -151,40 +143,12 @@ typedef struct tTokenizer {
     int numTokens;
 } tTokenizer;
 
-#define IS_BIGENDIAN (*(uint16_t *)"\0\xff" < 0x100)
-
-#define SWAP2_BY_ENDIAN(le, v1, v2) (((le && IS_BIGENDIAN) || (!le && !IS_BIGENDIAN)) ? ((v2 << 8) + v1) : ((v1 << 8) + v2))
-#define PUT2_BYTE_ENDIAN(le, val, v1, v2) { if ((le && IS_BIGENDIAN) || (!le && !IS_BIGENDIAN)) { v2 = val >> 8; v1 = val % 256; } else { v1 = val >> 8; v2 = val % 256; } }
-#define SWAP2_BYTES_ENDIAN(le, a, b) { if ((le && IS_BIGENDIAN) || (!le && !IS_BIGENDIAN)) { uint8_t _tmpval; _tmpval = a; a = b; b = _tmpval; } }
-
-#define UINT32STR(var, val)         \
-    var[0] = (val >> 24) & 0xff;    \
-    var[1] = (val >> 16) & 0xff;    \
-    var[2] = (val >>  8) & 0xff;    \
-    var[3] = (val      ) & 0xff;
-
-#define GETUINT32(var)  (uint32_t)(((uint32_t)var[0] << 24) + ((uint32_t)var[1] << 16) + ((uint32_t)var[2] << 8) + ((uint32_t)var[3]))
-
 typedef struct _resource_info {
     int type;
     virConnectPtr conn;
     void *mem;
     int overwrite;
 } resource_info;
-
-ZEND_BEGIN_MODULE_GLOBALS(libvirt)
-    char *last_error;
-    char *vnc_location;
-    zend_bool longlong_to_string_ini;
-    char *iso_path_ini;
-    char *image_path_ini;
-    zend_long max_connections_ini;
-#ifdef DEBUG_SUPPORT
-    int debug;
-#endif
-    resource_info *binding_resources;
-    int binding_resources_count;
-ZEND_END_MODULE_GLOBALS(libvirt)
 
 #ifdef ZTS
 #define LIBVIRT_G(v) TSRMG(libvirt_globals_id, zend_libvirt_globals *, v)
@@ -324,9 +288,6 @@ int set_logfile(char *filename, long maxsize TSRMLS_DC);
 char *get_datetime(void);
 char *get_string_from_xpath(char *xml, char *xpath, zval **val, int *retVal);
 char **get_array_from_xpath(char *xml, char *xpath, int *num);
-#ifdef DEBUG_SUPPORT
-int gdebug;
-#endif
 
 #define PHP_LIBVIRT_CONNECTION_RES_NAME "Libvirt connection"
 #define PHP_LIBVIRT_DOMAIN_RES_NAME "Libvirt domain"

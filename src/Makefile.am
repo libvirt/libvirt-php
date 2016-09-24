@@ -18,6 +18,7 @@ LIBVIRT_PHP_SYMBOL_FILE = \
 php_plugindir = $(extensiondir)
 php_plugin_LTLIBRARIES = libvirt-php.la
 libvirt_php_la_SOURCES = \
+	util.h	\
 	vncfunc.c \
 	sockets.c \
 	libvirt-php.c libvirt-php.h
