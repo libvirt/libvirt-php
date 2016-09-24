@@ -28,10 +28,9 @@
 
 #include "libvirt-php.h"
 #include "util.h"
+#include "vncfunc.h"
 
 #ifndef EXTWIN
-// From vncfunc.c
-int vnc_get_dimensions(char *server, char *port, int *width, int *height);
 // From sockets.c
 int connect_socket(char *server, char *port, int keepalive, int nodelay, int allow_server_override);
 #endif

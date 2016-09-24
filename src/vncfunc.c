@@ -7,6 +7,7 @@
  *   Michal Novotny <minovotn@redhat.com>
  */
 
+#include "vncfunc.h"
 #include "libvirt-php.h"
 #include "util.h"
 

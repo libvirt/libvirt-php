@@ -136,7 +136,6 @@ int connect_socket(char *server, char *port, int keepalive, int nodelay, int all
 int socket_has_data(int sfd, long maxtime, int ignoremsg);
 void socket_read(int sfd, long length);
 int socket_read_and_save(int sfd, char *fn, long length);
-int vnc_get_bitmap(char *server, char *port, char *fn);
 
 typedef struct tTokenizer {
     char **tokens;
@@ -280,10 +279,6 @@ typedef struct _php_libvirt_hash_key_info {
 } php_libvirt_hash_key_info;
 
 /* Private definitions */
-int vnc_refresh_screen(char *server, char *port, int scancode);
-int vnc_send_keys(char *server, char *port, char *keys);
-int vnc_send_pointer_event(char *server, char *port, int pos_x, int pos_y, int clicked, int release);
-
 int set_logfile(char *filename, long maxsize TSRMLS_DC);
 char *get_datetime(void);
 char *get_string_from_xpath(char *xml, char *xpath, zval **val, int *retVal);
