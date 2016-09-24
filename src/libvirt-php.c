@@ -4790,7 +4790,6 @@ PHP_FUNCTION(libvirt_domain_get_screenshot_api)
         VIRT_ADD_ASSOC_STRING(return_value, "file", fileNew);
         VIRT_ADD_ASSOC_STRING(return_value, "mime", "image/png");
     } else {
-        unlink(file);
         close(fd);
         fd = -1;
         VIRT_ADD_ASSOC_STRING(return_value, "file", file);
