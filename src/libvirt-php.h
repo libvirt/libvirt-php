@@ -84,11 +84,6 @@
 #include <stdint.h>
 #include <libgen.h>
 
-#ifdef __APPLE__
-#include <netinet/tcp.h>
-#else
-#include <linux/tcp.h>
-#endif
 #else
 
 #define PRIx32       "I32x"

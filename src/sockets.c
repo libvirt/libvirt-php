@@ -7,8 +7,23 @@
  *   Michal Novotny <minovotn@redhat.com>
  */
 
+#include <config.h>
+
+#include <errno.h>
+#include <fcntl.h>
+#include <netdb.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#ifdef __APPLE__
+#include <netinet/tcp.h>
+#else
+#include <linux/tcp.h>
+#endif
+
 #include "sockets.h"
-#include "libvirt-php.h"
 #include "util.h"
 
 #ifdef DEBUG_SOCKETS
