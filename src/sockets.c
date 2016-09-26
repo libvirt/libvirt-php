@@ -7,6 +7,7 @@
  *   Michal Novotny <minovotn@redhat.com>
  */
 
+#include "sockets.h"
 #include "libvirt-php.h"
 #include "util.h"
 

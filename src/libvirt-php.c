@@ -29,11 +29,7 @@
 #include "libvirt-php.h"
 #include "util.h"
 #include "vncfunc.h"
-
-#ifndef EXTWIN
-// From sockets.c
-int connect_socket(char *server, char *port, int keepalive, int nodelay, int allow_server_override);
-#endif
+#include "sockets.h"
 
 #ifdef DEBUG_SUPPORT
 int gdebug;

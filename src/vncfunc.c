@@ -10,6 +10,7 @@
 #include "vncfunc.h"
 #include "libvirt-php.h"
 #include "util.h"
+#include "sockets.h"
 
 #ifdef DEBUG_VNC
 #define DPRINTF(fmt, ...) \

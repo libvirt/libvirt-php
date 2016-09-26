@@ -20,7 +20,7 @@ php_plugin_LTLIBRARIES = libvirt-php.la
 libvirt_php_la_SOURCES = \
 	util.c util.h	\
 	vncfunc.c vncfunc.h	\
-	sockets.c \
+	sockets.c sockets.h \
 	libvirt-php.c libvirt-php.h
 libvirt_php_la_CFLAGS = \
 	$(AM_CFLAGS) \
