@@ -7,8 +7,19 @@
  *   Michal Novotny <minovotn@redhat.com>
  */
 
+#include <config.h>
+
+#include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 #include "vncfunc.h"
-#include "libvirt-php.h"
 #include "util.h"
 #include "sockets.h"
 
@@ -43,6 +54,25 @@ typedef struct tServerFBParams {
     int desktopNameLen;
     unsigned char *desktopName;
 } tServerFBParams;
+
+typedef struct tBMPFile {
+    uint32_t filesz;
+    uint16_t creator1;
+    uint16_t creator2;
+    uint32_t bmp_offset;
+
+    uint32_t header_sz;
+    int32_t height;
+    int32_t width;
+    uint16_t nplanes;
+    uint16_t bitspp;
+    uint32_t compress_type;
+    uint32_t bmp_bytesz;
+    int32_t hres;
+    int32_t vres;
+    uint32_t ncolors;
+    uint32_t nimpcolors;
+} tBMPFile;
 
 /*
  * Private function name:   vnc_write_client_version
