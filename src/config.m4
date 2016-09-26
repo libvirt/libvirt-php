@@ -46,7 +46,7 @@ if test "$PHP_LIBVIRT" != "no"; then
     PHP_EVAL_LIBLINE($LIBXML_LIBRARY, LIBVIRT_SHARED_LIBADD)
 
     PHP_SUBST(LIBVIRT_SHARED_LIBADD)
-    PHP_NEW_EXTENSION(libvirt, libvirt-php.c sockets.c vncfunc.c, $ext_shared)
+    PHP_NEW_EXTENSION(libvirt, libvirt-php.c sockets.c vncfunc.c util.c, $ext_shared)
   else
     AC_MSG_ERROR(pkg-config not found)
   fi

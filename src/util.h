@@ -60,4 +60,6 @@ extern int gdebug;
                ((uint32_t)var[2] <<  8) +   \
                ((uint32_t)var[3]))
 
+char *get_datetime(void);
+
 #endif /* __UTIL_H__ */
