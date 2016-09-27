@@ -1097,6 +1097,9 @@ int has_builtin(char *name)
     return 0;
 }
 
+/* Maximum size (in KiB) of log file when DEBUG_SUPPORT is enabled */
+#define DEFAULT_LOG_MAXSIZE 1024
+
 /* Information function for phpinfo() */
 PHP_MINFO_FUNCTION(libvirt)
 {
