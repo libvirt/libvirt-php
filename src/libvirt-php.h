@@ -26,9 +26,6 @@
 
 #define ARRAY_CARDINALITY(array)    (sizeof(array) / sizeof(array[0]))
 
-/* Maximum number of authentication attempts */
-#define VNC_MAX_AUTH_ATTEMPTS       10
-
 /* Network constants */
 #define VIR_NETWORKS_ACTIVE     1
 #define VIR_NETWORKS_INACTIVE       2

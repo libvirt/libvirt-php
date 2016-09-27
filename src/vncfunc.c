@@ -78,6 +78,9 @@ vnc_write_client_version(int sfd)
     return 0;
 }
 
+/* Maximum number of authentication attempts */
+# define VNC_MAX_AUTH_ATTEMPTS  10
+
 /*
  * Private function name:   vnc_authorize
  * Since version:           0.4.3
