@@ -31,18 +31,7 @@
 #include "vncfunc.h"
 #include "sockets.h"
 
-#ifdef DEBUG_SUPPORT
-int gdebug;
-#endif
-
-#ifdef DEBUG_CORE
-#define DPRINTF(fmt, ...) \
-if (LIBVIRT_G(debug)) \
-do { fprintf(stderr, "[%s ", get_datetime()); fprintf(stderr, "libvirt-php/core   ]: " fmt , ## __VA_ARGS__); fflush(stderr); } while (0)
-#else
-#define DPRINTF(fmt, ...) \
-do {} while(0)
-#endif
+DEBUG_INIT("core");
 
 /* PHP functions are prefixed with `zif_` so strip it */
 #define PHPFUNC (__FUNCTION__ + 4)
@@ -819,7 +808,7 @@ PHP_INI_END()
 void change_debug(int val TSRMLS_DC)
 {
     LIBVIRT_G(debug) = val;
-    gdebug = val;
+    setDebug(val);
 }
 
 /* PHP requires to have this function defined */

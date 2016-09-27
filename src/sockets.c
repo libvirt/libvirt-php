@@ -26,14 +26,7 @@
 #include "sockets.h"
 #include "util.h"
 
-#ifdef DEBUG_SOCKETS
-#define DPRINTF(fmt, ...) \
-if (gdebug) \
-do { fprintf(stderr, "[%s ", get_datetime()); fprintf(stderr, "libvirt-php/sockets]: " fmt , ## __VA_ARGS__); fflush(stderr); } while (0)
-#else
-#define DPRINTF(fmt, ...) \
-do {} while(0)
-#endif
+DEBUG_INIT("sockets");
 
 /* Function macro */
 #define PHPFUNC __FUNCTION__

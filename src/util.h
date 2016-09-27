@@ -17,8 +17,13 @@
 # ifdef DEBUG_SUPPORT
 #  define DEBUG_CORE
 #  define DEBUG_VNC
-extern int gdebug;
 # endif
+
+# define DEBUG_INIT(source)     \
+    static const char *debugSource = "" source ""
+
+# define DPRINTF(fmt, ...)      \
+    debugPrint(debugSource, fmt, __VA_ARGS__)
 
 # define ARRAY_CARDINALITY(array) (sizeof(array) / sizeof(array[0]))
 
@@ -60,6 +65,9 @@ extern int gdebug;
                ((uint32_t)var[2] <<  8) +   \
                ((uint32_t)var[3]))
 
-char *get_datetime(void);
+void debugPrint(const char *source,
+                const char *fmt, ...);
+
+void setDebug(int level);
 
 #endif /* __UTIL_H__ */

@@ -9,10 +9,14 @@
 
 #include <config.h>
 
+#include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
 #include "util.h"
+
+int gdebug;
 
 /*
  * Private function name:   get_datetime
@@ -21,7 +25,8 @@
  * Arguments:               None
  * Returns:                 Date/time string in `YYYY-mm-dd HH:mm:ss` format
  */
-char *get_datetime(void)
+static char *
+get_datetime(void)
 {
     /* Caution: Function cannot use DPRINTF() macro otherwise the neverending loop will be met! */
     char *outstr = NULL;
@@ -38,4 +43,31 @@ char *get_datetime(void)
         return NULL;
 
     return outstr;
+}
+
+void debugPrint(const char *source,
+                const char *fmt, ...)
+{
+    char *datetime;
+    va_list args;
+
+    if (!gdebug)
+        return;
+
+    datetime = get_datetime();
+    fprintf(stderr, "[%s libvirt-php/%s ]: ", datetime, source);
+    free(datetime);
+
+    if (fmt) {
+        va_start(args, fmt);
+        vfprintf(stderr, fmt, args);
+        va_end(args);
+    }
+    fprintf(stderr, "\n");
+    fflush(stderr);
+}
+
+void setDebug(int level)
+{
+    gdebug = level;
 }
