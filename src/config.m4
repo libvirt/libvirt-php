@@ -3,6 +3,7 @@ PHP_ARG_WITH(libvirt, for libvirt support,
 
 if test "$PHP_LIBVIRT" != "no"; then
 
+  AC_GNU_SOURCE
   AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
 
   LIBVIRT_REQUIRED=1.2.13

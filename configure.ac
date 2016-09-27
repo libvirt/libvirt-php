@@ -4,6 +4,7 @@ AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([-Wall -Werror -Wno-portability])
 AM_MAINTAINER_MODE([enable])
+AC_GNU_SOURCE
 
 m4_ifndef([LT_INIT], [
   AM_PROG_LIBTOOL

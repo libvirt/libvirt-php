@@ -18,14 +18,15 @@
 #define EXTWIN
 #endif
 
-#include "stdafx.h"
+#include <config.h>
+#include <stdio.h>
+#include <stdafx.h>
 
 #ifdef EXTWIN
 #define PHP_COMPILER_ID  "VC9"
 #endif
 
 #include "libvirt-php.h"
-#include "stdio.h"
 
 #ifndef EXTWIN
 // From vncfunc.c
