@@ -159,7 +159,7 @@ if test "x$PHPCONFIG" = "xno"; then
     AC_MSG_ERROR([php-config not found; please install the PHP SDK])
 fi
 
-AC_PATH_PROG([PHPIZE], [phpize], [no], [`php-config --prefix`/bin$PATH_SEPARATOR$PATH])
+AC_PATH_PROG([PHPIZE], [phpize], [no], [`$PHPCONFIG --prefix`/bin$PATH_SEPARATOR$PATH])
 if test "x$PHPIZE" = "xno"; then
     AC_MSG_ERROR([phpize not found; please install the PHP SDK])
 fi
