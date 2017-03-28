@@ -313,7 +313,7 @@ ZEND_ARG_INFO(0, memory)
 ZEND_ARG_INFO(0, flags)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_libvirt_domain_block_commit, 0, 0, 3)
+ZEND_BEGIN_ARG_INFO_EX(arginfo_libvirt_domain_block_commit, 0, 0, 2)
 ZEND_ARG_INFO(0, res)
 ZEND_ARG_INFO(0, disk)
 ZEND_ARG_INFO(0, base)
@@ -6986,16 +6986,22 @@ PHP_FUNCTION(libvirt_domain_block_commit)
     php_libvirt_domain *domain = NULL;
     zval *zdomain;
     int retval;
-    char *disk;
-    int disk_len;
+    char *disk = NULL;
+    strsize_t disk_len;
     char *base = NULL;
-    int base_len;
+    strsize_t base_len;
     char *top = NULL;
-    int top_len;
-    long bandwidth = 0;
-    long flags = 0;
+    strsize_t top_len;
+    zend_long bandwidth = 0;
+    zend_long flags = 0;
 
-    GET_DOMAIN_FROM_ARGS("rsssll", &zdomain, &disk, &disk_len, &base, &base_len, &top, &top_len, &bandwidth, &flags);
+    GET_DOMAIN_FROM_ARGS("rs|ssll", &zdomain, &disk, &disk_len, &base, &base_len, &top, &top_len, &bandwidth, &flags);
+    if (strcmp(disk, "") == 0)
+        RETURN_FALSE;
+    if (strcmp(base, "") == 0)
+        base = NULL;
+    if (strcmp(top, "") == 0)
+        top = NULL;
 
     retval = virDomainBlockCommit(domain->domain, disk, base, top, bandwidth, flags);
     if (retval == -1)
