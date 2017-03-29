@@ -178,9 +178,15 @@ ZEND_ARG_INFO(0, stats)
 ZEND_ARG_INFO(0, flags)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_libvirt_stream_send, 0, 0, 2)
+ZEND_BEGIN_ARG_INFO_EX(arginfo_libvirt_stream_send, 0, 1, 2)
 ZEND_ARG_INFO(0, conn)
-ZEND_ARG_INFO(0, data)
+ZEND_ARG_INFO(1, data)
+ZEND_ARG_INFO(0, len)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_libvirt_stream_recv, 0, 1, 2)
+ZEND_ARG_INFO(0, conn)
+ZEND_ARG_INFO(1, data)
 ZEND_ARG_INFO(0, len)
 ZEND_END_ARG_INFO()
 
@@ -595,7 +601,7 @@ static zend_function_entry libvirt_functions[] = {
     PHP_FE(libvirt_stream_abort,                 arginfo_libvirt_conn)
     PHP_FE(libvirt_stream_finish,                arginfo_libvirt_conn)
     PHP_FE(libvirt_stream_send,                  arginfo_libvirt_stream_send)
-    PHP_FE(libvirt_stream_recv,                  arginfo_libvirt_stream_send)
+    PHP_FE(libvirt_stream_recv,                  arginfo_libvirt_stream_recv)
     /* Domain functions */
     PHP_FE(libvirt_domain_new,                   arginfo_libvirt_domain_new)
     PHP_FE(libvirt_domain_new_get_vnc,           arginfo_libvirt_void)
@@ -4509,7 +4515,7 @@ PHP_FUNCTION(libvirt_stream_finish)
 /*
  * Function name:   libvirt_stream_recv
  * Since version:   0.5.0
- * Description:     Function is used to close stream from libvirt conn
+ * Description:     Function is used to recv from stream via libvirt conn
  * Arguments:       @res [resource]: libvirt stream resource from libvirt_stream_create()
  *                  @data [string]: buffer
  *                  @len [int]: amout of data to recieve
@@ -4518,8 +4524,8 @@ PHP_FUNCTION(libvirt_stream_finish)
 PHP_FUNCTION(libvirt_stream_recv)
 {
     zval *zstream, *zbuf;
-    char *recv_buf;
     php_libvirt_stream *stream = NULL;
+    char *recv_buf = NULL;
     int retval = -1;
     zend_long length = 0;
 
@@ -4530,35 +4536,27 @@ PHP_FUNCTION(libvirt_stream_recv)
         RETURN_LONG(retval);
 
     recv_buf = emalloc(length + 1);
-    memset(recv_buf, 0, length + 1);
 
     retval = virStreamRecv(stream->stream, recv_buf, length);
     if (retval < 0) {
-        efree(recv_buf);
         zval_dtor(zbuf);
         ZVAL_NULL(zbuf);
     } else {
         recv_buf[retval] = '\0';
-#if PHP_MAJOR_VERSION >= 7
-        ZVAL_STRINGL(zbuf, recv_buf, retval);
-        efree(recv_buf);
-#else
-        ZVAL_STRINGL(zbuf, recv_buf, retval, 0);
-#endif
+        VIRT_ZVAL_STRINGL(zbuf, recv_buf, retval);
     }
 
-    if (retval == -1) {
+    if (retval == -1)
         set_error("Cannot recv from stream" TSRMLS_CC);
-        RETURN_LONG(retval);
-    }
 
+    efree(recv_buf);
     RETURN_LONG(retval);
 }
 
 /*
  * Function name:   libvirt_stream_send
  * Since version:   0.5.0
- * Description:     Function is used to close stream from libvirt conn
+ * Description:     Function is used to send to stream via libvirt conn
  * Arguments:       @res [resource]: libvirt stream resource from libvirt_stream_create()
  *                  @data [string]: buffer
  *                  @length [int]: amout of data to send
@@ -4571,7 +4569,6 @@ PHP_FUNCTION(libvirt_stream_send)
     int retval = -1;
     zend_long length = 0;
     char *cstr;
-    //int cstrlen;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rz|l", &zstream, &zbuf, &length) == FAILURE)
         RETURN_LONG(retval);
@@ -4580,13 +4577,10 @@ PHP_FUNCTION(libvirt_stream_send)
         RETURN_LONG(retval);
 
     cstr = Z_STRVAL_P(zbuf);
-    //cstrlen = Z_STRLEN_P(zbuf);
 
     retval = virStreamSend(stream->stream, cstr, length);
-    if (retval == -1) {
+    if (retval == -1)
         set_error("Cannot send to stream" TSRMLS_CC);
-        RETURN_LONG(retval);
-    }
 
     RETURN_LONG(retval);
 }
