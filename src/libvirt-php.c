@@ -721,6 +721,9 @@ static zend_function_entry libvirt_functions[] = {
     PHP_FE(libvirt_network_get_information,      arginfo_libvirt_conn)
     PHP_FE(libvirt_network_get_active,           arginfo_libvirt_conn)
     PHP_FE(libvirt_network_set_active,           arginfo_libvirt_conn_flags)
+    PHP_FE(libvirt_network_get_uuid_string,      arginfo_libvirt_conn)
+    PHP_FE(libvirt_network_get_uuid,             arginfo_libvirt_conn)
+    PHP_FE(libvirt_network_get_name,             arginfo_libvirt_conn)
     /* Node functions */
     PHP_FE(libvirt_node_get_info,                arginfo_libvirt_conn)
     PHP_FE(libvirt_node_get_cpu_stats,           arginfo_libvirt_conn_optcpunr)
@@ -9912,6 +9915,90 @@ PHP_FUNCTION(libvirt_network_get_xml_desc)
 
     free(xml);
     free(tmp);
+}
+
+/*
+ * Function name:   libvirt_network_get_uuid_string
+ * Since version:   0.5.3
+ * Description:     Function is used to get network's UUID in string format
+ * Arguments:       @res [resource]: libvirt network resource
+ * Returns:         network UUID string or FALSE on failure
+ */
+PHP_FUNCTION(libvirt_network_get_uuid_string)
+{
+    php_libvirt_network *network = NULL;
+    zval *znetwork;
+    char *uuid = NULL;
+    int ret = -1;
+
+    GET_NETWORK_FROM_ARGS("r", &znetwork);
+
+    uuid = (char *) emalloc(VIR_UUID_STRING_BUFLEN);
+    ret = virNetworkGetUUIDString(network->network, uuid);
+
+    DPRINTF("%s: virNetworkGetUUIDString(%p) returned %d (%s)\n", PHPFUNC,
+            network->network, ret, uuid);
+
+    if (ret != 0)
+        RETURN_FALSE;
+
+    VIRT_RETURN_STRING(uuid);
+    efree(uuid);
+}
+
+/*
+ * Function name:   libvirt_network_get_uuid
+ * Since version:   0.5.3
+ * Descirption:     Function is used to get network's UUID in binary format
+ * Arguments:       @res [resource]: libvirt netowrk resource
+ * Returns:         network UUID in binary format or FALSE on failure
+ */
+PHP_FUNCTION(libvirt_network_get_uuid)
+{
+    php_libvirt_network *network = NULL;
+    zval *znetwork;
+    char *uuid = NULL;
+    int ret = -1;
+
+    GET_NETWORK_FROM_ARGS("r", &znetwork);
+
+    uuid = (char *) emalloc(VIR_UUID_BUFLEN);
+    ret = virNetworkGetUUID(network->network, (unsigned char *)uuid);
+
+    DPRINTF("%s: virNetworkGetUUID(%p, %p) returned %d\n", PHPFUNC,
+            network->network, uuid, ret);
+
+    if (ret != 0)
+        RETURN_FALSE;
+
+    VIRT_RETVAL_STRING(uuid);
+    efree(uuid);
+}
+
+/*
+ * Function name:   libvirt_network_get_name
+ * Since version:   0.5.3
+ * Description:     Function is used to get network's name
+ * Arguments:       @res [resource]: libvirt network resource
+ * Returns:         network name string or FALSE on failure
+ */
+PHP_FUNCTION(libvirt_network_get_name)
+{
+    php_libvirt_network *network = NULL;
+    zval *znetwork;
+    const char *name = NULL;
+
+    GET_NETWORK_FROM_ARGS("r", &znetwork);
+    name = virNetworkGetName(network->network);
+
+    DPRINTF("%s: virNetworkGetName(%p) returned %s\n", PHPFUNC,
+            network->network, name);
+
+    if (name == NULL)
+        RETURN_FALSE;
+
+    /* name should not be freed as its lifetime is the same as network resource */
+    VIRT_RETURN_STRING(name);
 }
 
 /*

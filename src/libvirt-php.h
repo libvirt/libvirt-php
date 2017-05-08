@@ -420,6 +420,9 @@ PHP_FUNCTION(libvirt_network_get_bridge);
 PHP_FUNCTION(libvirt_network_get_information);
 PHP_FUNCTION(libvirt_network_get_active);
 PHP_FUNCTION(libvirt_network_set_active);
+PHP_FUNCTION(libvirt_network_get_uuid_string);
+PHP_FUNCTION(libvirt_network_get_uuid);
+PHP_FUNCTION(libvirt_network_get_name);
 /* Nodedev functions */
 PHP_FUNCTION(libvirt_nodedev_get);
 PHP_FUNCTION(libvirt_nodedev_capabilities);
