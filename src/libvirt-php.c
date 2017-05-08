@@ -737,6 +737,7 @@ static zend_function_entry libvirt_functions[] = {
     PHP_FE(libvirt_list_domain_snapshots,        arginfo_libvirt_conn_optflags)
     PHP_FE(libvirt_list_domain_resources,        arginfo_libvirt_conn)
     PHP_FE(libvirt_list_nodedevs,                arginfo_libvirt_conn_optcap)
+    PHP_FE(libvirt_list_all_networks,            arginfo_libvirt_conn_optflags)
     PHP_FE(libvirt_list_networks,                arginfo_libvirt_conn_optflags)
     PHP_FE(libvirt_list_storagepools,            arginfo_libvirt_conn)
     PHP_FE(libvirt_list_active_storagepools,     arginfo_libvirt_conn)
@@ -1814,6 +1815,13 @@ PHP_MINIT_FUNCTION(libvirt)
     REGISTER_LONG_CONSTANT("VIR_NETWORKS_INACTIVE",     VIR_NETWORKS_INACTIVE,  CONST_CS | CONST_PERSISTENT);
     REGISTER_LONG_CONSTANT("VIR_NETWORKS_ALL",      VIR_NETWORKS_ACTIVE |
                            VIR_NETWORKS_INACTIVE,  CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_CONNECT_LIST_NETWORKS_INACTIVE",     VIR_CONNECT_LIST_NETWORKS_INACTIVE,     CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_CONNECT_LIST_NETWORKS_ACTIVE",       VIR_CONNECT_LIST_NETWORKS_ACTIVE,       CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_CONNECT_LIST_NETWORKS_PERSISTENT",   VIR_CONNECT_LIST_NETWORKS_PERSISTENT,   CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_CONNECT_LIST_NETWORKS_TRANSIENT",    VIR_CONNECT_LIST_NETWORKS_TRANSIENT,    CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_CONNECT_LIST_NETWORKS_AUTOSTART",    VIR_CONNECT_LIST_NETWORKS_AUTOSTART,    CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_CONNECT_LIST_NETWORKS_NO_AUTOSTART", VIR_CONNECT_LIST_NETWORKS_NO_AUTOSTART, CONST_CS | CONST_PERSISTENT);
+
 
     /* Credential constants */
     REGISTER_LONG_CONSTANT("VIR_CRED_USERNAME",     1, CONST_CS | CONST_PERSISTENT);
@@ -9157,6 +9165,60 @@ PHP_FUNCTION(libvirt_list_inactive_domains)
         free(names[i]);
     }
     efree(names);
+}
+
+/*
+ * Function name:   libvirt_list_all_networks
+ * Since version:   0.5.3
+ * Description:     Function is used to list networks on the connection
+ * Arguments:       @res [resource]: libvirt connection resource
+ *                  @flags [int]: optional flags to filter the results for a smaller list of targetted networks (bitwise-OR VIR_CONNECT_LIST_NETWORKS_* constants)
+ * Returns:         libvirt network resources array for the connection
+ */
+PHP_FUNCTION(libvirt_list_all_networks)
+{
+    php_libvirt_connection *conn = NULL;
+    zval *zconn;
+#if PHP_MAJOR_VERSION >= 7
+    zval znetwork;
+#else
+    zval *znetwork;
+#endif
+    zend_long flags = VIR_CONNECT_LIST_NETWORKS_ACTIVE |
+                      VIR_CONNECT_LIST_NETWORKS_INACTIVE;
+    int count = -1;
+    size_t i = 0;
+    virNetworkPtr *nets = NULL;
+    virNetworkPtr network = NULL;
+    php_libvirt_network *res_network;
+
+    GET_CONNECTION_FROM_ARGS("r|l", &zconn, &flags);
+
+    if ((count = virConnectListAllNetworks(conn->conn, &nets, flags)) < 0)
+        RETURN_FALSE;
+
+    DPRINTF("%s: Found %d networks\n", PHPFUNC, count);
+
+    array_init(return_value);
+
+    for (i = 0; i < count; i++) {
+        network = nets[i];
+        res_network = (php_libvirt_network *) emalloc(sizeof(php_libvirt_network));
+        res_network->network = network;
+        res_network->conn = conn;
+
+        resource_change_counter(INT_RESOURCE_NETWORK, conn->conn,
+                                res_network->network, 1 TSRMLS_CC);
+#if PHP_MAJOR_VERSION >= 7
+        ZVAL_RES(&znetwork, zend_register_resource(res_network,
+                                                   le_libvirt_network));
+        add_next_index_zval(return_value, &znetwork);
+#else
+        ALLOC_INIT_ZVAL(znetwork);
+        ZEND_REGISTER_RESOURCE(znetwork, res_network, le_libvirt_network);
+        add_next_index_zval(return_value, znetwork);
+#endif
+    }
 }
 
 /*

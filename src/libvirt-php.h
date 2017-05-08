@@ -427,6 +427,7 @@ PHP_FUNCTION(libvirt_nodedev_get_xml_desc);
 PHP_FUNCTION(libvirt_nodedev_get_information);
 /* Listing functions */
 PHP_FUNCTION(libvirt_list_nodedevs);
+PHP_FUNCTION(libvirt_list_all_networks);
 PHP_FUNCTION(libvirt_list_networks);
 PHP_FUNCTION(libvirt_list_domains);
 PHP_FUNCTION(libvirt_list_domain_snapshots);
