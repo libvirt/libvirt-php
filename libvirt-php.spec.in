@@ -1,42 +1,42 @@
-%define		req_libvirt_version 1.2.8
+%define     req_libvirt_version 1.2.8
 
 %if 0%{?suse_version}
-%define		php_confdir %{_sysconfdir}/php5/conf.d
-%define		php_extdir  %{_libdir}/php5/extensions
+%define     php_confdir %{_sysconfdir}/php5/conf.d
+%define     php_extdir  %{_libdir}/php5/extensions
 %else
-%define		php_confdir %{_sysconfdir}/php.d
-%define		php_extdir  %{_libdir}/php/modules
+%define     php_confdir %{_sysconfdir}/php.d
+%define     php_extdir  %{_libdir}/php/modules
 %endif
 
-Name:		@PACKAGE@
-Version:	@VERSION@
-Release:	1%{?dist}%{?extra_release}
-Summary:	PHP language binding for Libvirt
+Name:       @PACKAGE@
+Version:    @VERSION@
+Release:    1%{?dist}%{?extra_release}
+Summary:    PHP language binding for Libvirt
 
 %if 0%{?suse_version}
-Group:		Development/Libraries/PHP
+Group:      Development/Libraries/PHP
 %else
-Group:		Development/Libraries
+Group:      Development/Libraries
 %endif
-License:	PHP
-URL:		http://libvirt.org/php
-Source0:	http://libvirt.org/sources/php/libvirt-php-%{version}.tar.gz
-BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root
+License:    PHP
+URL:        http://libvirt.org/php
+Source0:    http://libvirt.org/sources/php/libvirt-php-%{version}.tar.gz
+BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root
 
-BuildRequires:	php-devel
-BuildRequires:	libvirt-devel >= %{req_libvirt_version}
-BuildRequires:	libxml2-devel
-BuildRequires:	libxslt
+BuildRequires:  php-devel
+BuildRequires:  libvirt-devel >= %{req_libvirt_version}
+BuildRequires:  libxml2-devel
+BuildRequires:  libxslt
 BuildRequires:  php-pecl-imagick
 %if 0%{?suse_version}
-BuildRequires:	xhtml-dtd
+BuildRequires:  xhtml-dtd
 %else
-BuildRequires:	xhtml1-dtds
+BuildRequires:  xhtml1-dtds
 %endif
 %if 0%{?suse_version}
-Requires:	php5
+Requires:   php5
 %else
-Requires:	php
+Requires:   php
 %endif
 
 %description
@@ -44,10 +44,10 @@ PHP language bindings for Libvirt API.
 For more details see: http://www.libvirt.org/php/
 
 %package -n libvirt-php-doc
-Summary:	Document of libvirt-php
-Group:		Development/Libraries/PHP
-BuildArch:	noarch
-Requires:	libvirt-php = %{version}
+Summary:    Document of libvirt-php
+Group:      Development/Libraries/PHP
+BuildArch:  noarch
+Requires:   libvirt-php = %{version}
 
 %description -n libvirt-php-doc
 PHP language bindings for Libvirt API.
