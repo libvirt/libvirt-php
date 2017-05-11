@@ -85,6 +85,15 @@ rm -rf %{buildroot}
 %{_datadir}/doc/%{name}-%{version}/html
 
 %changelog
+* Wed Apr 20 2016 Michal Privoznik <mprivozn@redhat.com> - 0.5.2
+- Several bugfixes & improvements
+
+* Fri Oct 2 2015 Michal Privoznik <mprivozn@redhat.com> - 0.5.1
+- Several bugfixes & improvements
+
+* Thu Jan 23 2014 Michal Novotny <minovotn@redhat.com> - 0.5.0
+- Several bugfixes & improvements
+
 * Mon Aug 22 2011 Michal Novotny <minovotn@redhat.com> - 0.4.4
 - Several bugfixes for VNC and updated SPEC file
 
