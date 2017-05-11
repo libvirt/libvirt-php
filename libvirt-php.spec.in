@@ -10,7 +10,7 @@
 
 Name:		@PACKAGE@
 Version:	@VERSION@
-Release:	3%{?dist}%{?extra_release}
+Release:	1%{?dist}%{?extra_release}
 Summary:	PHP language binding for Libvirt
 
 %if 0%{?suse_version}
