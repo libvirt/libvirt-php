@@ -629,7 +629,7 @@ static zend_function_entry libvirt_functions[] = {
     PHP_FE(libvirt_domain_lookup_by_uuid,        arginfo_libvirt_conn_uuid)
     PHP_FE(libvirt_domain_lookup_by_uuid_string, arginfo_libvirt_conn_uuid)
     PHP_FE(libvirt_domain_destroy,               arginfo_libvirt_conn)
-    PHP_FE(libvirt_domain_create,                arginfo_libvirt_conn_xml)
+    PHP_FE(libvirt_domain_create,                arginfo_libvirt_conn)
     PHP_FE(libvirt_domain_resume,                arginfo_libvirt_conn)
     PHP_FE(libvirt_domain_core_dump,             arginfo_libvirt_domain_core_dump)
     PHP_FE(libvirt_domain_shutdown,              arginfo_libvirt_conn)
