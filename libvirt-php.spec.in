@@ -85,6 +85,9 @@ rm -rf %{buildroot}
 %{_datadir}/doc/%{name}-%{version}/html
 
 %changelog
+* XXX XXX 00 2017 Michal Privoznik <mprivozn@redhat.com> - 0.5.4
+- XXX
+
 * Thu May 11 2017 Michal Privoznik <mprivozn@redhat.com> - 0.5.3
 - Several improvements for the build system
 - Implemented new libvirt APIs
