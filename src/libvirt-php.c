@@ -284,7 +284,7 @@ ZEND_ARG_INFO(0, conn)
 ZEND_ARG_INFO(0, to)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_libvirt_conn_flags, 0, 0, 1)
+ZEND_BEGIN_ARG_INFO_EX(arginfo_libvirt_conn_flags, 0, 0, 2)
 ZEND_ARG_INFO(0, conn)
 ZEND_ARG_INFO(0, flags)
 ZEND_END_ARG_INFO()
@@ -397,11 +397,6 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO_EX(arginfo_libvirt_domain_get_network_info, 0, 0, 2)
 ZEND_ARG_INFO(0, res)
 ZEND_ARG_INFO(0, mac)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO_EX(arginfo_libvirt_domain_set_autostart, 0, 0, 2)
-ZEND_ARG_INFO(0, conn)
-ZEND_ARG_INFO(0, flags)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_libvirt_domain_get_metadata, 0, 0, 4)
@@ -662,7 +657,7 @@ static zend_function_entry libvirt_functions[] = {
     PHP_FE(libvirt_domain_get_block_info,        arginfo_libvirt_domain_get_block_info)
     PHP_FE(libvirt_domain_get_network_info,      arginfo_libvirt_domain_get_network_info)
     PHP_FE(libvirt_domain_get_autostart,         arginfo_libvirt_conn)
-    PHP_FE(libvirt_domain_set_autostart,         arginfo_libvirt_domain_set_autostart)
+    PHP_FE(libvirt_domain_set_autostart,         arginfo_libvirt_conn_flags)
     PHP_FE(libvirt_domain_get_metadata,          arginfo_libvirt_domain_get_metadata)
     PHP_FE(libvirt_domain_set_metadata,          arginfo_libvirt_domain_set_metadata)
     PHP_FE(libvirt_domain_is_active,             arginfo_libvirt_conn)
@@ -724,6 +719,8 @@ static zend_function_entry libvirt_functions[] = {
     PHP_FE(libvirt_network_get_uuid_string,      arginfo_libvirt_conn)
     PHP_FE(libvirt_network_get_uuid,             arginfo_libvirt_conn)
     PHP_FE(libvirt_network_get_name,             arginfo_libvirt_conn)
+    PHP_FE(libvirt_network_get_autostart,        arginfo_libvirt_conn)
+    PHP_FE(libvirt_network_set_autostart,        arginfo_libvirt_conn_flags)
     /* Node functions */
     PHP_FE(libvirt_node_get_info,                arginfo_libvirt_conn)
     PHP_FE(libvirt_node_get_cpu_stats,           arginfo_libvirt_conn_optcpunr)
@@ -9999,6 +9996,49 @@ PHP_FUNCTION(libvirt_network_get_name)
 
     /* name should not be freed as its lifetime is the same as network resource */
     VIRT_RETURN_STRING(name);
+}
+
+/*
+ * Function name:   libvirt_network_get_autostart
+ * Since version:   0.5.4
+ * Description:     Function is getting the autostart value for the network
+ * Arguments:       @res [resource]: libvirt network resource
+ * Returns:         autostart value or -1 on error
+ */
+PHP_FUNCTION(libvirt_network_get_autostart)
+{
+    php_libvirt_network *network = NULL;
+    zval *znetwork;
+    int autostart;
+
+    GET_NETWORK_FROM_ARGS("r", &znetwork);
+
+    if (virNetworkGetAutostart(network->network, &autostart) != 0)
+        RETURN_LONG(-1);
+
+    RETURN_LONG((long) autostart);
+}
+
+/*
+ * Function name:   libvirt_network_set_autostart
+ * Since version:   0.5.4
+ * Description:     Function is setting the autostart value for the network
+ * Arguments:       @res [resource]: libvirt network resource
+ *                  @flags [int]: flag to enable/disable autostart
+ * Returns:         TRUE on success, FALSE on error
+ */
+PHP_FUNCTION(libvirt_network_set_autostart)
+{
+    php_libvirt_network *network = NULL;
+    zval *znetwork;
+    zend_long autostart = 0;
+
+    GET_NETWORK_FROM_ARGS("rl", &znetwork, &autostart);
+
+    if (virNetworkSetAutostart(network->network, autostart) < 0)
+        RETURN_FALSE;
+
+    RETURN_TRUE;
 }
 
 /*

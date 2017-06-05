@@ -423,6 +423,8 @@ PHP_FUNCTION(libvirt_network_set_active);
 PHP_FUNCTION(libvirt_network_get_uuid_string);
 PHP_FUNCTION(libvirt_network_get_uuid);
 PHP_FUNCTION(libvirt_network_get_name);
+PHP_FUNCTION(libvirt_network_get_autostart);
+PHP_FUNCTION(libvirt_network_set_autostart);
 /* Nodedev functions */
 PHP_FUNCTION(libvirt_nodedev_get);
 PHP_FUNCTION(libvirt_nodedev_capabilities);
