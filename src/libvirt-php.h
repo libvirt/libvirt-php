@@ -178,6 +178,12 @@ typedef virt_resource *virt_resource_handle;
     _info.length = ZSTR_LEN(tmp_key_info); \
     } while(0)
 
+#define VIRT_ARRAY_INIT(_name) do { \
+    zval z##_name; \
+    _name = &z##_name; \
+    array_init(_name); \
+    } while(0)
+
 #else /* PHP_MAJOR_VERSION < 7 */
 typedef int strsize_t;
 typedef long zend_long;
@@ -237,6 +243,11 @@ typedef long virt_resource_handle;
 #define VIRT_HASH_CURRENT_KEY_INFO(_ht, _pos, _idx, _info) \
     do { \
     _info.type = zend_hash_get_current_key_ex(_ht, &_info.name, &_info.length, &_idx, 0, &_pos); \
+    } while(0)
+
+#define VIRT_ARRAY_INIT(_name) do {\
+    ALLOC_INIT_ZVAL(_name); \
+    array_init(_name); \
     } while(0)
 
 #endif /* PHP_MAJOR_VERSION < 7 */
