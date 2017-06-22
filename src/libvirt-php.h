@@ -558,10 +558,22 @@ PHP_FUNCTION(libvirt_nodedev_get);
 PHP_FUNCTION(libvirt_nodedev_capabilities);
 PHP_FUNCTION(libvirt_nodedev_get_xml_desc);
 PHP_FUNCTION(libvirt_nodedev_get_information);
+/* NWFilter functions */
+PHP_FUNCTION(libvirt_nwfilter_define_xml);
+PHP_FUNCTION(libvirt_nwfilter_undefine);
+PHP_FUNCTION(libvirt_nwfilter_get_xml_desc);
+PHP_FUNCTION(libvirt_nwfilter_get_name);
+PHP_FUNCTION(libvirt_nwfilter_get_uuid_string);
+PHP_FUNCTION(libvirt_nwfilter_get_uuid);
+PHP_FUNCTION(libvirt_nwfilter_lookup_by_name);
+PHP_FUNCTION(libvirt_nwfilter_lookup_by_uuid_string);
+PHP_FUNCTION(libvirt_nwfilter_lookup_by_uuid);
 /* Listing functions */
 PHP_FUNCTION(libvirt_list_nodedevs);
 PHP_FUNCTION(libvirt_list_all_networks);
 PHP_FUNCTION(libvirt_list_networks);
+PHP_FUNCTION(libvirt_list_all_nwfilters);
+PHP_FUNCTION(libvirt_list_nwfilters);
 PHP_FUNCTION(libvirt_list_domains);
 PHP_FUNCTION(libvirt_list_domain_snapshots);
 PHP_FUNCTION(libvirt_list_domain_resources);
