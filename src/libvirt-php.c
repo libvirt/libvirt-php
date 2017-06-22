@@ -1368,13 +1368,7 @@ int is_local_connection(virConnectPtr conn)
 }
 
 /* Destructor for connection resource */
-static void php_libvirt_connection_dtor(
-#if PHP_MAJOR_VERSION >= 7
-    zend_resource *rsrc
-#else
-    zend_rsrc_list_entry *rsrc
-#endif
-    TSRMLS_DC)
+static void php_libvirt_connection_dtor(virt_resource *rsrc TSRMLS_DC)
 {
     php_libvirt_connection *conn = (php_libvirt_connection *)rsrc->ptr;
     int rv = 0;
@@ -1398,13 +1392,7 @@ static void php_libvirt_connection_dtor(
 }
 
 /* Destructor for domain resource */
-static void php_libvirt_domain_dtor(
-#if PHP_MAJOR_VERSION >= 7
-    zend_resource *rsrc
-#else
-    zend_rsrc_list_entry *rsrc
-#endif
-    TSRMLS_DC)
+static void php_libvirt_domain_dtor(virt_resource *rsrc TSRMLS_DC)
 {
     php_libvirt_domain *domain = (php_libvirt_domain *)rsrc->ptr;
     int rv = 0;
@@ -1432,13 +1420,7 @@ static void php_libvirt_domain_dtor(
 }
 
 /* Destructor for stream resource */
-static void php_libvirt_stream_dtor(
-#if PHP_MAJOR_VERSION >= 7
-    zend_resource *rsrc
-#else
-    zend_rsrc_list_entry *rsrc
-#endif
-    TSRMLS_DC)
+static void php_libvirt_stream_dtor(virt_resource *rsrc TSRMLS_DC)
 {
     php_libvirt_stream *stream = (php_libvirt_stream *)rsrc->ptr;
     int rv = 0;
@@ -1465,13 +1447,7 @@ static void php_libvirt_stream_dtor(
 }
 
 /* Destructor for storagepool resource */
-static void php_libvirt_storagepool_dtor(
-#if PHP_MAJOR_VERSION >= 7
-    zend_resource *rsrc
-#else
-    zend_rsrc_list_entry *rsrc
-#endif
-    TSRMLS_DC)
+static void php_libvirt_storagepool_dtor(virt_resource *rsrc TSRMLS_DC)
 {
     php_libvirt_storagepool *pool = (php_libvirt_storagepool *)rsrc->ptr;
     int rv = 0;
@@ -1498,13 +1474,7 @@ static void php_libvirt_storagepool_dtor(
 }
 
 /* Destructor for volume resource */
-static void php_libvirt_volume_dtor(
-#if PHP_MAJOR_VERSION >= 7
-    zend_resource *rsrc
-#else
-    zend_rsrc_list_entry *rsrc
-#endif
-    TSRMLS_DC)
+static void php_libvirt_volume_dtor(virt_resource *rsrc TSRMLS_DC)
 {
     php_libvirt_volume *volume = (php_libvirt_volume *)rsrc->ptr;
     int rv = 0;
@@ -1531,13 +1501,7 @@ static void php_libvirt_volume_dtor(
 }
 
 /* Destructor for network resource */
-static void php_libvirt_network_dtor(
-#if PHP_MAJOR_VERSION >= 7
-    zend_resource *rsrc
-#else
-    zend_rsrc_list_entry *rsrc
-#endif
-    TSRMLS_DC)
+static void php_libvirt_network_dtor(virt_resource *rsrc TSRMLS_DC)
 {
     php_libvirt_network *network = (php_libvirt_network *)rsrc->ptr;
     int rv = 0;
@@ -1564,13 +1528,7 @@ static void php_libvirt_network_dtor(
 }
 
 /* Destructor for nodedev resource */
-static void php_libvirt_nodedev_dtor(
-#if PHP_MAJOR_VERSION >= 7
-    zend_resource *rsrc
-#else
-    zend_rsrc_list_entry *rsrc
-#endif
-    TSRMLS_DC)
+static void php_libvirt_nodedev_dtor(virt_resource *rsrc TSRMLS_DC)
 {
     php_libvirt_nodedev *nodedev = (php_libvirt_nodedev *)rsrc->ptr;
     int rv = 0;
@@ -1597,13 +1555,7 @@ static void php_libvirt_nodedev_dtor(
 }
 
 /* Destructor for snapshot resource */
-static void php_libvirt_snapshot_dtor(
-#if PHP_MAJOR_VERSION >= 7
-    zend_resource *rsrc
-#else
-    zend_rsrc_list_entry *rsrc
-#endif
-    TSRMLS_DC)
+static void php_libvirt_snapshot_dtor(virt_resource *rsrc TSRMLS_DC)
 {
     php_libvirt_snapshot *snapshot = (php_libvirt_snapshot *)rsrc->ptr;
     int rv = 0;
@@ -4198,11 +4150,8 @@ PHP_FUNCTION(libvirt_domain_lookup_by_name)
 
     DPRINTF("%s: domain name = '%s', returning %p\n", PHPFUNC, name, res_domain->domain);
     resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1 TSRMLS_CC);
-#if PHP_MAJOR_VERSION >= 7
-    ZVAL_RES(return_value, zend_register_resource(res_domain, le_libvirt_domain));
-#else
-    ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
-#endif
+
+    VIRT_REGISTER_RESOURCE(res_domain, le_libvirt_domain);
 }
 
 /*
@@ -4236,11 +4185,8 @@ PHP_FUNCTION(libvirt_domain_lookup_by_uuid)
 
     DPRINTF("%s: domain UUID = '%s', returning %p\n", PHPFUNC, uuid, res_domain->domain);
     resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1 TSRMLS_CC);
-#if PHP_MAJOR_VERSION >= 7
-    ZVAL_RES(return_value, zend_register_resource(res_domain, le_libvirt_domain));
-#else
-    ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
-#endif
+
+    VIRT_REGISTER_RESOURCE(res_domain, le_libvirt_domain);
 }
 
 /*
@@ -4304,11 +4250,8 @@ PHP_FUNCTION(libvirt_domain_lookup_by_uuid_string)
 
     DPRINTF("%s: domain UUID string = '%s', returning %p\n", PHPFUNC, uuid, res_domain->domain);
     resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1 TSRMLS_CC);
-#if PHP_MAJOR_VERSION >= 7
-    ZVAL_RES(return_value, zend_register_resource(res_domain, le_libvirt_domain));
-#else
-    ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
-#endif
+
+    VIRT_REGISTER_RESOURCE(res_domain, le_libvirt_domain);
 }
 
 /*
@@ -4342,11 +4285,8 @@ PHP_FUNCTION(libvirt_stream_create)
     res_stream->conn = conn;
 
     resource_change_counter(INT_RESOURCE_STREAM, conn->conn, res_stream->stream, 1 TSRMLS_CC);
-#if PHP_MAJOR_VERSION >= 7
-    ZVAL_RES(return_value, zend_register_resource(res_stream, le_libvirt_stream));
-#else
-    ZEND_REGISTER_RESOURCE(return_value, res_stream, le_libvirt_stream);
-#endif
+
+    VIRT_REGISTER_RESOURCE(res_stream, le_libvirt_stream);
 }
 
 /*
@@ -4533,11 +4473,8 @@ PHP_FUNCTION(libvirt_domain_lookup_by_id)
 
     DPRINTF("%s: domain id = '%d', returning %p\n", PHPFUNC, (int)id, res_domain->domain);
     resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1 TSRMLS_CC);
-#if PHP_MAJOR_VERSION >= 7
-    ZVAL_RES(return_value, zend_register_resource(res_domain, le_libvirt_domain));
-#else
-    ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
-#endif
+
+    VIRT_REGISTER_RESOURCE(res_domain, le_libvirt_domain);
 }
 
 /*
@@ -5644,11 +5581,8 @@ PHP_FUNCTION(libvirt_domain_new)
 
     DPRINTF("%s: returning %p\n", PHPFUNC, res_domain->domain);
     resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1 TSRMLS_CC);
-#if PHP_MAJOR_VERSION >= 7
-    ZVAL_RES(return_value, zend_register_resource(res_domain, le_libvirt_domain));
-#else
-    ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
-#endif
+
+    VIRT_REGISTER_RESOURCE(res_domain, le_libvirt_domain);
 }
 
 /*
@@ -5880,11 +5814,8 @@ PHP_FUNCTION(libvirt_domain_change_memory)
 
     DPRINTF("%s: returning %p\n", PHPFUNC, res_domain->domain);
     resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1 TSRMLS_CC);
-#if PHP_MAJOR_VERSION >= 7
-    ZVAL_RES(return_value, zend_register_resource(res_domain, le_libvirt_domain));
-#else
-    ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
-#endif
+
+    VIRT_REGISTER_RESOURCE(res_domain, le_libvirt_domain);
 }
 
 /*
@@ -5965,11 +5896,8 @@ PHP_FUNCTION(libvirt_domain_change_boot_devices)
 
     DPRINTF("%s: returning %p\n", PHPFUNC, res_domain->domain);
     resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1 TSRMLS_CC);
-#if PHP_MAJOR_VERSION >= 7
-    ZVAL_RES(return_value, zend_register_resource(res_domain, le_libvirt_domain));
-#else
-    ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
-#endif
+
+    VIRT_REGISTER_RESOURCE(res_domain, le_libvirt_domain);
 }
 
 /*
@@ -6618,11 +6546,8 @@ PHP_FUNCTION(libvirt_domain_define_xml)
 
     DPRINTF("%s: returning %p\n", PHPFUNC, res_domain->domain);
     resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1 TSRMLS_CC);
-#if PHP_MAJOR_VERSION >= 7
-    ZVAL_RES(return_value, zend_register_resource(res_domain, le_libvirt_domain));
-#else
-    ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
-#endif
+
+    VIRT_REGISTER_RESOURCE(res_domain, le_libvirt_domain);
 }
 
 /*
@@ -6656,11 +6581,8 @@ PHP_FUNCTION(libvirt_domain_create_xml)
 
     DPRINTF("%s: returning %p\n", PHPFUNC, res_domain->domain);
     resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1 TSRMLS_CC);
-#if PHP_MAJOR_VERSION >= 7
-    ZVAL_RES(return_value, zend_register_resource(res_domain, le_libvirt_domain));
-#else
-    ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
-#endif
+
+    VIRT_REGISTER_RESOURCE(res_domain, le_libvirt_domain);
 }
 
 /*
@@ -7447,11 +7369,8 @@ PHP_FUNCTION(libvirt_domain_migrate)
 
     DPRINTF("%s: returning %p\n", PHPFUNC, res_domain->domain);
     resource_change_counter(INT_RESOURCE_DOMAIN, dconn->conn, res_domain->domain, 1 TSRMLS_CC);
-#if PHP_MAJOR_VERSION >= 7
-    ZVAL_RES(return_value, zend_register_resource(res_domain, le_libvirt_domain));
-#else
-    ZEND_REGISTER_RESOURCE(return_value, res_domain, le_libvirt_domain);
-#endif
+
+    VIRT_REGISTER_RESOURCE(res_domain, le_libvirt_domain);
 }
 
 /*
@@ -7547,11 +7466,8 @@ PHP_FUNCTION(libvirt_domain_snapshot_lookup_by_name)
 
     DPRINTF("%s: returning %p\n", PHPFUNC, res_snapshot->snapshot);
     resource_change_counter(INT_RESOURCE_SNAPSHOT, domain->conn->conn, res_snapshot->snapshot, 1 TSRMLS_CC);
-#if PHP_MAJOR_VERSION >= 7
-    ZVAL_RES(return_value, zend_register_resource(res_snapshot, le_libvirt_snapshot));
-#else
-    ZEND_REGISTER_RESOURCE(return_value, res_snapshot, le_libvirt_snapshot);
-#endif
+
+    VIRT_REGISTER_RESOURCE(res_snapshot, le_libvirt_snapshot);
 }
 
 /*
@@ -7583,11 +7499,8 @@ PHP_FUNCTION(libvirt_domain_snapshot_create)
 
     DPRINTF("%s: returning %p\n", PHPFUNC, res_snapshot->snapshot);
     resource_change_counter(INT_RESOURCE_SNAPSHOT, domain->conn->conn, res_snapshot->snapshot, 1 TSRMLS_CC);
-#if PHP_MAJOR_VERSION >= 7
-    ZVAL_RES(return_value, zend_register_resource(res_snapshot, le_libvirt_snapshot));
-#else
-    ZEND_REGISTER_RESOURCE(return_value, res_snapshot, le_libvirt_snapshot);
-#endif
+
+    VIRT_REGISTER_RESOURCE(res_snapshot, le_libvirt_snapshot);
 }
 
 /*
@@ -7737,11 +7650,8 @@ PHP_FUNCTION(libvirt_storagepool_lookup_by_name)
 
     DPRINTF("%s: returning %p\n", PHPFUNC, res_pool->pool);
     resource_change_counter(INT_RESOURCE_STORAGEPOOL, conn->conn, res_pool->pool, 1 TSRMLS_CC);
-#if PHP_MAJOR_VERSION >= 7
-    ZVAL_RES(return_value, zend_register_resource(res_pool, le_libvirt_storagepool));
-#else
-    ZEND_REGISTER_RESOURCE(return_value, res_pool, le_libvirt_storagepool);
-#endif
+
+    VIRT_REGISTER_RESOURCE(res_pool, le_libvirt_storagepool);
 }
 
 /* Storagepool functions */
@@ -7773,11 +7683,8 @@ PHP_FUNCTION(libvirt_storagepool_lookup_by_volume)
 
     DPRINTF("%s: returning %p\n", PHPFUNC, res_pool->pool);
     resource_change_counter(INT_RESOURCE_STORAGEPOOL, res_pool->conn->conn, res_pool->pool, 1 TSRMLS_CC);
-#if PHP_MAJOR_VERSION >= 7
-    ZVAL_RES(return_value, zend_register_resource(res_pool, le_libvirt_storagepool));
-#else
-    ZEND_REGISTER_RESOURCE(return_value, res_pool, le_libvirt_storagepool);
-#endif
+
+    VIRT_REGISTER_RESOURCE(res_pool, le_libvirt_storagepool);
 }
 
 /*
@@ -7881,11 +7788,8 @@ PHP_FUNCTION(libvirt_storagevolume_lookup_by_name)
 
     DPRINTF("%s: returning %p\n", PHPFUNC, res_volume->volume);
     resource_change_counter(INT_RESOURCE_VOLUME, pool->conn->conn, res_volume->volume, 1 TSRMLS_CC);
-#if PHP_MAJOR_VERSION >= 7
-    ZVAL_RES(return_value, zend_register_resource(res_volume, le_libvirt_volume));
-#else
-    ZEND_REGISTER_RESOURCE(return_value, res_volume, le_libvirt_volume);
-#endif
+
+    VIRT_REGISTER_RESOURCE(res_volume, le_libvirt_volume);
 }
 
 /*
@@ -7922,11 +7826,8 @@ PHP_FUNCTION(libvirt_storagevolume_lookup_by_path)
 
     DPRINTF("%s: returning %p\n", PHPFUNC, res_volume->volume);
     resource_change_counter(INT_RESOURCE_VOLUME, conn->conn, res_volume->volume, 1 TSRMLS_CC);
-#if PHP_MAJOR_VERSION >= 7
-    ZVAL_RES(return_value, zend_register_resource(res_volume, le_libvirt_volume));
-#else
-    ZEND_REGISTER_RESOURCE(return_value, res_volume, le_libvirt_volume);
-#endif
+
+    VIRT_REGISTER_RESOURCE(res_volume, le_libvirt_volume);
 }
 
 /*
@@ -8079,11 +7980,8 @@ PHP_FUNCTION(libvirt_storagevolume_create_xml)
 
     DPRINTF("%s: returning %p\n", PHPFUNC, res_volume->volume);
     resource_change_counter(INT_RESOURCE_VOLUME, pool->conn->conn, res_volume->volume, 1 TSRMLS_CC);
-#if PHP_MAJOR_VERSION >= 7
-    ZVAL_RES(return_value, zend_register_resource(res_volume, le_libvirt_volume));
-#else
-    ZEND_REGISTER_RESOURCE(return_value, res_volume, le_libvirt_volume);
-#endif
+
+    VIRT_REGISTER_RESOURCE(res_volume, le_libvirt_volume);
 }
 
 /*
@@ -8132,11 +8030,8 @@ PHP_FUNCTION(libvirt_storagevolume_create_xml_from)
 
     DPRINTF("%s: returning %p\n", PHPFUNC, res_volume->volume);
     resource_change_counter(INT_RESOURCE_VOLUME, pool->conn->conn, res_volume->volume, 1 TSRMLS_CC);
-#if PHP_MAJOR_VERSION >= 7
-    ZVAL_RES(return_value, zend_register_resource(res_volume, le_libvirt_volume));
-#else
-    ZEND_REGISTER_RESOURCE(return_value, res_volume, le_libvirt_volume);
-#endif
+
+    VIRT_REGISTER_RESOURCE(res_volume, le_libvirt_volume);
 }
 
 /*
@@ -8361,11 +8256,8 @@ PHP_FUNCTION(libvirt_storagepool_lookup_by_uuid_string)
 
     DPRINTF("%s: returning %p\n", PHPFUNC, res_pool->pool);
     resource_change_counter(INT_RESOURCE_STORAGEPOOL, conn->conn, res_pool->pool, 1 TSRMLS_CC);
-#if PHP_MAJOR_VERSION >= 7
-    ZVAL_RES(return_value, zend_register_resource(res_pool, le_libvirt_storagepool));
-#else
-    ZEND_REGISTER_RESOURCE(return_value, res_pool, le_libvirt_storagepool);
-#endif
+
+    VIRT_REGISTER_RESOURCE(res_pool, le_libvirt_storagepool);
 }
 
 /*
@@ -8443,11 +8335,8 @@ PHP_FUNCTION(libvirt_storagepool_define_xml)
 
     DPRINTF("%s: returning %p\n", PHPFUNC, res_pool->pool);
     resource_change_counter(INT_RESOURCE_STORAGEPOOL, conn->conn, res_pool->pool, 1 TSRMLS_CC);
-#if PHP_MAJOR_VERSION >= 7
-    ZVAL_RES(return_value, zend_register_resource(res_pool, le_libvirt_storagepool));
-#else
-    ZEND_REGISTER_RESOURCE(return_value, res_pool, le_libvirt_storagepool);
-#endif
+
+    VIRT_REGISTER_RESOURCE(res_pool, le_libvirt_storagepool);
 }
 
 /*
@@ -8883,11 +8772,6 @@ PHP_FUNCTION(libvirt_list_domain_resources)
 {
     php_libvirt_connection *conn = NULL;
     zval *zconn;
-#if PHP_MAJOR_VERSION >= 7
-    zval zdomain;
-#else
-    zval *zdomain;
-#endif
     int count = -1;
     int expectedcount = -1;
     int *ids;
@@ -8917,15 +8801,8 @@ PHP_FUNCTION(libvirt_list_domain_resources)
 
             res_domain->conn = conn;
 
+            VIRT_REGISTER_LIST_RESOURCE(domain);
             resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1 TSRMLS_CC);
-#if PHP_MAJOR_VERSION >= 7
-            ZVAL_RES(&zdomain, zend_register_resource(res_domain, le_libvirt_domain));
-            add_next_index_zval(return_value,  &zdomain);
-#else
-            ALLOC_INIT_ZVAL(zdomain);
-            ZEND_REGISTER_RESOURCE(zdomain, res_domain, le_libvirt_domain);
-            add_next_index_zval(return_value,  zdomain);
-#endif
         }
     }
     efree(ids);
@@ -8947,14 +8824,7 @@ PHP_FUNCTION(libvirt_list_domain_resources)
 
             res_domain->conn = conn;
 
-#if PHP_MAJOR_VERSION >= 7
-            ZVAL_RES(&zdomain, zend_register_resource(res_domain, le_libvirt_domain));
-            add_next_index_zval(return_value,  &zdomain);
-#else
-            ALLOC_INIT_ZVAL(zdomain);
-            ZEND_REGISTER_RESOURCE(zdomain, res_domain, le_libvirt_domain);
-            add_next_index_zval(return_value,  zdomain);
-#endif
+            VIRT_REGISTER_LIST_RESOURCE(domain);
             resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1 TSRMLS_CC);
         }
         free(names[i]);
@@ -9091,11 +8961,6 @@ PHP_FUNCTION(libvirt_list_all_networks)
 {
     php_libvirt_connection *conn = NULL;
     zval *zconn;
-#if PHP_MAJOR_VERSION >= 7
-    zval znetwork;
-#else
-    zval *znetwork;
-#endif
     zend_long flags = VIR_CONNECT_LIST_NETWORKS_ACTIVE |
                       VIR_CONNECT_LIST_NETWORKS_INACTIVE;
     int count = -1;
@@ -9119,17 +8984,9 @@ PHP_FUNCTION(libvirt_list_all_networks)
         res_network->network = network;
         res_network->conn = conn;
 
+        VIRT_REGISTER_LIST_RESOURCE(network);
         resource_change_counter(INT_RESOURCE_NETWORK, conn->conn,
                                 res_network->network, 1 TSRMLS_CC);
-#if PHP_MAJOR_VERSION >= 7
-        ZVAL_RES(&znetwork, zend_register_resource(res_network,
-                                                   le_libvirt_network));
-        add_next_index_zval(return_value, &znetwork);
-#else
-        ALLOC_INIT_ZVAL(znetwork);
-        ZEND_REGISTER_RESOURCE(znetwork, res_network, le_libvirt_network);
-        add_next_index_zval(return_value, znetwork);
-#endif
     }
 }
 
@@ -9267,11 +9124,8 @@ PHP_FUNCTION(libvirt_nodedev_get)
 
     DPRINTF("%s: returning %p\n", PHPFUNC, res_dev->device);
     resource_change_counter(INT_RESOURCE_NODEDEV, conn->conn, res_dev->device, 1 TSRMLS_CC);
-#if PHP_MAJOR_VERSION >= 7
-    ZVAL_RES(return_value, zend_register_resource(res_dev, le_libvirt_nodedev));
-#else
-    ZEND_REGISTER_RESOURCE(return_value, res_dev, le_libvirt_nodedev);
-#endif
+
+    VIRT_REGISTER_RESOURCE(res_dev, le_libvirt_nodedev);
 }
 
 /*
@@ -9534,11 +9388,8 @@ PHP_FUNCTION(libvirt_network_define_xml)
 
     DPRINTF("%s: returning %p\n", PHPFUNC, res_net->network);
     resource_change_counter(INT_RESOURCE_NETWORK, conn->conn, res_net->network, 1 TSRMLS_CC);
-#if PHP_MAJOR_VERSION >= 7
-    ZVAL_RES(return_value, zend_register_resource(res_net, le_libvirt_network));
-#else
-    ZEND_REGISTER_RESOURCE(return_value, res_net, le_libvirt_network);
-#endif
+
+    VIRT_REGISTER_RESOURCE(res_net, le_libvirt_network);
 }
 
 /*
@@ -9591,11 +9442,8 @@ PHP_FUNCTION(libvirt_network_get)
 
     DPRINTF("%s: returning %p\n", PHPFUNC, res_net->network);
     resource_change_counter(INT_RESOURCE_NETWORK, conn->conn, res_net->network, 1 TSRMLS_CC);
-#if PHP_MAJOR_VERSION >= 7
-    ZVAL_RES(return_value, zend_register_resource(res_net, le_libvirt_network));
-#else
-    ZEND_REGISTER_RESOURCE(return_value, res_net, le_libvirt_network);
-#endif
+
+    VIRT_REGISTER_RESOURCE(res_net, le_libvirt_network);
 }
 
 /*
