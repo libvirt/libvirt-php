@@ -54,6 +54,7 @@ int le_libvirt_network;
 int le_libvirt_nodedev;
 int le_libvirt_stream;
 int le_libvirt_snapshot;
+int le_libvirt_nwfilter;
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_libvirt_connect, 0, 0, 0)
 ZEND_ARG_INFO(0, url)
@@ -823,6 +824,8 @@ translate_counter_type(int type)
         return "storage volume";
     case INT_RESOURCE_SNAPSHOT:
         return "snapshot";
+    case INT_RESOURCE_NWFILTER:
+        return "nwfilter";
     }
 
     return "unknown";
@@ -1226,6 +1229,17 @@ void free_resource(int type, void *mem TSRMLS_DC)
             resource_change_counter(INT_RESOURCE_SNAPSHOT, NULL, (virDomainSnapshotPtr)mem, 0 TSRMLS_CC);
         }
     }
+
+    if (type == INT_RESOURCE_NWFILTER) {
+        rv = virNWFilterFree((virNWFilterPtr) mem);
+        if (rv != 0) {
+            DPRINTF("%s: virNWFilterFree(%p) returned %d (%s)\n", __FUNCTION__, (virNWFilterPtr) mem, rv, LIBVIRT_G(last_error));
+            php_error_docref(NULL TSRMLS_CC, E_WARNING, "virDomainSnapshotFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
+        } else {
+            DPRINTF("%s: virNWFilterFree(%p) completed successfully\n", __FUNCTION__, (virNWFilterPtr) mem);
+            resource_change_counter(INT_RESOURCE_NWFILTER, NULL, (virNWFilterPtr) mem, 0 TSRMLS_CC);
+        }
+    }
 }
 
 /*
@@ -1570,7 +1584,7 @@ static void php_libvirt_snapshot_dtor(virt_resource *rsrc TSRMLS_DC)
             rv = virDomainSnapshotFree(snapshot->snapshot);
             if (rv != 0) {
                 DPRINTF("%s: virDomainSnapshotFree(%p) returned %d\n", __FUNCTION__, snapshot->snapshot, rv);
-                php_error_docref(NULL TSRMLS_CC, E_WARNING, "virStorageVolFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
+                php_error_docref(NULL TSRMLS_CC, E_WARNING, "virDomainSnapshotFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
             } else {
                 DPRINTF("%s: virDomainSnapshotFree(%p) completed successfully\n", __FUNCTION__, snapshot->snapshot);
                 resource_change_counter(INT_RESOURCE_SNAPSHOT, snapshot->domain->conn->conn, snapshot->snapshot, 0 TSRMLS_CC);
@@ -1578,6 +1592,34 @@ static void php_libvirt_snapshot_dtor(virt_resource *rsrc TSRMLS_DC)
             snapshot->snapshot = NULL;
         }
         efree(snapshot);
+    }
+}
+
+/* Destructor for nwfilter resource */
+static void php_libvirt_nwfilter_dtor(virt_resource *rsrc TSRMLS_DC)
+{
+    php_libvirt_nwfilter *nwfilter = (php_libvirt_nwfilter *) rsrc->ptr;
+    int rv = 0;
+
+    if (nwfilter != NULL) {
+        if (nwfilter->nwfilter != NULL) {
+            if (!check_resource_allocation(NULL, INT_RESOURCE_NWFILTER, nwfilter->nwfilter TSRMLS_CC)) {
+                nwfilter->nwfilter = NULL;
+                efree(nwfilter);
+
+                return;
+            }
+            rv = virNWFilterFree(nwfilter->nwfilter);
+            if (rv != 0) {
+                DPRINTF("%s: virNWFilterFree(%p) returned %d\n", __FUNCTION__, nwfilter->nwfilter, rv);
+                php_error_docref(NULL TSRMLS_CC, E_WARNING, "virNWFilterFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
+            } else {
+                DPRINTF("%s: virNWFilterFee(%p) completed successfully\n", __FUNCTION__, nwfilter->nwfilter);
+                resource_change_counter(INT_RESOURCE_NWFILTER, nwfilter->conn->conn, nwfilter->nwfilter, 0 TSRMLS_CC);
+            }
+            nwfilter->nwfilter = NULL;
+        }
+        efree(nwfilter);
     }
 }
 
@@ -1593,6 +1635,7 @@ PHP_MINIT_FUNCTION(libvirt)
     le_libvirt_network = zend_register_list_destructors_ex(php_libvirt_network_dtor, NULL, PHP_LIBVIRT_NETWORK_RES_NAME, module_number);
     le_libvirt_nodedev = zend_register_list_destructors_ex(php_libvirt_nodedev_dtor, NULL, PHP_LIBVIRT_NODEDEV_RES_NAME, module_number);
     le_libvirt_snapshot = zend_register_list_destructors_ex(php_libvirt_snapshot_dtor, NULL, PHP_LIBVIRT_SNAPSHOT_RES_NAME, module_number);
+    le_libvirt_nwfilter = zend_register_list_destructors_ex(php_libvirt_nwfilter_dtor, NULL, PHP_LIBVIRT_NWFILTER_RES_NAME, module_number);
 
     ZEND_INIT_MODULE_GLOBALS(libvirt, php_libvirt_init_globals, NULL);
 
@@ -1994,7 +2037,21 @@ PHP_MSHUTDOWN_FUNCTION(libvirt)
         VIRT_FETCH_RESOURCE(snapshot, php_libvirt_snapshot*, &zsnapshot, PHP_LIBVIRT_SNAPSHOT_RES_NAME, le_libvirt_snapshot);\
         if ((snapshot == NULL) || (snapshot->snapshot == NULL))                                 \
             RETURN_FALSE;                                                                       \
-} while (0)                                                                                     \
+    } while (0)                                                                                 \
+
+#define GET_NWFILTER_FROM_ARGS(args, ...)                                                       \
+    do {                                                                                        \
+        reset_error(TSRMLS_C);                                                                  \
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, args, __VA_ARGS__) == FAILURE) {   \
+            set_error("Invalid arguments" TSRMLS_CC);                                           \
+            RETURN_FALSE;                                                                       \
+        }                                                                                       \
+                                                                                                \
+        VIRT_FETCH_RESOURCE(nwfilter, php_libvirt_nwfilter *, &znwfilter,                       \
+                            PHP_LIBVIRT_NWFILTER_RES_NAME, le_libvirt_nwfilter);                \
+        if ((nwfilter == NULL) || (nwfilter->nwfilter == NULL))                                 \
+            RETURN_FALSE;                                                                       \
+    } while (0)                                                                                 \
 
 #define LONGLONG_INIT \
     char tmpnumber[64]

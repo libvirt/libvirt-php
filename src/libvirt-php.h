@@ -298,6 +298,7 @@ typedef struct _resource_info {
 #define INT_RESOURCE_VOLUME         0x20
 #define INT_RESOURCE_SNAPSHOT       0x40
 #define INT_RESOURCE_STREAM         0x50
+#define INT_RESOURCE_NWFILTER       0x60
 
 typedef struct tVMDisk {
     char *path;
@@ -355,6 +356,11 @@ typedef struct _php_libvirt_volume {
     php_libvirt_connection* conn;
 } php_libvirt_volume;
 
+typedef struct _php_libvirt_nwfilter {
+    virNWFilterPtr nwfilter;
+    php_libvirt_connection* conn;
+} php_libvirt_nwfilter;
+
 typedef struct _php_libvirt_cred_value {
     int count;
     int type;
@@ -382,6 +388,7 @@ char **get_array_from_xpath(char *xml, char *xpath, int *num);
 #define PHP_LIBVIRT_NETWORK_RES_NAME "Libvirt virtual network"
 #define PHP_LIBVIRT_NODEDEV_RES_NAME "Libvirt node device"
 #define PHP_LIBVIRT_SNAPSHOT_RES_NAME "Libvirt domain snapshot"
+#define PHP_LIBVIRT_NWFILTER_RES_NAME "Libvirt nwfilter"
 
 PHP_MINIT_FUNCTION(libvirt);
 PHP_MSHUTDOWN_FUNCTION(libvirt);
