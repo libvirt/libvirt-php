@@ -122,6 +122,7 @@ typedef uint64_t arch_uint;
 #if PHP_MAJOR_VERSION >= 7
 typedef size_t strsize_t;
 typedef zend_resource virt_resource;
+typedef virt_resource *virt_resource_handle;
 
 #define VIRT_RETURN_RESOURCE(_resource) \
     RETVAL_RES(_resource)
@@ -134,6 +135,9 @@ typedef zend_resource virt_resource;
     ZVAL_RES(&zret, zend_register_resource(res_##_name, le_libvirt_##_name)); \
     add_next_index_zval(return_value, &zret); \
     } while(0)
+
+#define VIRT_RESOURCE_HANDLE(_resource) \
+    Z_RES_P(_resource)
 
 #define VIRT_FETCH_RESOURCE(_state, _type, _zval, _name, _le) \
     if ((_state = (_type)zend_fetch_resource(Z_RES_P(*_zval), _name, _le)) == NULL) { \
@@ -179,6 +183,7 @@ typedef int strsize_t;
 typedef long zend_long;
 typedef unsigned long zend_ulong;
 typedef zend_rsrc_list_entry virt_resource;
+typedef long virt_resource_handle;
 
 #define VIRT_RETURN_RESOURCE(_resource) \
     RETVAL_RESOURCE((long) _resource)
@@ -192,6 +197,9 @@ typedef zend_rsrc_list_entry virt_resource;
     ZEND_REGISTER_RESOURCE(zret, res_##_name, le_libvirt_##_name); \
     add_next_index_zval(return_value, zret); \
     } while(0)
+
+#define VIRT_RESOURCE_HANDLE(_resource) \
+    Z_LVAL_P(_resource)
 
 #define VIRT_FETCH_RESOURCE(_state, _type, _zval, _name, _le) \
     ZEND_FETCH_RESOURCE(_state, _type, _zval, -1, _name, _le);
@@ -298,11 +306,7 @@ typedef struct tVMNetwork {
 /* Libvirt-php types */
 typedef struct _php_libvirt_connection {
     virConnectPtr conn;
-#if PHP_MAJOR_VERSION >= 7
-    zend_resource *resource_id;
-#else
-    long resource_id;
-#endif
+    virt_resource_handle resource;
 } php_libvirt_connection;
 
 typedef struct _php_libvirt_stream {

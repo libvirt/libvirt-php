@@ -2177,13 +2177,8 @@ PHP_FUNCTION(libvirt_connect)
     resource_change_counter(INT_RESOURCE_CONNECTION, NULL, conn->conn, 1 TSRMLS_CC);
     DPRINTF("%s: Connection to %s established, returning %p\n", PHPFUNC, url, conn->conn);
 
-#if PHP_MAJOR_VERSION >= 7
-    conn->resource_id = zend_register_resource(conn, le_libvirt_connection);
-    ZVAL_RES(return_value, conn->resource_id);
-#else
-    ZEND_REGISTER_RESOURCE(return_value, conn, le_libvirt_connection);
-    conn->resource_id = Z_LVAL_P(return_value);
-#endif
+    VIRT_REGISTER_RESOURCE(conn, le_libvirt_connection);
+    conn->resource = VIRT_RESOURCE_HANDLE(return_value);
 }
 
 /*
@@ -7216,11 +7211,10 @@ PHP_FUNCTION(libvirt_domain_get_connect)
     conn = domain->conn;
     if (conn->conn == NULL)
         RETURN_FALSE;
-#if PHP_MAJOR_VERSION >= 7
-    ZVAL_RES(return_value, conn->resource_id);
-#else
-    RETURN_RESOURCE(conn->resource_id);
-#endif
+
+    VIRT_RETURN_RESOURCE(conn->resource);
+    /* since we're returning already registered resource, bump refcount */
+    Z_ADDREF_P(return_value);
 }
 
 /*
