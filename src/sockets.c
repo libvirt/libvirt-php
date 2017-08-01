@@ -26,7 +26,7 @@
 DEBUG_INIT("sockets");
 
 /* Function macro */
-#define PHPFUNC __FUNCTION__
+#define SOCKETFUNC __FUNCTION__
 
 /*
  * Private function name:  connect_socket
@@ -59,7 +59,7 @@ int connect_socket(char *server, char *port, int keepalive, int nodelay, int all
             server = strdup("localhost");
     }
 
-    DPRINTF("%s: Connecting to %s:%s\n", PHPFUNC, server, port);
+    DPRINTF("%s: Connecting to %s:%s\n", SOCKETFUNC, server, port);
 
     s = getaddrinfo(server, port, &hints, &result);
     if (s != 0)
@@ -80,18 +80,18 @@ int connect_socket(char *server, char *port, int keepalive, int nodelay, int all
         return -errno;
 
     freeaddrinfo(result);
-    DPRINTF("%s: Socket descriptor #%d opened\n", PHPFUNC, sfd);
+    DPRINTF("%s: Socket descriptor #%d opened\n", SOCKETFUNC, sfd);
 
     if (keepalive) {
         int on = 1;
         if (setsockopt(sfd, SOL_SOCKET, SO_KEEPALIVE, &on, sizeof(on)) < 0) {
             int err = errno;
             close(sfd);
-            DPRINTF("%s: Cannot set keep alive option on socket\n", PHPFUNC);
+            DPRINTF("%s: Cannot set keep alive option on socket\n", SOCKETFUNC);
             return -err;
         }
 
-        DPRINTF("%s: Socket #%d set as keepalive socket\n", PHPFUNC, sfd);
+        DPRINTF("%s: Socket #%d set as keepalive socket\n", SOCKETFUNC, sfd);
     }
 
     if (nodelay) {
@@ -99,11 +99,11 @@ int connect_socket(char *server, char *port, int keepalive, int nodelay, int all
         if (setsockopt(sfd, IPPROTO_TCP, TCP_NODELAY, &on, sizeof(on)) < 0) {
             int err = errno;
             close(sfd);
-            DPRINTF("%s: Cannot set no delay option on socket\n", PHPFUNC);
+            DPRINTF("%s: Cannot set no delay option on socket\n", SOCKETFUNC);
             return -err;
         }
 
-        DPRINTF("%s: Socket #%d set as no delay socket\n", PHPFUNC, sfd);
+        DPRINTF("%s: Socket #%d set as no delay socket\n", SOCKETFUNC, sfd);
     }
 
     return sfd;
@@ -130,7 +130,7 @@ int socket_has_data(int sfd, long maxtime, int ignoremsg)
     }
 
     if (!ignoremsg)
-        DPRINTF("%s: Checking data on socket %d, timeout = { %ld, %ld }\n", PHPFUNC, sfd,
+        DPRINTF("%s: Checking data on socket %d, timeout = { %ld, %ld }\n", SOCKETFUNC, sfd,
                 (long)timeout.tv_sec, (long)timeout.tv_usec);
 
     FD_ZERO(&fds);
@@ -141,12 +141,12 @@ int socket_has_data(int sfd, long maxtime, int ignoremsg)
         rc = select( sizeof(fds), &fds, NULL, NULL, NULL);
 
     if (rc==-1) {
-        DPRINTF("%s: Select with error %d (%s)\n", PHPFUNC, errno, strerror(-errno));
+        DPRINTF("%s: Select with error %d (%s)\n", SOCKETFUNC, errno, strerror(-errno));
         return -errno;
     }
 
     if (!ignoremsg)
-        DPRINTF("%s: Select returned %d\n", PHPFUNC, rc);
+        DPRINTF("%s: Select returned %d\n", SOCKETFUNC, rc);
 
     return (rc == 1);
 }
@@ -165,19 +165,19 @@ void socket_read(int sfd, long length)
     unsigned char bigbuf[1048576];
 
     if (socket_has_data(sfd, 50000, 0) != 1) {
-        DPRINTF("%s: No data appears to be available\n", PHPFUNC);
+        DPRINTF("%s: No data appears to be available\n", SOCKETFUNC);
         return;
     }
 
     if (length == -1) {
-        DPRINTF("%s: Reading all the data from socket\n", PHPFUNC);
+        DPRINTF("%s: Reading all the data from socket\n", SOCKETFUNC);
         while (socket_has_data(sfd, 50000, 1) == 1)
             while ((len = read(sfd, bigbuf, sizeof(bigbuf))) == sizeof(bigbuf)) ;
-        DPRINTF("%s: Read done ...\n", PHPFUNC);
+        DPRINTF("%s: Read done ...\n", SOCKETFUNC);
         return;
     }
 
-    DPRINTF("%s: Reading %ld bytes\n", PHPFUNC, length);
+    DPRINTF("%s: Reading %ld bytes\n", SOCKETFUNC, length);
     while (length > 0) {
         len = read(sfd, bigbuf, sizeof(bigbuf));
 
@@ -188,9 +188,9 @@ void socket_read(int sfd, long length)
 
     if (length &&
         read(sfd, bigbuf, length) != length)
-        DPRINTF("%s: not all byes read\n", PHPFUNC);
+        DPRINTF("%s: not all byes read\n", SOCKETFUNC);
     else
-        DPRINTF("%s: All bytes read\n", PHPFUNC);
+        DPRINTF("%s: All bytes read\n", SOCKETFUNC);
 }
 
 /*
@@ -218,11 +218,11 @@ int socket_read_and_save(int sfd, char *fn, long length)
         return -EPERM;
 
     if (socket_has_data(sfd, 50000, 0) != 1) {
-        DPRINTF("%s: No data appears to be available\n", PHPFUNC);
+        DPRINTF("%s: No data appears to be available\n", SOCKETFUNC);
         return -ENOENT;
     }
 
-    DPRINTF("%s: Reading %ld bytes\n", PHPFUNC, length);
+    DPRINTF("%s: Reading %ld bytes\n", SOCKETFUNC, length);
     while (length > 0) {
         len = read(sfd, bigbuf, sizeof(bigbuf));
 
@@ -230,7 +230,7 @@ int socket_read_and_save(int sfd, char *fn, long length)
             SWAP2_BYTES_ENDIAN(1, bigbuf[i+1], bigbuf[i+2]);
 
         if (write(fd, bigbuf, len) != len)
-            DPRINTF("%s: unable to write to %d", PHPFUNC, fd);
+            DPRINTF("%s: unable to write to %d", SOCKETFUNC, fd);
 
         length -= len;
         if (length < 0)
@@ -244,14 +244,14 @@ int socket_read_and_save(int sfd, char *fn, long length)
             SWAP2_BYTES_ENDIAN(1, bigbuf[i+1], bigbuf[i+2]);
 
         if (write(fd, bigbuf, len) != len)
-            DPRINTF("%s: unable to write to %d", PHPFUNC, fd);
+            DPRINTF("%s: unable to write to %d", SOCKETFUNC, fd);
     }
 
     if (ftruncate(fd, orig_len) < 0)
-        DPRINTF("%s: Unable to truncate %d", PHPFUNC, fd);
+        DPRINTF("%s: Unable to truncate %d", SOCKETFUNC, fd);
 
     close(fd);
 
-    DPRINTF("%s: All bytes read\n", PHPFUNC);
+    DPRINTF("%s: All bytes read\n", SOCKETFUNC);
     return 0;
 }
