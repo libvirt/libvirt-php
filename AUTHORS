@@ -3,28 +3,30 @@ Libvirt-php extension
 
 Libvirt-php extension is currently maintained and developed by:
 
-	Michal Novotny <minovotn@redhat.com> (or <mignov@gmail.com>)
+    Michal Prívozník <mprivozn@redhat.com>
 
 The original project, called php-libvirt, has been originally developed and maintained by:
 
-	Radek Hladik <r.hladik@cybersales.cz>
+    Radek Hladik <r.hladik@cybersales.cz>
 
 who is still contributing to the project with his patches.
 
 There are also other people that have contributed to the project:
 
-	David King <e-mail@unknown.tld>
-	Jan-Paul van Burgsteden <e-mail@unknown.tld>
-	Lyre <liyong@skybility.com> (or <4179e1@gmail.com>)
-	Daniel P. Berrange <berrange@redhat.com>
-	Tiziano Mueller <dev-zero@gentoo.org>
-	Yukihiro Kawada <warp.kawada@gmail.com>
-        Remi Collet <Remi@famillecollet.com>
-        Ivo van den Abeelen <ivovandenabeelen@gmail.com>
-        Tiziano Müller <dev-zero@gentoo.org>
-        Pavel Odintsov <pavel.odintsov@gmail.com>
-        Tugdual Saunier <tugdual.saunier@gmail.com>
-	Stefan Kuhn <stefan.kuhn@foss-group.ch>
+    David King <e-mail@unknown.tld>
+    Jan-Paul van Burgsteden <e-mail@unknown.tld>
+    Lyre <liyong@skybility.com> (or <4179e1@gmail.com>)
+    Daniel P. Berrange <berrange@redhat.com>
+    Tiziano Mueller <dev-zero@gentoo.org>
+    Yukihiro Kawada <warp.kawada@gmail.com>
+    Remi Collet <Remi@famillecollet.com>
+    Ivo van den Abeelen <ivovandenabeelen@gmail.com>
+    Tiziano Müller <dev-zero@gentoo.org>
+    Pavel Odintsov <pavel.odintsov@gmail.com>
+    Tugdual Saunier <tugdual.saunier@gmail.com>
+    Stefan Kuhn <stefan.kuhn@foss-group.ch>
+    Dawid Zamirski <dzrudy@gmail.com>
+    Michal Novotny <minovotn@redhat.com>
 
 Thanks goes to all of them with big thanks to Tugdual Saunier
 for various fixes and OS-X compilation support.

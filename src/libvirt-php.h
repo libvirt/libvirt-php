@@ -2,16 +2,6 @@
  * libvirt-php.h: libvirt PHP bindings header file
  *
  * See COPYING for the license of this software
- *
- * Written by:
- *   Radek Hladik <r.hladik@cybersales.cz>
- *   Michal Novotny <minovotn@redhat.com>
- *   David King
- *   Jan-Paul van Burgsteden
- *   Lyre <liyong@skybility.com> (or <4179e1@gmail.com>)
- *   Daniel P. Berrange <berrange@redhat.com>
- *   Tiziano Mueller <dev-zero@gentoo.org>
- *   Yukihiro Kawada <warp.kawada@gmail.com>
  */
 
 #ifndef PHP_LIBVIRT_H

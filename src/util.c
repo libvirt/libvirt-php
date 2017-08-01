@@ -2,9 +2,6 @@
  * util.c: common, generic utility functions
  *
  * See COPYING for the license of this software
- *
- * Written by:
- *      Michal Privoznik <mprivozn@redhat.com>
  */
 
 #include <config.h>

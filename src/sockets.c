@@ -2,9 +2,6 @@
  * sockets.c: Socket functions for libvirt-php
  *
  * See COPYING for the license of this software
- *
- * Written by:
- *   Michal Novotny <minovotn@redhat.com>
  */
 
 #include <config.h>

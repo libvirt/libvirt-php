@@ -2,9 +2,6 @@
  * util.h: common, generic utility functions
  *
  * See COPYING for the license of this software
- *
- * Written by:
- *      Michal Privoznik <mprivozn@redhat.com>
  */
 
 #ifndef __UTIL_H__

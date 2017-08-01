@@ -2,10 +2,6 @@
  * sockets.h: Socket functions for libvirt-php
  *
  * See COPYING for the license of this software
- *
- * Written by:
- *   Michal Novotny <minovotn@redhat.com>
- *   Michal Privoznik <mprivozn@redhat.com>
  */
 
 #ifndef __SOCKETS_H__

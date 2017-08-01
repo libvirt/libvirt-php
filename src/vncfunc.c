@@ -2,9 +2,6 @@
  * vncfunc.c: VNC Client functions to be used for the graphical VNC console of libvirt-php
  *
  * See COPYING for the license of this software
- *
- * Written by:
- *   Michal Novotny <minovotn@redhat.com>
  */
 
 #include <config.h>
