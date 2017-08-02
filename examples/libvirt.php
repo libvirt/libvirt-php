@@ -1180,5 +1180,19 @@ class Libvirt {
         $dom = $this->get_domain_object($domain);
         return libvirt_domain_is_active($dom);
     }
+
+    function get_nwfilters() {
+        $tmp = libvirt_list_all_nwfilters($this->conn);
+        if ($tmp)
+            sort($tmp, SORT_NATURAL);
+        return ($tmp) ? $tmp : $this->_set_last_error();
+    }
+
+    function get_nwfilter_xml($uuid) {
+        $nwfilter = libvirt_nwfilter_lookup_by_uuid_string($this->conn, $uuid);
+        if (!$nwfilter)
+            return $this->_set_last_error();
+        return libvirt_nwfilter_get_xml_desc($nwfilter);
+    }
 }
 ?>

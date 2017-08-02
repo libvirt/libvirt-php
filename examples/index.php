@@ -623,6 +623,36 @@
         if ( $dom['state'] == 1 ) {
             echo "<h3>Screenshot</h3><img src=\"?action=get-screenshot&uuid={$_GET['uuid']}&width=640\">";
         }
+    } else if ($action == 'nwfilters') {
+        echo "<h2>Network filters</h2>";
+        echo "Here you can see all the network filters defined";
+
+        if (array_key_exists('subaction', $_GET)) {
+            $uuid = $_GET['uuid'];
+            $name = $_GET['name'];
+            if ($_GET['subaction'] == 'dumpxml')
+                $ret = "XML dump of nwfilter <i>$name</i>:<br/><br/>" . htmlentities($lv->get_nwfilter_xml($uuid));
+        }
+
+        $tmp = $lv->get_nwfilters();
+        echo "<table>" .
+             "<tr>" .
+             "<th>Name</th>" .
+             "<th>UUID</th>" .
+             "<th>Action</th>" .
+             "</tr>\n";
+        for ($i = 0; $i < sizeof($tmp); $i++) {
+            $name = libvirt_nwfilter_get_name($tmp[$i]);
+            $uuid = libvirt_nwfilter_get_uuid_string($tmp[$i]);
+            echo "<tr>" .
+                 "<td>" . $name . "</td>" .
+                 "<td>" . $uuid . "</td>" .
+                 "<td><a href=\"?action=$action&amp;subaction=dumpxml&amp;name=$name&amp;uuid={$uuid}\">Dump configuration</a></td>" .
+                 "</tr>\n";
+        }
+        echo "</table>\n";
+        if ($ret)
+            echo "<pre>$ret</pre>";
     } else {
 		echo "Hypervisor URI: <i>$uri</i>, hostname: <i>$hn</i><br/>" .
 			 "Statistics: {$tmp['total']} domains, {$tmp['active']} active, {$tmp['inactive']} inactive<br/><br/>";
