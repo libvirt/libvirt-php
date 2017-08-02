@@ -85,6 +85,9 @@ rm -rf %{buildroot}
 %{_datadir}/doc/%{name}-%{version}/html
 
 %changelog
+* XXX XXX 00 2017 Michal Privoznik <mprivozn@redhat.com> - 0.5.5
+- XXX
+
 * Wed Aug 2 2017 Michal Privoznik <mprivozn@redhat.com> - 0.5.4
 - Added API bindings for getting/setting network autostart
 - Implement NWFilter API bindings
