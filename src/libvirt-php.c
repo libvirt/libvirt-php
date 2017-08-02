@@ -3164,7 +3164,7 @@ char *get_string_from_xpath(char *xml, char *xpath, zval **val, int *retVal)
     if (val != NULL) {
         ret = 0;
         for (i = 0; i < nodeset->nodeNr; i++) {
-            if ((value = xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode, 1))) {
+            if ((value = (char *) xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode, 1))) {
                 snprintf(key, sizeof(key), "%d", i);
                 VIRT_ADD_ASSOC_STRING(*val, key, value);
                 free(value);
@@ -3174,7 +3174,7 @@ char *get_string_from_xpath(char *xml, char *xpath, zval **val, int *retVal)
         }
         add_assoc_long(*val, "num", (long)ret);
     } else {
-        value = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode, 1);
+        value = (char *) xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode, 1);
     }
 
  cleanup:
@@ -3257,7 +3257,7 @@ char **get_array_from_xpath(char *xml, char *xpath, int *num)
     ret = 0;
     val = (char **)malloc(nodeset->nodeNr  * sizeof(char *));
     for (i = 0; i < nodeset->nodeNr; i++) {
-        if ((value = xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode, 1)))
+        if ((value = (char *) xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode, 1)))
             val[ret++] = value;
     }
 
