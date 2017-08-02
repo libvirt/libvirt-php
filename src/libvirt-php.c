@@ -5750,7 +5750,7 @@ PHP_FUNCTION(libvirt_domain_change_memory)
     char *xml;
     char *new_xml = NULL;
     int new_len;
-    char *newXml = NULL;
+    char newXml[512] = { 0 };
     zend_long xflags = 0;
     zend_long allocMem = 0;
     zend_long allocMax = 0;
