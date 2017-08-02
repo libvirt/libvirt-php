@@ -5781,6 +5781,10 @@ PHP_FUNCTION(libvirt_domain_change_memory)
     tmpA = strstr(xml, "<memory>");
     tmp1 = strstr(xml, "</currentMemory>") + strlen("</currentMemory>");
     // pos = strlen(xml) - strlen(tmp1);
+    if (!tmpA || !tmp1) {
+        set_error_if_unset("Cannot parse domain XML" TSRMLS_CC);
+        RETURN_FALSE;
+    }
     len = strlen(xml) - strlen(tmpA);
 
     tmp2 = (char *)emalloc((len + 1) * sizeof(char));
