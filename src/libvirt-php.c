@@ -17,7 +17,6 @@
 #endif
 
 #include "libvirt-php.h"
-#include "util.h"
 #include "vncfunc.h"
 #include "sockets.h"
 
