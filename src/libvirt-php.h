@@ -107,21 +107,7 @@ typedef uint64_t arch_uint;
 #define PHP_LIBVIRT_WORLD_VERSION VERSION
 #define PHP_LIBVIRT_WORLD_EXTNAME "libvirt"
 
-/* Domain flags */
-#define DOMAIN_FLAG_FEATURE_ACPI    0x01
-#define DOMAIN_FLAG_FEATURE_APIC    0x02
-#define DOMAIN_FLAG_FEATURE_PAE     0x04
-#define DOMAIN_FLAG_CLOCK_LOCALTIME 0x08
-#define DOMAIN_FLAG_TEST_LOCAL_VNC  0x10
-#define DOMAIN_FLAG_SOUND_AC97      0x20
-
-/* Domain disk flags */
-#define DOMAIN_DISK_FILE            0x01
-#define DOMAIN_DISK_BLOCK           0x02
-#define DOMAIN_DISK_ACCESS_ALL      0x04
-
 /* Internal resource identifier objects */
-#define INT_RESOURCE_DOMAIN         0x02
 #define INT_RESOURCE_NETWORK        0x04
 #define INT_RESOURCE_NODEDEV        0x08
 #define INT_RESOURCE_STORAGEPOOL    0x10
@@ -156,15 +142,11 @@ typedef struct tVMNetwork {
     char *model;
 } tVMNetwork;
 
-/* TODO: temporary forward declaration until other parts are "modularized" */
+/* TODO: temporary forward declarations until other parts are "modularized" */
 typedef struct _php_libvirt_connection php_libvirt_connection;
+typedef struct _php_libvirt_domain php_libvirt_domain;
 
 /* Libvirt-php types */
-typedef struct _php_libvirt_domain {
-    virDomainPtr domain;
-    php_libvirt_connection* conn;
-} php_libvirt_domain;
-
 typedef struct _php_libvirt_snapshot {
     virDomainSnapshotPtr snapshot;
     php_libvirt_domain* domain;
@@ -219,10 +201,13 @@ ZEND_DECLARE_MODULE_GLOBALS(libvirt)
 
 /* Private definitions */
 void set_error(char *msg TSRMLS_DC);
+void set_error_if_unset(char *msg TSRMLS_DC);
 void reset_error(TSRMLS_D);
 int count_resources(int type TSRMLS_DC);
-int resource_change_counter(int type, virConnectPtr conn, void *mem, int inc TSRMLS_DC);
-int check_resource_allocation(virConnectPtr conn, int type, void *mem TSRMLS_DC);
+int resource_change_counter(int type, virConnectPtr conn, void *mem,
+                            int inc TSRMLS_DC);
+int check_resource_allocation(virConnectPtr conn, int type,
+                              void *mem TSRMLS_DC);
 void free_resource(int type, void *mem TSRMLS_DC);
 char *connection_get_emulator(virConnectPtr conn, char *arch TSRMLS_DC);
 int is_local_connection(virConnectPtr conn);
@@ -231,8 +216,18 @@ void free_tokens(tTokenizer t);
 int set_logfile(char *filename, long maxsize TSRMLS_DC);
 char *get_string_from_xpath(char *xml, char *xpath, zval **val, int *retVal);
 char **get_array_from_xpath(char *xml, char *xpath, int *num);
+void parse_array(zval *arr, tVMDisk *disk, tVMNetwork *network);
+char *installation_get_xml(int step, virConnectPtr conn, char *name, int memMB,
+                           int maxmemMB, char *arch, char *uuid, int vCpus,
+                           char *iso_image, tVMDisk *disks, int numDisks,
+                           tVMNetwork *networks, int numNetworks,
+                           int domain_flags TSRMLS_DC);
+void set_vnc_location(char *msg TSRMLS_DC);
+int streamSink(virStreamPtr st ATTRIBUTE_UNUSED,
+               const char *bytes, size_t nbytes, void *opaque);
+const char *get_feature_binary(const char *name);
+long get_next_free_numeric_value(virDomainPtr domain, char *xpath);
 
-#define PHP_LIBVIRT_DOMAIN_RES_NAME "Libvirt domain"
 #define PHP_LIBVIRT_STORAGEPOOL_RES_NAME "Libvirt storagepool"
 #define PHP_LIBVIRT_VOLUME_RES_NAME "Libvirt volume"
 #define PHP_LIBVIRT_NETWORK_RES_NAME "Libvirt virtual network"
@@ -248,79 +243,6 @@ PHP_MINFO_FUNCTION(libvirt);
 
 /* Common functions */
 PHP_FUNCTION(libvirt_get_last_error);
-/* Domain functions */
-PHP_FUNCTION(libvirt_domain_new);
-PHP_FUNCTION(libvirt_domain_new_get_vnc);
-PHP_FUNCTION(libvirt_domain_get_counts);
-PHP_FUNCTION(libvirt_domain_is_persistent);
-PHP_FUNCTION(libvirt_domain_lookup_by_name);
-PHP_FUNCTION(libvirt_domain_get_xml_desc);
-PHP_FUNCTION(libvirt_domain_get_disk_devices);
-PHP_FUNCTION(libvirt_domain_get_interface_devices);
-PHP_FUNCTION(libvirt_domain_get_screenshot);
-PHP_FUNCTION(libvirt_domain_get_screenshot_api);
-PHP_FUNCTION(libvirt_domain_get_screen_dimensions);
-PHP_FUNCTION(libvirt_domain_change_vcpus);
-PHP_FUNCTION(libvirt_domain_change_memory);
-PHP_FUNCTION(libvirt_domain_change_boot_devices);
-PHP_FUNCTION(libvirt_domain_disk_add);
-PHP_FUNCTION(libvirt_domain_disk_remove);
-PHP_FUNCTION(libvirt_domain_nic_add);
-PHP_FUNCTION(libvirt_domain_nic_remove);
-PHP_FUNCTION(libvirt_domain_attach_device);
-PHP_FUNCTION(libvirt_domain_detach_device);
-PHP_FUNCTION(libvirt_domain_get_info);
-PHP_FUNCTION(libvirt_domain_get_uuid);
-PHP_FUNCTION(libvirt_domain_get_uuid_string);
-PHP_FUNCTION(libvirt_domain_get_name);
-PHP_FUNCTION(libvirt_domain_get_id);
-PHP_FUNCTION(libvirt_domain_lookup_by_id);
-PHP_FUNCTION(libvirt_domain_lookup_by_uuid);
-PHP_FUNCTION(libvirt_domain_lookup_by_uuid_string);
-PHP_FUNCTION(libvirt_domain_destroy);
-PHP_FUNCTION(libvirt_domain_create);
-PHP_FUNCTION(libvirt_domain_resume);
-PHP_FUNCTION(libvirt_domain_core_dump);
-PHP_FUNCTION(libvirt_domain_shutdown);
-PHP_FUNCTION(libvirt_domain_suspend);
-PHP_FUNCTION(libvirt_domain_managedsave);
-PHP_FUNCTION(libvirt_domain_undefine);
-PHP_FUNCTION(libvirt_domain_reboot);
-PHP_FUNCTION(libvirt_domain_define_xml);
-PHP_FUNCTION(libvirt_domain_create_xml);
-PHP_FUNCTION(libvirt_domain_xml_from_native);
-PHP_FUNCTION(libvirt_domain_xml_to_native);
-PHP_FUNCTION(libvirt_domain_set_max_memory);
-PHP_FUNCTION(libvirt_domain_set_memory);
-PHP_FUNCTION(libvirt_domain_set_memory_flags);
-PHP_FUNCTION(libvirt_domain_memory_peek);
-PHP_FUNCTION(libvirt_domain_memory_stats);
-PHP_FUNCTION(libvirt_domain_update_device);
-PHP_FUNCTION(libvirt_domain_block_commit);
-PHP_FUNCTION(libvirt_domain_block_stats);
-PHP_FUNCTION(libvirt_domain_block_resize);
-PHP_FUNCTION(libvirt_domain_block_job_abort);
-PHP_FUNCTION(libvirt_domain_block_job_set_speed);
-PHP_FUNCTION(libvirt_domain_block_job_info);
-PHP_FUNCTION(libvirt_domain_interface_stats);
-PHP_FUNCTION(libvirt_domain_get_connect);
-PHP_FUNCTION(libvirt_domain_migrate);
-PHP_FUNCTION(libvirt_domain_get_job_info);
-PHP_FUNCTION(libvirt_domain_xml_xpath);
-PHP_FUNCTION(libvirt_domain_get_block_info);
-PHP_FUNCTION(libvirt_domain_get_network_info);
-PHP_FUNCTION(libvirt_domain_migrate_to_uri);
-PHP_FUNCTION(libvirt_domain_migrate_to_uri2);
-PHP_FUNCTION(libvirt_domain_get_autostart);
-PHP_FUNCTION(libvirt_domain_set_autostart);
-PHP_FUNCTION(libvirt_domain_is_active);
-PHP_FUNCTION(libvirt_domain_get_next_dev_ids);
-PHP_FUNCTION(libvirt_domain_send_keys);
-PHP_FUNCTION(libvirt_domain_send_key_api);
-PHP_FUNCTION(libvirt_domain_send_pointer_event);
-PHP_FUNCTION(libvirt_domain_get_metadata);
-PHP_FUNCTION(libvirt_domain_set_metadata);
-PHP_FUNCTION(libvirt_domain_qemu_agent_command);
 /* Domain snapshot functions */
 PHP_FUNCTION(libvirt_domain_has_current_snapshot);
 PHP_FUNCTION(libvirt_domain_snapshot_create);
@@ -395,12 +317,7 @@ PHP_FUNCTION(libvirt_list_all_networks);
 PHP_FUNCTION(libvirt_list_networks);
 PHP_FUNCTION(libvirt_list_all_nwfilters);
 PHP_FUNCTION(libvirt_list_nwfilters);
-PHP_FUNCTION(libvirt_list_domains);
 PHP_FUNCTION(libvirt_list_domain_snapshots);
-PHP_FUNCTION(libvirt_list_domain_resources);
-PHP_FUNCTION(libvirt_list_active_domains);
-PHP_FUNCTION(libvirt_list_active_domain_ids);
-PHP_FUNCTION(libvirt_list_inactive_domains);
 PHP_FUNCTION(libvirt_list_storagepools);
 PHP_FUNCTION(libvirt_list_active_storagepools);
 PHP_FUNCTION(libvirt_list_inactive_storagepools);
