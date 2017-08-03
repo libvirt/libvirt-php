@@ -108,7 +108,6 @@ typedef uint64_t arch_uint;
 #define PHP_LIBVIRT_WORLD_EXTNAME "libvirt"
 
 /* Internal resource identifier objects */
-#define INT_RESOURCE_NETWORK        0x04
 #define INT_RESOURCE_NODEDEV        0x08
 #define INT_RESOURCE_STORAGEPOOL    0x10
 #define INT_RESOURCE_VOLUME         0x20
@@ -151,11 +150,6 @@ typedef struct _php_libvirt_snapshot {
     virDomainSnapshotPtr snapshot;
     php_libvirt_domain* domain;
 } php_libvirt_snapshot;
-
-typedef struct _php_libvirt_network {
-    virNetworkPtr network;
-    php_libvirt_connection* conn;
-} php_libvirt_network;
 
 typedef struct _php_libvirt_nodedev {
     virNodeDevicePtr device;
@@ -227,10 +221,10 @@ int streamSink(virStreamPtr st ATTRIBUTE_UNUSED,
                const char *bytes, size_t nbytes, void *opaque);
 const char *get_feature_binary(const char *name);
 long get_next_free_numeric_value(virDomainPtr domain, char *xpath);
+int get_subnet_bits(char *ip);
 
 #define PHP_LIBVIRT_STORAGEPOOL_RES_NAME "Libvirt storagepool"
 #define PHP_LIBVIRT_VOLUME_RES_NAME "Libvirt volume"
-#define PHP_LIBVIRT_NETWORK_RES_NAME "Libvirt virtual network"
 #define PHP_LIBVIRT_NODEDEV_RES_NAME "Libvirt node device"
 #define PHP_LIBVIRT_SNAPSHOT_RES_NAME "Libvirt domain snapshot"
 #define PHP_LIBVIRT_NWFILTER_RES_NAME "Libvirt nwfilter"
@@ -282,20 +276,6 @@ PHP_FUNCTION(libvirt_storagepool_set_autostart);
 PHP_FUNCTION(libvirt_storagepool_get_autostart);
 PHP_FUNCTION(libvirt_storagepool_build);
 PHP_FUNCTION(libvirt_storagepool_delete);
-/* Network functions */
-PHP_FUNCTION(libvirt_network_define_xml);
-PHP_FUNCTION(libvirt_network_undefine);
-PHP_FUNCTION(libvirt_network_get);
-PHP_FUNCTION(libvirt_network_get_xml_desc);
-PHP_FUNCTION(libvirt_network_get_bridge);
-PHP_FUNCTION(libvirt_network_get_information);
-PHP_FUNCTION(libvirt_network_get_active);
-PHP_FUNCTION(libvirt_network_set_active);
-PHP_FUNCTION(libvirt_network_get_uuid_string);
-PHP_FUNCTION(libvirt_network_get_uuid);
-PHP_FUNCTION(libvirt_network_get_name);
-PHP_FUNCTION(libvirt_network_get_autostart);
-PHP_FUNCTION(libvirt_network_set_autostart);
 /* Nodedev functions */
 PHP_FUNCTION(libvirt_nodedev_get);
 PHP_FUNCTION(libvirt_nodedev_capabilities);
@@ -313,8 +293,6 @@ PHP_FUNCTION(libvirt_nwfilter_lookup_by_uuid_string);
 PHP_FUNCTION(libvirt_nwfilter_lookup_by_uuid);
 /* Listing functions */
 PHP_FUNCTION(libvirt_list_nodedevs);
-PHP_FUNCTION(libvirt_list_all_networks);
-PHP_FUNCTION(libvirt_list_networks);
 PHP_FUNCTION(libvirt_list_all_nwfilters);
 PHP_FUNCTION(libvirt_list_nwfilters);
 PHP_FUNCTION(libvirt_list_domain_snapshots);

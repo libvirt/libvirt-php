@@ -24,6 +24,7 @@ libvirt_php_la_SOURCES = \
 	libvirt-php.c libvirt-php.h \
 	libvirt-connection.c libvirt-connection.h \
 	libvirt-domain.c libvirt-domain.h \
+	libvirt-network.c libvirt-network.h \
 	libvirt-node.c libvirt-node.h \
 	libvirt-stream.c libvirt-stream.h
 libvirt_php_la_CFLAGS = \
