@@ -1145,13 +1145,43 @@ int is_local_connection(virConnectPtr conn)
 {
 #ifndef EXTWIN
     int ret;
-    char *hostname;
+    char *lv_hostname = NULL, *result = NULL;
     char name[1024];
+    struct addrinfo hints, *info = NULL;
 
-    hostname = virConnectGetHostname(conn);
+    name[1023] = '\0';
     gethostname(name, 1024);
-    ret = strcmp(name, hostname) == 0;
-    free(hostname);
+
+    if (strcmp(name, "localhost") == 0)
+        return 1;
+
+    lv_hostname = virConnectGetHostname(conn);
+
+    /* gethostname gave us FQDN, compare */
+    if (strchr(name, '.') && strcmp(name, lv_hostname) == 0)
+        return 1;
+
+    /* need to get FQDN of the local name */
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_flags = AI_CANONNAME|AI_CANONIDN;
+    hints.ai_family = AF_UNSPEC;
+
+    /* could not get FQDN or got localhost, use whatever gethostname gave us */
+    if (getaddrinfo(name, NULL, &hints, &info) != 0 ||
+        info->ai_canonname == NULL ||
+        strcmp(info->ai_canonname, "localhost") == 0)
+        result = strdup(name);
+    else
+        result = strdup(info->ai_canonname);
+
+    ret = strcmp(result, lv_hostname) == 0;
+
+    freeaddrinfo(info);
+    if (lv_hostname)
+        free(lv_hostname);
+    if (result)
+        free(result);
+
     return ret;
 #else
     // Libvirt daemon doesn't work on Windows systems so always return 0 (FALSE)
