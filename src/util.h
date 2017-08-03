@@ -225,6 +225,31 @@
 
 # endif /* PHP_MAJOR_VERSION < 7 */
 
+# define LONGLONG_INIT                                                         \
+    char tmpnumber[64]
+
+# define LONGLONG_ASSOC(out, key, in)                                          \
+    if (LIBVIRT_G(longlong_to_string_ini)) {                                   \
+        snprintf(tmpnumber, 63, "%llu", in);                                   \
+        VIRT_ADD_ASSOC_STRING(out, key, tmpnumber);                            \
+    } else {                                                                   \
+        add_assoc_long(out, key, in);                                          \
+    }
+
+# define LONGLONG_INDEX(out, key, in)                                          \
+    if (LIBVIRT_G(longlong_to_string_ini)) {                                   \
+        snprintf(tmpnumber, 63, "%llu", in);                                   \
+        VIRT_ADD_INDEX_STRING(out, key, tmpnumber);                            \
+    } else {                                                                   \
+        add_index_long(out, key, in);                                          \
+    }
+
+# define LONGLONG_RETURN_AS_STRING(in)                                         \
+    do {                                                                       \
+        snprintf(tmpnumber, 63, "%llu", in);                                   \
+        VIRT_RETURN_STRING(tmpnumber);                                         \
+    } while (0)
+
 # ifndef PHP_FE_END
 #  define PHP_FE_END {NULL, NULL, NULL}
 # endif
