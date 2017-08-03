@@ -127,7 +127,6 @@ typedef uint64_t arch_uint;
 #define INT_RESOURCE_STORAGEPOOL    0x10
 #define INT_RESOURCE_VOLUME         0x20
 #define INT_RESOURCE_SNAPSHOT       0x40
-#define INT_RESOURCE_STREAM         0x50
 #define INT_RESOURCE_NWFILTER       0x60
 
 typedef struct tTokenizer {
@@ -161,11 +160,6 @@ typedef struct tVMNetwork {
 typedef struct _php_libvirt_connection php_libvirt_connection;
 
 /* Libvirt-php types */
-typedef struct _php_libvirt_stream {
-    virStreamPtr stream;
-    php_libvirt_connection* conn;
-} php_libvirt_stream;
-
 typedef struct _php_libvirt_domain {
     virDomainPtr domain;
     php_libvirt_connection* conn;
@@ -228,6 +222,7 @@ void set_error(char *msg TSRMLS_DC);
 void reset_error(TSRMLS_D);
 int count_resources(int type TSRMLS_DC);
 int resource_change_counter(int type, virConnectPtr conn, void *mem, int inc TSRMLS_DC);
+int check_resource_allocation(virConnectPtr conn, int type, void *mem TSRMLS_DC);
 void free_resource(int type, void *mem TSRMLS_DC);
 char *connection_get_emulator(virConnectPtr conn, char *arch TSRMLS_DC);
 int is_local_connection(virConnectPtr conn);
@@ -238,7 +233,6 @@ char *get_string_from_xpath(char *xml, char *xpath, zval **val, int *retVal);
 char **get_array_from_xpath(char *xml, char *xpath, int *num);
 
 #define PHP_LIBVIRT_DOMAIN_RES_NAME "Libvirt domain"
-#define PHP_LIBVIRT_STREAM_RES_NAME "Libvirt stream"
 #define PHP_LIBVIRT_STORAGEPOOL_RES_NAME "Libvirt storagepool"
 #define PHP_LIBVIRT_VOLUME_RES_NAME "Libvirt volume"
 #define PHP_LIBVIRT_NETWORK_RES_NAME "Libvirt virtual network"
@@ -254,13 +248,6 @@ PHP_MINFO_FUNCTION(libvirt);
 
 /* Common functions */
 PHP_FUNCTION(libvirt_get_last_error);
-/* Stream functions */
-PHP_FUNCTION(libvirt_stream_create);
-PHP_FUNCTION(libvirt_stream_close);
-PHP_FUNCTION(libvirt_stream_abort);
-PHP_FUNCTION(libvirt_stream_finish);
-PHP_FUNCTION(libvirt_stream_recv);
-PHP_FUNCTION(libvirt_stream_send);
 /* Domain functions */
 PHP_FUNCTION(libvirt_domain_new);
 PHP_FUNCTION(libvirt_domain_new_get_vnc);
