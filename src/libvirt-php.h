@@ -28,10 +28,10 @@
 #endif
 
 #ifndef VERSION
-#define VERSION "0.5.1"
+#define VERSION "0.5.5"
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 5
-#define VERSION_MICRO 1
+#define VERSION_MICRO 5
 #endif
 
 #include <libvirt/libvirt.h>
@@ -88,17 +88,15 @@ typedef uint64_t arch_uint;
 #define UINTx PRIx64
 #endif
 
-typedef struct tTokenizer {
-    char **tokens;
-    int numTokens;
-} tTokenizer;
+# define DEBUG_SUPPORT
 
-typedef struct _resource_info {
-    int type;
-    virConnectPtr conn;
-    void *mem;
-    int overwrite;
-} resource_info;
+# ifdef DEBUG_SUPPORT
+#  define DEBUG_CORE
+#  define DEBUG_VNC
+# endif
+
+/* PHP functions are prefixed with `zif_` so strip it */
+# define PHPFUNC (__FUNCTION__ + 4)
 
 #ifdef ZTS
 #define LIBVIRT_G(v) TSRMG(libvirt_globals_id, zend_libvirt_globals *, v)
@@ -108,9 +106,6 @@ typedef struct _resource_info {
 
 #define PHP_LIBVIRT_WORLD_VERSION VERSION
 #define PHP_LIBVIRT_WORLD_EXTNAME "libvirt"
-
-/* Connect flags */
-#define CONNECT_FLAG_SOUNDHW_GET_NAMES  0x01
 
 /* Domain flags */
 #define DOMAIN_FLAG_FEATURE_ACPI    0x01
@@ -126,7 +121,6 @@ typedef struct _resource_info {
 #define DOMAIN_DISK_ACCESS_ALL      0x04
 
 /* Internal resource identifier objects */
-#define INT_RESOURCE_CONNECTION     0x01
 #define INT_RESOURCE_DOMAIN         0x02
 #define INT_RESOURCE_NETWORK        0x04
 #define INT_RESOURCE_NODEDEV        0x08
@@ -135,6 +129,18 @@ typedef struct _resource_info {
 #define INT_RESOURCE_SNAPSHOT       0x40
 #define INT_RESOURCE_STREAM         0x50
 #define INT_RESOURCE_NWFILTER       0x60
+
+typedef struct tTokenizer {
+    char **tokens;
+    int numTokens;
+} tTokenizer;
+
+typedef struct _resource_info {
+    int type;
+    virConnectPtr conn;
+    void *mem;
+    int overwrite;
+} resource_info;
 
 typedef struct tVMDisk {
     char *path;
@@ -151,12 +157,10 @@ typedef struct tVMNetwork {
     char *model;
 } tVMNetwork;
 
-/* Libvirt-php types */
-typedef struct _php_libvirt_connection {
-    virConnectPtr conn;
-    virt_resource_handle resource;
-} php_libvirt_connection;
+/* TODO: temporary forward declaration until other parts are "modularized" */
+typedef struct _php_libvirt_connection php_libvirt_connection;
 
+/* Libvirt-php types */
 typedef struct _php_libvirt_stream {
     virStreamPtr stream;
     php_libvirt_connection* conn;
@@ -197,25 +201,42 @@ typedef struct _php_libvirt_nwfilter {
     php_libvirt_connection* conn;
 } php_libvirt_nwfilter;
 
-typedef struct _php_libvirt_cred_value {
-    int count;
-    int type;
-    char *result;
-    unsigned int    resultlen;
-} php_libvirt_cred_value;
-
 typedef struct _php_libvirt_hash_key_info {
     char *name;
     unsigned int length;
     unsigned int type;
 } php_libvirt_hash_key_info;
 
+ZEND_BEGIN_MODULE_GLOBALS(libvirt)
+    char *last_error;
+    char *vnc_location;
+    zend_bool longlong_to_string_ini;
+    char *iso_path_ini;
+    char *image_path_ini;
+    zend_long max_connections_ini;
+# ifdef DEBUG_SUPPORT
+    int debug;
+# endif
+    resource_info *binding_resources;
+    int binding_resources_count;
+ZEND_END_MODULE_GLOBALS(libvirt)
+
+ZEND_DECLARE_MODULE_GLOBALS(libvirt)
+
 /* Private definitions */
+void set_error(char *msg TSRMLS_DC);
+void reset_error(TSRMLS_D);
+int count_resources(int type TSRMLS_DC);
+int resource_change_counter(int type, virConnectPtr conn, void *mem, int inc TSRMLS_DC);
+void free_resource(int type, void *mem TSRMLS_DC);
+char *connection_get_emulator(virConnectPtr conn, char *arch TSRMLS_DC);
+int is_local_connection(virConnectPtr conn);
+tTokenizer tokenize(char *string, char *by);
+void free_tokens(tTokenizer t);
 int set_logfile(char *filename, long maxsize TSRMLS_DC);
 char *get_string_from_xpath(char *xml, char *xpath, zval **val, int *retVal);
 char **get_array_from_xpath(char *xml, char *xpath, int *num);
 
-#define PHP_LIBVIRT_CONNECTION_RES_NAME "Libvirt connection"
 #define PHP_LIBVIRT_DOMAIN_RES_NAME "Libvirt domain"
 #define PHP_LIBVIRT_STREAM_RES_NAME "Libvirt stream"
 #define PHP_LIBVIRT_STORAGEPOOL_RES_NAME "Libvirt storagepool"
@@ -233,22 +254,6 @@ PHP_MINFO_FUNCTION(libvirt);
 
 /* Common functions */
 PHP_FUNCTION(libvirt_get_last_error);
-/* Connect functions */
-PHP_FUNCTION(libvirt_connect);
-PHP_FUNCTION(libvirt_connect_get_uri);
-PHP_FUNCTION(libvirt_connect_get_hostname);
-PHP_FUNCTION(libvirt_connect_get_hypervisor);
-PHP_FUNCTION(libvirt_connect_get_capabilities);
-PHP_FUNCTION(libvirt_connect_get_emulator);
-PHP_FUNCTION(libvirt_connect_get_nic_models);
-PHP_FUNCTION(libvirt_connect_get_soundhw_models);
-PHP_FUNCTION(libvirt_connect_get_maxvcpus);
-PHP_FUNCTION(libvirt_connect_get_sysinfo);
-PHP_FUNCTION(libvirt_connect_get_encrypted);
-PHP_FUNCTION(libvirt_connect_get_secure);
-PHP_FUNCTION(libvirt_connect_get_information);
-PHP_FUNCTION(libvirt_connect_get_machine_types);
-PHP_FUNCTION(libvirt_connect_get_all_domain_stats);
 /* Node functions */
 PHP_FUNCTION(libvirt_node_get_info);
 PHP_FUNCTION(libvirt_node_get_cpu_stats);

@@ -21,7 +21,8 @@ libvirt_php_la_SOURCES = \
 	util.c util.h	\
 	vncfunc.c vncfunc.h	\
 	sockets.c sockets.h \
-	libvirt-php.c libvirt-php.h
+	libvirt-php.c libvirt-php.h \
+	libvirt-connection.c libvirt-connection.h
 libvirt_php_la_CFLAGS = \
 	$(AM_CFLAGS) \
 	-DCOMPILE_DL_LIBVIRT=1

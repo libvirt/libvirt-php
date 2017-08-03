@@ -30,13 +30,6 @@
 #  endif
 # endif
 
-# define DEBUG_SUPPORT
-
-# ifdef DEBUG_SUPPORT
-#  define DEBUG_CORE
-#  define DEBUG_VNC
-# endif
-
 # define DEBUG_INIT(source)     \
     static const char *debugSource = "" source ""
 
