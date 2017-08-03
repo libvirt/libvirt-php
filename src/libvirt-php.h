@@ -109,8 +109,6 @@ typedef uint64_t arch_uint;
 
 /* Internal resource identifier objects */
 #define INT_RESOURCE_NODEDEV        0x08
-#define INT_RESOURCE_STORAGEPOOL    0x10
-#define INT_RESOURCE_VOLUME         0x20
 #define INT_RESOURCE_SNAPSHOT       0x40
 #define INT_RESOURCE_NWFILTER       0x60
 
@@ -155,16 +153,6 @@ typedef struct _php_libvirt_nodedev {
     virNodeDevicePtr device;
     php_libvirt_connection* conn;
 } php_libvirt_nodedev;
-
-typedef struct _php_libvirt_storagepool {
-    virStoragePoolPtr pool;
-    php_libvirt_connection* conn;
-} php_libvirt_storagepool;
-
-typedef struct _php_libvirt_volume {
-    virStorageVolPtr volume;
-    php_libvirt_connection* conn;
-} php_libvirt_volume;
 
 typedef struct _php_libvirt_nwfilter {
     virNWFilterPtr nwfilter;
@@ -223,8 +211,6 @@ const char *get_feature_binary(const char *name);
 long get_next_free_numeric_value(virDomainPtr domain, char *xpath);
 int get_subnet_bits(char *ip);
 
-#define PHP_LIBVIRT_STORAGEPOOL_RES_NAME "Libvirt storagepool"
-#define PHP_LIBVIRT_VOLUME_RES_NAME "Libvirt volume"
 #define PHP_LIBVIRT_NODEDEV_RES_NAME "Libvirt node device"
 #define PHP_LIBVIRT_SNAPSHOT_RES_NAME "Libvirt domain snapshot"
 #define PHP_LIBVIRT_NWFILTER_RES_NAME "Libvirt nwfilter"
@@ -244,38 +230,6 @@ PHP_FUNCTION(libvirt_domain_snapshot_lookup_by_name);
 PHP_FUNCTION(libvirt_domain_snapshot_get_xml);
 PHP_FUNCTION(libvirt_domain_snapshot_revert);
 PHP_FUNCTION(libvirt_domain_snapshot_delete);
-/* Storage pool and storage volume functions */
-PHP_FUNCTION(libvirt_storagepool_lookup_by_name);
-PHP_FUNCTION(libvirt_storagepool_lookup_by_volume);
-PHP_FUNCTION(libvirt_storagepool_list_volumes);
-PHP_FUNCTION(libvirt_storagepool_get_info);
-PHP_FUNCTION(libvirt_storagevolume_lookup_by_name);
-PHP_FUNCTION(libvirt_storagevolume_lookup_by_path);
-PHP_FUNCTION(libvirt_storagevolume_get_name);
-PHP_FUNCTION(libvirt_storagevolume_get_path);
-PHP_FUNCTION(libvirt_storagevolume_get_info);
-PHP_FUNCTION(libvirt_storagevolume_get_xml_desc);
-PHP_FUNCTION(libvirt_storagevolume_create_xml);
-PHP_FUNCTION(libvirt_storagevolume_create_xml_from);
-PHP_FUNCTION(libvirt_storagevolume_delete);
-PHP_FUNCTION(libvirt_storagevolume_download);
-PHP_FUNCTION(libvirt_storagevolume_upload);
-PHP_FUNCTION(libvirt_storagevolume_resize);
-PHP_FUNCTION(libvirt_storagepool_get_uuid_string);
-PHP_FUNCTION(libvirt_storagepool_get_name);
-PHP_FUNCTION(libvirt_storagepool_lookup_by_uuid_string);
-PHP_FUNCTION(libvirt_storagepool_get_xml_desc);
-PHP_FUNCTION(libvirt_storagepool_define_xml);
-PHP_FUNCTION(libvirt_storagepool_undefine);
-PHP_FUNCTION(libvirt_storagepool_create);
-PHP_FUNCTION(libvirt_storagepool_destroy);
-PHP_FUNCTION(libvirt_storagepool_is_active);
-PHP_FUNCTION(libvirt_storagepool_get_volume_count);
-PHP_FUNCTION(libvirt_storagepool_refresh);
-PHP_FUNCTION(libvirt_storagepool_set_autostart);
-PHP_FUNCTION(libvirt_storagepool_get_autostart);
-PHP_FUNCTION(libvirt_storagepool_build);
-PHP_FUNCTION(libvirt_storagepool_delete);
 /* Nodedev functions */
 PHP_FUNCTION(libvirt_nodedev_get);
 PHP_FUNCTION(libvirt_nodedev_capabilities);
@@ -296,9 +250,6 @@ PHP_FUNCTION(libvirt_list_nodedevs);
 PHP_FUNCTION(libvirt_list_all_nwfilters);
 PHP_FUNCTION(libvirt_list_nwfilters);
 PHP_FUNCTION(libvirt_list_domain_snapshots);
-PHP_FUNCTION(libvirt_list_storagepools);
-PHP_FUNCTION(libvirt_list_active_storagepools);
-PHP_FUNCTION(libvirt_list_inactive_storagepools);
 /* Common functions */
 PHP_FUNCTION(libvirt_version);
 PHP_FUNCTION(libvirt_check_version);
