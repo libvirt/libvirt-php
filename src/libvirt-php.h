@@ -107,9 +107,6 @@ typedef uint64_t arch_uint;
 #define PHP_LIBVIRT_WORLD_VERSION VERSION
 #define PHP_LIBVIRT_WORLD_EXTNAME "libvirt"
 
-/* Internal resource identifier objects */
-#define INT_RESOURCE_NWFILTER       0x60
-
 typedef struct tTokenizer {
     char **tokens;
     int numTokens;
@@ -136,15 +133,6 @@ typedef struct tVMNetwork {
     char *network;
     char *model;
 } tVMNetwork;
-
-/* TODO: temporary forward declaration until other parts are "modularized" */
-typedef struct _php_libvirt_connection php_libvirt_connection;
-
-/* Libvirt-php types */
-typedef struct _php_libvirt_nwfilter {
-    virNWFilterPtr nwfilter;
-    php_libvirt_connection* conn;
-} php_libvirt_nwfilter;
 
 typedef struct _php_libvirt_hash_key_info {
     char *name;
@@ -198,8 +186,6 @@ const char *get_feature_binary(const char *name);
 long get_next_free_numeric_value(virDomainPtr domain, char *xpath);
 int get_subnet_bits(char *ip);
 
-#define PHP_LIBVIRT_NWFILTER_RES_NAME "Libvirt nwfilter"
-
 PHP_MINIT_FUNCTION(libvirt);
 PHP_MSHUTDOWN_FUNCTION(libvirt);
 PHP_RINIT_FUNCTION(libvirt);
@@ -208,20 +194,6 @@ PHP_MINFO_FUNCTION(libvirt);
 
 /* Common functions */
 PHP_FUNCTION(libvirt_get_last_error);
-/* NWFilter functions */
-PHP_FUNCTION(libvirt_nwfilter_define_xml);
-PHP_FUNCTION(libvirt_nwfilter_undefine);
-PHP_FUNCTION(libvirt_nwfilter_get_xml_desc);
-PHP_FUNCTION(libvirt_nwfilter_get_name);
-PHP_FUNCTION(libvirt_nwfilter_get_uuid_string);
-PHP_FUNCTION(libvirt_nwfilter_get_uuid);
-PHP_FUNCTION(libvirt_nwfilter_lookup_by_name);
-PHP_FUNCTION(libvirt_nwfilter_lookup_by_uuid_string);
-PHP_FUNCTION(libvirt_nwfilter_lookup_by_uuid);
-/* Listing functions */
-PHP_FUNCTION(libvirt_list_all_nwfilters);
-PHP_FUNCTION(libvirt_list_nwfilters);
-/* Common functions */
 PHP_FUNCTION(libvirt_version);
 PHP_FUNCTION(libvirt_check_version);
 PHP_FUNCTION(libvirt_has_feature);

@@ -27,6 +27,7 @@ libvirt_php_la_SOURCES = \
 	libvirt-network.c libvirt-network.h \
 	libvirt-node.c libvirt-node.h \
 	libvirt-nodedev.c libvirt-nodedev.h \
+	libvirt-nwfilter.c libvirt-nwfilter.h \
 	libvirt-snapshot.c libvirt-snapshot.h \
 	libvirt-storage.c libvirt-storage.h \
 	libvirt-stream.c libvirt-stream.h
