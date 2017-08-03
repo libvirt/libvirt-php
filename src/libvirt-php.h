@@ -109,7 +109,6 @@ typedef uint64_t arch_uint;
 
 /* Internal resource identifier objects */
 #define INT_RESOURCE_NODEDEV        0x08
-#define INT_RESOURCE_SNAPSHOT       0x40
 #define INT_RESOURCE_NWFILTER       0x60
 
 typedef struct tTokenizer {
@@ -139,16 +138,10 @@ typedef struct tVMNetwork {
     char *model;
 } tVMNetwork;
 
-/* TODO: temporary forward declarations until other parts are "modularized" */
+/* TODO: temporary forward declaration until other parts are "modularized" */
 typedef struct _php_libvirt_connection php_libvirt_connection;
-typedef struct _php_libvirt_domain php_libvirt_domain;
 
 /* Libvirt-php types */
-typedef struct _php_libvirt_snapshot {
-    virDomainSnapshotPtr snapshot;
-    php_libvirt_domain* domain;
-} php_libvirt_snapshot;
-
 typedef struct _php_libvirt_nodedev {
     virNodeDevicePtr device;
     php_libvirt_connection* conn;
@@ -212,7 +205,6 @@ long get_next_free_numeric_value(virDomainPtr domain, char *xpath);
 int get_subnet_bits(char *ip);
 
 #define PHP_LIBVIRT_NODEDEV_RES_NAME "Libvirt node device"
-#define PHP_LIBVIRT_SNAPSHOT_RES_NAME "Libvirt domain snapshot"
 #define PHP_LIBVIRT_NWFILTER_RES_NAME "Libvirt nwfilter"
 
 PHP_MINIT_FUNCTION(libvirt);
@@ -223,13 +215,6 @@ PHP_MINFO_FUNCTION(libvirt);
 
 /* Common functions */
 PHP_FUNCTION(libvirt_get_last_error);
-/* Domain snapshot functions */
-PHP_FUNCTION(libvirt_domain_has_current_snapshot);
-PHP_FUNCTION(libvirt_domain_snapshot_create);
-PHP_FUNCTION(libvirt_domain_snapshot_lookup_by_name);
-PHP_FUNCTION(libvirt_domain_snapshot_get_xml);
-PHP_FUNCTION(libvirt_domain_snapshot_revert);
-PHP_FUNCTION(libvirt_domain_snapshot_delete);
 /* Nodedev functions */
 PHP_FUNCTION(libvirt_nodedev_get);
 PHP_FUNCTION(libvirt_nodedev_capabilities);
@@ -249,7 +234,6 @@ PHP_FUNCTION(libvirt_nwfilter_lookup_by_uuid);
 PHP_FUNCTION(libvirt_list_nodedevs);
 PHP_FUNCTION(libvirt_list_all_nwfilters);
 PHP_FUNCTION(libvirt_list_nwfilters);
-PHP_FUNCTION(libvirt_list_domain_snapshots);
 /* Common functions */
 PHP_FUNCTION(libvirt_version);
 PHP_FUNCTION(libvirt_check_version);
