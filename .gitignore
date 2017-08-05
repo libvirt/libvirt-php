@@ -20,6 +20,7 @@
 /tests/*.trs
 /tests/functions.phpt
 /test-driver
+/AUTHORS
 /INSTALL
 Makefile
 Makefile.in

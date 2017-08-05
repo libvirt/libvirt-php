@@ -1,0 +1,13 @@
+# 'git shortlog --help' and look for mailmap for the format of each line
+
+# Email consolidation:
+# <Preferred address in AUTHORS> <other alias used by same author>
+<liyong@skybility.com> <4179e1@gmail.com>
+<dzamirski@datto.com> <dzamirski@dattobackup.com>
+<Remi@famillecollet.com> <fedora@famillecollet.com>
+<mignov@gmail.com> <minovotn@redhat.com>
+
+# Name consolidation:
+# Preferred author spelling <preferred email>
+Tiziano Müller <dev-zero@gentoo.org>
+Stefan Kuhn <stefan.kuhn@foss-group.ch>
