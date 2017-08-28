@@ -627,6 +627,7 @@
         echo "<h2>Network filters</h2>";
         echo "Here you can see all the network filters defined";
 
+        $ret = false;
         if (array_key_exists('subaction', $_GET)) {
             $uuid = $_GET['uuid'];
             $name = $_GET['name'];
