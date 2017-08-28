@@ -12,6 +12,10 @@ m4_ifndef([LT_INIT], [
   LT_INIT([shared disable-static])
 ])
 
+# Default to using the silent-rules feature when possible. Users
+# (including rpm) can still change the default at configure time.
+AM_SILENT_RULES([yes])
+
 dnl Checks for programs.
 AC_PROG_CC
 AC_LANG([C])
