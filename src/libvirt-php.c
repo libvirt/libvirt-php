@@ -20,14 +20,14 @@
 #include "vncfunc.h"
 #include "sockets.h"
 #include "libvirt-connection.h"
-#include "libvirt-node.h"
-#include "libvirt-stream.h"
 #include "libvirt-domain.h"
-#include "libvirt-snapshot.h"
-#include "libvirt-storage.h"
 #include "libvirt-network.h"
+#include "libvirt-node.h"
 #include "libvirt-nodedev.h"
 #include "libvirt-nwfilter.h"
+#include "libvirt-snapshot.h"
+#include "libvirt-storage.h"
+#include "libvirt-stream.h"
 
 DEBUG_INIT("core");
 
