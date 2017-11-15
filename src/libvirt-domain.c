@@ -63,8 +63,8 @@ PHP_FUNCTION(libvirt_domain_new)
 {
     php_libvirt_connection *conn = NULL;
     php_libvirt_domain *res_domain = NULL;
-    virDomainPtr domain2 = NULL;
     virDomainPtr domain = NULL;
+    virDomainPtr domainUpdated = NULL;
     zval *zconn;
     char *arch = NULL;
     strsize_t arch_len;
@@ -85,10 +85,9 @@ PHP_FUNCTION(libvirt_domain_new)
     zval *data;
     HashPosition pointer;
     char vncl[2048] = { 0 };
-    char tmpname[1024] = { 0 };
     char *xml = NULL;
     int retval = 0;
-    char *uuid = NULL;
+    char uuid[VIR_UUID_STRING_BUFLEN] = { 0 };
     zend_long flags = 0;
     int fd = -1;
 
@@ -143,9 +142,7 @@ PHP_FUNCTION(libvirt_domain_new)
     } VIRT_FOREACH_END();
     numNets = i;
 
-    snprintf(tmpname, sizeof(tmpname), "%s-install", name);
-    DPRINTF("%s: Name is '%s', memMB is %d, maxmemMB is %d\n", PHPFUNC, tmpname, (int) memMB, (int) maxmemMB);
-    tmp = installation_get_xml(conn->conn, tmpname, memMB, maxmemMB,
+    tmp = installation_get_xml(conn->conn, name, memMB, maxmemMB,
                                NULL, NULL, vcpus, iso_image,
                                vmDisks, numDisks, vmNetworks, numNets,
                                flags TSRMLS_CC);
@@ -155,25 +152,37 @@ PHP_FUNCTION(libvirt_domain_new)
         RETURN_FALSE;
     }
 
-    domain = virDomainCreateXML(conn->conn, tmp, 0);
+    domain = virDomainDefineXML(conn->conn, tmp);
     if (domain == NULL) {
-        set_error_if_unset("Cannot create installation domain from the XML description" TSRMLS_CC);
-        DPRINTF("%s: Cannot create installation domain from the XML description (%s): %s\n", PHPFUNC, LIBVIRT_G(last_error), tmp);
+        set_error_if_unset("Cannot define domain from the XML description" TSRMLS_CC);
+        DPRINTF("%s: Cannot define domain from the XML description (%s): %s\n", PHPFUNC, LIBVIRT_G(last_error), tmp);
         RETURN_FALSE;
+    }
+
+    if (virDomainCreate(domain) < 0) {
+        DPRINTF("%s: Cannot create domain: %s\n", PHPFUNC, LIBVIRT_G(last_error));
+        set_error_if_unset("Cannot create domain" TSRMLS_CC);
+        goto error;
     }
 
     xml = virDomainGetXMLDesc(domain, 0);
     if (!xml) {
-        DPRINTF("%s: Cannot get the XML description\n", PHPFUNC);
+        DPRINTF("%s: Cannot get the XML description: %s\n", PHPFUNC, LIBVIRT_G(last_error));
         set_error_if_unset("Cannot get the XML description" TSRMLS_CC);
-        RETURN_FALSE;
+        goto error;
+    }
+
+    if (virDomainGetUUIDString(domain, uuid) < 0) {
+        DPRINTF("%s: Cannot get domain UUID: %s\n", PHPFUNC, LIBVIRT_G(last_error));
+        set_error_if_unset("Cannot get domain UUID" TSRMLS_CC);
+        goto error;
     }
 
     tmp = get_string_from_xpath(xml, "//domain/devices/graphics[@type='vnc']/@port", NULL, &retval);
     if (retval < 0) {
         DPRINTF("%s: Cannot get port from XML description\n", PHPFUNC);
         set_error_if_unset("Cannot get port from XML description" TSRMLS_CC);
-        RETURN_FALSE;
+        goto error;
     }
 
     snprintf(vncl, sizeof(vncl), "%s:%s", virConnectGetHostname(conn->conn), tmp);
@@ -195,23 +204,25 @@ PHP_FUNCTION(libvirt_domain_new)
     set_vnc_location(vncl TSRMLS_CC);
 
     tmp = installation_get_xml(conn->conn, name, memMB, maxmemMB,
-                               NULL, NULL, vcpus, NULL,
+                               NULL, uuid, vcpus, NULL,
                                vmDisks, numDisks, vmNetworks, numNets,
                                flags TSRMLS_CC);
     if (tmp == NULL) {
-        DPRINTF("%s: Cannot get installation XML, step 2\n", PHPFUNC);
-        set_error("Cannot get installation XML, step 2" TSRMLS_CC);
-        virDomainFree(domain);
-        RETURN_FALSE;
+        DPRINTF("%s: Cannot get installation XML\n", PHPFUNC);
+        set_error("Cannot get installation XML" TSRMLS_CC);
+        goto error;
     }
 
-    domain2 = virDomainDefineXML(conn->conn, tmp);
-    if (domain2 == NULL) {
-        set_error_if_unset("Cannot define domain from the XML description" TSRMLS_CC);
-        DPRINTF("%s: Cannot define domain from the XML description (name = '%s', uuid = '%s', error = '%s')\n", PHPFUNC, name, uuid, LIBVIRT_G(last_error));
-        RETURN_FALSE;
+    domainUpdated = virDomainDefineXML(conn->conn, tmp);
+    if (domainUpdated == NULL) {
+        set_error_if_unset("Cannot update domain definition" TSRMLS_CC);
+        DPRINTF("%s: Cannot update domain definition "
+                "(name = '%s', uuid = '%s', error = '%s')\n",
+                PHPFUNC, name, uuid, LIBVIRT_G(last_error));
+        goto error;
     }
-    virDomainFree(domain2);
+    virDomainFree(domainUpdated);
+    domainUpdated = NULL;
 
     res_domain = (php_libvirt_domain *)emalloc(sizeof(php_libvirt_domain));
     res_domain->domain = domain;
@@ -221,6 +232,18 @@ PHP_FUNCTION(libvirt_domain_new)
     resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1 TSRMLS_CC);
 
     VIRT_REGISTER_RESOURCE(res_domain, le_libvirt_domain);
+    return;
+
+ error:
+    if (domain) {
+        if (virDomainIsActive(domain) > 0)
+            virDomainDestroy(domain);
+        virDomainUndefine(domain);
+        virDomainFree(domain);
+    }
+    if (domainUpdated)
+        virDomainFree(domainUpdated);
+    RETURN_FALSE;
 }
 
 /*
