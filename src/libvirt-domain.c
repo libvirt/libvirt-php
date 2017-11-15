@@ -145,8 +145,8 @@ PHP_FUNCTION(libvirt_domain_new)
 
     snprintf(tmpname, sizeof(tmpname), "%s-install", name);
     DPRINTF("%s: Name is '%s', memMB is %d, maxmemMB is %d\n", PHPFUNC, tmpname, (int) memMB, (int) maxmemMB);
-    tmp = installation_get_xml(1,
-                               conn->conn, tmpname, memMB, maxmemMB, NULL /* arch */, NULL, vcpus, iso_image,
+    tmp = installation_get_xml(conn->conn, tmpname, memMB, maxmemMB,
+                               NULL, NULL, vcpus, iso_image,
                                vmDisks, numDisks, vmNetworks, numNets,
                                flags TSRMLS_CC);
     if (tmp == NULL) {
@@ -194,8 +194,8 @@ PHP_FUNCTION(libvirt_domain_new)
 
     set_vnc_location(vncl TSRMLS_CC);
 
-    tmp = installation_get_xml(2,
-                               conn->conn, name, memMB, maxmemMB, NULL /* arch */, NULL, vcpus, iso_image,
+    tmp = installation_get_xml(conn->conn, name, memMB, maxmemMB,
+                               NULL, NULL, vcpus, NULL,
                                vmDisks, numDisks, vmNetworks, numNets,
                                flags TSRMLS_CC);
     if (tmp == NULL) {

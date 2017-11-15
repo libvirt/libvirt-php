@@ -2248,9 +2248,11 @@ char *get_network_xml(char *mac, char *network, char *model)
 /*
  * Private function name:   installation_get_xml
  * Since version:           0.4.5
- * Description:             Function is used to generate the installation XML description to install a new domain
- * Arguments:               @step [int]: number of step for XML output (1 or 2)
- *                          @conn [virConnectPtr]: libvirt connection pointer
+ * Description:             Function is used to generate the installation XML
+ *                          description to install a new domain. If @iso_image
+ *                          is not NULL, domain XML is created so that it boots
+ *                          from it.
+ * Arguments:               @conn [virConnectPtr]: libvirt connection pointer
  *                          @name [string]: name of the new virtual machine
  *                          @memMB [int]: memory in Megabytes
  *                          @maxmemMB [int]: maximum memory in Megabytes
@@ -2265,17 +2267,20 @@ char *get_network_xml(char *mac, char *network, char *model)
  *                          @domain_flags [int]: flags for the domain installation
  * Returns:                 full XML output for installation
  */
-char *installation_get_xml(int step, virConnectPtr conn, char *name, int memMB, int maxmemMB, char *arch, char *uuid, int vCpus, char *iso_image,
-                           tVMDisk *disks, int numDisks, tVMNetwork *networks, int numNetworks, int domain_flags TSRMLS_DC)
+char *installation_get_xml(virConnectPtr conn, char *name, int memMB,
+                           int maxmemMB, char *arch, char *uuid, int vCpus,
+                           char *iso_image, tVMDisk *disks, int numDisks,
+                           tVMNetwork *networks, int numNetworks, int
+                           domain_flags TSRMLS_DC)
 {
     int i;
-    char xml[32768] = { 0 };
+    char *xml = NULL;
     char disks_xml[16384] = { 0 };
     char networks_xml[16384] = { 0 };
     char features[128] = { 0 };
     char *tmp = NULL;
     char type[64] = { 0 };
-    // virDomainPtr domain=NULL;
+    int rv;
 
     if (conn == NULL) {
         DPRINTF("%s: Invalid libvirt connection pointer\n", __FUNCTION__);
@@ -2297,7 +2302,7 @@ char *installation_get_xml(int step, virConnectPtr conn, char *name, int memMB, 
         DPRINTF("%s: No architecture defined, got host arch of '%s'\n", __FUNCTION__, arch);
     }
 
-    if (access(iso_image, R_OK) != 0) {
+    if (iso_image && access(iso_image, R_OK) != 0) {
         DPRINTF("%s: Installation image %s doesn't exist\n", __FUNCTION__, iso_image);
         return NULL;
     }
@@ -2324,93 +2329,98 @@ char *installation_get_xml(int step, virConnectPtr conn, char *name, int memMB, 
         free(network);
     }
 
-    if (step == 1)
-        snprintf(xml, sizeof(xml), "<domain%s>\n"
-                 "\t<name>%s</name>\n"
-                 "\t<currentMemory>%d</currentMemory>\n"
-                 "\t<memory>%d</memory>\n"
-                 "\t<uuid>%s</uuid>\n"
-                 "\t<os>\n"
-                 "\t\t<type arch='%s'>hvm</type>\n"
-                 "\t\t<boot dev='cdrom'/>\n"
-                 "\t\t<boot dev='hd'/>\n"
-                 "\t</os>\n"
-                 "\t<features>\n"
-                 "\t\t%s\n"
-                 "\t</features>\n"
-                 "\t<clock offset=\"%s\"/>\n"
-                 "\t<on_poweroff>destroy</on_poweroff>\n"
-                 "\t<on_reboot>destroy</on_reboot>\n"
-                 "\t<on_crash>destroy</on_crash>\n"
-                 "\t<vcpu>%d</vcpu>\n"
-                 "\t<devices>\n"
-                 "\t\t<emulator>%s</emulator>\n"
-                 "%s"
-                 "\t\t<disk type='file' device='cdrom'>\n"
-                 "\t\t\t<driver name='qemu' type='raw' />\n"
-                 "\t\t\t<source file='%s' />\n"
-                 "\t\t\t<target dev='hdc' bus='ide' />\n"
-                 "\t\t\t<readonly />\n"
-                 "\t\t</disk>\n"
-                 "%s"
-                 "\t\t<input type='mouse' bus='ps2' />\n"
-                 "\t\t<graphics type='vnc' port='-1' />\n"
-                 "\t\t<console type='pty' />\n"
-                 "%s"
-                 "\t\t<video>\n"
-                 "\t\t\t<model type='cirrus' />\n"
-                 "\t\t</video>\n"
-                 "\t</devices>\n"
-                 "</domain>",
+    if (iso_image) {
+        rv = asprintf(&xml,
+                      "<domain%s>\n"
+                      "  <name>%s</name>\n"
+                      "  <currentMemory>%d</currentMemory>\n"
+                      "  <memory>%d</memory>\n"
+                      "  <uuid>%s</uuid>\n"
+                      "  <os>\n"
+                      "    <type arch='%s'>hvm</type>\n"
+                      "    <boot dev='cdrom'/>\n"
+                      "    <boot dev='hd'/>\n"
+                      "  </os>\n"
+                      "  <features>\n"
+                      "    %s\n"
+                      "  </features>\n"
+                      "  <clock offset=\"%s\"/>\n"
+                      "  <on_poweroff>destroy</on_poweroff>\n"
+                      "  <on_reboot>destroy</on_reboot>\n"
+                      "  <on_crash>destroy</on_crash>\n"
+                      "  <vcpu>%d</vcpu>\n"
+                      "  <devices>\n"
+                      "    <emulator>%s</emulator>\n"
+                      "    %s"
+                      "    <disk type='file' device='cdrom'>\n"
+                      "      <driver name='qemu' type='raw' />\n"
+                      "      <source file='%s' />\n"
+                      "      <target dev='hdc' bus='ide' />\n"
+                      "      <readonly />\n"
+                      "    </disk>\n"
+                      "    %s"
+                      "    <input type='mouse' bus='ps2' />\n"
+                      "    <graphics type='vnc' port='-1' />\n"
+                      "    <console type='pty' />\n"
+                      "    %s"
+                      "    <video>\n"
+                      "      <model type='cirrus' />\n"
+                      "    </video>\n"
+                      "  </devices>\n"
+                      "</domain>",
             type, name, memMB * 1024, maxmemMB * 1024, uuid, arch, features,
             (domain_flags & DOMAIN_FLAG_CLOCK_LOCALTIME ? "localtime" : "utc"),
-            vCpus, connection_get_emulator(conn, arch TSRMLS_CC), disks_xml, iso_image, networks_xml,
-            (domain_flags & DOMAIN_FLAG_SOUND_AC97 ? "\t\t<sound model='ac97'/>\n" : "")
-                );
-    else
-        if (step == 2)
-            snprintf(xml, sizeof(xml), "<domain%s>\n"
-                     "\t<name>%s</name>\n"
-                     "\t<currentMemory>%d</currentMemory>\n"
-                     "\t<memory>%d</memory>\n"
-                     "\t<uuid>%s</uuid>\n"
-                     "\t<os>\n"
-                     "\t\t<type arch='%s'>hvm</type>\n"
-                     "\t\t<boot dev='hd'/>\n"
-                     "\t</os>\n"
-                     "\t<features>\n"
-                     "\t\t%s\n"
-                     "\t</features>\n"
-                     "\t<clock offset=\"%s\"/>\n"
-                     "\t<on_poweroff>destroy</on_poweroff>\n"
-                     "\t<on_reboot>destroy</on_reboot>\n"
-                     "\t<on_crash>destroy</on_crash>\n"
-                     "\t<vcpu>%d</vcpu>\n"
-                     "\t<devices>\n"
-                     "\t\t<emulator>%s</emulator>\n"
-                     "%s"
-                     "\t\t<disk type='file' device='cdrom'>\n"
-                     "\t\t\t<driver name='qemu' type='raw' />\n"
-                     "\t\t\t<target dev='hdc' bus='ide' />\n"
-                     "\t\t\t<readonly />\n"
-                     "\t\t</disk>\n"
-                     "%s"
-                     "\t\t<input type='mouse' bus='ps2' />\n"
-                     "\t\t<graphics type='vnc' port='-1' />\n"
-                     "\t\t<console type='pty' />\n"
-                     "%s"
-                     "\t\t<video>\n"
-                     "\t\t\t<model type='cirrus' />\n"
-                     "\t\t</video>\n"
-                     "\t</devices>\n"
-                     "</domain>",
-                type, name, memMB * 1024, maxmemMB * 1024, uuid, arch, features,
-                (domain_flags & DOMAIN_FLAG_CLOCK_LOCALTIME ? "localtime" : "utc"),
-                vCpus, connection_get_emulator(conn, arch TSRMLS_CC), disks_xml, networks_xml,
-                (domain_flags & DOMAIN_FLAG_SOUND_AC97 ? "\t\t<sound model='ac97'/>\n" : "")
-                    );
+            vCpus, connection_get_emulator(conn, arch TSRMLS_CC), disks_xml,
+            iso_image, networks_xml,
+            (domain_flags & DOMAIN_FLAG_SOUND_AC97 ? "<sound model='ac97'/>\n" : ""));
+    } else {
+        rv = asprintf(&xml,
+                      "<domain%s>\n"
+                      "  <name>%s</name>\n"
+                      "  <currentMemory>%d</currentMemory>\n"
+                      "  <memory>%d</memory>\n"
+                      "  <uuid>%s</uuid>\n"
+                      "  <os>\n"
+                      "    <type arch='%s'>hvm</type>\n"
+                      "    <boot dev='hd'/>\n"
+                      "  </os>\n"
+                      "  <features>\n"
+                      "    %s\n"
+                      "  </features>\n"
+                      "  <clock offset=\"%s\"/>\n"
+                      "  <on_poweroff>destroy</on_poweroff>\n"
+                      "  <on_reboot>destroy</on_reboot>\n"
+                      "  <on_crash>destroy</on_crash>\n"
+                      "  <vcpu>%d</vcpu>\n"
+                      "  <devices>\n"
+                      "    <emulator>%s</emulator>\n"
+                      "    %s"
+                      "    <disk type='file' device='cdrom'>\n"
+                      "      <driver name='qemu' type='raw' />\n"
+                      "      <target dev='hdc' bus='ide' />\n"
+                      "      <readonly />\n"
+                      "    </disk>\n"
+                      "    %s"
+                      "    <input type='mouse' bus='ps2' />\n"
+                      "    <graphics type='vnc' port='-1' />\n"
+                      "    <console type='pty' />\n"
+                      "    %s"
+                      "    <video>\n"
+                      "      <model type='cirrus' />\n"
+                      "    </video>\n"
+                      "  </devices>\n"
+                      "</domain>",
+            type, name, memMB * 1024, maxmemMB * 1024, uuid, arch, features,
+            (domain_flags & DOMAIN_FLAG_CLOCK_LOCALTIME ? "localtime" : "utc"),
+            vCpus, connection_get_emulator(conn, arch TSRMLS_CC), disks_xml,
+            networks_xml,
+            (domain_flags & DOMAIN_FLAG_SOUND_AC97 ? "<sound model='ac97'/>\n" : ""));
+    }
 
-    return (strlen(xml) > 0) ? strdup(xml) : NULL;
+    if (rv < 0)
+        return NULL;
+
+    return xml;
 }
 
 /*
