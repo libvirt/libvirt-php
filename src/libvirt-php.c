@@ -1921,7 +1921,6 @@ long get_next_free_numeric_value(virDomainPtr domain, char *xpath)
     HashPosition pointer;
     // int array_count;
     zval *data;
-    unsigned long index;
     long max_slot = -1;
 
     xml = virDomainGetXMLDesc(domain, VIR_DOMAIN_XML_INACTIVE);
@@ -1934,7 +1933,7 @@ long get_next_free_numeric_value(virDomainPtr domain, char *xpath)
     VIRT_FOREACH(arr_hash, pointer, data) {
         if (Z_TYPE_P(data) == IS_STRING) {
             php_libvirt_hash_key_info info;
-            VIRT_HASH_CURRENT_KEY_INFO(arr_hash, pointer, index, info);
+            VIRT_HASH_CURRENT_KEY_INFO(arr_hash, pointer, info);
 
             if (info.type != HASH_KEY_IS_STRING) {
                 long num = -1;
@@ -2439,7 +2438,6 @@ void parse_array(zval *arr, tVMDisk *disk, tVMNetwork *network)
     zval *data;
     php_libvirt_hash_key_info key;
     HashPosition pointer;
-    unsigned long index;
 
     arr_hash = Z_ARRVAL_P(arr);
     //array_count = zend_hash_num_elements(arr_hash);
@@ -2451,7 +2449,7 @@ void parse_array(zval *arr, tVMDisk *disk, tVMNetwork *network)
 
     VIRT_FOREACH(arr_hash, pointer, data) {
         if ((Z_TYPE_P(data) == IS_STRING) || (Z_TYPE_P(data) == IS_LONG)) {
-            VIRT_HASH_CURRENT_KEY_INFO(arr_hash, pointer, index, key);
+            VIRT_HASH_CURRENT_KEY_INFO(arr_hash, pointer, key);
             if (key.type == HASH_KEY_IS_STRING) {
                 if (disk != NULL) {
                     if ((Z_TYPE_P(data) == IS_STRING) && strcmp(key.name, "path") == 0)

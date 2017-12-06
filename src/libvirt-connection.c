@@ -131,8 +131,6 @@ PHP_FUNCTION(libvirt_connect)
     HashPosition pointer;
     int array_count;
 
-    zend_ulong index;
-
     unsigned long libVer;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|sba", &url, &url_len, &readonly, &zcreds) == FAILURE) {
@@ -176,13 +174,13 @@ PHP_FUNCTION(libvirt_connect)
         VIRT_FOREACH(arr_hash, pointer, data) {
             if (Z_TYPE_P(data) == IS_STRING) {
                 php_libvirt_hash_key_info info;
-                VIRT_HASH_CURRENT_KEY_INFO(arr_hash, pointer, index, info);
+                VIRT_HASH_CURRENT_KEY_INFO(arr_hash, pointer, info);
 
                 if (info.type == HASH_KEY_IS_STRING) {
                     PHPWRITE(info.name, info.length);
                 } else {
-                    DPRINTF("%s: credentials index %d\n", PHPFUNC, (int)index);
-                    creds[j].type = index;
+                    DPRINTF("%s: credentials index %d\n", PHPFUNC, info.index);
+                    creds[j].type = info.index;
                     creds[j].result = (char *)emalloc(Z_STRLEN_P(data) + 1);
                     memset(creds[j].result, 0, Z_STRLEN_P(data) + 1);
                     creds[j].resultlen = Z_STRLEN_P(data);

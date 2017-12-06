@@ -135,12 +135,14 @@
 
 #  define VIRT_FOREACH_END(_dummy)
 
-#  define VIRT_HASH_CURRENT_KEY_INFO(_ht, _pos, _idx, _info) \
+#  define VIRT_HASH_CURRENT_KEY_INFO(_ht, _pos, _info) \
     do { \
-    zend_string *tmp_key_info; \
-    _info.type = zend_hash_get_current_key_ex(_ht, &tmp_key_info, &_idx, &_pos); \
-    _info.name = ZSTR_VAL(tmp_key_info); \
-    _info.length = ZSTR_LEN(tmp_key_info); \
+    zend_string *tmp_name = NULL; \
+    _info.type = zend_hash_get_current_key_ex(_ht, &tmp_name, &_info.index, &_pos); \
+    if (tmp_name) { \
+        _info.name = ZSTR_VAL(tmp_name); \
+        _info.length = ZSTR_LEN(tmp_name); \
+    } \
     } while(0)
 
 #  define VIRT_ARRAY_INIT(_name) do { \
@@ -213,9 +215,9 @@
 #  define VIRT_FOREACH_END(_dummy) \
     }}
 
-#  define VIRT_HASH_CURRENT_KEY_INFO(_ht, _pos, _idx, _info) \
+#  define VIRT_HASH_CURRENT_KEY_INFO(_ht, _pos, _info) \
     do { \
-    _info.type = zend_hash_get_current_key_ex(_ht, &_info.name, &_info.length, &_idx, 0, &_pos); \
+    _info.type = zend_hash_get_current_key_ex(_ht, &_info.name, &_info.length, &_info.index, 0, &_pos); \
     } while(0)
 
 #  define VIRT_ARRAY_INIT(_name) do {\

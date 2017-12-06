@@ -137,6 +137,7 @@ typedef struct tVMNetwork {
 typedef struct _php_libvirt_hash_key_info {
     char *name;
     unsigned int length;
+    zend_ulong index;
     unsigned int type;
 } php_libvirt_hash_key_info;
 
