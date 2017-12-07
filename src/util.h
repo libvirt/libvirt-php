@@ -36,6 +36,12 @@
 # define DPRINTF(fmt, ...)      \
     debugPrint(debugSource, fmt, __VA_ARGS__)
 
+# define VIR_FREE(ptr) \
+    do { \
+        free(ptr); \
+        ptr = NULL; \
+    } while (0)
+
 # define ARRAY_CARDINALITY(array) (sizeof(array) / sizeof(array[0]))
 
 # define IS_BIGENDIAN (*(uint16_t *)"\0\xff" < 0x100)
