@@ -2412,6 +2412,8 @@ char *installation_get_xml(virConnectPtr conn, char *name, int memMB,
             (domain_flags & DOMAIN_FLAG_SOUND_AC97 ? "<sound model='ac97'/>\n" : ""));
     }
 
+    VIR_FREE(tmp);
+    VIR_FREE(arch);
     if (rv < 0)
         return NULL;
 
