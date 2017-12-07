@@ -86,6 +86,7 @@ PHP_FUNCTION(libvirt_domain_new)
     HashPosition pointer;
     char vncl[2048] = { 0 };
     char *xml = NULL;
+    char *hostname = NULL;
     int retval = 0;
     char uuid[VIR_UUID_STRING_BUFLEN] = { 0 };
     zend_long flags = 0;
@@ -149,14 +150,14 @@ PHP_FUNCTION(libvirt_domain_new)
     if (tmp == NULL) {
         DPRINTF("%s: Cannot get installation XML\n", PHPFUNC);
         set_error("Cannot get installation XML" TSRMLS_CC);
-        RETURN_FALSE;
+        goto error;
     }
 
     domain = virDomainDefineXML(conn->conn, tmp);
     if (domain == NULL) {
         set_error_if_unset("Cannot define domain from the XML description" TSRMLS_CC);
         DPRINTF("%s: Cannot define domain from the XML description (%s): %s\n", PHPFUNC, LIBVIRT_G(last_error), tmp);
-        RETURN_FALSE;
+        goto error;
     }
 
     if (virDomainCreate(domain) < 0) {
@@ -178,22 +179,31 @@ PHP_FUNCTION(libvirt_domain_new)
         goto error;
     }
 
+    VIR_FREE(tmp);
     tmp = get_string_from_xpath(xml, "//domain/devices/graphics[@type='vnc']/@port", NULL, &retval);
     if (retval < 0) {
         DPRINTF("%s: Cannot get port from XML description\n", PHPFUNC);
         set_error_if_unset("Cannot get port from XML description" TSRMLS_CC);
         goto error;
     }
+    VIR_FREE(xml);
 
-    snprintf(vncl, sizeof(vncl), "%s:%s", virConnectGetHostname(conn->conn), tmp);
+    hostname = virConnectGetHostname(conn->conn);
+    if (!hostname) {
+        DPRINTF("%s: Cannot get hostname\n", PHPFUNC);
+        set_error_if_unset("Cannot get hostname" TSRMLS_CC);
+        goto error;
+    }
+
+    snprintf(vncl, sizeof(vncl), "%s:%s", hostname, tmp);
     DPRINTF("%s: Trying to connect to '%s'\n", PHPFUNC, vncl);
 
 #ifndef EXTWIN
-    if ((fd = connect_socket(virConnectGetHostname(conn->conn), tmp, 0, 0, flags & DOMAIN_FLAG_TEST_LOCAL_VNC)) < 0) {
+    if ((fd = connect_socket(hostname, tmp, 0, 0, flags & DOMAIN_FLAG_TEST_LOCAL_VNC)) < 0) {
         DPRINTF("%s: Cannot connect to '%s'\n", PHPFUNC, vncl);
         snprintf(vncl, sizeof(vncl), "Connection failed, port %s is most likely forbidden on firewall (iptables) on the host (%s)"
                  " or the emulator VNC server is bound to localhost address only.",
-                 tmp, virConnectGetHostname(conn->conn));
+                 tmp, hostname);
     } else {
         close(fd);
         DPRINTF("%s: Connection to '%s' successfull (%s local connection)\n", PHPFUNC, vncl,
@@ -203,6 +213,7 @@ PHP_FUNCTION(libvirt_domain_new)
 
     set_vnc_location(vncl TSRMLS_CC);
 
+    VIR_FREE(tmp);
     tmp = installation_get_xml(conn->conn, name, memMB, maxmemMB,
                                NULL, uuid, vcpus, NULL,
                                vmDisks, numDisks, vmNetworks, numNets,
@@ -232,6 +243,10 @@ PHP_FUNCTION(libvirt_domain_new)
     resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1 TSRMLS_CC);
 
     VIRT_REGISTER_RESOURCE(res_domain, le_libvirt_domain);
+    VIR_FREE(vmDisks);
+    VIR_FREE(vmNetworks);
+    VIR_FREE(tmp);
+    VIR_FREE(hostname);
     return;
 
  error:
@@ -243,6 +258,10 @@ PHP_FUNCTION(libvirt_domain_new)
     }
     if (domainUpdated)
         virDomainFree(domainUpdated);
+    VIR_FREE(vmDisks);
+    VIR_FREE(vmNetworks);
+    VIR_FREE(tmp);
+    VIR_FREE(hostname);
     RETURN_FALSE;
 }
 
