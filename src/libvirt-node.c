@@ -133,8 +133,7 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats)
             VIRT_ADD_ASSOC_STRING(return_value, "cpu", "unknown");
     }
 
-    free(params);
-    params = NULL;
+    VIR_FREE(params);
 }
 
 /*
@@ -227,8 +226,7 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats_for_each_cpu)
 
     add_assoc_zval(return_value, "times", time_array);
 
-    free(params);
-    params = NULL;
+    VIR_FREE(params);
 }
 
 /*
@@ -275,8 +273,7 @@ PHP_FUNCTION(libvirt_node_get_mem_stats)
 
     add_assoc_long(return_value, "time", time(NULL));
 
-    free(params);
-    params = NULL;
+    VIR_FREE(params);
 }
 
 /*

@@ -566,8 +566,7 @@ vnc_read_server_init(int sfd)
 
     params = vnc_parse_fb_params(buf, len + 24);
  cleanup:
-    free(buf);
-    buf = NULL;
+    VIR_FREE(buf);
     return params;
 }
 
@@ -709,7 +708,7 @@ vnc_raw_to_bmp(char *infile, char *outfile, int width, int height)
         }
     }
 
-    free(pixels);
+    VIR_FREE(pixels);
     close(fd2);
     close(fd);
     return 0;

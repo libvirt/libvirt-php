@@ -683,7 +683,7 @@ void free_tokens(tTokenizer t)
     int i;
 
     for (i = 0; i < t.numTokens; i++)
-        free(t.tokens[i]);
+        VIR_FREE(t.tokens[i]);
 }
 
 /*
@@ -1178,9 +1178,9 @@ int is_local_connection(virConnectPtr conn)
 
     freeaddrinfo(info);
     if (lv_hostname)
-        free(lv_hostname);
+        VIR_FREE(lv_hostname);
     if (result)
-        free(result);
+        VIR_FREE(result);
 
     return ret;
 #else
@@ -1634,10 +1634,10 @@ PHP_FUNCTION(libvirt_image_remove)
     if (strcmp(name, hostname) != 0) {
         snprintf(msg, sizeof(msg), "%s works only on local systems!", PHPFUNC);
         set_error(msg TSRMLS_CC);
-        free(hostname);
+        VIR_FREE(hostname);
         RETURN_FALSE;
     }
-    free(hostname);
+    VIR_FREE(hostname);
 
     if (unlink(image) != 0) {
         snprintf(msg, sizeof(msg), "An error occured while unlinking %s: %d (%s)", image, errno, strerror(errno));
@@ -1711,8 +1711,7 @@ char *get_string_from_xpath(char *xml, char *xpath, zval **val, int *retVal)
             if ((value = (char *) xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode, 1))) {
                 snprintf(key, sizeof(key), "%d", i);
                 VIRT_ADD_ASSOC_STRING(*val, key, value);
-                free(value);
-                value = NULL;
+                VIR_FREE(value);
                 ret++;
             }
         }
@@ -1892,7 +1891,7 @@ int get_subnet_bits(char *ip)
             if (binary[i] != '1')
                 break;
     }
-    free(binary);
+    VIR_FREE(binary);
 
     return i - skip;
 }
@@ -1922,11 +1921,14 @@ long get_next_free_numeric_value(virDomainPtr domain, char *xpath)
     // int array_count;
     zval *data;
     long max_slot = -1;
+    char *tmp;
 
     xml = virDomainGetXMLDesc(domain, VIR_DOMAIN_XML_INACTIVE);
     output = (zval *)emalloc(sizeof(zval));
     array_init(output);
-    free(get_string_from_xpath(xml, xpath, &output, &retval));
+
+    tmp = get_string_from_xpath(xml, xpath, &output, &retval);
+    VIR_FREE(tmp);
 
     arr_hash = Z_ARRVAL_P(output);
     // array_count = zend_hash_num_elements(arr_hash);
@@ -1946,7 +1948,7 @@ long get_next_free_numeric_value(virDomainPtr domain, char *xpath)
     } VIRT_FOREACH_END();
 
     efree(output);
-    free(xml);
+    VIR_FREE(xml);
     return max_slot + 1;
 }
 
@@ -1993,9 +1995,9 @@ char *connection_get_domain_type(virConnectPtr conn, char *arch TSRMLS_DC)
     tmp = NULL;
     DPRINTF("%s: Domain type is '%s'\n",  __FUNCTION__, ret);
  cleanup:
-    free(tmpArch);
-    free(caps);
-    free(tmp);
+    VIR_FREE(tmpArch);
+    VIR_FREE(caps);
+    VIR_FREE(tmp);
     return ret;
 }
 
@@ -2041,7 +2043,7 @@ char *connection_get_emulator(virConnectPtr conn, char *arch TSRMLS_DC)
     DPRINTF("%s: No emulator found. Trying next location ...\n", __FUNCTION__);
     snprintf(xpath, sizeof(xpath), "//capabilities/guest/arch[@name='%s']/emulator", arch);
     DPRINTF("%s: Applying xPath '%s' to capabilities XML output\n",  __FUNCTION__, xpath);
-    free(tmp);
+    VIR_FREE(tmp);
     tmp = get_string_from_xpath(caps, xpath, NULL, &retval);
     if (!tmp || retval < 0) {
         DPRINTF("%s: None emulator found\n",  __FUNCTION__);
@@ -2053,9 +2055,9 @@ char *connection_get_emulator(virConnectPtr conn, char *arch TSRMLS_DC)
     tmp = NULL;
     DPRINTF("%s: Emulator is '%s'\n",  __FUNCTION__, ret);
  cleanup:
-    free(tmpArch);
-    free(caps);
-    free(tmp);
+    VIR_FREE(tmpArch);
+    VIR_FREE(caps);
+    VIR_FREE(tmp);
     return ret;
 }
 
@@ -2088,8 +2090,8 @@ char *connection_get_arch(virConnectPtr conn TSRMLS_DC)
     DPRINTF("%s: Host CPU architecture is '%s'\n",  __FUNCTION__, ret);
 
  cleanup:
-    free(caps);
-    free(tmp);
+    VIR_FREE(caps);
+    VIR_FREE(tmp);
     return ret;
 }
 
@@ -2317,7 +2319,7 @@ char *installation_get_xml(virConnectPtr conn, char *name, int memMB,
         if (disk != NULL)
             strcat(disks_xml, disk);
 
-        free(disk);
+        VIR_FREE(disk);
     }
 
     for (i = 0; i < numNetworks; i++) {
@@ -2326,7 +2328,7 @@ char *installation_get_xml(virConnectPtr conn, char *name, int memMB,
         if (network != NULL)
             strcat(networks_xml, network);
 
-        free(network);
+        VIR_FREE(network);
     }
 
     if (iso_image) {

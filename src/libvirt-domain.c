@@ -401,8 +401,8 @@ PHP_FUNCTION(libvirt_domain_get_xml_desc)
         VIRT_RETVAL_STRING(tmp);
     }
 
-    free(tmp);
-    free(xml);
+    VIR_FREE(tmp);
+    VIR_FREE(xml);
 }
 
 /*
@@ -417,6 +417,7 @@ PHP_FUNCTION(libvirt_domain_get_disk_devices)
     php_libvirt_domain *domain = NULL;
     zval *zdomain;
     char *xml;
+    char *tmp;
     int retval = -1;
 
     GET_DOMAIN_FROM_ARGS("r", &zdomain);
@@ -431,8 +432,9 @@ PHP_FUNCTION(libvirt_domain_get_disk_devices)
 
     array_init(return_value);
 
-    free(get_string_from_xpath(xml, "//domain/devices/disk/target/@dev", &return_value, &retval));
-    free(xml);
+    tmp = get_string_from_xpath(xml, "//domain/devices/disk/target/@dev", &return_value, &retval);
+    VIR_FREE(tmp);
+    VIR_FREE(xml);
 
     if (retval < 0)
         add_assoc_long(return_value, "error_code", (long)retval);
@@ -452,6 +454,7 @@ PHP_FUNCTION(libvirt_domain_get_interface_devices)
     php_libvirt_domain *domain = NULL;
     zval *zdomain;
     char *xml;
+    char *tmp;
     int retval = -1;
 
     GET_DOMAIN_FROM_ARGS("r", &zdomain);
@@ -466,8 +469,9 @@ PHP_FUNCTION(libvirt_domain_get_interface_devices)
 
     array_init(return_value);
 
-    free(get_string_from_xpath(xml, "//domain/devices/interface/target/@dev", &return_value, &retval));
-    free(xml);
+    tmp = get_string_from_xpath(xml, "//domain/devices/interface/target/@dev", &return_value, &retval);
+    VIR_FREE(tmp);
+    VIR_FREE(xml);
 
     if (retval < 0)
         add_assoc_long(return_value, "error_code", (long)retval);
@@ -568,11 +572,11 @@ PHP_FUNCTION(libvirt_domain_change_memory)
 
     dom = virDomainDefineXML(conn->conn, new_xml);
     if (dom == NULL) {
-        free(xml);
+        VIR_FREE(xml);
         efree(new_xml);
         RETURN_FALSE;
     }
-    free(xml);
+    VIR_FREE(xml);
     efree(new_xml);
 
     res_domain = (php_libvirt_domain *)emalloc(sizeof(php_libvirt_domain));
@@ -650,11 +654,11 @@ PHP_FUNCTION(libvirt_domain_change_boot_devices)
     dom = virDomainDefineXML(conn->conn, new_xml);
     if (dom == NULL) {
         DPRINTF("%s: Function failed, restoring original XML\n", PHPFUNC);
-        free(xml);
+        VIR_FREE(xml);
         efree(newXml);
         RETURN_FALSE;
     }
-    free(xml);
+    VIR_FREE(xml);
     efree(newXml);
 
     res_domain = (php_libvirt_domain *)emalloc(sizeof(php_libvirt_domain));
@@ -715,7 +719,7 @@ PHP_FUNCTION(libvirt_domain_disk_add)
     }
     tmp = get_string_from_xpath(xml, xpath, NULL, &retval);
     if (tmp != NULL) {
-        free(tmp);
+        VIR_FREE(tmp);
         if (asprintf(&tmp, "Domain already has image <i>%s</i> connected", img) < 0)
             set_error("Out of memory" TSRMLS_CC);
         else
@@ -723,14 +727,14 @@ PHP_FUNCTION(libvirt_domain_disk_add)
         goto error;
     }
 
-    free(xpath);
+    VIR_FREE(xpath);
     if (asprintf(&xpath, "//domain/devices/disk/target[@dev='%s']/./@dev", dev) < 0) {
         set_error("Out of memory" TSRMLS_CC);
         goto error;
     }
     tmp = get_string_from_xpath(xml, newXml, NULL, &retval);
     if (tmp != NULL) {
-        free(tmp);
+        VIR_FREE(tmp);
         if (asprintf(&tmp, "Domain already has device <i>%s</i> connected", dev) < 0)
             set_error("Out of memory" TSRMLS_CC);
         else
@@ -754,15 +758,15 @@ PHP_FUNCTION(libvirt_domain_disk_add)
         goto error;
     }
 
-    free(tmp);
-    free(xpath);
-    free(xml);
+    VIR_FREE(tmp);
+    VIR_FREE(xpath);
+    VIR_FREE(xml);
     RETURN_TRUE;
 
  error:
-    free(tmp);
-    free(xpath);
-    free(xml);
+    VIR_FREE(tmp);
+    VIR_FREE(xpath);
+    VIR_FREE(xml);
     RETURN_FALSE;
 }
 
@@ -825,15 +829,15 @@ PHP_FUNCTION(libvirt_domain_disk_remove)
         goto error;
     }
 
-    free(tmp);
-    free(xpath);
-    free(xml);
+    VIR_FREE(tmp);
+    VIR_FREE(xpath);
+    VIR_FREE(xml);
     RETURN_TRUE;
 
  error:
-    free(tmp);
-    free(xpath);
-    free(xml);
+    VIR_FREE(tmp);
+    VIR_FREE(xpath);
+    VIR_FREE(xml);
     RETURN_FALSE;
 }
 
@@ -885,7 +889,7 @@ PHP_FUNCTION(libvirt_domain_nic_add)
     }
     tmp = get_string_from_xpath(xml, xpath, NULL, &retval);
     if (tmp) {
-        free(tmp);
+        VIR_FREE(tmp);
         if (asprintf(&tmp, "Domain already has NIC device with MAC address <i>%s</i> connected", mac) < 0)
             set_error("Out of memory" TSRMLS_CC);
         else
@@ -920,15 +924,15 @@ PHP_FUNCTION(libvirt_domain_nic_add)
         goto error;
     }
 
-    free(tmp);
-    free(xpath);
-    free(xml);
+    VIR_FREE(tmp);
+    VIR_FREE(xpath);
+    VIR_FREE(xml);
     RETURN_TRUE;
 
  error:
-    free(tmp);
-    free(xpath);
-    free(xml);
+    VIR_FREE(tmp);
+    VIR_FREE(xpath);
+    VIR_FREE(xml);
     RETURN_FALSE;
 }
 
@@ -969,7 +973,7 @@ PHP_FUNCTION(libvirt_domain_nic_remove)
     }
     tmp = get_string_from_xpath(xml, xpath, NULL, &retval);
     if (!tmp) {
-        free(tmp);
+        VIR_FREE(tmp);
         if (asprintf(&tmp, "Domain has no such interface with mac %s", mac) < 0)
             set_error("Out of memory" TSRMLS_CC);
         else
@@ -991,15 +995,15 @@ PHP_FUNCTION(libvirt_domain_nic_remove)
         goto error;
     }
 
-    free(tmp);
-    free(xpath);
-    free(xml);
+    VIR_FREE(tmp);
+    VIR_FREE(xpath);
+    VIR_FREE(xml);
     RETURN_TRUE;
 
  error:
-    free(tmp);
-    free(xpath);
-    free(xml);
+    VIR_FREE(tmp);
+    VIR_FREE(xpath);
+    VIR_FREE(xml);
     RETURN_FALSE;
 }
 
@@ -1585,7 +1589,7 @@ PHP_FUNCTION(libvirt_domain_xml_from_native)
     }
 
     VIRT_RETVAL_STRING(xml);
-    free(xml);
+    VIR_FREE(xml);
 }
 
 /*
@@ -1618,7 +1622,7 @@ PHP_FUNCTION(libvirt_domain_xml_to_native)
     }
 
     VIRT_RETVAL_STRING(config_data);
-    free(config_data);
+    VIR_FREE(config_data);
 }
 
 /*
@@ -2220,14 +2224,14 @@ PHP_FUNCTION(libvirt_domain_xml_xpath)
 
     array_init(return_value);
 
-    free(get_string_from_xpath(xml, (char *)zpath, &return_value, &rc));
+    tmp = get_string_from_xpath(xml, (char *)zpath, &return_value, &rc);
     if (return_value < 0) {
-        free(xml);
+        VIR_FREE(xml);
         RETURN_FALSE;
     }
 
-    free(tmp);
-    free(xml);
+    VIR_FREE(tmp);
+    VIR_FREE(xml);
 
     if (rc == 0)
         RETURN_FALSE;
@@ -2281,12 +2285,12 @@ PHP_FUNCTION(libvirt_domain_get_block_info)
     }
 
     if (retval == 0) {
-        free(xpath);
+        VIR_FREE(xpath);
         if (asprintf(&xpath, "//domain/devices/disk/target[@dev='%s']/../source/@file", dev) < 0) {
             set_error("Out of memory" TSRMLS_CC);
             goto error;
         }
-        free(tmp);
+        VIR_FREE(tmp);
         tmp = get_string_from_xpath(xml, xpath, NULL, &retval);
         if (retval < 0) {
             set_error("Cannot get XPath expression result for file storage" TSRMLS_CC);
@@ -2315,12 +2319,12 @@ PHP_FUNCTION(libvirt_domain_get_block_info)
     else
         VIRT_ADD_ASSOC_STRING(return_value, "partition", tmp);
 
-    free(xpath);
+    VIR_FREE(xpath);
     if (asprintf(&xpath, "//domain/devices/disk/target[@dev='%s']/../driver/@type", dev) < 0) {
         set_error("Out of memory" TSRMLS_CC);
         goto error;
     }
-    free(tmp);
+    VIR_FREE(tmp);
     tmp = get_string_from_xpath(xml, xpath, NULL, &retval);
     if (tmp != NULL)
         VIRT_ADD_ASSOC_STRING(return_value, "type", tmp);
@@ -2329,15 +2333,15 @@ PHP_FUNCTION(libvirt_domain_get_block_info)
     LONGLONG_ASSOC(return_value, "allocation", info.allocation);
     LONGLONG_ASSOC(return_value, "physical", info.physical);
 
-    free(xpath);
-    free(tmp);
-    free(xml);
+    VIR_FREE(xpath);
+    VIR_FREE(tmp);
+    VIR_FREE(xml);
     return;
 
  error:
-    free(xpath);
-    free(tmp);
-    free(xml);
+    VIR_FREE(xpath);
+    VIR_FREE(tmp);
+    VIR_FREE(xml);
     RETURN_FALSE;
 }
 
@@ -2389,8 +2393,8 @@ PHP_FUNCTION(libvirt_domain_get_network_info)
     VIRT_ADD_ASSOC_STRING(return_value, "mac", mac);
     VIRT_ADD_ASSOC_STRING(return_value, "network", tmp);
 
-    free(tmp);
-    free(xpath);
+    VIR_FREE(tmp);
+    VIR_FREE(xpath);
 
     if (asprintf(&xpath, "//domain/devices/interface[@type='network']/mac[@address='%s']/../model/@type", mac) < 0) {
         set_error("Out of memory" TSRMLS_CC);
@@ -2402,15 +2406,15 @@ PHP_FUNCTION(libvirt_domain_get_network_info)
     else
         VIRT_ADD_ASSOC_STRING(return_value, "nic_type", "default");
 
-    free(xml);
-    free(xpath);
-    free(tmp);
+    VIR_FREE(xml);
+    VIR_FREE(xpath);
+    VIR_FREE(tmp);
     return;
 
  error:
-    free(xml);
-    free(xpath);
-    free(tmp);
+    VIR_FREE(xml);
+    VIR_FREE(xpath);
+    VIR_FREE(tmp);
     RETURN_FALSE;
 }
 
@@ -2489,7 +2493,7 @@ PHP_FUNCTION(libvirt_domain_get_metadata)
         RETURN_NULL();
     } else {
         VIRT_RETVAL_STRING(ret);
-        free(ret);
+        VIR_FREE(ret);
     }
 }
 
@@ -2698,16 +2702,16 @@ PHP_FUNCTION(libvirt_domain_get_screenshot)
     VIRT_ZVAL_STRINGL(return_value, buf, fsize);
 
     efree(buf);
-    free(tmp);
-    free(xml);
-    free(pathDup);
+    VIR_FREE(tmp);
+    VIR_FREE(xml);
+    VIR_FREE(pathDup);
     return;
 
  error:
     efree(buf);
-    free(tmp);
-    free(xml);
-    free(pathDup);
+    VIR_FREE(tmp);
+    VIR_FREE(xml);
+    VIR_FREE(pathDup);
     RETURN_FALSE;
 #else
     set_error("Function is not supported on Windows systems" TSRMLS_CC);
@@ -2796,11 +2800,11 @@ PHP_FUNCTION(libvirt_domain_get_screenshot_api)
         VIRT_ADD_ASSOC_STRING(return_value, "mime", mime);
     }
 
-    free(mime);
+    VIR_FREE(mime);
     return;
 
  error:
-    free(mime);
+    VIR_FREE(mime);
     if (fd != -1) {
         unlink(file);
         close(fd);
@@ -2848,7 +2852,7 @@ PHP_FUNCTION(libvirt_domain_get_screen_dimensions)
 
     DPRINTF("%s: hostname = %s, port = %s\n", PHPFUNC, hostname, tmp);
     ret = vnc_get_dimensions(hostname, tmp, &width, &height);
-    free(tmp);
+    VIR_FREE(tmp);
     if (ret != 0) {
         char error[1024] = { 0 };
         if (ret == -9)
@@ -2864,13 +2868,13 @@ PHP_FUNCTION(libvirt_domain_get_screen_dimensions)
     add_assoc_long(return_value, "width", (long)width);
     add_assoc_long(return_value, "height", (long)height);
 
-    free(tmp);
-    free(xml);
+    VIR_FREE(tmp);
+    VIR_FREE(xml);
     return;
 
  error:
-    free(tmp);
-    free(xml);
+    VIR_FREE(tmp);
+    VIR_FREE(xml);
     RETURN_FALSE;
 #else
     set_error("Function is not supported on Windows systems" TSRMLS_CC);
@@ -2929,13 +2933,13 @@ PHP_FUNCTION(libvirt_domain_send_keys)
         goto error;
     }
 
-    free(tmp);
-    free(xml);
+    VIR_FREE(tmp);
+    VIR_FREE(xml);
     RETURN_TRUE;
 
  error:
-    free(tmp);
-    free(xml);
+    VIR_FREE(tmp);
+    VIR_FREE(xml);
     RETURN_FALSE;
 #else
     set_error("Function is not supported on Windows systems" TSRMLS_CC);
@@ -3047,13 +3051,13 @@ PHP_FUNCTION(libvirt_domain_send_pointer_event)
         goto error;
     }
 
-    free(tmp);
-    free(xml);
+    VIR_FREE(tmp);
+    VIR_FREE(xml);
     RETURN_TRUE;
 
  error:
-    free(tmp);
-    free(xml);
+    VIR_FREE(tmp);
+    VIR_FREE(xml);
     RETURN_FALSE;
 #else
     set_error("Function is not supported on Windows systems" TSRMLS_CC);
@@ -3116,7 +3120,7 @@ PHP_FUNCTION(libvirt_domain_qemu_agent_command)
         RETURN_FALSE;
 
     VIRT_RETVAL_STRING(ret);
-    free(ret);
+    VIR_FREE(ret);
 }
 
 /*
@@ -3191,7 +3195,7 @@ PHP_FUNCTION(libvirt_list_domains)
     for (i = 0; i < count; i++) {
         VIRT_ADD_NEXT_INDEX_STRING(return_value, names[i]);
         DPRINTF("%s: Found inactive domain %s\n", PHPFUNC, names[i]);
-        free(names[i]);
+        VIR_FREE(names[i]);
     }
     efree(names);
 }
@@ -3262,7 +3266,7 @@ PHP_FUNCTION(libvirt_list_domain_resources)
             VIRT_REGISTER_LIST_RESOURCE(domain);
             resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1 TSRMLS_CC);
         }
-        free(names[i]);
+        VIR_FREE(names[i]);
     }
     efree(names);
 }
@@ -3379,7 +3383,7 @@ PHP_FUNCTION(libvirt_list_inactive_domains)
     array_init(return_value);
     for (i = 0; i < count; i++) {
         VIRT_ADD_NEXT_INDEX_STRING(return_value,  names[i]);
-        free(names[i]);
+        VIR_FREE(names[i]);
     }
     efree(names);
 }

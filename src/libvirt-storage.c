@@ -165,7 +165,7 @@ PHP_FUNCTION(libvirt_storagepool_list_volumes)
         RETURN_FALSE;
     for (i = 0; i < count; i++) {
         VIRT_ADD_NEXT_INDEX_STRING(return_value,  names[i]);
-        free(names[i]);
+        VIR_FREE(names[i]);
     }
 
     efree(names);
@@ -326,8 +326,8 @@ PHP_FUNCTION(libvirt_storagepool_get_xml_desc)
         VIRT_RETVAL_STRING(tmp);
     }
 
-    free(xml);
-    free(tmp);
+    VIR_FREE(xml);
+    VIR_FREE(tmp);
 }
 
 /*
@@ -704,7 +704,7 @@ PHP_FUNCTION(libvirt_storagevolume_get_path)
         RETURN_FALSE;
 
     VIRT_RETVAL_STRING(retval);
-    free(retval);
+    VIR_FREE(retval);
 }
 
 /*
@@ -774,8 +774,8 @@ PHP_FUNCTION(libvirt_storagevolume_get_xml_desc)
         VIRT_RETVAL_STRING(tmp);
     }
 
-    free(xml);
-    free(tmp);
+    VIR_FREE(xml);
+    VIR_FREE(tmp);
 }
 
 /*
@@ -1036,7 +1036,7 @@ PHP_FUNCTION(libvirt_list_storagepools)
     array_init(return_value);
     for (i = 0; i < count; i++) {
         VIRT_ADD_NEXT_INDEX_STRING(return_value,  names[i]);
-        free(names[i]);
+        VIR_FREE(names[i]);
     }
     efree(names);
 
@@ -1052,7 +1052,7 @@ PHP_FUNCTION(libvirt_list_storagepools)
 
     for (i = 0; i < count; i++) {
         VIRT_ADD_NEXT_INDEX_STRING(return_value, names[i]);
-        free(names[i]);
+        VIR_FREE(names[i]);
     }
     efree(names);
 }
@@ -1088,7 +1088,7 @@ PHP_FUNCTION(libvirt_list_active_storagepools)
     array_init(return_value);
     for (i = 0; i < count; i++) {
         VIRT_ADD_NEXT_INDEX_STRING(return_value,  names[i]);
-        free(names[i]);
+        VIR_FREE(names[i]);
     }
     efree(names);
 }
@@ -1124,7 +1124,7 @@ PHP_FUNCTION(libvirt_list_inactive_storagepools)
     array_init(return_value);
     for (i = 0; i < count; i++) {
         VIRT_ADD_NEXT_INDEX_STRING(return_value, names[i]);
-        free(names[i]);
+        VIR_FREE(names[i]);
     }
     efree(names);
 }

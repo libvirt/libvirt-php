@@ -108,8 +108,8 @@ PHP_FUNCTION(libvirt_network_get_xml_desc)
         VIRT_RETVAL_STRING(tmp);
     }
 
-    free(xml);
-    free(tmp);
+    VIR_FREE(xml);
+    VIR_FREE(tmp);
 }
 
 /*
@@ -189,7 +189,7 @@ PHP_FUNCTION(libvirt_network_get_bridge)
     }
 
     VIRT_RETVAL_STRING(name);
-    free(name);
+    VIR_FREE(name);
 }
 
 /*
@@ -344,14 +344,14 @@ PHP_FUNCTION(libvirt_network_get_information)
         VIRT_ADD_ASSOC_STRING(return_value, "dhcp_end", dhcp_end);
     }
 
-    free(dhcp_end);
-    free(dhcp_start);
-    free(dev);
-    free(mode);
-    free(netmask);
-    free(ipaddr);
-    free(name);
-    free(xml);
+    VIR_FREE(dhcp_end);
+    VIR_FREE(dhcp_start);
+    VIR_FREE(dev);
+    VIR_FREE(mode);
+    VIR_FREE(netmask);
+    VIR_FREE(ipaddr);
+    VIR_FREE(name);
+    VIR_FREE(xml);
 }
 
 /*
@@ -556,7 +556,7 @@ PHP_FUNCTION(libvirt_list_networks)
 
         for (i = 0; i < count; i++) {
             VIRT_ADD_NEXT_INDEX_STRING(return_value,  names[i]);
-            free(names[i]);
+            VIR_FREE(names[i]);
         }
 
         efree(names);
@@ -575,7 +575,7 @@ PHP_FUNCTION(libvirt_list_networks)
 
         for (i = 0; i < count; i++) {
             VIRT_ADD_NEXT_INDEX_STRING(return_value, names[i]);
-            free(names[i]);
+            VIR_FREE(names[i]);
         }
 
         efree(names);

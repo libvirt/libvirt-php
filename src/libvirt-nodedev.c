@@ -100,7 +100,7 @@ PHP_FUNCTION(libvirt_nodedev_capabilities)
     array_init(return_value);
     for (i = 0; i < count; i++) {
         VIRT_ADD_NEXT_INDEX_STRING(return_value, names[i]);
-        free(names[i]);
+        VIR_FREE(names[i]);
     }
 
     efree(names);
@@ -140,8 +140,8 @@ PHP_FUNCTION(libvirt_nodedev_get_xml_desc)
     else
         VIRT_RETVAL_STRING(tmp);
 
-    free(xml);
-    free(tmp);
+    VIR_FREE(xml);
+    VIR_FREE(tmp);
 }
 
 /*
@@ -185,7 +185,7 @@ PHP_FUNCTION(libvirt_nodedev_get_information)
     VIRT_ADD_ASSOC_STRING(return_value, "name", tmp);
 
     /* Get parent name */
-    free(tmp);
+    VIR_FREE(tmp);
     tmp = get_string_from_xpath(xml, "//device/parent", NULL, &retval);
     if ((tmp != NULL) && (retval > 0))
         VIRT_ADD_ASSOC_STRING(return_value, "parent", tmp);
@@ -198,105 +198,105 @@ PHP_FUNCTION(libvirt_nodedev_get_information)
     /* System capability is having hardware and firmware sub-blocks */
     if (strcmp(cap, "system") == 0) {
         /* Get hardware vendor */
-        free(tmp);
+        VIR_FREE(tmp);
         tmp = get_string_from_xpath(xml, "//device/capability/hardware/vendor", NULL, &retval);
         if ((tmp != NULL) && (retval > 0))
             VIRT_ADD_ASSOC_STRING(return_value, "hardware_vendor", tmp);
 
         /* Get hardware version */
-        free(tmp);
+        VIR_FREE(tmp);
         tmp = get_string_from_xpath(xml, "//device/capability/hardware/version", NULL, &retval);
         if ((tmp != NULL) && (retval > 0))
             VIRT_ADD_ASSOC_STRING(return_value, "hardware_version", tmp);
 
         /* Get hardware serial */
-        free(tmp);
+        VIR_FREE(tmp);
         tmp = get_string_from_xpath(xml, "//device/capability/hardware/serial", NULL, &retval);
         if ((tmp != NULL) && (retval > 0))
             VIRT_ADD_ASSOC_STRING(return_value, "hardware_serial", tmp);
 
         /* Get hardware UUID */
-        free(tmp);
+        VIR_FREE(tmp);
         tmp = get_string_from_xpath(xml, "//device/capability/hardware/uuid", NULL, &retval);
         if (tmp != NULL)
             VIRT_ADD_ASSOC_STRING(return_value, "hardware_uuid", tmp);
 
         /* Get firmware vendor */
-        free(tmp);
+        VIR_FREE(tmp);
         tmp = get_string_from_xpath(xml, "//device/capability/firmware/vendor", NULL, &retval);
         if ((tmp != NULL) && (retval > 0))
             VIRT_ADD_ASSOC_STRING(return_value, "firmware_vendor", tmp);
 
         /* Get firmware version */
-        free(tmp);
+        VIR_FREE(tmp);
         tmp = get_string_from_xpath(xml, "//device/capability/firmware/version", NULL, &retval);
         if ((tmp != NULL) && (retval > 0))
             VIRT_ADD_ASSOC_STRING(return_value, "firmware_version", tmp);
 
         /* Get firmware release date */
-        free(tmp);
+        VIR_FREE(tmp);
         tmp = get_string_from_xpath(xml, "//device/capability/firmware/release_date", NULL, &retval);
         if ((tmp != NULL) && (retval > 0))
             VIRT_ADD_ASSOC_STRING(return_value, "firmware_release_date", tmp);
     }
 
     /* Get product_id */
-    free(tmp);
+    VIR_FREE(tmp);
     tmp = get_string_from_xpath(xml, "//device/capability/product/@id", NULL, &retval);
     if ((tmp != NULL) && (retval > 0))
         VIRT_ADD_ASSOC_STRING(return_value, "product_id", tmp);
 
     /* Get product_name */
-    free(tmp);
+    VIR_FREE(tmp);
     tmp = get_string_from_xpath(xml, "//device/capability/product", NULL, &retval);
     if ((tmp != NULL) && (retval > 0))
         VIRT_ADD_ASSOC_STRING(return_value, "product_name", tmp);
 
     /* Get vendor_id */
-    free(tmp);
+    VIR_FREE(tmp);
     tmp = get_string_from_xpath(xml, "//device/capability/vendor/@id", NULL, &retval);
     if ((tmp != NULL) && (retval > 0))
         VIRT_ADD_ASSOC_STRING(return_value, "vendor_id", tmp);
 
     /* Get vendor_name */
-    free(tmp);
+    VIR_FREE(tmp);
     tmp = get_string_from_xpath(xml, "//device/capability/vendor", NULL, &retval);
     if ((tmp != NULL) && (retval > 0))
         VIRT_ADD_ASSOC_STRING(return_value, "vendor_name", tmp);
 
     /* Get driver name */
-    free(tmp);
+    VIR_FREE(tmp);
     tmp = get_string_from_xpath(xml, "//device/driver/name", NULL, &retval);
     if ((tmp != NULL) && (retval > 0))
         VIRT_ADD_ASSOC_STRING(return_value, "driver_name", tmp);
 
     /* Get driver name */
-    free(tmp);
+    VIR_FREE(tmp);
     tmp = get_string_from_xpath(xml, "//device/capability/interface", NULL, &retval);
     if ((tmp != NULL) && (retval > 0))
         VIRT_ADD_ASSOC_STRING(return_value, "interface_name", tmp);
 
     /* Get driver name */
-    free(tmp);
+    VIR_FREE(tmp);
     tmp = get_string_from_xpath(xml, "//device/capability/address", NULL, &retval);
     if ((tmp != NULL) && (retval > 0))
         VIRT_ADD_ASSOC_STRING(return_value, "address", tmp);
 
     /* Get driver name */
-    free(tmp);
+    VIR_FREE(tmp);
     tmp = get_string_from_xpath(xml, "//device/capability/capability/@type", NULL, &retval);
     if ((tmp != NULL) && (retval > 0))
         VIRT_ADD_ASSOC_STRING(return_value, "capabilities", tmp);
 
-    free(cap);
-    free(tmp);
-    free(xml);
+    VIR_FREE(cap);
+    VIR_FREE(tmp);
+    VIR_FREE(xml);
     return;
 
  error:
-    free(cap);
-    free(tmp);
-    free(xml);
+    VIR_FREE(cap);
+    VIR_FREE(tmp);
+    VIR_FREE(xml);
     RETURN_FALSE;
 }
 
@@ -333,7 +333,7 @@ PHP_FUNCTION(libvirt_list_nodedevs)
     array_init(return_value);
     for (i = 0; i < count; i++) {
         VIRT_ADD_NEXT_INDEX_STRING(return_value,  names[i]);
-        free(names[i]);
+        VIR_FREE(names[i]);
     }
 
     efree(names);

@@ -152,7 +152,7 @@ PHP_FUNCTION(libvirt_domain_snapshot_get_xml)
         RETURN_FALSE;
 
     VIRT_RETVAL_STRING(xml);
-    free(xml);
+    VIR_FREE(xml);
 }
 
 /*
@@ -237,7 +237,7 @@ PHP_FUNCTION(libvirt_list_domain_snapshots)
         array_init(return_value);
         for (i = 0; i < count; i++) {
             VIRT_ADD_NEXT_INDEX_STRING(return_value, names[i]);
-            free(names[i]);
+            VIR_FREE(names[i]);
         }
     }
     efree(names);

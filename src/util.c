@@ -53,7 +53,7 @@ void debugPrint(const char *source,
 
     datetime = get_datetime();
     fprintf(stderr, "[%s libvirt-php/%s ]: ", datetime, source);
-    free(datetime);
+    VIR_FREE(datetime);
 
     if (fmt) {
         va_start(args, fmt);

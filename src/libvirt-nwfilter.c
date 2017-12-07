@@ -130,8 +130,8 @@ PHP_FUNCTION(libvirt_nwfilter_get_xml_desc)
     else
         VIRT_RETVAL_STRING(tmp);
 
-    free(xml);
-    free(tmp);
+    VIR_FREE(xml);
+    VIR_FREE(tmp);
 }
 
 /*
@@ -403,7 +403,7 @@ PHP_FUNCTION(libvirt_list_nwfilters)
 
     for (i = 0; i < count; i++) {
         VIRT_ADD_NEXT_INDEX_STRING(return_value,  names[i]);
-        free(names[i]);
+        VIR_FREE(names[i]);
     }
 
     efree(names);

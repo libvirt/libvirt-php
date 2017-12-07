@@ -231,7 +231,7 @@ PHP_FUNCTION(libvirt_connect_get_uri)
         RETURN_FALSE;
 
     VIRT_RETVAL_STRING(uri);
-    free(uri);
+    VIR_FREE(uri);
 }
 
 /*
@@ -255,7 +255,7 @@ PHP_FUNCTION(libvirt_connect_get_hostname)
         RETURN_FALSE;
 
     VIRT_RETVAL_STRING(hostname);
-    free(hostname);
+    VIR_FREE(hostname);
 }
 
 /*
@@ -326,8 +326,8 @@ PHP_FUNCTION(libvirt_connect_get_capabilities)
         VIRT_RETVAL_STRING(tmp);
     }
 
-    free(caps);
-    free(tmp);
+    VIR_FREE(caps);
+    VIR_FREE(tmp);
 }
 
 /*
@@ -358,7 +358,7 @@ PHP_FUNCTION(libvirt_connect_get_emulator)
     }
 
     VIRT_RETVAL_STRING(tmp);
-    free(tmp);
+    VIR_FREE(tmp);
 }
 
 /*
@@ -571,7 +571,7 @@ PHP_FUNCTION(libvirt_connect_get_sysinfo)
         RETURN_FALSE;
 
     VIRT_RETVAL_STRING(sysinfo);
-    free(sysinfo);
+    VIR_FREE(sysinfo);
 }
 
 /*
@@ -631,10 +631,10 @@ PHP_FUNCTION(libvirt_connect_get_information)
     DPRINTF("%s: Got connection URI of %s...\n", PHPFUNC, tmp);
     array_init(return_value);
     VIRT_ADD_ASSOC_STRING(return_value, "uri", tmp ? tmp : "unknown");
-    free(tmp);
+    VIR_FREE(tmp);
     tmp = virConnectGetHostname(conn->conn);
     VIRT_ADD_ASSOC_STRING(return_value, "hostname", tmp ? tmp : "unknown");
-    free(tmp);
+    VIR_FREE(tmp);
 
     if ((virConnectGetVersion(conn->conn, &hvVer) == 0) && (type = virConnectGetType(conn->conn))) {
         VIRT_ADD_ASSOC_STRING(return_value, "hypervisor", (char *)type);
@@ -759,10 +759,10 @@ PHP_FUNCTION(libvirt_connect_get_machine_types)
                                 VIRT_ADD_ASSOC_STRING(arr4, "maxCpus", numTmp);
 
                                 add_assoc_zval_ex(arr2, key, strlen(key) + 1, arr4);
-                                free(numTmp);
+                                VIR_FREE(numTmp);
                             }
 
-                            free(ret3[k]);
+                            VIR_FREE(ret3[k]);
                         }
                     }
 
@@ -793,10 +793,10 @@ PHP_FUNCTION(libvirt_connect_get_machine_types)
                                 VIRT_ADD_ASSOC_STRING(arr4, "maxCpus", numTmp);
 
                                 add_assoc_zval_ex(arr3, key, strlen(key) + 1, arr4);
-                                free(numTmp);
+                                VIR_FREE(numTmp);
                             }
 
-                            free(ret3[k]);
+                            VIR_FREE(ret3[k]);
                         }
 
                         add_assoc_zval_ex(arr2, ret2[j], strlen(ret2[j]) + 1, arr3);
@@ -806,7 +806,7 @@ PHP_FUNCTION(libvirt_connect_get_machine_types)
 
                 add_assoc_zval_ex(return_value, ret[i], strlen(ret[i]) + 1, arr2);
             }
-            free(ret[i]);
+            VIR_FREE(ret[i]);
         }
     }
 }
