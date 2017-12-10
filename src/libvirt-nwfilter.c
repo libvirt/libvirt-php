@@ -145,12 +145,11 @@ PHP_FUNCTION(libvirt_nwfilter_get_uuid_string)
 {
     php_libvirt_nwfilter *nwfilter = NULL;
     zval *znwfilter;
-    char *uuid = NULL;
+    char uuid[VIR_UUID_STRING_BUFLEN];
     int ret = -1;
 
     GET_NWFILTER_FROM_ARGS("r", &znwfilter);
 
-    uuid = (char *) emalloc(VIR_UUID_STRING_BUFLEN);
     ret = virNWFilterGetUUIDString(nwfilter->nwfilter, uuid);
 
     DPRINTF("%s: virNWFilterGetUUIDString(%p) returned %d (%s)\n", PHPFUNC,
@@ -160,7 +159,6 @@ PHP_FUNCTION(libvirt_nwfilter_get_uuid_string)
         RETURN_FALSE;
 
     VIRT_RETURN_STRING(uuid);
-    efree(uuid);
 }
 
 /*
