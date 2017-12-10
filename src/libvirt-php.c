@@ -2277,6 +2277,7 @@ char *installation_get_xml(virConnectPtr conn, char *name, int memMB,
 {
     int i;
     char *xml = NULL;
+    char *emulator = NULL;
     char disks_xml[16384] = { 0 };
     char networks_xml[16384] = { 0 };
     char features[128] = { 0 };
@@ -2302,6 +2303,11 @@ char *installation_get_xml(virConnectPtr conn, char *name, int memMB,
     if (arch == NULL) {
         arch = connection_get_arch(conn TSRMLS_CC);
         DPRINTF("%s: No architecture defined, got host arch of '%s'\n", __FUNCTION__, arch);
+    }
+
+    if (!(emulator = connection_get_emulator(conn, arch TSRMLS_CC))) {
+        DPRINTF("%s: Cannot get emulator\n", __FUNCTION__);
+        return NULL;
     }
 
     if (iso_image && access(iso_image, R_OK) != 0) {
@@ -2370,7 +2376,7 @@ char *installation_get_xml(virConnectPtr conn, char *name, int memMB,
                       "</domain>",
             type, name, memMB * 1024, maxmemMB * 1024, uuid, arch, features,
             (domain_flags & DOMAIN_FLAG_CLOCK_LOCALTIME ? "localtime" : "utc"),
-            vCpus, connection_get_emulator(conn, arch TSRMLS_CC), disks_xml,
+            vCpus, emulator, disks_xml,
             iso_image, networks_xml,
             (domain_flags & DOMAIN_FLAG_SOUND_AC97 ? "<sound model='ac97'/>\n" : ""));
     } else {
@@ -2409,11 +2415,12 @@ char *installation_get_xml(virConnectPtr conn, char *name, int memMB,
                       "</domain>",
             type, name, memMB * 1024, maxmemMB * 1024, uuid, arch, features,
             (domain_flags & DOMAIN_FLAG_CLOCK_LOCALTIME ? "localtime" : "utc"),
-            vCpus, connection_get_emulator(conn, arch TSRMLS_CC), disks_xml,
+            vCpus, emulator, disks_xml,
             networks_xml,
             (domain_flags & DOMAIN_FLAG_SOUND_AC97 ? "<sound model='ac97'/>\n" : ""));
     }
 
+    VIR_FREE(emulator);
     VIR_FREE(tmp);
     VIR_FREE(arch);
     if (rv < 0)

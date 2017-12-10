@@ -404,6 +404,7 @@ PHP_FUNCTION(libvirt_connect_get_nic_models)
     char cmd[4096] = { 0 };
     char tmp2[16]  = { 0 };
     snprintf(cmd, sizeof(cmd), "%s -net nic,model=? 2>&1", tmp);
+    VIR_FREE(tmp);
 
     FILE *fp = popen(cmd, "r");
     if (fp == NULL)
@@ -475,6 +476,7 @@ PHP_FUNCTION(libvirt_connect_get_soundhw_models)
 
     char cmd[4096] = { 0 };
     snprintf(cmd, sizeof(cmd), "%s -soundhw help 2>&1", tmp);
+    VIR_FREE(tmp);
 
     FILE *fp = popen(cmd, "r");
     if (fp == NULL)
