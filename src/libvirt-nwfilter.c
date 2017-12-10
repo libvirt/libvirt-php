@@ -30,7 +30,7 @@ php_libvirt_nwfilter_dtor(virt_resource *rsrc TSRMLS_DC)
                 DPRINTF("%s: virNWFilterFree(%p) returned %d\n", __FUNCTION__, nwfilter->nwfilter, rv);
                 php_error_docref(NULL TSRMLS_CC, E_WARNING, "virNWFilterFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
             } else {
-                DPRINTF("%s: virNWFilterFee(%p) completed successfully\n", __FUNCTION__, nwfilter->nwfilter);
+                DPRINTF("%s: virNWFilterFree(%p) completed successfully\n", __FUNCTION__, nwfilter->nwfilter);
                 resource_change_counter(INT_RESOURCE_NWFILTER, nwfilter->conn->conn, nwfilter->nwfilter, 0 TSRMLS_CC);
             }
             nwfilter->nwfilter = NULL;
