@@ -364,6 +364,7 @@ PHP_FUNCTION(libvirt_list_all_nwfilters)
                                 res_nwfilter->nwfilter, 1 TSRMLS_CC);
         VIRT_REGISTER_LIST_RESOURCE(nwfilter);
     }
+    VIR_FREE(filters);
 }
 
 /*
