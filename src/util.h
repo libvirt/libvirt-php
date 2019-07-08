@@ -151,10 +151,11 @@
     } \
     } while(0)
 
-#  define VIRT_ARRAY_INIT(_name) do { \
+#  define VIRT_ARRAY_INIT(_name) \
     zval z##_name; \
-    _name = &z##_name; \
-    array_init(_name); \
+    do { \
+      _name = &z##_name; \
+      array_init(_name); \
     } while(0)
 
 # else /* PHP_MAJOR_VERSION < 7 */
