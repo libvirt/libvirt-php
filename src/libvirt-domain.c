@@ -1949,6 +1949,61 @@ PHP_FUNCTION(libvirt_domain_block_job_set_speed)
 }
 
 /*
+ * Function name:   libvirt_domain_interface_addresses
+ * Since version:   0.5.5
+ * Description:     Function is used to get network interface addresses for the domain
+ * Arguments:       @domain [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
+ *                  @source [int]: one of the VIR_DOMAIN_ADDRESSES_SRC_* flags.
+ * Returns:         interface array of a domain holding information about addresses resembling the virDomainInterface structure, false on error
+ */
+PHP_FUNCTION(libvirt_domain_interface_addresses)
+{
+    php_libvirt_domain *domain = NULL;
+    zval *zdomain;
+    zend_long source = 0;
+
+    virDomainInterfacePtr *ifaces = NULL;
+    int count = 0;
+    size_t i, j;
+
+    GET_DOMAIN_FROM_ARGS("rl", &zdomain, &source);
+
+    if ((count = virDomainInterfaceAddresses(domain->domain, &ifaces, source, 0)) < 0) {
+        RETURN_FALSE
+        goto cleanup;
+    }
+
+    array_init(return_value);
+
+    for (i = 0; i < count; i++) {
+        zval *iface;
+        VIRT_ARRAY_INIT(iface);
+        VIRT_ADD_ASSOC_STRING(iface, "name", ifaces[i]->name);
+        VIRT_ADD_ASSOC_STRING(iface, "hwaddr", ifaces[i]->hwaddr);
+        add_assoc_long(iface, "naddrs", ifaces[i]->naddrs);
+
+        for (j = 0; j < ifaces[i]->naddrs; j++) {
+            zval *ifaddr;
+            VIRT_ARRAY_INIT(ifaddr);
+            VIRT_ADD_ASSOC_STRING(ifaddr, "addr", ifaces[i]->addrs[j].addr);
+            add_assoc_long(ifaddr, "prefix", ifaces[i]->addrs[j].prefix);
+            add_assoc_long(ifaddr, "type", ifaces[i]->addrs[j].type);
+
+            add_assoc_zval(iface, "addrs", ifaddr);
+        }
+
+        add_index_zval(return_value, i, iface);
+    }
+
+ cleanup:
+    if (ifaces && count > 0) {
+        for (i = 0; i < count; i++)
+            virDomainInterfaceFree(ifaces[i]);
+    }
+    VIR_FREE(ifaces);
+}
+
+/*
  * Function name:   libvirt_domain_interface_stats
  * Since version:   0.4.1(-1)
  * Description:     Function is used to get the domain's interface stats
