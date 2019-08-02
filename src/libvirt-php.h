@@ -173,6 +173,7 @@ tTokenizer tokenize(char *string, char *by);
 void free_tokens(tTokenizer t);
 int set_logfile(char *filename, long maxsize TSRMLS_DC);
 char *get_string_from_xpath(char *xml, char *xpath, zval **val, int *retVal);
+char *get_node_string_from_xpath(char *xml, char *xpath);
 char **get_array_from_xpath(char *xml, char *xpath, int *num);
 void parse_array(zval *arr, tVMDisk *disk, tVMNetwork *network);
 char *installation_get_xml(virConnectPtr conn, char *name, int memMB,

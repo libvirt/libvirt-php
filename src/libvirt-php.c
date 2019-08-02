@@ -1660,7 +1660,7 @@ PHP_FUNCTION(libvirt_image_remove)
 /*
  * Private function name:   get_string_from_xpath
  * Since version:           0.4.1(-1)
- * Description:             Function is used to get the XML xPath expression from the XML document. This can be added to val array if not NULL.
+ * Description:             Function is used to get the XML xPath expression from the XML document. This can be added to val array if not NULL. Note that the result of @xpath is viewed as "string(@xpath)" which may not be what you want. See get_node_string_from_xpath().
  * Arguments:               @xml [string]: input XML document
  *                          @xpath [string]: xPath expression to find nodes in the XML document
  *                          @val [array]: Zend array resource to put data to
@@ -1739,6 +1739,66 @@ char *get_string_from_xpath(char *xml, char *xpath, zval **val, int *retVal)
     xmlCleanupParser();
     return value;
 }
+
+
+/*
+ * Private function name:   get_node_string_from_xpath
+ * Since version:           0.5.5
+ * Description:             Evaluate @xpath and convert retuned node to string. The difference to get_string_from_xpath() is that get_string_from_xpath() puts implicit string() around @xpath and get_node_string_from_xpath() evaluates @xpath as is and only then translates xml node into a C string.
+ *
+ * Arguments:               @xml [string]: input XML document
+ *                          @xpath [string]: xPath expression to find nodes in the XML document
+ * Returns:                 stringified result of @xpath evaluation
+ */
+char *get_node_string_from_xpath(char *xml, char *xpath)
+{
+    xmlParserCtxtPtr xp = NULL;
+    xmlDocPtr doc = NULL;
+    xmlXPathContextPtr context = NULL;
+    xmlXPathObjectPtr result = NULL;
+    xmlNodeSetPtr nodeset = NULL;
+    size_t i;
+    char *value = NULL;
+    xmlBufferPtr xmlbuf = NULL;
+    char *ret = NULL;
+
+
+    if (!xpath || !xml)
+        return NULL;
+
+    if (!(xp = xmlCreateDocParserCtxt((xmlChar *)xml)))
+        return NULL;
+
+    if (!(doc = xmlCtxtReadDoc(xp, (xmlChar *)xml, NULL, NULL, 0)) ||
+        !(context = xmlXPathNewContext(doc)) ||
+        !(result = xmlXPathEvalExpression((xmlChar *)xpath, context)))
+        goto cleanup;
+
+    if (xmlXPathNodeSetIsEmpty(result->nodesetval))
+        goto cleanup;
+
+    if (result->nodesetval->nodeNr > 1) {
+        set_error("XPATH returned too much nodes, expeced only 1" TSRMLS_CC);
+        goto cleanup;
+    }
+
+    if (!(xmlbuf = xmlBufferCreate()) ||
+        xmlNodeDump(xmlbuf, doc, result->nodesetval->nodeTab[0], 0, 1) == 0 ||
+        !(ret = strdup((const char *)xmlBufferContent(xmlbuf)))) {
+        set_error("failed to convert the XML node tree" TSRMLS_CC);
+        goto cleanup;
+    }
+
+ cleanup:
+    xmlBufferFree(xmlbuf);
+    xmlXPathFreeObject(result);
+    xmlXPathFreeContext(context);
+    xmlFreeDoc(doc);
+    xmlFreeParserCtxt(xp);
+    xmlCleanupParser();
+    return ret;
+}
+
 
 /*
  * Private function name:   get_array_from_xpath
