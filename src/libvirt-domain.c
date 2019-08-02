@@ -802,12 +802,12 @@ PHP_FUNCTION(libvirt_domain_disk_remove)
         RETURN_FALSE;
     }
 
-    if (asprintf(&xpath, "//domain/devices/disk/target[@dev='%s']/./@dev", dev) < 0) {
+    if (asprintf(&xpath, "/domain/devices/disk[target/@dev='%s']", dev) < 0) {
         set_error("Out of memory" TSRMLS_CC);
         goto error;
     }
-    tmp = get_string_from_xpath(xml, xpath, NULL, &retval);
-    if (!tmp) {
+    newXml = get_node_string_from_xpath(xml, xpath);
+    if (!newXml) {
         if (asprintf(&tmp, "Device <i>%s</i> is not connected to the guest", dev) < 0)
             set_error("Out of memory" TSRMLS_CC);
         else
@@ -815,17 +815,9 @@ PHP_FUNCTION(libvirt_domain_disk_remove)
         goto error;
     }
 
-    if (asprintf(&newXml,
-                 "    <disk type='file' device='disk'>\n"
-                 "      <target dev='%s'/>\n"
-                 "    </disk>", dev) < 0) {
-        set_error("Out of memory" TSRMLS_CC);
-        goto error;
-    }
-
     if (virDomainDetachDeviceFlags(domain->domain,
                                    newXml, VIR_DOMAIN_AFFECT_CONFIG) < 0) {
-        set_error("Unable to attach disk" TSRMLS_CC);
+        set_error("Unable to detach disk" TSRMLS_CC);
         goto error;
     }
 
