@@ -701,6 +701,7 @@ PHP_FUNCTION(libvirt_domain_disk_add)
     int retval = -1;
     char *xpath = NULL;
     char *tmp = NULL;
+    unsigned int attachFlags = VIR_DOMAIN_AFFECT_CURRENT;
 
     GET_DOMAIN_FROM_ARGS("rssss|l", &zdomain, &img, &img_len, &dev, &dev_len, &typ, &typ_len, &driver, &driver_len, &xflags);
 
@@ -752,8 +753,10 @@ PHP_FUNCTION(libvirt_domain_disk_add)
         goto error;
     }
 
-    if (virDomainAttachDeviceFlags(domain->domain,
-                                   newXml, VIR_DOMAIN_AFFECT_CONFIG) < 0) {
+    if (xflags & VIR_DOMAIN_XML_INACTIVE)
+        attachFlags = VIR_DOMAIN_AFFECT_CONFIG;
+
+    if (virDomainAttachDeviceFlags(domain->domain, newXml, attachFlags) < 0) {
         set_error("Unable to attach disk" TSRMLS_CC);
         goto error;
     }
@@ -793,6 +796,7 @@ PHP_FUNCTION(libvirt_domain_disk_remove)
     int retval = -1;
     char *xpath = NULL;
     char *tmp = NULL;
+    unsigned int detachFlags = VIR_DOMAIN_AFFECT_CURRENT;
 
     GET_DOMAIN_FROM_ARGS("rs|l", &zdomain, &dev, &dev_len, &xflags);
 
@@ -817,8 +821,10 @@ PHP_FUNCTION(libvirt_domain_disk_remove)
         goto error;
     }
 
-    if (virDomainDetachDeviceFlags(domain->domain,
-                                   newXml, VIR_DOMAIN_AFFECT_CONFIG) < 0) {
+    if (xflags & VIR_DOMAIN_XML_INACTIVE)
+        detachFlags = VIR_DOMAIN_AFFECT_CONFIG;
+
+    if (virDomainDetachDeviceFlags(domain->domain, newXml, detachFlags) < 0) {
         set_error("Unable to detach disk" TSRMLS_CC);
         goto error;
     }
@@ -864,6 +870,7 @@ PHP_FUNCTION(libvirt_domain_nic_add)
     int retval = -1;
     char *xpath = NULL;
     char *tmp = NULL;
+    unsigned int attachFlags = VIR_DOMAIN_AFFECT_CURRENT;
 
     DPRINTF("%s: Entering\n", PHPFUNC);
 
@@ -914,8 +921,10 @@ PHP_FUNCTION(libvirt_domain_nic_add)
         }
     }
 
-    if (virDomainAttachDeviceFlags(domain->domain,
-                                   newXml, VIR_DOMAIN_AFFECT_CONFIG) < 0) {
+    if (xflags & VIR_DOMAIN_XML_INACTIVE)
+        attachFlags = VIR_DOMAIN_AFFECT_CONFIG;
+
+    if (virDomainAttachDeviceFlags(domain->domain, newXml, attachFlags) < 0) {
         set_error("Unable to attach interface" TSRMLS_CC);
         goto error;
     }
@@ -955,6 +964,7 @@ PHP_FUNCTION(libvirt_domain_nic_remove)
     int retval = -1;
     char *xpath = NULL;
     char *tmp = NULL;
+    unsigned int detachFlags = VIR_DOMAIN_AFFECT_CURRENT;
 
     GET_DOMAIN_FROM_ARGS("rs|l", &zdomain, &mac, &mac_len, &xflags);
 
@@ -987,8 +997,10 @@ PHP_FUNCTION(libvirt_domain_nic_remove)
         goto error;
     }
 
-    if (virDomainDetachDeviceFlags(domain->domain,
-                                   newXml, VIR_DOMAIN_AFFECT_CONFIG) < 0) {
+    if (xflags & VIR_DOMAIN_XML_INACTIVE)
+        detachFlags = VIR_DOMAIN_AFFECT_CONFIG;
+
+    if (virDomainDetachDeviceFlags(domain->domain, newXml, detachFlags) < 0) {
         set_error("Unable to detach interface" TSRMLS_CC);
         goto error;
     }
