@@ -760,12 +760,14 @@ PHP_FUNCTION(libvirt_domain_disk_add)
 
     VIR_FREE(tmp);
     VIR_FREE(xpath);
+    VIR_FREE(newXml);
     VIR_FREE(xml);
     RETURN_TRUE;
 
  error:
     VIR_FREE(tmp);
     VIR_FREE(xpath);
+    VIR_FREE(newXml);
     VIR_FREE(xml);
     RETURN_FALSE;
 }
@@ -823,12 +825,14 @@ PHP_FUNCTION(libvirt_domain_disk_remove)
 
     VIR_FREE(tmp);
     VIR_FREE(xpath);
+    VIR_FREE(newXml);
     VIR_FREE(xml);
     RETURN_TRUE;
 
  error:
     VIR_FREE(tmp);
     VIR_FREE(xpath);
+    VIR_FREE(newXml);
     VIR_FREE(xml);
     RETURN_FALSE;
 }
@@ -918,12 +922,14 @@ PHP_FUNCTION(libvirt_domain_nic_add)
 
     VIR_FREE(tmp);
     VIR_FREE(xpath);
+    VIR_FREE(newXml);
     VIR_FREE(xml);
     RETURN_TRUE;
 
  error:
     VIR_FREE(tmp);
     VIR_FREE(xpath);
+    VIR_FREE(newXml);
     VIR_FREE(xml);
     RETURN_FALSE;
 }
@@ -989,12 +995,14 @@ PHP_FUNCTION(libvirt_domain_nic_remove)
 
     VIR_FREE(tmp);
     VIR_FREE(xpath);
+    VIR_FREE(newXml);
     VIR_FREE(xml);
     RETURN_TRUE;
 
  error:
     VIR_FREE(tmp);
     VIR_FREE(xpath);
+    VIR_FREE(newXml);
     VIR_FREE(xml);
     RETURN_FALSE;
 }
