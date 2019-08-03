@@ -975,25 +975,18 @@ PHP_FUNCTION(libvirt_domain_nic_remove)
         set_error_if_unset("Cannot get the XML description" TSRMLS_CC);
         RETURN_FALSE;
     }
-    if (asprintf(&xpath, "//domain/devices/interface[@type='network']/mac[@address='%s']/./@mac", mac) < 0) {
+
+    if (asprintf(&xpath, "/domain/devices/interface[mac/@address='%s']", mac) < 0) {
         set_error("Out of memory" TSRMLS_CC);
         goto error;
     }
-    tmp = get_string_from_xpath(xml, xpath, NULL, &retval);
-    if (!tmp) {
-        VIR_FREE(tmp);
+
+    newXml = get_node_string_from_xpath(xml, xpath);
+    if (!newXml) {
         if (asprintf(&tmp, "Domain has no such interface with mac %s", mac) < 0)
             set_error("Out of memory" TSRMLS_CC);
         else
             set_error(tmp TSRMLS_CC);
-        goto error;
-    }
-
-    if (asprintf(&newXml,
-                 "   <interface type='network'>\n"
-                 "       <mac address='%s' />\n"
-                 "   </interface>", mac) < 0) {
-        set_error("Out of memory" TSRMLS_CC);
         goto error;
     }
 
