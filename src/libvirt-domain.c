@@ -3194,70 +3194,40 @@ PHP_FUNCTION(libvirt_list_domains)
 {
     php_libvirt_connection *conn = NULL;
     zval *zconn;
-    int count = -1;
-    int expectedcount = -1;
-    int *ids;
-    char **names;
-    const char *name;
-    int i, rv;
-    virDomainPtr domain = NULL;
+    int i;
+    virDomainPtr *domains = NULL;
+    int ndomains = 0;
+    const unsigned int flags = 0;
 
     GET_CONNECTION_FROM_ARGS("r", &zconn);
 
-    if ((expectedcount = virConnectNumOfDomains(conn->conn)) < 0)
+    if ((ndomains = virConnectListAllDomains(conn->conn, &domains, flags)) < 0)
         RETURN_FALSE;
 
-    DPRINTF("%s: Found %d domains\n", PHPFUNC, expectedcount);
-
-    ids = (int *)emalloc(sizeof(int) * expectedcount);
-    count = virConnectListDomains(conn->conn, ids, expectedcount);
-    DPRINTF("%s: virConnectListDomains returned %d domains\n", PHPFUNC, count);
+    DPRINTF("%s: Found %d domains\n", PHPFUNC, ndomains);
 
     array_init(return_value);
-    for (i = 0; i < count; i++) {
-        domain = virDomainLookupByID(conn->conn, ids[i]);
-        resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, domain, 1 TSRMLS_CC);
-        if (domain != NULL) {
-            name = virDomainGetName(domain);
-            if (name != NULL) {
-                DPRINTF("%s: Found running domain %s with ID = %d\n", PHPFUNC, name, ids[i]);
-                VIRT_ADD_NEXT_INDEX_STRING(return_value, name);
-            } else {
-                DPRINTF("%s: Cannot get ID for running domain %d\n", PHPFUNC, ids[i]);
-            }
-        }
-        rv = virDomainFree(domain);
-        if (rv != 0) {
-            php_error_docref(NULL TSRMLS_CC, E_WARNING, "virDomainFree failed with %i on list_domain: %s",
-                             rv, LIBVIRT_G(last_error));
-        } else {
-            resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, domain, 0 TSRMLS_CC);
-        }
-        domain = NULL;
-    }
-    efree(ids);
+    for (i = 0; i < ndomains; i++) {
+        virDomainPtr dom = domains[i];
+        const char *name;
 
-    expectedcount = virConnectNumOfDefinedDomains(conn->conn);
-    DPRINTF("%s: virConnectNumOfDefinedDomains returned %d domains\n", PHPFUNC, expectedcount);
-    if (expectedcount < 0) {
-        DPRINTF("%s: virConnectNumOfDefinedDomains failed with error code %d\n", PHPFUNC, expectedcount);
-        RETURN_FALSE;
+        if (!(name = virDomainGetName(dom)))
+            goto error;
+
+        VIRT_ADD_NEXT_INDEX_STRING(return_value, name);
     }
 
-    names = (char **)emalloc(expectedcount*sizeof(char *));
-    count = virConnectListDefinedDomains(conn->conn, names, expectedcount);
-    DPRINTF("%s: virConnectListDefinedDomains returned %d domains\n", PHPFUNC, count);
-    if (count < 0) {
-        DPRINTF("%s: virConnectListDefinedDomains failed with error code %d\n", PHPFUNC, count);
-        RETURN_FALSE;
-    }
+    for (i = 0; i < ndomains; i++)
+        virDomainFree(domains[i]);
+    free(domains);
 
-    for (i = 0; i < count; i++) {
-        VIRT_ADD_NEXT_INDEX_STRING(return_value, names[i]);
-        DPRINTF("%s: Found inactive domain %s\n", PHPFUNC, names[i]);
-        VIR_FREE(names[i]);
-    }
-    efree(names);
+    return;
+
+ error:
+    for (i = 0; i < ndomains; i++)
+        virDomainFree(domains[i]);
+    free(domains);
+    RETURN_FALSE;
 }
 
 /*
@@ -3271,64 +3241,48 @@ PHP_FUNCTION(libvirt_list_domain_resources)
 {
     php_libvirt_connection *conn = NULL;
     zval *zconn;
-    int count = -1;
-    int expectedcount = -1;
-    int *ids;
-    char **names;
     int i;
-
-    virDomainPtr domain = NULL;
-    php_libvirt_domain *res_domain;
+    virDomainPtr *domains = NULL;
+    int ndomains = 0;
+    const unsigned int flags = 0;
 
     GET_CONNECTION_FROM_ARGS("r", &zconn);
 
-    if ((expectedcount = virConnectNumOfDomains(conn->conn)) < 0)
+    if ((ndomains = virConnectListAllDomains(conn->conn, &domains, flags)) < 0)
         RETURN_FALSE;
 
-    ids = (int *)emalloc(sizeof(int) * expectedcount);
-    count = virConnectListDomains(conn->conn, ids, expectedcount);
-    if ((count != expectedcount) || (count < 0)) {
-        efree(ids);
-        RETURN_FALSE;
-    }
+    DPRINTF("%s: Found %d domains\n", PHPFUNC, ndomains);
+
     array_init(return_value);
-    for (i = 0; i < count; i++) {
-        domain = virDomainLookupByID(conn->conn, ids[i]);
-        if (domain != NULL) {
-            res_domain = (php_libvirt_domain *)emalloc(sizeof(php_libvirt_domain));
-            res_domain->domain = domain;
+    for (i = 0; i < ndomains; i++) {
+        virDomainPtr dom = domains[i];
+        php_libvirt_domain *res_domain;
+        const char *name;
 
-            res_domain->conn = conn;
+        if (!(name = virDomainGetName(dom)))
+            goto error;
 
-            VIRT_REGISTER_LIST_RESOURCE(domain);
-            resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1 TSRMLS_CC);
-        }
+        res_domain = (php_libvirt_domain *)emalloc(sizeof(php_libvirt_domain));
+        res_domain->domain = dom;
+        res_domain->conn = conn;
+
+        VIRT_REGISTER_LIST_RESOURCE(domain);
+        resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1 TSRMLS_CC);
     }
-    efree(ids);
 
-    if ((expectedcount = virConnectNumOfDefinedDomains(conn->conn)) < 0)
-        RETURN_FALSE;
+    /* Avoid freeing domains, they are registered as resources
+     * now. Just free the array containing pointers to them. */
+    free(domains);
 
-    names = (char **)emalloc(expectedcount*sizeof(char *));
-    count = virConnectListDefinedDomains(conn->conn, names, expectedcount);
-    if ((count != expectedcount) || (count < 0)) {
-        efree(names);
-        RETURN_FALSE;
-    }
-    for (i = 0; i < count; i++) {
-        domain = virDomainLookupByName(conn->conn, names[i]);
-        if (domain != NULL) {
-            res_domain = (php_libvirt_domain *)emalloc(sizeof(php_libvirt_domain));
-            res_domain->domain = domain;
+    return;
 
-            res_domain->conn = conn;
-
-            VIRT_REGISTER_LIST_RESOURCE(domain);
-            resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1 TSRMLS_CC);
-        }
-        VIR_FREE(names[i]);
-    }
-    efree(names);
+ error:
+    /* Just like in the success case, we must avoid freeing
+     * registered domains. But we must free the remaining ones. */
+    for (; i < ndomains; i++)
+        virDomainFree(domains[i]);
+    free(domains);
+    RETURN_FALSE;
 }
 
 /*
@@ -3342,26 +3296,40 @@ PHP_FUNCTION(libvirt_list_active_domain_ids)
 {
     php_libvirt_connection *conn = NULL;
     zval *zconn;
-    int count = -1;
-    int expectedcount = -1;
-    int *ids;
     int i;
+    virDomainPtr *domains = NULL;
+    int ndomains = 0;
+    const unsigned int flags = VIR_CONNECT_LIST_DOMAINS_ACTIVE;
 
     GET_CONNECTION_FROM_ARGS("r", &zconn);
 
-    if ((expectedcount = virConnectNumOfDomains(conn->conn)) < 0)
+    if ((ndomains = virConnectListAllDomains(conn->conn, &domains, flags)) < 0)
         RETURN_FALSE;
 
-    ids = (int *)emalloc(sizeof(int) * expectedcount);
-    count = virConnectListDomains(conn->conn, ids, expectedcount);
-    if ((count != expectedcount) || (count < 0)) {
-        efree(ids);
-        RETURN_FALSE;
-    }
+    DPRINTF("%s: Found %d domains\n", PHPFUNC, ndomains);
+
     array_init(return_value);
-    for (i = 0; i < count; i++)
-        add_next_index_long(return_value,  ids[i]);
-    efree(ids);
+    for (i = 0; i < ndomains; i++) {
+        virDomainPtr dom = domains[i];
+        unsigned int id;
+
+        if ((id = virDomainGetID(dom)) == (unsigned int) -1)
+            goto error;
+
+        add_next_index_long(return_value,  id);
+    }
+
+    for (i = 0; i < ndomains; i++)
+        virDomainFree(domains[i]);
+    free(domains);
+
+    return;
+
+ error:
+    for (i = 0; i < ndomains; i++)
+        virDomainFree(domains[i]);
+    free(domains);
+    RETURN_FALSE;
 }
 
 /*
@@ -3375,41 +3343,40 @@ PHP_FUNCTION(libvirt_list_active_domains)
 {
     php_libvirt_connection *conn = NULL;
     zval *zconn;
-    int count = -1;
-    int expectedcount = -1;
-    int *ids;
     int i;
-    virDomainPtr domain = NULL;
-    const char *name;
+    virDomainPtr *domains = NULL;
+    int ndomains = 0;
+    const unsigned int flags = VIR_CONNECT_LIST_DOMAINS_ACTIVE;
 
     GET_CONNECTION_FROM_ARGS("r", &zconn);
 
-    if ((expectedcount = virConnectNumOfDomains(conn->conn)) < 0)
+    if ((ndomains = virConnectListAllDomains(conn->conn, &domains, flags)) < 0)
         RETURN_FALSE;
 
-    ids = (int *)emalloc(sizeof(int) * expectedcount);
-    count = virConnectListDomains(conn->conn, ids, expectedcount);
-    if ((count != expectedcount) || (count < 0)) {
-        efree(ids);
-        RETURN_FALSE;
-    }
+    DPRINTF("%s: Found %d domains\n", PHPFUNC, ndomains);
 
     array_init(return_value);
-    for (i = 0; i < count; i++) {
-        domain = virDomainLookupByID(conn->conn, ids[i]);
-        if (domain != NULL) {
-            if (!(name = virDomainGetName(domain))) {
-                efree(ids);
-                RETURN_FALSE;
-            }
+    for (i = 0; i < ndomains; i++) {
+        virDomainPtr dom = domains[i];
+        const char *name;
 
-            VIRT_ADD_NEXT_INDEX_STRING(return_value, name);
+        if (!(name = virDomainGetName(dom)))
+            goto error;
 
-            if (virDomainFree(domain))
-                resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, domain, 0 TSRMLS_CC);
-        }
+        VIRT_ADD_NEXT_INDEX_STRING(return_value, name);
     }
-    efree(ids);
+
+    for (i = 0; i < ndomains; i++)
+        virDomainFree(domains[i]);
+    free(domains);
+
+    return;
+
+ error:
+    for (i = 0; i < ndomains; i++)
+        virDomainFree(domains[i]);
+    free(domains);
+    RETURN_FALSE;
 }
 
 /*
@@ -3423,27 +3390,38 @@ PHP_FUNCTION(libvirt_list_inactive_domains)
 {
     php_libvirt_connection *conn = NULL;
     zval *zconn;
-    int count = -1;
-    int expectedcount = -1;
-    char **names;
     int i;
+    virDomainPtr *domains = NULL;
+    int ndomains = 0;
+    const unsigned int flags = VIR_CONNECT_LIST_DOMAINS_INACTIVE;
 
     GET_CONNECTION_FROM_ARGS("r", &zconn);
 
-    if ((expectedcount = virConnectNumOfDefinedDomains(conn->conn)) < 0)
+    if ((ndomains = virConnectListAllDomains(conn->conn, &domains, flags)) < 0)
         RETURN_FALSE;
 
-    names = (char **)emalloc(expectedcount*sizeof(char *));
-    count = virConnectListDefinedDomains(conn->conn, names, expectedcount);
-    if ((count != expectedcount) || (count < 0)) {
-        efree(names);
-        RETURN_FALSE;
-    }
+    DPRINTF("%s: Found %d domains\n", PHPFUNC, ndomains);
 
     array_init(return_value);
-    for (i = 0; i < count; i++) {
-        VIRT_ADD_NEXT_INDEX_STRING(return_value,  names[i]);
-        VIR_FREE(names[i]);
+    for (i = 0; i < ndomains; i++) {
+        virDomainPtr dom = domains[i];
+        const char *name;
+
+        if (!(name = virDomainGetName(dom)))
+            goto error;
+
+        VIRT_ADD_NEXT_INDEX_STRING(return_value, name);
     }
-    efree(names);
+
+    for (i = 0; i < ndomains; i++)
+        virDomainFree(domains[i]);
+    free(domains);
+
+    return;
+
+ error:
+    for (i = 0; i < ndomains; i++)
+        virDomainFree(domains[i]);
+    free(domains);
+    RETURN_FALSE;
 }
