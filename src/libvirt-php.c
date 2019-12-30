@@ -2084,7 +2084,7 @@ char *connection_get_emulator(virConnectPtr conn, char *arch TSRMLS_DC)
     char *tmp = NULL;
     char *caps = NULL;
     char *tmpArch = NULL;
-    char xpath[1024] = { 0 };
+    char *xpath = NULL;
     int retval = -1;
 
     caps = virConnectGetCapabilities(conn);
@@ -2101,18 +2101,10 @@ char *connection_get_emulator(virConnectPtr conn, char *arch TSRMLS_DC)
 
     DPRINTF("%s: Requested emulator for arch '%s'\n",  __FUNCTION__, arch);
 
-    snprintf(xpath, sizeof(xpath), "//capabilities/guest/arch[@name='%s']/domain/emulator", arch);
-    DPRINTF("%s: Applying xPath '%s' to capabilities XML output\n", __FUNCTION__, xpath);
-    tmp = get_string_from_xpath(caps, xpath, NULL, &retval);
-    if (tmp && retval >= 0) {
-        DPRINTF("%s: Emulator is '%s'\n",  __FUNCTION__, tmp);
-        goto done;
-    }
+    if (asprintf(&xpath, "//capabilities/guest/arch[@name='%s']/emulator", arch) < 0)
+        goto cleanup;
 
-    DPRINTF("%s: No emulator found. Trying next location ...\n", __FUNCTION__);
-    snprintf(xpath, sizeof(xpath), "//capabilities/guest/arch[@name='%s']/emulator", arch);
     DPRINTF("%s: Applying xPath '%s' to capabilities XML output\n",  __FUNCTION__, xpath);
-    VIR_FREE(tmp);
     tmp = get_string_from_xpath(caps, xpath, NULL, &retval);
     if (!tmp || retval < 0) {
         DPRINTF("%s: None emulator found\n",  __FUNCTION__);
@@ -2124,6 +2116,7 @@ char *connection_get_emulator(virConnectPtr conn, char *arch TSRMLS_DC)
     tmp = NULL;
     DPRINTF("%s: Emulator is '%s'\n",  __FUNCTION__, ret);
  cleanup:
+    VIR_FREE(xpath);
     VIR_FREE(tmpArch);
     VIR_FREE(caps);
     VIR_FREE(tmp);
