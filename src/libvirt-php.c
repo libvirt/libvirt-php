@@ -833,7 +833,7 @@ PHP_MINFO_FUNCTION(libvirt)
     snprintf(path, sizeof(path), "%lu", (unsigned long)LIBVIRT_G(max_connections_ini));
     php_info_print_table_row(2, "Max. connections", path);
 
-    if (!access(LIBVIRT_G(iso_path_ini), F_OK) == 0)
+    if (!(access(LIBVIRT_G(iso_path_ini), F_OK) == 0))
         snprintf(path, sizeof(path), "%s - path is invalid. To set the valid path modify the libvirt.iso_path in your php.ini configuration!",
                  LIBVIRT_G(iso_path_ini));
     else
@@ -841,7 +841,7 @@ PHP_MINFO_FUNCTION(libvirt)
 
     php_info_print_table_row(2, "ISO Image path", path);
 
-    if (!access(LIBVIRT_G(image_path_ini), F_OK) == 0)
+    if (!(access(LIBVIRT_G(image_path_ini), F_OK) == 0))
         snprintf(path, sizeof(path), "%s - path is invalid. To set the valid path modify the libvirt.image_path in your php.ini configuration!",
                  LIBVIRT_G(image_path_ini));
     else
