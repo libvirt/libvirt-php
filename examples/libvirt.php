@@ -873,6 +873,15 @@ class Libvirt {
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
+    function domain_reset($domain) {
+        $dom = $this->get_domain_object($domain);
+        if (!$dom)
+            return false;
+
+        $tmp = libvirt_domain_reset($dom);
+        return ($tmp) ? $tmp: $this->_set_last_error();
+    }
+
     function domain_suspend($domain) {
         $dom = $this->get_domain_object($domain);
         if (!$dom)

@@ -1497,6 +1497,30 @@ PHP_FUNCTION(libvirt_domain_reboot)
 }
 
 /*
+ * Function name:   libvirt_domain_reset
+ * Since version:   0.5.5
+ * Description:     Function is used to reset the domain identified by its resource
+ * Arguments:       @res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
+                    @flags [int]: optional flags
+ * Returns:         TRUE for success, FALSE on error
+ */
+PHP_FUNCTION(libvirt_domain_reset)
+{
+    php_libvirt_domain *domain = NULL;
+    zval *zdomain;
+    int retval;
+    zend_long flags = 0;
+
+    GET_DOMAIN_FROM_ARGS("r|l", &zdomain, &flags);
+
+    retval = virDomainReset(domain->domain, flags);
+    DPRINTF("%s: virDomainReset(%p) returned %d\n", PHPFUNC, domain->domain, retval);
+    if (retval != 0)
+        RETURN_FALSE;
+    RETURN_TRUE;
+}
+
+/*
  * Function name:   libvirt_domain_define_xml
  * Since version:   0.4.1(-1)
  * Description:     Function is used to define the domain from XML string

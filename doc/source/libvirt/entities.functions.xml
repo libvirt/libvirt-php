@@ -22,6 +22,7 @@
 &reference.libvirt.functions.libvirt-domain-migrate-to-uri;
 &reference.libvirt.functions.libvirt-domain-migrate;
 &reference.libvirt.functions.libvirt-domain-reboot;
+&reference.libvirt.functions.libvirt-domain-reset;
 &reference.libvirt.functions.libvirt-domain-resume;
 &reference.libvirt.functions.libvirt-domain-shutdown;
 &reference.libvirt.functions.libvirt-domain-suspend;

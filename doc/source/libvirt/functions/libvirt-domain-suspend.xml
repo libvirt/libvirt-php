@@ -53,6 +53,7 @@
     <member><function>libvirt_domain_resume</function></member>
     <member><function>libvirt_domain_shutdown</function></member>
     <member><function>libvirt_domain_create</function></member>
+    <member><function>libvirt_domain_reset</function></member>
    </simplelist>
   </para>
  </refsect1>
