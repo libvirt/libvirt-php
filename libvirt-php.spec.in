@@ -85,8 +85,10 @@ rm -rf %{buildroot}
 %{_datadir}/doc/%{name}-%{version}/html
 
 %changelog
-* XXX XXX 00 2017 Michal Privoznik <mprivozn@redhat.com> - 0.5.5
-- XXX
+* Sat Feb 8 2020 Michal Privoznik <mprivozn@redhat.com> - 0.5.5
+- Implemented virDomainReset() API
+- Implemented virDomainInterfaceAddresses() API
+- Bug fixes
 
 * Wed Aug 2 2017 Michal Privoznik <mprivozn@redhat.com> - 0.5.4
 - Added API bindings for getting/setting network autostart
