@@ -85,6 +85,9 @@ rm -rf %{buildroot}
 %{_datadir}/doc/%{name}-%{version}/html
 
 %changelog
+* XXX XXX 00 2020 Michal Privoznik <mprivozn@redhat.com> - 0.5.6
+- XXX
+
 * Sat Feb 8 2020 Michal Privoznik <mprivozn@redhat.com> - 0.5.5
 - Implemented virDomainReset() API
 - Implemented virDomainInterfaceAddresses() API
