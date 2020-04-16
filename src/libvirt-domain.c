@@ -2008,7 +2008,8 @@ PHP_FUNCTION(libvirt_domain_interface_addresses)
         zval *iface;
         VIRT_ARRAY_INIT(iface);
         VIRT_ADD_ASSOC_STRING(iface, "name", ifaces[i]->name);
-        VIRT_ADD_ASSOC_STRING(iface, "hwaddr", ifaces[i]->hwaddr);
+        if (ifaces[i]->hwaddr)
+            VIRT_ADD_ASSOC_STRING(iface, "hwaddr", ifaces[i]->hwaddr);
         add_assoc_long(iface, "naddrs", ifaces[i]->naddrs);
 
         for (j = 0; j < ifaces[i]->naddrs; j++) {
