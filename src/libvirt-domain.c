@@ -2012,13 +2012,19 @@ PHP_FUNCTION(libvirt_domain_interface_addresses)
             VIRT_ADD_ASSOC_STRING(iface, "hwaddr", ifaces[i]->hwaddr);
         add_assoc_long(iface, "naddrs", ifaces[i]->naddrs);
 
-        for (j = 0; j < ifaces[i]->naddrs; j++) {
+        if (ifaces[i]->naddrs > 0) {
             zval *ifaddr;
             VIRT_ARRAY_INIT(ifaddr);
-            VIRT_ADD_ASSOC_STRING(ifaddr, "addr", ifaces[i]->addrs[j].addr);
-            add_assoc_long(ifaddr, "prefix", ifaces[i]->addrs[j].prefix);
-            add_assoc_long(ifaddr, "type", ifaces[i]->addrs[j].type);
 
+            for (j = 0; j < ifaces[i]->naddrs; j++) {
+                zval *ifaddr_assoc;
+                VIRT_ARRAY_INIT(ifaddr_assoc);
+                VIRT_ADD_ASSOC_STRING(ifaddr_assoc, "addr", ifaces[i]->addrs[j].addr);
+                add_assoc_long(ifaddr_assoc, "prefix", ifaces[i]->addrs[j].prefix);
+                add_assoc_long(ifaddr_assoc, "type", ifaces[i]->addrs[j].type);
+
+                add_index_zval(ifaddr, j, ifaddr_assoc);
+            }
             add_assoc_zval(iface, "addrs", ifaddr);
         }
 
