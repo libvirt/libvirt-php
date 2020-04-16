@@ -16,6 +16,7 @@
     PHP_FE(libvirt_domain_has_current_snapshot,    arginfo_libvirt_conn_optflags)                  \
     PHP_FE(libvirt_domain_snapshot_lookup_by_name, arginfo_libvirt_domain_snapshot_lookup_by_name) \
     PHP_FE(libvirt_domain_snapshot_create,         arginfo_libvirt_conn_optflags)                  \
+    PHP_FE(libvirt_domain_snapshot_current,        arginfo_libvirt_conn_optflags)                  \
     PHP_FE(libvirt_domain_snapshot_get_xml,        arginfo_libvirt_conn_optflags)                  \
     PHP_FE(libvirt_domain_snapshot_revert,         arginfo_libvirt_conn_optflags)                  \
     PHP_FE(libvirt_domain_snapshot_delete,         arginfo_libvirt_conn_optflags)                  \
@@ -50,6 +51,7 @@ void php_libvirt_snapshot_dtor(virt_resource *rsrc TSRMLS_DC);
 PHP_FUNCTION(libvirt_domain_has_current_snapshot);
 PHP_FUNCTION(libvirt_domain_snapshot_lookup_by_name);
 PHP_FUNCTION(libvirt_domain_snapshot_create);
+PHP_FUNCTION(libvirt_domain_snapshot_current);
 PHP_FUNCTION(libvirt_domain_snapshot_get_xml);
 PHP_FUNCTION(libvirt_domain_snapshot_revert);
 PHP_FUNCTION(libvirt_domain_snapshot_delete);

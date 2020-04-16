@@ -131,6 +131,38 @@ PHP_FUNCTION(libvirt_domain_snapshot_create)
 }
 
 /*
+ * Function name:   libvirt_domain_snapshot_current
+ * Since version:   0.5.6
+ * Description:     Function is used to lookup the current snapshot for given domain
+ * Arguments:       @res [resource]: libvirt domain resource
+ *                  @flags [int]: libvirt snapshot flags
+ * Returns:         domain snapshot resource
+ */
+PHP_FUNCTION(libvirt_domain_snapshot_current)
+{
+    php_libvirt_domain *domain = NULL;
+    zval *zdomain;
+    zend_long flags = 0;
+    php_libvirt_snapshot *res_snapshot;
+    virDomainSnapshotPtr snapshot = NULL;
+
+    GET_DOMAIN_FROM_ARGS("r|l", &zdomain, &flags);
+
+    snapshot = virDomainSnapshotCurrent(domain->domain, flags);
+    if (snapshot == NULL)
+        RETURN_FALSE;
+
+    res_snapshot = (php_libvirt_snapshot *)emalloc(sizeof(php_libvirt_snapshot));
+    res_snapshot->domain = domain;
+    res_snapshot->snapshot = snapshot;
+
+    DPRINTF("%s: returning %p\n", PHPFUNC, res_snapshot->snapshot);
+    resource_change_counter(INT_RESOURCE_SNAPSHOT, domain->conn->conn, res_snapshot->snapshot, 1 TSRMLS_CC);
+
+    VIRT_REGISTER_RESOURCE(res_snapshot, le_libvirt_snapshot);
+}
+
+/*
  * Function name:   libvirt_domain_snapshot_get_xml
  * Since version:   0.4.1(-2)
  * Description:     Function is used to get the XML description of the snapshot identified by it's resource
