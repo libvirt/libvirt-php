@@ -1015,46 +1015,40 @@ PHP_FUNCTION(libvirt_list_storagepools)
 {
     php_libvirt_connection *conn = NULL;
     zval *zconn;
-    int count = -1;
-    int expectedcount = -1;
-    char **names;
     int i;
+    virStoragePoolPtr *pools = NULL;
+    int npools = 0;
+    const unsigned int flags = 0;
 
     GET_CONNECTION_FROM_ARGS("r", &zconn);
 
-    if ((expectedcount = virConnectNumOfStoragePools(conn->conn)) < 0)
+    if ((npools = virConnectListAllStoragePools(conn->conn, &pools, flags)) < 0)
         RETURN_FALSE;
 
-    names = (char **)emalloc(expectedcount*sizeof(char *));
-    count = virConnectListStoragePools(conn->conn, names, expectedcount);
-
-    if ((count != expectedcount) || (count < 0)) {
-        efree(names);
-        RETURN_FALSE;
-    }
+    DPRINTF("%s: Found %d pools\n", PHPFUNC, npools);
 
     array_init(return_value);
-    for (i = 0; i < count; i++) {
-        VIRT_ADD_NEXT_INDEX_STRING(return_value,  names[i]);
-        VIR_FREE(names[i]);
-    }
-    efree(names);
+    for (i = 0; i < npools; i++) {
+        virStoragePoolPtr pool = pools[i];
+        const char *name;
 
+        if (!(name = virStoragePoolGetName(pools[i])))
+            goto error;
 
-    if ((expectedcount = virConnectNumOfDefinedStoragePools(conn->conn)) < 0)
-        RETURN_FALSE;
-    names = (char **)emalloc(expectedcount * sizeof(char *));
-    count = virConnectListDefinedStoragePools(conn->conn, names, expectedcount);
-    if ((count != expectedcount) || (count < 0)) {
-        efree(names);
-        RETURN_FALSE;
+        VIRT_ADD_NEXT_INDEX_STRING(return_value,  name);
     }
 
-    for (i = 0; i < count; i++) {
-        VIRT_ADD_NEXT_INDEX_STRING(return_value, names[i]);
-        VIR_FREE(names[i]);
-    }
-    efree(names);
+    for (i = 0; i < npools; i++)
+        virStoragePoolFree(pools[i]);
+    free(pools);
+
+    return;
+
+ error:
+    for (i = 0; i < npools; i++)
+        virStoragePoolFree(pools[i]);
+    free(pools);
+    RETURN_FALSE;
 }
 
 /*
@@ -1068,29 +1062,40 @@ PHP_FUNCTION(libvirt_list_active_storagepools)
 {
     php_libvirt_connection *conn = NULL;
     zval *zconn;
-    int count = -1;
-    int expectedcount = -1;
-    char **names;
     int i;
+    virStoragePoolPtr *pools = NULL;
+    int npools = 0;
+    const unsigned int flags = VIR_CONNECT_LIST_STORAGE_POOLS_ACTIVE;
 
     GET_CONNECTION_FROM_ARGS("r", &zconn);
 
-    if ((expectedcount = virConnectNumOfStoragePools(conn->conn)) < 0)
+    if ((npools = virConnectListAllStoragePools(conn->conn, &pools, flags)) < 0)
         RETURN_FALSE;
 
-    names = (char **)emalloc(expectedcount*sizeof(char *));
-    count = virConnectListStoragePools(conn->conn, names, expectedcount);
+    DPRINTF("%s: Found %d pools\n", PHPFUNC, npools);
 
-    if ((count != expectedcount) || (count < 0)) {
-        efree(names);
-        RETURN_FALSE;
-    }
     array_init(return_value);
-    for (i = 0; i < count; i++) {
-        VIRT_ADD_NEXT_INDEX_STRING(return_value,  names[i]);
-        VIR_FREE(names[i]);
+    for (i = 0; i < npools; i++) {
+        virStoragePoolPtr pool = pools[i];
+        const char *name;
+
+        if (!(name = virStoragePoolGetName(pools[i])))
+            goto error;
+
+        VIRT_ADD_NEXT_INDEX_STRING(return_value,  name);
     }
-    efree(names);
+
+    for (i = 0; i < npools; i++)
+        virStoragePoolFree(pools[i]);
+    free(pools);
+
+    return;
+
+ error:
+    for (i = 0; i < npools; i++)
+        virStoragePoolFree(pools[i]);
+    free(pools);
+    RETURN_FALSE;
 }
 
 /*
@@ -1104,27 +1109,38 @@ PHP_FUNCTION(libvirt_list_inactive_storagepools)
 {
     php_libvirt_connection *conn = NULL;
     zval *zconn;
-    int count = -1;
-    int expectedcount = -1;
-    char **names;
     int i;
+    virStoragePoolPtr *pools = NULL;
+    int npools = 0;
+    const unsigned int flags = VIR_CONNECT_LIST_STORAGE_POOLS_INACTIVE;
 
     GET_CONNECTION_FROM_ARGS("r", &zconn);
 
-    if ((expectedcount = virConnectNumOfDefinedStoragePools(conn->conn)) < 0)
+    if ((npools = virConnectListAllStoragePools(conn->conn, &pools, flags)) < 0)
         RETURN_FALSE;
 
-    names = (char **)emalloc(expectedcount * sizeof(char *));
-    count = virConnectListDefinedStoragePools(conn->conn, names, expectedcount);
-    if ((count != expectedcount) || (count < 0)) {
-        efree(names);
-        RETURN_FALSE;
-    }
+    DPRINTF("%s: Found %d pools\n", PHPFUNC, npools);
 
     array_init(return_value);
-    for (i = 0; i < count; i++) {
-        VIRT_ADD_NEXT_INDEX_STRING(return_value, names[i]);
-        VIR_FREE(names[i]);
+    for (i = 0; i < npools; i++) {
+        virStoragePoolPtr pool = pools[i];
+        const char *name;
+
+        if (!(name = virStoragePoolGetName(pools[i])))
+            goto error;
+
+        VIRT_ADD_NEXT_INDEX_STRING(return_value,  name);
     }
-    efree(names);
+
+    for (i = 0; i < npools; i++)
+        virStoragePoolFree(pools[i]);
+    free(pools);
+
+    return;
+
+ error:
+    for (i = 0; i < npools; i++)
+        virStoragePoolFree(pools[i]);
+    free(pools);
+    RETURN_FALSE;
 }
