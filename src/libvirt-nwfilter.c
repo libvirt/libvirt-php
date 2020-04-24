@@ -108,7 +108,7 @@ PHP_FUNCTION(libvirt_nwfilter_get_xml_desc)
     char *xml = NULL;
     char *xpath = NULL;
     char *tmp;
-    strsize_t xpath_len;
+    strsize_t xpath_len = 0;
     int retval = -1;
 
     GET_NWFILTER_FROM_ARGS("r|s", &znwfilter, &xpath, &xpath_len);
