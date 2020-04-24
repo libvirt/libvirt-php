@@ -534,54 +534,38 @@ PHP_FUNCTION(libvirt_list_networks)
 {
     php_libvirt_connection *conn = NULL;
     zval *zconn;
-    zend_long flags = VIR_NETWORKS_ACTIVE | VIR_NETWORKS_INACTIVE;
-    int count = -1;
-    int expectedcount = -1;
-    char **names;
-    int i, done = 0;
+    int i;
+    virNetworkPtr *nets = NULL;
+    int nnets = 0;
+    unsigned int flags = 0;
 
     GET_CONNECTION_FROM_ARGS("r|l", &zconn, &flags);
 
-    array_init(return_value);
-    if (flags & VIR_NETWORKS_ACTIVE) {
-        if ((expectedcount = virConnectNumOfNetworks(conn->conn)) < 0)
-            RETURN_FALSE;
-
-        names = (char **)emalloc(expectedcount*sizeof(char *));
-        count = virConnectListNetworks(conn->conn, names, expectedcount);
-        if ((count != expectedcount) || (count < 0)) {
-            efree(names);
-            RETURN_FALSE;
-        }
-
-        for (i = 0; i < count; i++) {
-            VIRT_ADD_NEXT_INDEX_STRING(return_value,  names[i]);
-            VIR_FREE(names[i]);
-        }
-
-        efree(names);
-        done++;
-    }
-
-    if (flags & VIR_NETWORKS_INACTIVE) {
-        if ((expectedcount = virConnectNumOfDefinedNetworks(conn->conn)) < 0)
-            RETURN_FALSE;
-        names = (char **)emalloc(expectedcount*sizeof(char *));
-        count = virConnectListDefinedNetworks(conn->conn, names, expectedcount);
-        if ((count != expectedcount) || (count < 0)) {
-            efree(names);
-            RETURN_FALSE;
-        }
-
-        for (i = 0; i < count; i++) {
-            VIRT_ADD_NEXT_INDEX_STRING(return_value, names[i]);
-            VIR_FREE(names[i]);
-        }
-
-        efree(names);
-        done++;
-    }
-
-    if (!done)
+    if ((nnets = virConnectListAllNetworks(conn->conn, &nets, flags)) < 0)
         RETURN_FALSE;
+
+    DPRINTF("%s: Found %d networks\n", PHPFUNC, nnets);
+
+    array_init(return_value);
+    for (i = 0; i < nnets; i++) {
+        virNetworkPtr net = nets[i];
+        const char *name;
+
+        if (!(name = virNetworkGetName(net)))
+            goto error;
+
+        VIRT_ADD_NEXT_INDEX_STRING(return_value, name);
+    }
+
+    for (i = 0; i < nnets; i++)
+        virNetworkFree(nets[i]);
+    free(nets);
+
+    return;
+
+ error:
+    for (i = 0; i < nnets; i++)
+        virNetworkFree(nets[i]);
+    free(nets);
+    RETURN_FALSE;
 }
