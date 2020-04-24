@@ -378,37 +378,38 @@ PHP_FUNCTION(libvirt_list_nwfilters)
 {
     php_libvirt_connection *conn = NULL;
     zval *zconn;
-    int count = -1;
-    int expectedcount = -1;
-    char **names;
-    int i, done = 0;
+    int i;
+    virNWFilterPtr *nwfilters = NULL;
+    int nnwfilters = 0;
+    const unsigned int flags = 0;
 
     GET_CONNECTION_FROM_ARGS("r", &zconn);
 
+    if ((nnwfilters = virConnectListAllNWFilters(conn->conn, &nwfilters, flags)) < 0)
+        RETURN_FALSE;
+
+    DPRINTF("%s: Found %d nwfilters\n", PHPFUNC, nnwfilters);
+
     array_init(return_value);
+    for (i = 0; i < nnwfilters; i++) {
+        virNWFilterPtr nwfilter = nwfilters[i];
+        const char *name;
 
-    if ((expectedcount = virConnectNumOfNWFilters(conn->conn)) < 0)
-        RETURN_FALSE;
+        if (!(name = virNWFilterGetName(nwfilter)))
+            goto error;
 
-    names = (char **) emalloc(expectedcount * sizeof(char *));
-    count = virConnectListNWFilters(conn->conn, names, expectedcount);
-
-    if (count != expectedcount || count < 0) {
-        efree(names);
-        DPRINTF("%s: virConnectListNWFilters returned %d filters, while %d was "
-                "expected\n", PHPFUNC, count, expectedcount);
-        RETURN_FALSE;
+        VIRT_ADD_NEXT_INDEX_STRING(return_value, name);
     }
 
-    for (i = 0; i < count; i++) {
-        VIRT_ADD_NEXT_INDEX_STRING(return_value,  names[i]);
-        VIR_FREE(names[i]);
-    }
+    for (i = 0; i < nnwfilters; i++)
+        virNWFilterFree(nwfilters[i]);
+    free(nwfilters);
 
-    efree(names);
-    done++;
+    return;
 
-
-    if (!done)
-        RETURN_FALSE;
+ error:
+    for (i = 0; i < nnwfilters; i++)
+        virNWFilterFree(nwfilters[i]);
+    free(nwfilters);
+    RETURN_FALSE;
 }
