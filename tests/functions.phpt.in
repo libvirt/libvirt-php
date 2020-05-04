@@ -26,7 +26,7 @@
 			bail("Invalid test name!");
 
 		printf("Test $name SKIPPED\n");
-		exit(1);
+		exit(77);
 	}
 
     $abs_srcdir = '@abs_srcdir@' ?: getcwd();
