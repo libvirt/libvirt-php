@@ -11,6 +11,8 @@
 
 DEBUG_INIT("connection");
 
+int le_libvirt_connection;
+
 /*
  * Private function name:   free_resources_on_connection
  * Since version:           0.4.2

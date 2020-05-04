@@ -11,6 +11,8 @@
 
 DEBUG_INIT("stream");
 
+int le_libvirt_stream;
+
 void
 php_libvirt_stream_dtor(virt_resource *rsrc TSRMLS_DC)
 {

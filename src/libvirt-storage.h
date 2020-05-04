@@ -83,8 +83,8 @@
             RETURN_FALSE;                                                      \
     } while (0)                                                                \
 
-int le_libvirt_storagepool;
-int le_libvirt_volume;
+extern int le_libvirt_storagepool;
+extern int le_libvirt_volume;
 
 typedef struct _php_libvirt_storagepool {
     virStoragePoolPtr pool;

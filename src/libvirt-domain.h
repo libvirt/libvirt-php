@@ -120,7 +120,7 @@
     PHP_FE(libvirt_list_active_domains,          arginfo_libvirt_conn)                         \
     PHP_FE(libvirt_list_inactive_domains,        arginfo_libvirt_conn)
 
-int le_libvirt_domain;
+extern int le_libvirt_domain;
 
 typedef struct _php_libvirt_domain {
     virDomainPtr domain;

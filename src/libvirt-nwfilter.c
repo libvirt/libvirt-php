@@ -11,6 +11,8 @@
 
 DEBUG_INIT("nwfilter");
 
+int le_libvirt_nwfilter;
+
 void
 php_libvirt_nwfilter_dtor(virt_resource *rsrc TSRMLS_DC)
 {

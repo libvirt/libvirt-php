@@ -42,7 +42,7 @@
             RETURN_FALSE;                                                      \
     } while (0)                                                                \
 
-int le_libvirt_nwfilter;
+extern int le_libvirt_nwfilter;
 
 typedef struct _php_libvirt_nwfilter {
     virNWFilterPtr nwfilter;

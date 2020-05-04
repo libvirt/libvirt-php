@@ -11,6 +11,8 @@
 
 DEBUG_INIT("snapshot");
 
+int le_libvirt_snapshot;
+
 void php_libvirt_snapshot_dtor(virt_resource *rsrc TSRMLS_DC)
 {
     php_libvirt_snapshot *snapshot = (php_libvirt_snapshot *)rsrc->ptr;

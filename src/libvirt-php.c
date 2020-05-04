@@ -31,6 +31,8 @@
 
 DEBUG_INIT("core");
 
+ZEND_DECLARE_MODULE_GLOBALS(libvirt)
+
 #ifndef EXTWIN
 /* Additional binaries */
 const char *features[] = { "screenshot", "create-image", "screenshot-convert", NULL };

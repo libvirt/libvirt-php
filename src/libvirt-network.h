@@ -45,7 +45,7 @@
     PHP_FE(libvirt_list_all_networks,       arginfo_libvirt_conn_optflags)     \
     PHP_FE(libvirt_list_networks,           arginfo_libvirt_conn_optflags)
 
-int le_libvirt_network;
+extern int le_libvirt_network;
 
 typedef struct _php_libvirt_network {
     virNetworkPtr network;

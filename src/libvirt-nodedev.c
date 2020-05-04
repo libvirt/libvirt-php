@@ -11,6 +11,8 @@
 
 DEBUG_INIT("nodedev");
 
+int le_libvirt_nodedev;
+
 void
 php_libvirt_nodedev_dtor(virt_resource *rsrc TSRMLS_DC)
 {

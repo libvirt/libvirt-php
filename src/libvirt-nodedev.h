@@ -35,7 +35,7 @@
             RETURN_FALSE;                                                      \
     } while (0)
 
-int le_libvirt_nodedev;
+extern int le_libvirt_nodedev;
 
 typedef struct _php_libvirt_nodedev {
     virNodeDevicePtr device;

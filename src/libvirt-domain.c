@@ -15,6 +15,8 @@
 
 DEBUG_INIT("domain");
 
+int le_libvirt_domain;
+
 void
 php_libvirt_domain_dtor(virt_resource *rsrc TSRMLS_DC)
 {

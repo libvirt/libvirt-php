@@ -12,6 +12,9 @@
 
 DEBUG_INIT("storage");
 
+int le_libvirt_storagepool;
+int le_libvirt_volume;
+
 void
 php_libvirt_storagepool_dtor(virt_resource *rsrc TSRMLS_DC)
 {

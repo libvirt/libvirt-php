@@ -39,7 +39,7 @@
             RETURN_FALSE;                                                      \
     } while (0)                                                                \
 
-int le_libvirt_snapshot;
+extern int le_libvirt_snapshot;
 
 typedef struct _php_libvirt_snapshot {
     virDomainSnapshotPtr snapshot;

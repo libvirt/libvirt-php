@@ -46,7 +46,7 @@
             RETURN_FALSE;                                                      \
     } while (0)
 
-int le_libvirt_connection;
+extern int le_libvirt_connection;
 
 typedef struct _php_libvirt_connection {
     virConnectPtr conn;

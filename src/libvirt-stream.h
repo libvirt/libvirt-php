@@ -20,7 +20,7 @@
     PHP_FE(libvirt_stream_send,   arginfo_libvirt_stream_send)                 \
     PHP_FE(libvirt_stream_recv,   arginfo_libvirt_stream_recv)
 
-int le_libvirt_stream;
+extern int le_libvirt_stream;
 
 typedef struct _php_libvirt_stream {
     virStreamPtr stream;

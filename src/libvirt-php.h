@@ -155,7 +155,7 @@ ZEND_BEGIN_MODULE_GLOBALS(libvirt)
     int binding_resources_count;
 ZEND_END_MODULE_GLOBALS(libvirt)
 
-ZEND_DECLARE_MODULE_GLOBALS(libvirt)
+ZEND_EXTERN_MODULE_GLOBALS(libvirt)
 
 /* Private definitions */
 void set_error(char *msg TSRMLS_DC);

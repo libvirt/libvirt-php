@@ -11,6 +11,8 @@
 
 DEBUG_INIT("network");
 
+int le_libvirt_network;
+
 void
 php_libvirt_network_dtor(virt_resource *rsrc TSRMLS_DC)
 {
