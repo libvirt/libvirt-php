@@ -26,7 +26,7 @@ AC_DEFUN([LIBVIRT_CHECK_PHP_EXTENSION],[
   AC_MSG_CHECKING([for php module $1])
 
   phpbinary="$($PHPCONFIG --php-binary)"
-  if test "x$phpbinary" = "x"; then
+  if test "x$phpbinary" = "x" || test ! -x "$phpbinary" ; then
     phpbinary="$($PHPCONFIG --prefix)/bin/php"
   fi
 
