@@ -16,15 +16,10 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
             gdb \
             gettext \
             git \
-            libc-dev-bin \
             libc6-dev \
-            libglib2.0-dev \
-            libgnutls28-dev \
-            libnl-3-dev \
-            libnl-route-3-dev \
-            libtirpc-dev \
             libtool \
             libtool-bin \
+            libvirt-dev \
             libxml2-dev \
             libxml2-utils \
             locales \
@@ -38,7 +33,6 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
             php-imagick \
             pkgconf \
             python3 \
-            python3-docutils \
             python3-pip \
             python3-setuptools \
             python3-wheel \

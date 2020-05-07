@@ -22,6 +22,7 @@ RUN dnf update -y && \
         libnl3-devel \
         libtirpc-devel \
         libtool \
+        libvirt-devel \
         libxml2 \
         libxml2-devel \
         libxslt \

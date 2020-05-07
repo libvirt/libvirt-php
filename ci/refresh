@@ -18,5 +18,10 @@ HOSTS=$($LCITOOL hosts | grep -v freebsd | grep -v libvirt-centos-8)
 
 for host in $HOSTS
 do
-    $LCITOOL dockerfile $host libvirt+minimal,libvirt-php > $host.Dockerfile
+    if test "$host" = "libvirt-fedora-32"
+    then
+        $LCITOOL dockerfile $host libvirt+minimal,libvirt+dist,libvirt-php > $host.Dockerfile
+    else
+        $LCITOOL dockerfile $host libvirt+dist,libvirt-php > $host.Dockerfile
+    fi
 done

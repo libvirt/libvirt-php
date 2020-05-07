@@ -45,13 +45,10 @@ WEiJKtQrZDJloqtyi/mmRa1VsV7RYR0VPJjhK/R8EQ7Ysshy\n\
         gettext \
         gettext-devel \
         git \
-        glib2-devel \
         glibc-common \
         glibc-devel \
-        gnutls-devel \
-        libnl3-devel \
-        libtirpc-devel \
         libtool \
+        libvirt-devel \
         libxml2 \
         libxml2-devel \
         libxslt \
@@ -68,7 +65,6 @@ WEiJKtQrZDJloqtyi/mmRa1VsV7RYR0VPJjhK/R8EQ7Ysshy\n\
         python3-pip \
         python3-setuptools \
         python3-wheel \
-        python36-docutils \
         rpm-build \
         screen \
         strace \

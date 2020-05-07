@@ -15,13 +15,10 @@ RUN zypper update -y && \
            gettext \
            gettext-devel \
            git \
-           glib2-devel \
            glibc-devel \
            glibc-locale \
-           libgnutls-devel \
-           libnl3-devel \
-           libtirpc-devel \
            libtool \
+           libvirt-devel \
            libxml2 \
            libxml2-devel \
            libxslt \
@@ -35,11 +32,9 @@ RUN zypper update -y && \
            php-imagick \
            pkgconfig \
            python3 \
-           python3-docutils \
            python3-pip \
            python3-setuptools \
            python3-wheel \
-           rpcgen \
            rpm-build \
            screen \
            strace \

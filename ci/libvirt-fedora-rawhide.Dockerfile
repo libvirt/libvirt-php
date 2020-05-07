@@ -16,13 +16,10 @@ RUN dnf update -y --nogpgcheck fedora-gpg-keys && \
         gettext \
         gettext-devel \
         git \
-        glib2-devel \
         glibc-devel \
         glibc-langpack-en \
-        gnutls-devel \
-        libnl3-devel \
-        libtirpc-devel \
         libtool \
+        libvirt-devel \
         libxml2 \
         libxml2-devel \
         libxslt \
@@ -37,10 +34,8 @@ RUN dnf update -y --nogpgcheck fedora-gpg-keys && \
         php-pecl-imagick \
         pkgconfig \
         python3 \
-        python3-docutils \
         python3-setuptools \
         python3-wheel \
-        rpcgen \
         rpm-build \
         screen \
         strace \
