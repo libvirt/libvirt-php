@@ -145,12 +145,60 @@ int count_functions(int num_funcs, int private)
     return num;
 }
 
-int main(int argc, char *argv[])
+
+static void
+parse_source(const char *in,
+             int *function_number)
 {
+    FILE *fp;
     char line[1024] = { 0 };
     bool in_comment = false;
-    int function_number = -1;
     int arg_number = 0;
+
+    if (access(in, R_OK) != 0)
+        bail_error("Cannot open file %s", in);
+
+    if (!(functions = (func_t *)malloc(sizeof(func_t))))
+        bail_error("Out of memory");
+
+    if (!(fp = fopen(in, "r")))
+        bail_error("Error while opening %s", in);
+
+    while (true) {
+        memset(line, 0, sizeof(line));
+
+        if (!fgets(line, sizeof(line), fp)) {
+            if (feof(fp))
+                break;
+            bail_error("Unable to read form %s", in);
+        }
+
+        /* Strip new line characters */
+        if (line[strlen(line) - 1] == '\n')
+            line[strlen(line) - 1] = 0;
+
+        if (strcmp(line, "/*") == 0) {
+            (*function_number)++;
+            in_comment = 1;
+            if (!(functions = (func_t *) realloc(functions,
+                                                 sizeof(func_t) * (*function_number + 1))))
+                bail_error("Out of memory");
+            functions[*function_number].name = NULL;
+            functions[*function_number].num_args = 0;
+        } else {
+            if (strcmp(line, " */") == 0)
+                in_comment = 0;
+            else if (in_comment)
+                parse_comment(line, *function_number, &arg_number);
+        }
+    }
+    fclose(fp);
+}
+
+
+int main(int argc, char *argv[])
+{
+    int function_number = -1;
     int private = 0;
     int idx = 1;
     int i, j;
@@ -171,44 +219,7 @@ int main(int argc, char *argv[])
         idx++;
     }
 
-    if (access(argv[idx], R_OK) != 0)
-        bail_error("Cannot open file %s", argv[1]);
-
-    if (!(functions = (func_t *)malloc(sizeof(func_t))))
-        bail_error("Out of memory");
-
-    if (!(fp = fopen(argv[idx], "r")))
-        bail_error("Error while opening %s", argv[1]);
-
-    while (true) {
-        memset(line, 0, sizeof(line));
-
-        if (!fgets(line, sizeof(line), fp)) {
-            if (feof(fp))
-                break;
-            bail_error("Unable to read form %s", argv[1]);
-        }
-
-        /* Strip new line characters */
-        if (line[strlen(line) - 1] == '\n')
-            line[strlen(line) - 1] = 0;
-
-        if (strcmp(line, "/*") == 0) {
-            function_number++;
-            in_comment = 1;
-            if (!(functions = (func_t *) realloc(functions,
-                                                 sizeof(func_t) * (function_number + 1))))
-                bail_error("Out of memory");
-            functions[function_number].name = NULL;
-            functions[function_number].num_args = 0;
-        } else {
-            if (strcmp(line, " */") == 0)
-                in_comment = 0;
-            else if (in_comment)
-                parse_comment(line, function_number, &arg_number);
-        }
-    }
-    fclose(fp);
+    parse_source(argv[idx], &function_number);
 
     if (!(fp = fopen(argv[idx+1], "w"))) {
         free_functions(function_number);
