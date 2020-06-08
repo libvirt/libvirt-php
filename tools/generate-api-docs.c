@@ -196,34 +196,17 @@ parse_source(const char *in,
 }
 
 
-int main(int argc, char *argv[])
+static void
+generate_output(const char *out,
+                int function_number,
+                int private)
 {
-    int function_number = -1;
-    int private = 0;
-    int idx = 1;
-    int i, j;
     FILE *fp;
+    int i;
 
-    if (argc < 3) {
-        fprintf(stderr, "Syntax: %s [-p|--private] source-file output-in-file\n", argv[0]);
-        return 1;
-    }
-
-    if ((strcmp(argv[1], "-p") == 0) || (strcmp(argv[1], "--private") == 0)) {
-        if (argc < 4) {
-            fprintf(stderr, "Syntax: %s [-p|--private] source-file output-in-file\n", argv[0]);
-            return 1;
-        }
-
-        private = 1;
-        idx++;
-    }
-
-    parse_source(argv[idx], &function_number);
-
-    if (!(fp = fopen(argv[idx+1], "w"))) {
+    if (!(fp = fopen(out, "w"))) {
         free_functions(function_number);
-        bail_error("Cannot write %s", argv[2]);
+        bail_error("Cannot write %s", out);
     }
 
     fprintf(fp, "<?xml version=\"1.0\"?>\n<html>\n  <body>\n");
@@ -232,6 +215,8 @@ int main(int argc, char *argv[])
     fprintf(fp, "<pre>Total number of functions: %d. Functions supported are:<br /><br />\n", count_functions(function_number, private));
     for (i = 0; i <= function_number; i++) {
         if ((functions[i].name != NULL) && (functions[i].private == private)) {
+            int j;
+
             fprintf(fp, "\t<code class=\"docref\">%s</code>(", functions[i].name);
 
             for (j = 0; j < functions[i].num_args; j++) {
@@ -262,6 +247,8 @@ int main(int argc, char *argv[])
 
     for (i = 0; i <= function_number; i++) {
         if ((functions[i].name != NULL) && (functions[i].private == private)) {
+            int j;
+
             fprintf(fp, "<h3><a name=\"%s\"><code>%s</code></a></h3>\n", functions[i].name, functions[i].name);
             fprintf(fp, "<pre class=\"programlisting\">%s(", functions[i].name);
 
@@ -320,6 +307,33 @@ int main(int argc, char *argv[])
         }
     }
     fclose(fp);
+}
+
+
+int main(int argc, char *argv[])
+{
+    int function_number = -1;
+    int private = 0;
+    int idx = 1;
+
+    if (argc < 3) {
+        fprintf(stderr, "Syntax: %s [-p|--private] source-file output-in-file\n", argv[0]);
+        return 1;
+    }
+
+    if ((strcmp(argv[1], "-p") == 0) || (strcmp(argv[1], "--private") == 0)) {
+        if (argc < 4) {
+            fprintf(stderr, "Syntax: %s [-p|--private] source-file output-in-file\n", argv[0]);
+            return 1;
+        }
+
+        private = 1;
+        idx++;
+    }
+
+    parse_source(argv[idx], &function_number);
+
+    generate_output(argv[idx + 1], function_number, private);
 
     free_functions(function_number);
     printf("Documentation has been generated successfully\n");
