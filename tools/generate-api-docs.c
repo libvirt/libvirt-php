@@ -160,7 +160,8 @@ parse_source(const char *in,
     if (access(in, R_OK) != 0)
         bail_error("Cannot open file %s", in);
 
-    if (!(functions = (func_t *)calloc(sizeof(func_t), 1)))
+    if (!functions &&
+        !(functions = (func_t *)calloc(sizeof(func_t), 1)))
         bail_error("Out of memory");
 
     if (!(fp = fopen(in, "r")))
@@ -345,7 +346,8 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    parse_source(argv[optind], &function_number);
+    while (argv[optind])
+        parse_source(argv[optind++], &function_number);
 
     if (!output &&
         !(output = strdup("/dev/stdout")))

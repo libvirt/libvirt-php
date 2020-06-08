@@ -12,9 +12,21 @@ doc_generated_files = \
 
 $(doc_generated_files): $(APIBUILD_STAMP)
 
+API_FILES = \
+	libvirt-php.c \
+	libvirt-connection.c \
+	libvirt-domain.c \
+	libvirt-network.c \
+	libvirt-node.c \
+	libvirt-nodedev.c \
+	libvirt-nwfilter.c \
+	libvirt-snapshot.c \
+	libvirt-storage.c \
+	libvirt-stream.c
+
 $(APIBUILD_STAMP): generate-api-docs
-	./generate-api-docs -o ../docs/api-reference.html.in $(top_srcdir)/src/libvirt-php.c
-	./generate-api-docs --private -o ../docs/dev-api-reference.html.in $(top_srcdir)/src/libvirt-php.c
+	./generate-api-docs -o ../docs/api-reference.html.in $(addprefix $(top_srcdir)/src/,$(API_FILES))
+	./generate-api-docs --private -o ../docs/dev-api-reference.html.in $(addprefix $(top_srcdir)/src/,$(API_FILES))
 	touch $@
 
 CLEANFILES = $(doc_generated_files)
