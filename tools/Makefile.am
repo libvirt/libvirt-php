@@ -13,8 +13,8 @@ doc_generated_files = \
 $(doc_generated_files): $(APIBUILD_STAMP)
 
 $(APIBUILD_STAMP): generate-api-docs
-	./generate-api-docs $(top_srcdir)/src/libvirt-php.c ../docs/api-reference.html.in
-	./generate-api-docs --private $(top_srcdir)/src/libvirt-php.c ../docs/dev-api-reference.html.in
+	./generate-api-docs -o ../docs/api-reference.html.in $(top_srcdir)/src/libvirt-php.c
+	./generate-api-docs --private -o ../docs/dev-api-reference.html.in $(top_srcdir)/src/libvirt-php.c
 	touch $@
 
 CLEANFILES = $(doc_generated_files)

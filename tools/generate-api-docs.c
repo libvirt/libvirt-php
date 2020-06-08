@@ -4,6 +4,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <stdbool.h>
+#include <getopt.h>
 
 typedef struct func_t {
     char *name;
@@ -314,28 +315,44 @@ int main(int argc, char *argv[])
 {
     int function_number = -1;
     int private = 0;
-    int idx = 1;
+    char *output = NULL;
+    int arg;
+    struct option opt[] = {
+        {"private", no_argument, NULL, 'p'},
+        {"output", required_argument, NULL, 'o'},
+        {NULL, 0, NULL, 0}
+    };
 
-    if (argc < 3) {
+    while ((arg = getopt_long(argc, argv, ":o:p", opt, NULL)) != -1) {
+        switch (arg) {
+        case 'p':
+            private = 1;
+            break;
+        case 'o':
+            free(output);
+            if (!(output = strdup(optarg)))
+                bail_error("Out of memory");
+            break;
+        case '?':
+            bail_error("Unknown option");
+        }
+    }
+
+    if (argc == optind) {
         fprintf(stderr, "Syntax: %s [-p|--private] source-file output-in-file\n", argv[0]);
         return 1;
     }
 
-    if ((strcmp(argv[1], "-p") == 0) || (strcmp(argv[1], "--private") == 0)) {
-        if (argc < 4) {
-            fprintf(stderr, "Syntax: %s [-p|--private] source-file output-in-file\n", argv[0]);
-            return 1;
-        }
+    parse_source(argv[optind], &function_number);
 
-        private = 1;
-        idx++;
-    }
+    if (!output &&
+        !(output = strdup("/dev/stdout")))
+        bail_error("Out of memory");
 
-    parse_source(argv[idx], &function_number);
-
-    generate_output(argv[idx + 1], function_number, private);
+    generate_output(output, function_number, private);
 
     free_functions(function_number);
+    free(output);
     printf("Documentation has been generated successfully\n");
     return 0;
 }
