@@ -128,6 +128,7 @@ void free_functions(int function_number)
     for (i = 0; i <= function_number; i++) {
         for (j = 0; j < functions[i].num_args; j++)
             free(functions[i].args[j]);
+        free(functions[i].args);
         free(functions[i].name);
         free(functions[i].desc);
         free(functions[i].returns);
@@ -159,7 +160,7 @@ parse_source(const char *in,
     if (access(in, R_OK) != 0)
         bail_error("Cannot open file %s", in);
 
-    if (!(functions = (func_t *)malloc(sizeof(func_t))))
+    if (!(functions = (func_t *)calloc(sizeof(func_t), 1)))
         bail_error("Out of memory");
 
     if (!(fp = fopen(in, "r")))
@@ -184,6 +185,7 @@ parse_source(const char *in,
             if (!(functions = (func_t *) realloc(functions,
                                                  sizeof(func_t) * (*function_number + 1))))
                 bail_error("Out of memory");
+            memset(functions + *function_number, 0, sizeof(*functions));
             functions[*function_number].name = NULL;
             functions[*function_number].num_args = 0;
         } else {
