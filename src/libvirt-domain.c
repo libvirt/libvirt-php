@@ -657,11 +657,11 @@ PHP_FUNCTION(libvirt_domain_change_boot_devices)
     if (dom == NULL) {
         DPRINTF("%s: Function failed, restoring original XML\n", PHPFUNC);
         VIR_FREE(xml);
-        efree(newXml);
+        efree(new_xml);
         RETURN_FALSE;
     }
     VIR_FREE(xml);
-    efree(newXml);
+    efree(new_xml);
 
     res_domain = (php_libvirt_domain *)emalloc(sizeof(php_libvirt_domain));
     res_domain->domain = dom;
