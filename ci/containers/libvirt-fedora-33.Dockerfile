@@ -1,4 +1,4 @@
-FROM fedora:31
+FROM registry.fedoraproject.org/fedora:33
 
 RUN dnf update -y && \
     dnf install -y \
@@ -8,23 +8,23 @@ RUN dnf update -y && \
         bash-completion \
         ca-certificates \
         ccache \
-        chrony \
-        cppi \
         gcc \
-        gdb \
         gettext \
         gettext-devel \
         git \
+        glib2-devel \
         glibc-devel \
         glibc-langpack-en \
+        gnutls-devel \
+        libnl3-devel \
+        libtirpc-devel \
         libtool \
         libvirt-devel \
         libxml2 \
         libxml2-devel \
         libxslt \
-        lsof \
         make \
-        net-tools \
+        meson \
         ninja-build \
         patch \
         perl \
@@ -33,23 +33,17 @@ RUN dnf update -y && \
         php-pecl-imagick \
         pkgconfig \
         python3 \
+        python3-docutils \
         python3-pip \
         python3-setuptools \
         python3-wheel \
-        rpm-build \
-        screen \
-        strace \
-        sudo \
-        vim \
-        xz && \
+        rpcgen \
+        rpm-build && \
     dnf autoremove -y && \
     dnf clean all -y && \
     mkdir -p /usr/libexec/ccache-wrappers && \
     ln -s /usr/bin/ccache /usr/libexec/ccache-wrappers/cc && \
     ln -s /usr/bin/ccache /usr/libexec/ccache-wrappers/$(basename /usr/bin/gcc)
-
-RUN pip3 install \
-         meson==0.54.0
 
 ENV LANG "en_US.UTF-8"
 
