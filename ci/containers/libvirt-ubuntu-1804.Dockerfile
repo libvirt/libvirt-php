@@ -7,15 +7,10 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
             autoconf \
             automake \
             autopoint \
-            bash \
-            bash-completion \
             ca-certificates \
             ccache \
-            cpanminus \
             gcc \
-            gettext \
             git \
-            libc6-dev \
             libtool \
             libtool-bin \
             libvirt-dev \
@@ -23,15 +18,9 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
             libxml2-utils \
             locales \
             make \
-            patch \
-            perl \
             php-dev \
             php-imagick \
             pkgconf \
-            python3 \
-            python3-pip \
-            python3-setuptools \
-            python3-wheel \
             xsltproc && \
     apt-get autoremove -y && \
     apt-get autoclean -y && \
@@ -42,9 +31,5 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     ln -s /usr/bin/ccache /usr/libexec/ccache-wrappers/$(basename /usr/bin/gcc)
 
 ENV LANG "en_US.UTF-8"
-
 ENV MAKE "/usr/bin/make"
-ENV NINJA "/usr/bin/ninja"
-ENV PYTHON "/usr/bin/python3"
-
 ENV CCACHE_WRAPPERSDIR "/usr/libexec/ccache-wrappers"
