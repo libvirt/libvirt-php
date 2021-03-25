@@ -168,7 +168,7 @@
    </varlistentry>
    <varlistentry>
     <term>
-     <constant>VIR_CRED_NOECHOPROMP</constant>
+     <constant>VIR_CRED_NOECHOPROMPT</constant>
      (<type>integer</type>)
     </term>
     <listitem>

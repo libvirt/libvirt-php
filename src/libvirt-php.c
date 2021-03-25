@@ -1315,7 +1315,7 @@ PHP_MINIT_FUNCTION(libvirt)
     /* Challenge response */
     REGISTER_LONG_CONSTANT("VIR_CRED_ECHOPROMPT",       6, CONST_CS | CONST_PERSISTENT);
     /* Challenge responce */
-    REGISTER_LONG_CONSTANT("VIR_CRED_NOECHOPROMP",      7, CONST_CS | CONST_PERSISTENT);
+    REGISTER_LONG_CONSTANT("VIR_CRED_NOECHOPROMPT",     7, CONST_CS | CONST_PERSISTENT);
     /* Authentication realm */
     REGISTER_LONG_CONSTANT("VIR_CRED_REALM",        8, CONST_CS | CONST_PERSISTENT);
     /* Externally managed credential More may be added - expect the unexpected */
