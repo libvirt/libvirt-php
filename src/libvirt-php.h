@@ -7,6 +7,18 @@
 #ifndef PHP_LIBVIRT_H
 #define PHP_LIBVIRT_H 1
 
+/* Use in PHP5, unneeded in PHP 7, droped in PHP 8*/
+#ifndef TSRMLS_CC
+#define TSRMLS_D        void
+#define TSRMLS_DC
+#define TSRMLS_C
+#define TSRMLS_CC
+
+#define TSRMLS_FETCH()
+#define TSRMLS_FETCH_FROM_CTX(ctx)
+#define TSRMLS_SET_CTX(ctx)
+#endif
+
 /* Network constants */
 #define VIR_NETWORKS_ACTIVE     1
 #define VIR_NETWORKS_INACTIVE       2
