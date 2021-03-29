@@ -3485,7 +3485,7 @@ PHP_FUNCTION(libvirt_list_inactive_domains)
  * Function name:   libvirt_domain_get_cpu_total_stats
  * Description:     Function is used to get statistics relating to CPU usage attributable to a single domain
  * Arguments:       @res [resource]: libvirt domain resource
- * Returns:         array, in second unit
+ * Returns:         cpu time statistics array
  */
 PHP_FUNCTION(libvirt_domain_get_cpu_total_stats)
 {
@@ -3516,10 +3516,9 @@ PHP_FUNCTION(libvirt_domain_get_cpu_total_stats)
         goto cleanup;
 
     array_init(return_value);
+    LONGLONG_INIT;
     for (i = 0; i < stats_per_cpu; i++) {
-        if (params[i].type == VIR_TYPED_PARAM_ULLONG) {
-            add_assoc_double(return_value, params[i].field, ((double) params[i].value.ul) / 1000000000);
-        }
+        VIR_TYPED_PARAMETER_ASSOC(return_value, params[i]);
     }
 
     done = 1;

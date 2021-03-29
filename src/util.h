@@ -274,6 +274,31 @@
         VIRT_RETURN_STRING(tmpnumber);                                         \
     } while (0)
 
+# define VIR_TYPED_PARAMETER_ASSOC(out, param)                                 \
+    switch (param.type) {                                                      \
+        case VIR_TYPED_PARAM_INT:                                              \
+            add_assoc_long(out, param.field, param.value.i);                   \
+            break;                                                             \
+        case VIR_TYPED_PARAM_UINT:                                             \
+            add_assoc_long(out, param.field, param.value.ui);                  \
+            break;                                                             \
+        case VIR_TYPED_PARAM_LLONG:                                            \
+            add_assoc_long(out, param.field, param.value.l);                   \
+            break;                                                             \
+        case VIR_TYPED_PARAM_ULLONG:                                           \
+            LONGLONG_ASSOC(out, param.field, param.value.ul);                  \
+            break;                                                             \
+        case VIR_TYPED_PARAM_DOUBLE:                                           \
+            add_assoc_double(out, param.field, param.value.d);                 \
+            break;                                                             \
+        case VIR_TYPED_PARAM_BOOLEAN:                                          \
+            add_assoc_bool(out, param.field, param.value.b);                   \
+            break;                                                             \
+        case VIR_TYPED_PARAM_STRING:                                           \
+            VIRT_ADD_ASSOC_STRING(out, param.field, param.value.s);            \
+            break;                                                             \
+    }
+
 # ifndef PHP_FE_END
 #  define PHP_FE_END {NULL, NULL, NULL}
 # endif
