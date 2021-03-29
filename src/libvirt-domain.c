@@ -3457,3 +3457,52 @@ PHP_FUNCTION(libvirt_list_inactive_domains)
     free(domains);
     RETURN_FALSE;
 }
+
+/*
+ * Function name:   libvirt_domain_get_cpu_total_stats
+ * Description:     Function is used to get statistics relating to CPU usage attributable to a single domain
+ * Arguments:       @res [resource]: libvirt domain resource
+ * Returns:         array, in second unit
+ */
+PHP_FUNCTION(libvirt_domain_get_cpu_total_stats)
+{
+    php_libvirt_domain *domain = NULL;
+    zval *zdomain;
+
+    virTypedParameterPtr params = NULL;
+    int max_id, cpu = 0, show_count = -1, nparams = 0, stats_per_cpu, done = 0, i;
+
+    GET_DOMAIN_FROM_ARGS("r", &zdomain);
+
+
+    /* get supported num of parameter for total statistics */
+    if ((nparams = virDomainGetCPUStats(domain->domain, NULL, 0, -1, 1, 0)) < 0)
+        goto cleanup;
+
+    if (!nparams) {
+        goto cleanup;
+    }
+
+    params = calloc(nparams, sizeof(virTypedParameter));
+
+    if (params == NULL)
+        goto cleanup;
+
+    /* passing start_cpu == -1 gives us domain's total status */
+    if ((stats_per_cpu = virDomainGetCPUStats(domain->domain, params, nparams, -1, 1, 0)) < 0)
+        goto cleanup;
+
+    array_init(return_value);
+    for (i = 0; i < stats_per_cpu; i++) {
+        if (params[i].type == VIR_TYPED_PARAM_ULLONG) {
+            add_assoc_double(return_value, params[i].field, ((double) params[i].value.ul) / 1000000000);
+        }
+    }
+
+    done = 1;
+
+    cleanup:
+    VIR_FREE(params);
+    if (!done)
+        RETURN_FALSE;
+}
