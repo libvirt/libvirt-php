@@ -1475,6 +1475,29 @@ PHP_FUNCTION(libvirt_domain_undefine)
 }
 
 /*
+ * Function name:   libvirt_domain_undefine_flags
+ * Description:     Function is used to undefine(with flags) the domain identified by it's resource
+ * Arguments:       @res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
+ *                  @flags [int]: optional flags
+ * Returns:         TRUE for success, FALSE on error
+ */
+PHP_FUNCTION(libvirt_domain_undefine_flags)
+{
+    php_libvirt_domain *domain = NULL;
+    zval *zdomain;
+    int retval;
+    zend_long flags = 0;
+
+    GET_DOMAIN_FROM_ARGS("r|l", &zdomain, &flags);
+
+    retval = virDomainUndefineFlags(domain->domain, flags);
+    DPRINTF("%s: virDomainUndefineFlags(%p) returned %d\n", PHPFUNC, domain->domain, retval);
+    if (retval != 0)
+        RETURN_FALSE;
+    RETURN_TRUE;
+}
+
+/*
  * Function name:   libvirt_domain_reboot
  * Since version:   0.4.1(-1)
  * Description:     Function is used to reboot the domain identified by it's resource
