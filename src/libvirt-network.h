@@ -43,7 +43,8 @@
     PHP_FE(libvirt_network_get_autostart,   arginfo_libvirt_conn)              \
     PHP_FE(libvirt_network_set_autostart,   arginfo_libvirt_conn_flags)        \
     PHP_FE(libvirt_list_all_networks,       arginfo_libvirt_conn_optflags)     \
-    PHP_FE(libvirt_list_networks,           arginfo_libvirt_conn_optflags)
+    PHP_FE(libvirt_list_networks,           arginfo_libvirt_conn_optflags)     \
+    PHP_FE(libvirt_network_get_dhcp_leases, arginfo_libvirt_network_get_dhcp_leases)
 
 extern int le_libvirt_network;
 
@@ -69,5 +70,6 @@ PHP_FUNCTION(libvirt_network_get_autostart);
 PHP_FUNCTION(libvirt_network_set_autostart);
 PHP_FUNCTION(libvirt_list_all_networks);
 PHP_FUNCTION(libvirt_list_networks);
+PHP_FUNCTION(libvirt_network_get_dhcp_leases);
 
 #endif

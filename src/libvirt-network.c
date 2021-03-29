@@ -571,3 +571,61 @@ PHP_FUNCTION(libvirt_list_networks)
     free(nets);
     RETURN_FALSE;
 }
+
+/*
+ * Function name:   libvirt_network_get_dhcp_leases
+ * Description:     Function is fetching leases info of guests in the specified network
+ * Arguments:       @res [resource]: libvirt network resource
+ *                  @mac [string]: Optional ASCII formatted MAC address of an interface
+ *                  @flags [int]: Extra flags, not used yet, so callers should always pass 0
+ * Returns:         dhcp leases info array on success, FALSE on error
+ */
+PHP_FUNCTION(libvirt_network_get_dhcp_leases)
+{
+    php_libvirt_network *network = NULL;
+    zval *znetwork;
+    char *mac = NULL;
+    strsize_t mac_len;
+    zend_long flags = 0;
+
+    virNetworkDHCPLeasePtr *leases = NULL;
+    int nleases = 0;
+
+    int i;
+
+    int done = 0;
+
+    GET_NETWORK_FROM_ARGS("r|sl", &znetwork, &mac, &mac_len, &flags);
+
+    if ((nleases = virNetworkGetDHCPLeases(network->network, mac, &leases, flags)) < 0) {
+        set_error_if_unset("Failed to get leases info" TSRMLS_CC);
+        goto cleanup;
+    }
+
+    array_init(return_value);
+
+    for (i = 0; i < nleases; i++) {
+        virNetworkDHCPLeasePtr lease;
+        lease = leases[i];
+        zval *arr;
+        VIRT_ARRAY_INIT(arr);
+        add_assoc_long(arr, "time", (long) lease->expirytime);
+        VIRT_ADD_ASSOC_STRING_WITH_NULL_POINTER_CHECK(arr, "mac", lease->mac);
+        VIRT_ADD_ASSOC_STRING_WITH_NULL_POINTER_CHECK(arr, "ipaddr", lease->ipaddr);
+        VIRT_ADD_ASSOC_STRING_WITH_NULL_POINTER_CHECK(arr, "hostname", lease->hostname);
+        VIRT_ADD_ASSOC_STRING_WITH_NULL_POINTER_CHECK(arr, "clientid", lease->clientid);
+        add_index_zval(return_value, i, arr);
+    }
+
+    done = 1;
+
+    cleanup:
+    if (leases) {
+        for (i = 0; i < nleases; i++)
+            virNetworkDHCPLeaseFree(leases[i]);
+        VIR_FREE(leases);
+    }
+    if (!done) {
+        RETURN_FALSE
+    }
+}
