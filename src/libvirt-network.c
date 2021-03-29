@@ -626,6 +626,6 @@ PHP_FUNCTION(libvirt_network_get_dhcp_leases)
         VIR_FREE(leases);
     }
     if (!done) {
-        RETURN_FALSE
+        RETURN_FALSE;
     }
 }
