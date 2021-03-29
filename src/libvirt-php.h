@@ -157,6 +157,7 @@ ZEND_BEGIN_MODULE_GLOBALS(libvirt)
     char *last_error;
     char *vnc_location;
     zend_bool longlong_to_string_ini;
+    zend_bool signed_longlong_to_string_ini;
     char *iso_path_ini;
     char *image_path_ini;
     zend_long max_connections_ini;

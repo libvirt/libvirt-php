@@ -525,6 +525,7 @@ ZEND_GET_MODULE(libvirt)
 /* PHP init options */
 PHP_INI_BEGIN()
 STD_PHP_INI_ENTRY("libvirt.longlong_to_string", "1", PHP_INI_ALL, OnUpdateBool, longlong_to_string_ini, zend_libvirt_globals, libvirt_globals)
+STD_PHP_INI_ENTRY("libvirt.signed_longlong_to_string", "0", PHP_INI_ALL, OnUpdateBool, signed_longlong_to_string_ini, zend_libvirt_globals, libvirt_globals)
 STD_PHP_INI_ENTRY("libvirt.iso_path", "/var/lib/libvirt/images/iso", PHP_INI_ALL, OnUpdateString, iso_path_ini, zend_libvirt_globals, libvirt_globals)
 STD_PHP_INI_ENTRY("libvirt.image_path", "/var/lib/libvirt/images", PHP_INI_ALL, OnUpdateString, image_path_ini, zend_libvirt_globals, libvirt_globals)
 STD_PHP_INI_ENTRY("libvirt.max_connections", "5", PHP_INI_ALL, OnUpdateLong, max_connections_ini, zend_libvirt_globals, libvirt_globals)
@@ -542,6 +543,7 @@ void change_debug(int val TSRMLS_DC)
 static void php_libvirt_init_globals(zend_libvirt_globals *libvirt_globals TSRMLS_DC)
 {
     libvirt_globals->longlong_to_string_ini = 1;
+    libvirt_globals->signed_longlong_to_string_ini = 0;
     libvirt_globals->iso_path_ini = "/var/lib/libvirt/images/iso";
     libvirt_globals->image_path_ini = "/var/lib/libvirt/images";
     libvirt_globals->max_connections_ini = 5;

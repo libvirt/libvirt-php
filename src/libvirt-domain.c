@@ -1855,11 +1855,11 @@ PHP_FUNCTION(libvirt_domain_block_stats)
 
     array_init(return_value);
     LONGLONG_INIT;
-    LONGLONG_ASSOC(return_value, "rd_req", stats.rd_req);
-    LONGLONG_ASSOC(return_value, "rd_bytes", stats.rd_bytes);
-    LONGLONG_ASSOC(return_value, "wr_req", stats.wr_req);
-    LONGLONG_ASSOC(return_value, "wr_bytes", stats.wr_bytes);
-    LONGLONG_ASSOC(return_value, "errs", stats.errs);
+    SIGNED_LONGLONG_ASSOC(return_value, "rd_req", stats.rd_req);
+    SIGNED_LONGLONG_ASSOC(return_value, "rd_bytes", stats.rd_bytes);
+    SIGNED_LONGLONG_ASSOC(return_value, "wr_req", stats.wr_req);
+    SIGNED_LONGLONG_ASSOC(return_value, "wr_bytes", stats.wr_bytes);
+    SIGNED_LONGLONG_ASSOC(return_value, "errs", stats.errs);
 }
 
 /*
@@ -2067,14 +2067,14 @@ PHP_FUNCTION(libvirt_domain_interface_stats)
 
     array_init(return_value);
     LONGLONG_INIT;
-    LONGLONG_ASSOC(return_value, "rx_bytes", stats.rx_bytes);
-    LONGLONG_ASSOC(return_value, "rx_packets", stats.rx_packets);
-    LONGLONG_ASSOC(return_value, "rx_errs", stats.rx_errs);
-    LONGLONG_ASSOC(return_value, "rx_drop", stats.rx_drop);
-    LONGLONG_ASSOC(return_value, "tx_bytes", stats.tx_bytes);
-    LONGLONG_ASSOC(return_value, "tx_packets", stats.tx_packets);
-    LONGLONG_ASSOC(return_value, "tx_errs", stats.tx_errs);
-    LONGLONG_ASSOC(return_value, "tx_drop", stats.tx_drop);
+    SIGNED_LONGLONG_ASSOC(return_value, "rx_bytes", stats.rx_bytes);
+    SIGNED_LONGLONG_ASSOC(return_value, "rx_packets", stats.rx_packets);
+    SIGNED_LONGLONG_ASSOC(return_value, "rx_errs", stats.rx_errs);
+    SIGNED_LONGLONG_ASSOC(return_value, "rx_drop", stats.rx_drop);
+    SIGNED_LONGLONG_ASSOC(return_value, "tx_bytes", stats.tx_bytes);
+    SIGNED_LONGLONG_ASSOC(return_value, "tx_packets", stats.tx_packets);
+    SIGNED_LONGLONG_ASSOC(return_value, "tx_errs", stats.tx_errs);
+    SIGNED_LONGLONG_ASSOC(return_value, "tx_drop", stats.tx_drop);
 }
 
 /*
