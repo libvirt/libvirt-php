@@ -579,7 +579,7 @@ PHP_FUNCTION(libvirt_connect_get_sysinfo)
 }
 
 /*
- * Function name:   libvirt_connect_is_encrypted
+ * Function name:   libvirt_connect_get_encrypted
  * Since version:   0.4.1(-2)
  * Description:     Function is used to get the information whether the connection is encrypted or not
  * Arguments:       @conn [resource]: resource for connection
@@ -596,7 +596,7 @@ PHP_FUNCTION(libvirt_connect_get_encrypted)
 }
 
 /*
- * Function name:   libvirt_connect_is_secure
+ * Function name:   libvirt_connect_get_secure
  * Since version:   0.4.1(-2)
  * Description:     Function is used to get the information whether the connection is secure or not
  * Arguments:       @conn [resource]: resource for connection
