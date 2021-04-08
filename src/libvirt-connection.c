@@ -698,7 +698,7 @@ PHP_FUNCTION(libvirt_connect_get_information)
 /*
  * Function name:   libvirt_connect_get_machine_types
  * Since version:   0.4.9
- * Description:     Function is used to get machine types supported by hypervisor on the conneciton
+ * Description:     Function is used to get machine types supported by hypervisor on the connection
  * Arguments:       @conn [resource]: resource for connection
  * Returns:         array of machine types for the connection incl. maxCpus if appropriate
  */

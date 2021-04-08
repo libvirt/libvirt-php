@@ -418,7 +418,7 @@ PHP_FUNCTION(libvirt_storagepool_create)
 /*
  * Function name:   libvirt_storagepool_destroy
  * Since version:   0.4.1(-1)
- * Description:     Function is used to destory the storage pool
+ * Description:     Function is used to destroy the storage pool
  * Arguments:       @res [resource]: libvirt storagepool resource
  * Returns:         TRUE if success, FALSE on error
  */
@@ -820,7 +820,7 @@ PHP_FUNCTION(libvirt_storagevolume_create_xml)
 /*
  * Function name:   libvirt_storagevolume_create_xml_from
  * Since version:   0.4.1(-2)
- * Description:     Function is used to clone the new storage volume into pool from the orignial volume
+ * Description:     Function is used to clone the new storage volume into pool from the original volume
  * Arguments:       @pool [resource]: libvirt storagepool resource
  *                  @xml [string]: XML string to create the storage volume in the storage pool
  *                  @original_volume [resource]: libvirt storagevolume resource
@@ -840,7 +840,7 @@ PHP_FUNCTION(libvirt_storagevolume_create_xml_from)
     strsize_t xml_len;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rsr", &zpool, &xml, &xml_len, &zvolume) == FAILURE) {
-        set_error("Invalid pool resource, XML or volume resouce" TSRMLS_CC);
+        set_error("Invalid pool resource, XML or volume resource" TSRMLS_CC);
         RETURN_FALSE;
     }
 

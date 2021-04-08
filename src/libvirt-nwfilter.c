@@ -166,8 +166,8 @@ PHP_FUNCTION(libvirt_nwfilter_get_uuid_string)
 /*
  * Function name:   libvirt_nwfilter_get_uuid
  * Since version:   0.5.3
- * Descirption:     Function is used to get nwfilter's UUID in binary format
- * Arguments:       @res [resource]: libvirt netowrk resource
+ * Description:     Function is used to get nwfilter's UUID in binary format
+ * Arguments:       @res [resource]: libvirt network resource
  * Returns:         nwfilter UUID in binary format or FALSE on failure
  */
 PHP_FUNCTION(libvirt_nwfilter_get_uuid)

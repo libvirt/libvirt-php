@@ -339,8 +339,8 @@ struct _xmlXPathContext {
     xmlError lastError;			/* the last error */
     xmlNodePtr debugNode;		/* the source node XSLT */
 
-    /* dictionnary */
-    xmlDictPtr dict;			/* dictionnary if any */
+    /* dictionary */
+    xmlDictPtr dict;			/* dictionary if any */
 
     int flags;				/* flags to control compilation */
 };
@@ -355,7 +355,7 @@ typedef xmlXPathCompExpr *xmlXPathCompExprPtr;
 /**
  * xmlXPathParserContext:
  *
- * An XPath parser context. It contains pure parsing informations,
+ * An XPath parser context. It contains pure parsing information,
  * an xmlXPathContext, and the stack of objects.
  */
 struct _xmlXPathParserContext {

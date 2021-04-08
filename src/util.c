@@ -25,7 +25,7 @@ int gdebug;
 static char *
 get_datetime(void)
 {
-    /* Caution: Function cannot use DPRINTF() macro otherwise the neverending loop will be met! */
+    /* Caution: Function cannot use DPRINTF() macro otherwise the never ending loop will be met! */
     char *outstr = NULL;
     time_t t;
     struct tm *tmp;

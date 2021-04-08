@@ -79,7 +79,7 @@ struct _xmlParserInput {
 /**
  * xmlParserNodeInfo:
  *
- * The parser can be asked to collect Node informations, i.e. at what
+ * The parser can be asked to collect Node information, i.e. at what
  * place in the file they were detected.
  * NOTE: This is off by default and not very well tested.
  */
@@ -257,7 +257,7 @@ struct _xmlParserCtxt {
     void              *catalogs;      /* document's own catalog */
     int                recovery;      /* run in recovery mode */
     int                progressive;   /* is this a progressive parsing */
-    xmlDictPtr         dict;          /* dictionnary for the parser */
+    xmlDictPtr         dict;          /* dictionary for the parser */
     const xmlChar *   *atts;          /* array for the attributes callbacks */
     int                maxatts;       /* the size of the array */
     int                docdict;       /* use strings from dict to build tree */
@@ -293,7 +293,7 @@ struct _xmlParserCtxt {
     xmlAttrPtr        freeAttrs;    /* List of freed attributes nodes */
 
     /*
-     * the complete error informations for the last error.
+     * the complete error information for the last error.
      */
     xmlError          lastError;
     xmlParserMode     parseMode;    /* the parser mode */
@@ -315,7 +315,7 @@ struct _xmlSAXLocator {
  * xmlSAXHandler:
  *
  * A SAX handler is bunch of callbacks called by the parser when processing
- * of the input generate data or structure informations.
+ * of the input generate data or structure information.
  */
 
 /**
@@ -671,7 +671,7 @@ typedef int (*hasExternalSubsetSAXFunc) (void *ctx);
  *               attribute values.
  *
  * SAX2 callback when an element start has been detected by the parser.
- * It provides the namespace informations for the element, as well as
+ * It provides the namespace information for the element, as well as
  * the new namespace declarations on the element.
  */
 
@@ -693,7 +693,7 @@ typedef void (*startElementNsSAX2Func) (void *ctx,
  * @URI:  the element namespace name if available
  *
  * SAX2 callback when an element end has been detected by the parser.
- * It provides the namespace informations for the element.
+ * It provides the namespace information for the element.
  */
 
 typedef void (*endElementNsSAX2Func)   (void *ctx,
@@ -1085,7 +1085,7 @@ typedef enum {
     XML_PARSE_SAX1	= 1<<9,	/* use the SAX1 interface internally */
     XML_PARSE_XINCLUDE	= 1<<10,/* Implement XInclude substitition  */
     XML_PARSE_NONET	= 1<<11,/* Forbid network access */
-    XML_PARSE_NODICT	= 1<<12,/* Do not reuse the context dictionnary */
+    XML_PARSE_NODICT	= 1<<12,/* Do not reuse the context dictionary */
     XML_PARSE_NSCLEAN	= 1<<13,/* remove redundant namespaces declarations */
     XML_PARSE_NOCDATA	= 1<<14,/* merge CDATA as text nodes */
     XML_PARSE_NOXINCNODE= 1<<15,/* do not generate XINCLUDE START/END nodes */

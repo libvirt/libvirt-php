@@ -388,8 +388,8 @@ PHP_FUNCTION(libvirt_network_get_uuid_string)
 /*
  * Function name:   libvirt_network_get_uuid
  * Since version:   0.5.3
- * Descirption:     Function is used to get network's UUID in binary format
- * Arguments:       @res [resource]: libvirt netowrk resource
+ * Description:     Function is used to get network's UUID in binary format
+ * Arguments:       @res [resource]: libvirt network resource
  * Returns:         network UUID in binary format or FALSE on failure
  */
 PHP_FUNCTION(libvirt_network_get_uuid)
@@ -488,7 +488,7 @@ PHP_FUNCTION(libvirt_network_set_autostart)
  * Since version:   0.5.3
  * Description:     Function is used to list networks on the connection
  * Arguments:       @res [resource]: libvirt connection resource
- *                  @flags [int]: optional flags to filter the results for a smaller list of targetted networks (bitwise-OR VIR_CONNECT_LIST_NETWORKS_* constants)
+ *                  @flags [int]: optional flags to filter the results for a smaller list of targeted networks (bitwise-OR VIR_CONNECT_LIST_NETWORKS_* constants)
  * Returns:         libvirt network resources array for the connection
  */
 PHP_FUNCTION(libvirt_list_all_networks)

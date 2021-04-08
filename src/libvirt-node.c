@@ -281,7 +281,7 @@ PHP_FUNCTION(libvirt_node_get_mem_stats)
  * Since version:   0.5.3
  * Description:     Function is used to get free memory available on the node.
  * Arguments:       @conn [resource]: resource for connection.
- * Returns:         The available free memery in bytes as string or FALSE for error.
+ * Returns:         The available free memory in bytes as string or FALSE for error.
  */
 PHP_FUNCTION(libvirt_node_get_free_memory)
 {

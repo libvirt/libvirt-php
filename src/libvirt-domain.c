@@ -208,7 +208,7 @@ PHP_FUNCTION(libvirt_domain_new)
                  tmp, hostname);
     } else {
         close(fd);
-        DPRINTF("%s: Connection to '%s' successfull (%s local connection)\n", PHPFUNC, vncl,
+        DPRINTF("%s: Connection to '%s' successful (%s local connection)\n", PHPFUNC, vncl,
                 (flags & DOMAIN_FLAG_TEST_LOCAL_VNC) ? "using" : "not using");
     }
 #endif

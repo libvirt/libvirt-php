@@ -1214,7 +1214,7 @@ PHP_MINIT_FUNCTION(libvirt)
 
     /* LIBVIRT CONSTANTS */
 
-    /* XML contants */
+    /* XML constants */
     REGISTER_LONG_CONSTANT("VIR_DOMAIN_XML_SECURE",     1, CONST_CS | CONST_PERSISTENT);
     REGISTER_LONG_CONSTANT("VIR_DOMAIN_XML_INACTIVE",   2, CONST_CS | CONST_PERSISTENT);
     REGISTER_LONG_CONSTANT("VIR_DOMAIN_XML_UPDATE_CPU", 4, CONST_CS | CONST_PERSISTENT);
@@ -1651,7 +1651,7 @@ PHP_FUNCTION(libvirt_image_remove)
     VIR_FREE(hostname);
 
     if (unlink(image) != 0) {
-        snprintf(msg, sizeof(msg), "An error occured while unlinking %s: %d (%s)", image, errno, strerror(errno));
+        snprintf(msg, sizeof(msg), "An error occurred while unlinking %s: %d (%s)", image, errno, strerror(errno));
         set_error(msg TSRMLS_CC);
         RETURN_FALSE;
     } else {

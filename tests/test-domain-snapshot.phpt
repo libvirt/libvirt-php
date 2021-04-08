@@ -34,7 +34,7 @@
 		bail('Domain definition failed with error: '.libvirt_get_last_error());
 
 	if (libvirt_domain_has_current_snapshot($res) !== FALSE)
-		bail('An error occured while getting domain snapshot: '.libvirt_get_last_error());
+		bail('An error occurred while getting domain snapshot: '.libvirt_get_last_error());
 
 	if (!is_resource($snapshot_res = libvirt_domain_snapshot_create($res)))
 		bail('Error on creating snapshot: '.libvirt_get_last_error());

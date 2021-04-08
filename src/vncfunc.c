@@ -271,7 +271,7 @@ vnc_send_key(int sfd, unsigned char key, int modifier, int release)
 
     if (write(sfd, buf, 8) < 0) {
         int err = errno;
-        DPRINTF("%s: Error occured while writing to socket descriptor #%d: %d (%s)\n",
+        DPRINTF("%s: Error occurred while writing to socket descriptor #%d: %d (%s)\n",
                 VNCFUNC, sfd, err, strerror(err));
         close(sfd);
         return -err;
