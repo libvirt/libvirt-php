@@ -1,0 +1,34 @@
+projects:
+  - libvirt-php
+  - libvirt+dist
+
+gitlab:
+  namespace: libvirt
+  project: libvirt-php
+
+targets:
+  debian-10:
+    projects:
+      - libvirt-php
+      - libvirt+minimal
+
+    jobs:
+      - arch: x86_64
+        template: .native_git_build_job
+        suffix: -git
+
+  debian-sid: x86_64
+
+  fedora-33: x86_64
+
+  fedora-34: x86_64
+
+  fedora-rawhide: x86_64
+
+  opensuse-leap-152: x86_64
+
+  opensuse-tumbleweed: x86_64
+
+  ubuntu-1804: x86_64
+
+  ubuntu-2004: x86_64
