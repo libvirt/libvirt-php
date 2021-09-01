@@ -1,9 +1,10 @@
 # THIS FILE WAS AUTO-GENERATED
 #
-#  $ lcitool dockerfile ubuntu-2004 libvirt+dist,libvirt-php
+#  $ lcitool manifest ci/manifest.yml
 #
-# https://gitlab.com/libvirt/libvirt-ci/-/commit/740f5254f607de914a92d664196d045149edb45a
-FROM docker.io/library/ubuntu:20.04
+# https://gitlab.com/libvirt/libvirt-ci
+
+FROM docker.io/library/debian:10-slim
 
 RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get update && \
@@ -15,18 +16,33 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
             autopoint \
             ca-certificates \
             ccache \
+            cpp \
             gcc \
+            gettext \
             git \
+            libc-dev-bin \
+            libc6-dev \
+            libglib2.0-dev \
+            libgnutls28-dev \
+            libnl-3-dev \
+            libnl-route-3-dev \
+            libtirpc-dev \
             libtool \
             libtool-bin \
-            libvirt-dev \
             libxml2-dev \
             libxml2-utils \
             locales \
             make \
+            ninja-build \
+            perl-base \
             php-dev \
             php-imagick \
             pkgconf \
+            python3 \
+            python3-docutils \
+            python3-pip \
+            python3-setuptools \
+            python3-wheel \
             xsltproc && \
     eatmydata apt-get autoremove -y && \
     eatmydata apt-get autoclean -y && \
@@ -35,8 +51,13 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     dpkg-query --showformat '${Package}_${Version}_${Architecture}\n' --show > /packages.txt && \
     mkdir -p /usr/libexec/ccache-wrappers && \
     ln -s /usr/bin/ccache /usr/libexec/ccache-wrappers/cc && \
-    ln -s /usr/bin/ccache /usr/libexec/ccache-wrappers/$(basename /usr/bin/gcc)
+    ln -s /usr/bin/ccache /usr/libexec/ccache-wrappers/gcc
+
+RUN pip3 install \
+         meson==0.56.0
 
 ENV LANG "en_US.UTF-8"
 ENV MAKE "/usr/bin/make"
+ENV NINJA "/usr/bin/ninja"
+ENV PYTHON "/usr/bin/python3"
 ENV CCACHE_WRAPPERSDIR "/usr/libexec/ccache-wrappers"
