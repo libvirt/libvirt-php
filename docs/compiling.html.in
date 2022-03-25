@@ -12,7 +12,7 @@
     </p>
 
     <pre>
-      $ gunzip -c libvirt-php-x.x.x.tar.gz | tar xvf -
+      $ unxz -c libvirt-php-x.x.x.tar.xz | tar xvf -
       $ cd libvirt-php-x.x.x
       $ ./configure</pre>
 

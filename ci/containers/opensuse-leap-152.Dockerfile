@@ -25,7 +25,8 @@ RUN zypper update -y && \
            php-devel \
            php-imagick \
            pkgconfig \
-           rpm-build && \
+           rpm-build \
+           xz && \
     zypper clean --all && \
     rpm -qa | sort > /packages.txt && \
     mkdir -p /usr/libexec/ccache-wrappers && \

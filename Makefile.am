@@ -7,7 +7,7 @@ EXTRA_DIST = libvirt-php.spec libvirt-php.spec.in winsrc AUTHORS.in
 AM_DISTCHECK_CONFIGURE_FLAGS = --with-distcheck
 
 rpm: clean
-	@(unset CDPATH ; $(MAKE) dist && rpmbuild -ta $(distdir).tar.gz)
+	@(unset CDPATH ; $(MAKE) dist && rpmbuild -ta $(distdir).tar.xz)
 
 dist-hook: gen-AUTHORS
 

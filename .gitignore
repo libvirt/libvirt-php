@@ -36,6 +36,6 @@ src/*.so
 stamp-h1
 tags
 tools/generate-api-docs
-libvirt-php-*.tar.gz
+libvirt-php-*.tar.xz
 *~
 !/m4/virt-*.m4

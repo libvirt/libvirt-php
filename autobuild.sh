@@ -19,7 +19,7 @@ PHPCDIR=`php-config --configure-options |
 make
 make install PHPEDIR=$PHPEDIR PHPCDIR=$PHPCDIR
 
-rm -f *.tar.gz
+rm -f *.tar.xz
 make dist
 
 if [ -n "$AUTOBUILD_COUNTER" ]; then

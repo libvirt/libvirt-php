@@ -28,7 +28,8 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
             php-dev \
             php-imagick \
             pkgconf \
-            xsltproc && \
+            xsltproc \
+            xz-utils && \
     eatmydata apt-get autoremove -y && \
     eatmydata apt-get autoclean -y && \
     sed -Ei 's,^# (en_US\.UTF-8 .*)$,\1,' /etc/locale.gen && \

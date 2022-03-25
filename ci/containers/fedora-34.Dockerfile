@@ -35,7 +35,8 @@ exec "$@"' > /usr/bin/nosync && \
         php-devel \
         php-pecl-imagick \
         pkgconfig \
-        rpm-build && \
+        rpm-build \
+        xz && \
     nosync dnf autoremove -y && \
     nosync dnf clean all -y && \
     rpm -qa | sort > /packages.txt && \

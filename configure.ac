@@ -2,7 +2,7 @@ AC_INIT([libvirt-php], [0.5.6], [libvir-list@redhat.com], [], [http://libvirt.or
 AC_CONFIG_SRCDIR([src/libvirt-php.c])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
-AM_INIT_AUTOMAKE([-Wall -Werror -Wno-portability])
+AM_INIT_AUTOMAKE([-Wall -Werror -Wno-portability tar-pax no-dist-gzip dist-xz])
 AM_MAINTAINER_MODE([enable])
 AC_GNU_SOURCE
 
