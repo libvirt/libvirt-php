@@ -552,7 +552,9 @@ PHP_FUNCTION(libvirt_domain_change_memory)
         RETURN_FALSE;
     }
 
-    snprintf(newXml, sizeof(newXml), "  <memory>%d</memory>\n  <currentMemory>%d</currentMemory>\n", allocMax, allocMem);
+    snprintf(newXml, sizeof(newXml),
+             "  <memory>" ZEND_LONG_FMT "</memory>\n"
+             "  <currentMemory>" ZEND_LONG_FMT "</currentMemory>\n", allocMax, allocMem);
     tmpA = strstr(xml, "<memory>");
     tmp1 = strstr(xml, "</currentMemory>") + strlen("</currentMemory>");
     // pos = strlen(xml) - strlen(tmp1);

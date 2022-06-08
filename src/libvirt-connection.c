@@ -292,7 +292,7 @@ PHP_FUNCTION(libvirt_connect_get_hypervisor)
     add_assoc_long(return_value, "minor", (long)((hvVer/1000) % 1000));
     add_assoc_long(return_value, "release", (long)(hvVer % 1000));
 
-    snprintf(hvStr, sizeof(hvStr), "%s %d.%d.%d", type,
+    snprintf(hvStr, sizeof(hvStr), "%s %ld.%ld.%ld", type,
              (long)((hvVer/1000000) % 1000), (long)((hvVer/1000) % 1000), (long)(hvVer % 1000));
     VIRT_ADD_ASSOC_STRING(return_value, "hypervisor_string", hvStr);
 }
@@ -645,7 +645,7 @@ PHP_FUNCTION(libvirt_connect_get_information)
         add_assoc_long(return_value, "hypervisor_major", (long)((hvVer/1000000) % 1000));
         add_assoc_long(return_value, "hypervisor_minor", (long)((hvVer/1000) % 1000));
         add_assoc_long(return_value, "hypervisor_release", (long)(hvVer % 1000));
-        snprintf(hvStr, sizeof(hvStr), "%s %d.%d.%d", type,
+        snprintf(hvStr, sizeof(hvStr), "%s %ld.%ld.%ld", type,
                  (long)((hvVer/1000000) % 1000), (long)((hvVer/1000) % 1000), (long)(hvVer % 1000));
         VIRT_ADD_ASSOC_STRING(return_value, "hypervisor_string", hvStr);
     }

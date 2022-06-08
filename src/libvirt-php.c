@@ -836,7 +836,7 @@ PHP_MINFO_FUNCTION(libvirt)
 
     if (virGetVersion(&libVer, NULL, NULL) == 0) {
         char version[100];
-        snprintf(version, sizeof(version), "%i.%i.%i", (long)((libVer/1000000) % 1000), (long)((libVer/1000) % 1000), (long)(libVer % 1000));
+        snprintf(version, sizeof(version), "%ld.%ld.%ld", (long)((libVer/1000000) % 1000), (long)((libVer/1000) % 1000), (long)(libVer % 1000));
         php_info_print_table_row(2, "Libvirt version", version);
     }
 
@@ -1578,7 +1578,7 @@ PHP_FUNCTION(libvirt_image_create)
     strsize_t image_len;
     char *format;
     strsize_t format_len;
-    long long size;
+    unsigned long long size;
     char *size_str;
     strsize_t size_str_len;
     int cmdRet;
@@ -1613,7 +1613,7 @@ PHP_FUNCTION(libvirt_image_create)
         RETURN_FALSE;
     }
 
-    snprintf(cmd, sizeof(cmd), "%s create -f %s %s %dM > /dev/null", qemu_img_cmd, format, fpath, size);
+    snprintf(cmd, sizeof(cmd), "%s create -f %s %s %lluM > /dev/null", qemu_img_cmd, format, fpath, size);
     DPRINTF("%s: Running '%s'...\n", PHPFUNC, cmd);
     cmdRet = system(cmd);
 
@@ -2266,7 +2266,7 @@ char *get_disk_xml(unsigned long long size, char *path, char *driver, char *bus,
         }
 
         // TODO: implement backing file handling: -o backing_file = RAW_IMG_FILE QCOW_IMG
-        snprintf(cmd, sizeof(cmd), "%s create -f %s %s %ldM > /dev/null &2>/dev/null", qemu_img_cmd, driver, path, size);
+        snprintf(cmd, sizeof(cmd), "%s create -f %s %s %lluM > /dev/null &2>/dev/null", qemu_img_cmd, driver, path, size);
 
 #ifndef EXTWIN
         int cmdRet = system(cmd);
