@@ -4,10 +4,10 @@ AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([-Wall -Werror -Wno-portability tar-pax no-dist-gzip dist-xz])
 AM_MAINTAINER_MODE([enable])
-AC_GNU_SOURCE
+AC_USE_SYSTEM_EXTENSIONS
 
 m4_ifndef([LT_INIT], [
-  AM_PROG_LIBTOOL
+  LT_INIT
 ], [
   LT_INIT([shared disable-static])
 ])
@@ -71,7 +71,7 @@ LIBXML_CFLAGS=""
 LIBXML_LIBS=""
 LIBXML_FOUND="no"
 
-AC_ARG_WITH([libxml], AC_HELP_STRING([--with-libxml=@<:@PFX@:>@], [libxml2 location]))
+AC_ARG_WITH([libxml], AS_HELP_STRING([--with-libxml=@<:@PFX@:>@], [libxml2 location]))
 if test "x$with_libxml" = "xno" ; then
     AC_MSG_CHECKING(for libxml2 libraries >= $LIBXML_REQUIRED)
     AC_MSG_ERROR([libxml2 >= $LIBXML_REQUIRED is required for libvirt])
@@ -113,7 +113,7 @@ AC_DEFINE_UNQUOTED(VERSION_MICRO, $VERSION_MICRO, [Micro version number of packa
 
 dnl Specific XML catalog file for validation of generated html
 AC_ARG_WITH([xml-catalog-file],
-            [AC_HELP_STRING([--with-xml-catalog-file=path],
+            [AS_HELP_STRING([--with-xml-catalog-file=path],
                 [path to XML catalog file for validating
                  generated html, default /etc/xml/catalog])],
             [XML_CATALOG_FILE=$withval],
@@ -138,17 +138,17 @@ fi
 
 
 dnl Specific dir for HTML output ?
-AC_ARG_WITH([html-dir], [AC_HELP_STRING([--with-html-dir=path],
+AC_ARG_WITH([html-dir], [AS_HELP_STRING([--with-html-dir=path],
             [path to base html directory, default $datadir/doc/html])],
             [HTML_DIR=$withval], [HTML_DIR='$(datadir)/doc'])
 
-AC_ARG_WITH([html-subdir], [AC_HELP_STRING([--with-html-subdir=path],
+AC_ARG_WITH([html-subdir], [AS_HELP_STRING([--with-html-subdir=path],
             [directory used under html-dir, default $PACKAGE-$VERSION/html])],
             [test "x$withval" != "x" && HTML_DIR="$HTML_DIR/$withval"],
             [HTML_DIR="$HTML_DIR/\$(PACKAGE)-\$(VERSION)/html"])
 AC_SUBST([HTML_DIR])
 
-AC_ARG_WITH([php-config], [AC_HELP_STRING([--with-php-config=path],
+AC_ARG_WITH([php-config], [AS_HELP_STRING([--with-php-config=path],
             [path to php-config, default search all paths])])
 
 if test "x$with_php_config" != "x" ; then
