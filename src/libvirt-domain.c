@@ -519,21 +519,9 @@ PHP_FUNCTION(libvirt_domain_change_memory)
 {
     php_libvirt_domain *domain = NULL;
     zval *zdomain;
-    char *tmpA = NULL;
-    char *tmp1 = NULL;
-    char *tmp2 = NULL;
-    char *xml;
-    char *new_xml = NULL;
-    int new_len;
-    char newXml[512] = { 0 };
     zend_long xflags = 0;
     zend_long allocMem = 0;
     zend_long allocMax = 0;
-    // int pos = -1;
-    int len = 0;
-    php_libvirt_domain *res_domain = NULL;
-    php_libvirt_connection *conn   = NULL;
-    virDomainPtr dom = NULL;
 
     GET_DOMAIN_FROM_ARGS("rll|l", &zdomain, &allocMem, &allocMax, &xflags);
 
@@ -546,51 +534,19 @@ PHP_FUNCTION(libvirt_domain_change_memory)
     if (allocMem > allocMax)
         allocMem = allocMax;
 
-    xml = virDomainGetXMLDesc(domain->domain, xflags);
-    if (!xml) {
-        set_error_if_unset("Cannot get the XML description" TSRMLS_CC);
+    if (virDomainSetMemoryFlags(domain->domain,
+                                allocMem, VIR_DOMAIN_AFFECT_CONFIG) < 0) {
+        set_error("Cannot set current memory" TSRMLS_CC);
         RETURN_FALSE;
     }
 
-    snprintf(newXml, sizeof(newXml),
-             "  <memory>" ZEND_LONG_FMT "</memory>\n"
-             "  <currentMemory>" ZEND_LONG_FMT "</currentMemory>\n", allocMax, allocMem);
-    tmpA = strstr(xml, "<memory>");
-    tmp1 = strstr(xml, "</currentMemory>") + strlen("</currentMemory>");
-    // pos = strlen(xml) - strlen(tmp1);
-    if (!tmpA || !tmp1) {
-        set_error_if_unset("Cannot parse domain XML" TSRMLS_CC);
+    if (virDomainSetMemoryFlags(domain->domain, allocMax,
+                                VIR_DOMAIN_AFFECT_CONFIG | VIR_DOMAIN_MEM_MAXIMUM) < 0) {
+        set_error("Cannot set maximum memory" TSRMLS_CC);
         RETURN_FALSE;
     }
-    len = strlen(xml) - strlen(tmpA);
 
-    tmp2 = (char *)emalloc((len + 1) * sizeof(char));
-    memset(tmp2, 0, len + 1);
-    memcpy(tmp2, xml, len);
-
-    new_len = strlen(tmp1) + strlen(tmp2) + strlen(newXml) + 2;
-    new_xml = (char *)emalloc(new_len * sizeof(char));
-    snprintf(new_xml, new_len, "%s\n%s%s", tmp2, newXml, tmp1);
-
-    conn = domain->conn;
-
-    dom = virDomainDefineXML(conn->conn, new_xml);
-    if (dom == NULL) {
-        VIR_FREE(xml);
-        efree(new_xml);
-        RETURN_FALSE;
-    }
-    VIR_FREE(xml);
-    efree(new_xml);
-
-    res_domain = (php_libvirt_domain *)emalloc(sizeof(php_libvirt_domain));
-    res_domain->domain = dom;
-    res_domain->conn = conn;
-
-    DPRINTF("%s: returning %p\n", PHPFUNC, res_domain->domain);
-    resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1 TSRMLS_CC);
-
-    VIRT_REGISTER_RESOURCE(res_domain, le_libvirt_domain);
+    RETURN_ZVAL(zdomain, 0, 0);
 }
 
 /*
