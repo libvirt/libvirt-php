@@ -954,7 +954,10 @@ class Libvirt {
 
     function domain_get_vnc_port($domain) {
         $tmp = $this->get_xpath($domain, '//domain/devices/graphics/@port', false);
-        $var = (int)$tmp[0];
+        if ($tmp != false)
+            $var = (int)$tmp[0];
+        else
+            $var = 0;
         unset($tmp);
 
         return $var;

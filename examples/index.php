@@ -517,7 +517,11 @@
         $state = $lv->domain_state_translate($info['state']);
         $id = $lv->domain_get_id($dom);
         $arch = $lv->domain_get_arch($dom);
-        $vnc = $lv->domain_get_vnc_port($dom);
+        if ($lv->domain_is_active($dom)) {
+            $vnc = $lv->domain_get_vnc_port($dom);
+        } else {
+            $vnc = -1;
+        }
 
 		if (!$id)
 			$id = 'N/A';
@@ -715,7 +719,11 @@
             $state = $lv->domain_state_translate($info['state']);
             $id = $lv->domain_get_id($dom);
             $arch = $lv->domain_get_arch($dom);
-            $vnc = $lv->domain_get_vnc_port($dom);
+            if ($active) {
+                $vnc = $lv->domain_get_vnc_port($dom);
+            } else {
+                $vnc = -1;
+            }
             $nics = $lv->get_network_cards($dom);
             if (($diskcnt = $lv->get_disk_count($dom)) > 0) {
                 $disks = $diskcnt.' / '.$lv->get_disk_capacity($dom);
