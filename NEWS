@@ -6,10 +6,16 @@ This is the list of official releases for libvirt-php, along with an
 overview of the changes introduced by each of them.
 
 
-v0.5.6 (unreleased)
+v0.5.6 (2022-06-14)
 ===================
 
-*
+* PHP-8.0 support
+* Implemented virDomainSnapshotCurrent() API
+* Implemented virNetworkGetDHCPLeases() API
+* Implemented virDomainGetCPUStats() API
+* Implemented virDomainUndefineFlags() API
+* Fixed libvirt_domain_interface_addresses() when multiple addresses are reported
+* Bug fixes
 
 
 v0.5.5 (2020-02-08)
