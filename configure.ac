@@ -163,6 +163,15 @@ if test "x$PHPCONFIG" = "xno"; then
     AC_MSG_ERROR([php-config not found; please install the PHP SDK])
 fi
 
+AC_MSG_CHECKING(for PHP version)
+PHPVERSION=$($PHPCONFIG --version)
+PHPVERNUM=$($PHPCONFIG --vernum)
+AC_MSG_RESULT($PHPVERSION)
+
+if test "$PHPVERNUM" -lt 70000 ; then
+    AC_MSG_ERROR([PHP too old; please upgrade to 7.0.0 at least])
+fi
+
 AC_PATH_PROG([PHPIZE], [phpize], [no], [`$PHPCONFIG --prefix`/bin$PATH_SEPARATOR$PATH])
 if test "x$PHPIZE" = "xno"; then
     AC_MSG_ERROR([phpize not found; please install the PHP SDK])
