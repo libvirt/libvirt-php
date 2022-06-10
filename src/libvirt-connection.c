@@ -8,6 +8,7 @@
 
 #include "libvirt-php.h"
 #include "libvirt-connection.h"
+#include <stdbool.h>
 
 DEBUG_INIT("connection");
 
@@ -127,7 +128,7 @@ PHP_FUNCTION(libvirt_connect)
 
     char *url = NULL;
     strsize_t url_len = 0;
-    zend_bool readonly = 1;
+    bool readonly = 1;
 
     HashTable *arr_hash;
     HashPosition pointer;
@@ -837,7 +838,7 @@ PHP_FUNCTION(libvirt_connect_get_all_domain_stats)
     virTypedParameter params;
     virDomainStatsRecordPtr *retstats = NULL;
 
-    GET_CONNECTION_FROM_ARGS("r|l|l", &zconn, &stats, &flags);
+    GET_CONNECTION_FROM_ARGS("r|ll", &zconn, &stats, &flags);
 
     retval = virConnectGetAllDomainStats(conn->conn, stats, &retstats, flags);
 

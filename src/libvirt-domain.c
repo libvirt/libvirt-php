@@ -6,6 +6,7 @@
 
 #include <config.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <libvirt/libvirt.h>
 
 #include "libvirt-php.h"
@@ -1165,7 +1166,7 @@ PHP_FUNCTION(libvirt_domain_lookup_by_uuid)
     php_libvirt_connection *conn = NULL;
     zval *zconn;
     strsize_t uuid_len;
-    unsigned char *uuid = NULL;
+    char *uuid = NULL;
     virDomainPtr domain = NULL;
     php_libvirt_domain *res_domain;
 
@@ -1887,8 +1888,8 @@ PHP_FUNCTION(libvirt_domain_block_job_info)
     zval *zdomain;
     int retval;
     char *disk;
-    int disk_len;
-    long flags = 0;
+    size_t disk_len;
+    zend_long flags = 0;
     virDomainBlockJobInfo info;
 
     GET_DOMAIN_FROM_ARGS("rs|l", &zdomain, &disk, &disk_len, &flags);
@@ -2101,15 +2102,10 @@ PHP_FUNCTION(libvirt_domain_migrate)
     zval *zdconn;
     virDomainPtr destdomain = NULL;
     php_libvirt_domain *res_domain;
-
     zend_long flags = 0;
-    char *dname;
-    strsize_t dname_len;
-    zend_long bandwidth;
-
-    dname = NULL;
-    dname_len = 0;
-    bandwidth = 0;
+    char *dname = NULL;
+    strsize_t dname_len = 0;
+    zend_long bandwidth = 0;
 
     GET_DOMAIN_FROM_ARGS("rrl|sl", &zdomain, &zdconn, &flags, &dname, &dname_len, &bandwidth);
 
@@ -2154,16 +2150,13 @@ PHP_FUNCTION(libvirt_domain_migrate_to_uri)
     php_libvirt_domain *domain = NULL;
     zval *zdomain;
     int retval;
-    long flags = 0;
+    zend_long flags = 0;
     char *duri;
     strsize_t duri_len;
-    char *dname;
-    strsize_t dname_len;
-    zend_long bandwidth;
+    char *dname = NULL;
+    strsize_t dname_len = 0;
+    zend_long bandwidth = 0;
 
-    dname = NULL;
-    dname_len = 0;
-    bandwidth = 0;
     GET_DOMAIN_FROM_ARGS("rsl|sl", &zdomain, &duri, &duri_len, &flags, &dname, &dname_len, &bandwidth);
 
     retval = virDomainMigrateToURI(domain->domain, duri, flags, dname, bandwidth);
@@ -2192,37 +2185,18 @@ PHP_FUNCTION(libvirt_domain_migrate_to_uri2)
     php_libvirt_domain *domain = NULL;
     zval *zdomain;
     int retval;
-    char *dconnuri;
-    strsize_t dconnuri_len;
-    char *miguri;
-    strsize_t miguri_len;
-    char *dxml;
-    strsize_t dxml_len;
+    char *dconnuri = NULL;
+    strsize_t dconnuri_len = 0;
+    char *miguri = NULL;
+    strsize_t miguri_len = 0;
+    char *dxml = NULL;
+    strsize_t dxml_len = 0;
     zend_long flags = 0;
-    char *dname;
-    strsize_t dname_len;
-    zend_long bandwidth;
+    char *dname = NULL;
+    strsize_t dname_len = 0;
+    zend_long bandwidth = 0;
 
-    dconnuri = NULL;
-    dconnuri_len = 0;
-    miguri = NULL;
-    miguri_len = 0;
-    dxml = NULL;
-    dxml_len = 0;
-    dname = NULL;
-    dname_len = 0;
-    bandwidth = 0;
     GET_DOMAIN_FROM_ARGS("r|ssslsl", &zdomain, &dconnuri, &dconnuri_len, &miguri, &miguri_len, &dxml, &dxml_len, &flags, &dname, &dname_len, &bandwidth);
-
-    // set to NULL if empty string
-    if (dconnuri_len == 0)
-        dconnuri=NULL;
-    if (miguri_len == 0)
-        miguri=NULL;
-    if (dxml_len == 0)
-        dxml=NULL;
-    if (dname_len == 0)
-        dname=NULL;
 
     retval = virDomainMigrateToURI2(domain->domain, dconnuri, miguri, dxml, flags, dname, bandwidth);
     DPRINTF("%s: virDomainMigrateToURI2() returned %d\n", PHPFUNC, retval);
@@ -2282,14 +2256,14 @@ PHP_FUNCTION(libvirt_domain_xml_xpath)
 {
     php_libvirt_domain *domain = NULL;
     zval *zdomain;
-    zval *zpath;
+    char *xpath;
     char *xml;
     char *tmp = NULL;
     strsize_t path_len = -1;
     zend_long flags = 0;
     int rc = 0;
 
-    GET_DOMAIN_FROM_ARGS("rs|l", &zdomain, &zpath, &path_len, &flags);
+    GET_DOMAIN_FROM_ARGS("rs|l", &zdomain, &xpath, &path_len, &flags);
 
     xml = virDomainGetXMLDesc(domain->domain, flags);
     if (!xml)
@@ -2297,7 +2271,7 @@ PHP_FUNCTION(libvirt_domain_xml_xpath)
 
     array_init(return_value);
 
-    tmp = get_string_from_xpath(xml, (char *)zpath, &return_value, &rc);
+    tmp = get_string_from_xpath(xml, xpath, &return_value, &rc);
     if (return_value < 0) {
         VIR_FREE(xml);
         RETURN_FALSE;
@@ -2309,7 +2283,7 @@ PHP_FUNCTION(libvirt_domain_xml_xpath)
     if (rc == 0)
         RETURN_FALSE;
 
-    VIRT_ADD_ASSOC_STRING(return_value, "xpath", (char *)zpath);
+    VIRT_ADD_ASSOC_STRING(return_value, "xpath", xpath);
     if (rc < 0)
         add_assoc_long(return_value, "error_code", (long)rc);
 }
@@ -2524,7 +2498,7 @@ PHP_FUNCTION(libvirt_domain_set_autostart)
 {
     php_libvirt_domain *domain = NULL;
     zval *zdomain;
-    zend_bool flags = 0;
+    bool flags = 0;
 
     GET_DOMAIN_FROM_ARGS("rb", &zdomain, &flags);
 
@@ -3094,7 +3068,7 @@ PHP_FUNCTION(libvirt_domain_send_pointer_event)
     zend_long pos_x = 0;
     zend_long pos_y = 0;
     zend_long clicked = 0;
-    zend_bool release = 1;
+    bool release = 1;
     int ret;
 
     GET_DOMAIN_FROM_ARGS("rslll|b", &zdomain, &hostname, &hostname_len, &pos_x, &pos_y, &clicked, &release);

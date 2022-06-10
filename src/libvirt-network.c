@@ -539,7 +539,7 @@ PHP_FUNCTION(libvirt_list_networks)
     int i;
     virNetworkPtr *nets = NULL;
     int nnets = 0;
-    unsigned int flags = 0;
+    zend_long flags = 0;
 
     GET_CONNECTION_FROM_ARGS("r|l", &zconn, &flags);
 

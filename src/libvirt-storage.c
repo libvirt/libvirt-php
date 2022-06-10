@@ -5,6 +5,7 @@
  */
 
 #include <libvirt/libvirt.h>
+#include <stdbool.h>
 
 #include "libvirt-php.h"
 #include "libvirt-stream.h"
@@ -507,7 +508,7 @@ PHP_FUNCTION(libvirt_storagepool_set_autostart)
 {
     php_libvirt_storagepool *pool = NULL;
     zval *zpool;
-    zend_bool flags = 0;
+    bool flags = 0;
     int retval;
 
     GET_STORAGEPOOL_FROM_ARGS("rb", &zpool, &flags);
@@ -916,7 +917,7 @@ PHP_FUNCTION(libvirt_storagevolume_download)
     zend_long length = 0;
     int retval = -1;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rr|l|l|l", &zvolume, &zstream, &offset, &length, &flags) == FAILURE)
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rr|lll", &zvolume, &zstream, &offset, &length, &flags) == FAILURE)
         RETURN_LONG(retval);
     VIRT_FETCH_RESOURCE(volume, php_libvirt_volume*, &zvolume, PHP_LIBVIRT_VOLUME_RES_NAME, le_libvirt_volume);
     if ((volume == NULL) || (volume->volume == NULL))
@@ -958,7 +959,7 @@ PHP_FUNCTION(libvirt_storagevolume_upload)
     zend_long length = 0;
     int retval = -1;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rr|l|l|l", &zvolume, &zstream, &offset, &length, &flags) == FAILURE)
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rr|lll", &zvolume, &zstream, &offset, &length, &flags) == FAILURE)
         RETURN_LONG(retval);
     VIRT_FETCH_RESOURCE(volume, php_libvirt_volume*, &zvolume, PHP_LIBVIRT_VOLUME_RES_NAME, le_libvirt_volume);
     if ((volume == NULL) || (volume->volume == NULL))

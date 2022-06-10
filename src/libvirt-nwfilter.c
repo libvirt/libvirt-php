@@ -307,7 +307,7 @@ PHP_FUNCTION(libvirt_nwfilter_lookup_by_uuid)
     virNWFilterPtr nwfilter = NULL;
     zval *zconn;
     strsize_t uuid_len;
-    unsigned char *uuid = NULL;
+    char *uuid = NULL;
 
     GET_CONNECTION_FROM_ARGS("rs", &zconn, &uuid, &uuid_len);
 
