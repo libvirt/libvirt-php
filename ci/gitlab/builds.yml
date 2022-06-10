@@ -1,0 +1,67 @@
+# THIS FILE WAS AUTO-GENERATED
+#
+#  $ lcitool manifest ci/manifest.yml
+#
+# https://gitlab.com/libvirt/libvirt-ci
+
+
+# Native build jobs
+
+x86_64-debian-10-git:
+  extends: .native_git_build_job
+  needs:
+    - job: x86_64-debian-10-container
+      optional: true
+  allow_failure: false
+  variables:
+    NAME: debian-10
+
+
+x86_64-debian-sid:
+  extends: .native_build_job
+  needs:
+    - job: x86_64-debian-sid-container
+      optional: true
+  allow_failure: true
+  variables:
+    NAME: debian-sid
+
+
+x86_64-fedora-35:
+  extends: .native_build_job
+  needs:
+    - job: x86_64-fedora-35-container
+      optional: true
+  allow_failure: false
+  variables:
+    NAME: fedora-35
+
+
+x86_64-fedora-rawhide:
+  extends: .native_build_job
+  needs:
+    - job: x86_64-fedora-rawhide-container
+      optional: true
+  allow_failure: true
+  variables:
+    NAME: fedora-rawhide
+
+
+x86_64-opensuse-tumbleweed:
+  extends: .native_build_job
+  needs:
+    - job: x86_64-opensuse-tumbleweed-container
+      optional: true
+  allow_failure: true
+  variables:
+    NAME: opensuse-tumbleweed
+
+
+x86_64-ubuntu-2004:
+  extends: .native_build_job
+  needs:
+    - job: x86_64-ubuntu-2004-container
+      optional: true
+  allow_failure: false
+  variables:
+    NAME: ubuntu-2004

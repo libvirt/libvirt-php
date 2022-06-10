@@ -5,143 +5,30 @@
 # https://gitlab.com/libvirt/libvirt-ci
 
 
-.container_job:
-  image: docker:stable
-  stage: containers
-  needs: []
-  services:
-    - docker:dind
-  before_script:
-    - export TAG="$CI_REGISTRY_IMAGE/ci-$NAME:latest"
-    - export COMMON_TAG="$CI_REGISTRY/libvirt/libvirt-php/ci-$NAME:latest"
-    - docker info
-    - docker login registry.gitlab.com -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD"
-  script:
-    - docker pull "$TAG" || docker pull "$COMMON_TAG" || true
-    - docker build --cache-from "$TAG" --cache-from "$COMMON_TAG" --tag "$TAG" -f "ci/containers/$NAME.Dockerfile" ci/containers
-    - docker push "$TAG"
-  after_script:
-    - docker logout
+# Variables that can be set to control the behaviour of
+# pipelines that are run
+#
+#  - RUN_ALL_CONTAINERS - build all containers
+#    even if they don't have any changes detected
+#
+# These can be set as git push options
+#
+#  $ git push -o ci.variable=RUN_ALL_CONTAINERS=1
+#
+# Aliases can be set for common usage
+#
+#  $ git config --local alias.push-all-ctr "push -o ci.variable=RUN_ALL_CONTAINERS=1"
+#
+# Allowing the less verbose invokation
+#
+#  $ git push-all-ctr
+#
+# Pipeline variables can also be set in the repository
+# pipeline config globally, or set against scheduled pipelines
 
-
-.gitlab_native_build_job:
-  image: $CI_REGISTRY_IMAGE/ci-$NAME:latest
-  stage: builds
-
-
-.gitlab_cross_build_job:
-  image: $CI_REGISTRY_IMAGE/ci-$NAME-cross-$CROSS:latest
-  stage: builds
-
-
-check-dco:
-  stage: sanity_checks
-  needs: []
-  image: registry.gitlab.com/libvirt/libvirt-ci/check-dco:master
-  script:
-    - /check-dco libvirt
-  except:
-    variables:
-      - $CI_PROJECT_NAMESPACE == 'libvirt'
-  variables:
-    GIT_DEPTH: 1000
-
-
-# Native container jobs
-
-x86_64-debian-10-container:
-  extends: .container_job
-  allow_failure: false
-  variables:
-    NAME: debian-10
-
-
-x86_64-debian-sid-container:
-  extends: .container_job
-  allow_failure: true
-  variables:
-    NAME: debian-sid
-
-
-x86_64-fedora-35-container:
-  extends: .container_job
-  allow_failure: false
-  variables:
-    NAME: fedora-35
-
-
-x86_64-fedora-rawhide-container:
-  extends: .container_job
-  allow_failure: true
-  variables:
-    NAME: fedora-rawhide
-
-
-x86_64-opensuse-tumbleweed-container:
-  extends: .container_job
-  allow_failure: true
-  variables:
-    NAME: opensuse-tumbleweed
-
-
-x86_64-ubuntu-2004-container:
-  extends: .container_job
-  allow_failure: false
-  variables:
-    NAME: ubuntu-2004
-
-
-# Native build jobs
-
-x86_64-debian-10-git:
-  extends: .native_git_build_job
-  needs:
-    - x86_64-debian-10-container
-  allow_failure: false
-  variables:
-    NAME: debian-10
-
-
-x86_64-debian-sid:
-  extends: .native_build_job
-  needs:
-    - x86_64-debian-sid-container
-  allow_failure: true
-  variables:
-    NAME: debian-sid
-
-
-x86_64-fedora-35:
-  extends: .native_build_job
-  needs:
-    - x86_64-fedora-35-container
-  allow_failure: false
-  variables:
-    NAME: fedora-35
-
-
-x86_64-fedora-rawhide:
-  extends: .native_build_job
-  needs:
-    - x86_64-fedora-rawhide-container
-  allow_failure: true
-  variables:
-    NAME: fedora-rawhide
-
-
-x86_64-opensuse-tumbleweed:
-  extends: .native_build_job
-  needs:
-    - x86_64-opensuse-tumbleweed-container
-  allow_failure: true
-  variables:
-    NAME: opensuse-tumbleweed
-
-
-x86_64-ubuntu-2004:
-  extends: .native_build_job
-  needs:
-    - x86_64-ubuntu-2004-container
-  allow_failure: false
-  variables:
-    NAME: ubuntu-2004
+include:
+  - local: '/ci/gitlab/container-templates.yml'
+  - local: '/ci/gitlab/build-templates.yml'
+  - local: '/ci/gitlab/sanity-checks.yml'
+  - local: '/ci/gitlab/containers.yml'
+  - local: '/ci/gitlab/builds.yml'

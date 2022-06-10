@@ -1,0 +1,49 @@
+# THIS FILE WAS AUTO-GENERATED
+#
+#  $ lcitool manifest ci/manifest.yml
+#
+# https://gitlab.com/libvirt/libvirt-ci
+
+
+# Native container jobs
+
+x86_64-debian-10-container:
+  extends: .container_job
+  allow_failure: false
+  variables:
+    NAME: debian-10
+
+
+x86_64-debian-sid-container:
+  extends: .container_job
+  allow_failure: true
+  variables:
+    NAME: debian-sid
+
+
+x86_64-fedora-35-container:
+  extends: .container_job
+  allow_failure: false
+  variables:
+    NAME: fedora-35
+
+
+x86_64-fedora-rawhide-container:
+  extends: .container_job
+  allow_failure: true
+  variables:
+    NAME: fedora-rawhide
+
+
+x86_64-opensuse-tumbleweed-container:
+  extends: .container_job
+  allow_failure: true
+  variables:
+    NAME: opensuse-tumbleweed
+
+
+x86_64-ubuntu-2004-container:
+  extends: .container_job
+  allow_failure: false
+  variables:
+    NAME: ubuntu-2004
