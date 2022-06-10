@@ -47,3 +47,10 @@ x86_64-ubuntu-2004-container:
   allow_failure: false
   variables:
     NAME: ubuntu-2004
+
+
+x86_64-ubuntu-2204-container:
+  extends: .container_job
+  allow_failure: false
+  variables:
+    NAME: ubuntu-2204
