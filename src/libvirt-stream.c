@@ -32,7 +32,7 @@ php_libvirt_stream_dtor(virt_resource *rsrc TSRMLS_DC)
                 php_error_docref(NULL TSRMLS_CC, E_WARNING, "virStreamFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
             } else {
                 DPRINTF("%s: virStreamFree(%p) completed successfully\n", __FUNCTION__, stream->stream);
-                resource_change_counter(INT_RESOURCE_STREAM, NULL, stream->stream, 0 TSRMLS_CC);
+                resource_change_counter(INT_RESOURCE_STREAM, stream->conn->conn, stream->stream, 0 TSRMLS_CC);
             }
             stream->stream = NULL;
         }

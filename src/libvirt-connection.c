@@ -53,7 +53,7 @@ php_libvirt_connection_dtor(virt_resource *rsrc TSRMLS_DC)
                 php_error_docref(NULL TSRMLS_CC, E_WARNING, "virConnectClose failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
             } else {
                 DPRINTF("%s: virConnectClose(%p) completed successfully\n", __FUNCTION__, conn->conn);
-                resource_change_counter(INT_RESOURCE_CONNECTION, NULL, conn->conn, 0 TSRMLS_CC);
+                resource_change_counter(INT_RESOURCE_CONNECTION, conn->conn, conn->conn, 0 TSRMLS_CC);
             }
             conn->conn = NULL;
         }
@@ -206,7 +206,7 @@ PHP_FUNCTION(libvirt_connect)
         RETURN_FALSE;
     }
 
-    resource_change_counter(INT_RESOURCE_CONNECTION, NULL, conn->conn, 1 TSRMLS_CC);
+    resource_change_counter(INT_RESOURCE_CONNECTION, conn->conn, conn->conn, 1 TSRMLS_CC);
     DPRINTF("%s: Connection to %s established, returning %p\n", PHPFUNC, url, conn->conn);
 
     VIRT_REGISTER_RESOURCE(conn, le_libvirt_connection);

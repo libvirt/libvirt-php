@@ -32,7 +32,7 @@ php_libvirt_network_dtor(virt_resource *rsrc TSRMLS_DC)
                 php_error_docref(NULL TSRMLS_CC, E_WARNING, "virStorageVolFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
             } else {
                 DPRINTF("%s: virNetworkFree(%p) completed successfully\n", __FUNCTION__, network->network);
-                resource_change_counter(INT_RESOURCE_NETWORK, NULL, network->network, 0 TSRMLS_CC);
+                resource_change_counter(INT_RESOURCE_NETWORK, network->conn->conn, network->network, 0 TSRMLS_CC);
             }
             network->network = NULL;
         }
