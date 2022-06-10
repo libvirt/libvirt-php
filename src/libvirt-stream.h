@@ -27,7 +27,7 @@ typedef struct _php_libvirt_stream {
     php_libvirt_connection* conn;
 } php_libvirt_stream;
 
-void php_libvirt_stream_dtor(virt_resource *rsrc TSRMLS_DC);
+void php_libvirt_stream_dtor(virt_resource *rsrc);
 
 PHP_FUNCTION(libvirt_stream_create);
 PHP_FUNCTION(libvirt_stream_close);

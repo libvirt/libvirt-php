@@ -15,14 +15,14 @@ DEBUG_INIT("snapshot");
 
 int le_libvirt_snapshot;
 
-void php_libvirt_snapshot_dtor(virt_resource *rsrc TSRMLS_DC)
+void php_libvirt_snapshot_dtor(virt_resource *rsrc)
 {
     php_libvirt_snapshot *snapshot = (php_libvirt_snapshot *)rsrc->ptr;
     int rv = 0;
 
     if (snapshot != NULL) {
         if (snapshot->snapshot != NULL) {
-            if (!check_resource_allocation(NULL, INT_RESOURCE_SNAPSHOT, snapshot->snapshot TSRMLS_CC)) {
+            if (!check_resource_allocation(NULL, INT_RESOURCE_SNAPSHOT, snapshot->snapshot)) {
                 snapshot->snapshot = NULL;
                 efree(snapshot);
                 return;
@@ -30,10 +30,10 @@ void php_libvirt_snapshot_dtor(virt_resource *rsrc TSRMLS_DC)
             rv = virDomainSnapshotFree(snapshot->snapshot);
             if (rv != 0) {
                 DPRINTF("%s: virDomainSnapshotFree(%p) returned %d\n", __FUNCTION__, snapshot->snapshot, rv);
-                php_error_docref(NULL TSRMLS_CC, E_WARNING, "virDomainSnapshotFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
+                php_error_docref(NULL, E_WARNING, "virDomainSnapshotFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
             } else {
                 DPRINTF("%s: virDomainSnapshotFree(%p) completed successfully\n", __FUNCTION__, snapshot->snapshot);
-                resource_change_counter(INT_RESOURCE_SNAPSHOT, snapshot->domain->conn->conn, snapshot->snapshot, 0 TSRMLS_CC);
+                resource_change_counter(INT_RESOURCE_SNAPSHOT, snapshot->domain->conn->conn, snapshot->snapshot, 0);
             }
             snapshot->snapshot = NULL;
         }
@@ -96,7 +96,7 @@ PHP_FUNCTION(libvirt_domain_snapshot_lookup_by_name)
     res_snapshot->snapshot = snapshot;
 
     DPRINTF("%s: returning %p\n", PHPFUNC, res_snapshot->snapshot);
-    resource_change_counter(INT_RESOURCE_SNAPSHOT, domain->conn->conn, res_snapshot->snapshot, 1 TSRMLS_CC);
+    resource_change_counter(INT_RESOURCE_SNAPSHOT, domain->conn->conn, res_snapshot->snapshot, 1);
 
     VIRT_REGISTER_RESOURCE(res_snapshot, le_libvirt_snapshot);
 }
@@ -129,7 +129,7 @@ PHP_FUNCTION(libvirt_domain_snapshot_create)
     res_snapshot->snapshot = snapshot;
 
     DPRINTF("%s: returning %p\n", PHPFUNC, res_snapshot->snapshot);
-    resource_change_counter(INT_RESOURCE_SNAPSHOT, domain->conn->conn, res_snapshot->snapshot, 1 TSRMLS_CC);
+    resource_change_counter(INT_RESOURCE_SNAPSHOT, domain->conn->conn, res_snapshot->snapshot, 1);
 
     VIRT_REGISTER_RESOURCE(res_snapshot, le_libvirt_snapshot);
 }
@@ -161,7 +161,7 @@ PHP_FUNCTION(libvirt_domain_snapshot_current)
     res_snapshot->snapshot = snapshot;
 
     DPRINTF("%s: returning %p\n", PHPFUNC, res_snapshot->snapshot);
-    resource_change_counter(INT_RESOURCE_SNAPSHOT, domain->conn->conn, res_snapshot->snapshot, 1 TSRMLS_CC);
+    resource_change_counter(INT_RESOURCE_SNAPSHOT, domain->conn->conn, res_snapshot->snapshot, 1);
 
     VIRT_REGISTER_RESOURCE(res_snapshot, le_libvirt_snapshot);
 }

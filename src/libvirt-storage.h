@@ -52,11 +52,11 @@
 
 # define GET_STORAGEPOOL_FROM_ARGS(args, ...)                                  \
     do {                                                                       \
-        reset_error(TSRMLS_C);                                                 \
-        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,                   \
+        reset_error();                                                         \
+        if (zend_parse_parameters(ZEND_NUM_ARGS(),                             \
                                   args,                                        \
                                   __VA_ARGS__) == FAILURE) {                   \
-            set_error("Invalid arguments" TSRMLS_CC);                          \
+            set_error("Invalid arguments");                                    \
             RETURN_FALSE;                                                      \
         }                                                                      \
                                                                                \
@@ -69,11 +69,11 @@
 
 # define GET_VOLUME_FROM_ARGS(args, ...)                                       \
     do {                                                                       \
-        reset_error(TSRMLS_C);                                                 \
-        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,                   \
+        reset_error();                                                         \
+        if (zend_parse_parameters(ZEND_NUM_ARGS(),                             \
                                   args,                                        \
                                   __VA_ARGS__) == FAILURE) {                   \
-            set_error("Invalid arguments" TSRMLS_CC);                          \
+            set_error("Invalid arguments");                                    \
             RETURN_FALSE;                                                      \
         }                                                                      \
                                                                                \
@@ -96,8 +96,8 @@ typedef struct _php_libvirt_volume {
     php_libvirt_connection* conn;
 } php_libvirt_volume;
 
-void php_libvirt_storagepool_dtor(virt_resource *rsrc TSRMLS_DC);
-void php_libvirt_volume_dtor(virt_resource *rsrc TSRMLS_DC);
+void php_libvirt_storagepool_dtor(virt_resource *rsrc);
+void php_libvirt_volume_dtor(virt_resource *rsrc);
 
 PHP_FUNCTION(libvirt_storagepool_lookup_by_name);
 PHP_FUNCTION(libvirt_storagepool_lookup_by_volume);

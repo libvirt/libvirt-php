@@ -19,14 +19,14 @@ int le_libvirt_storagepool;
 int le_libvirt_volume;
 
 void
-php_libvirt_storagepool_dtor(virt_resource *rsrc TSRMLS_DC)
+php_libvirt_storagepool_dtor(virt_resource *rsrc)
 {
     php_libvirt_storagepool *pool = (php_libvirt_storagepool *)rsrc->ptr;
     int rv = 0;
 
     if (pool != NULL) {
         if (pool->pool != NULL) {
-            if (!check_resource_allocation(NULL, INT_RESOURCE_STORAGEPOOL, pool->pool TSRMLS_CC)) {
+            if (!check_resource_allocation(NULL, INT_RESOURCE_STORAGEPOOL, pool->pool)) {
                 pool->pool = NULL;
                 efree(pool);
                 return;
@@ -34,10 +34,10 @@ php_libvirt_storagepool_dtor(virt_resource *rsrc TSRMLS_DC)
             rv = virStoragePoolFree(pool->pool);
             if (rv != 0) {
                 DPRINTF("%s: virStoragePoolFree(%p) returned %d (%s)\n", __FUNCTION__, pool->pool, rv, LIBVIRT_G(last_error));
-                php_error_docref(NULL TSRMLS_CC, E_WARNING, "virStoragePoolFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
+                php_error_docref(NULL, E_WARNING, "virStoragePoolFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
             } else {
                 DPRINTF("%s: virStoragePoolFree(%p) completed successfully\n", __FUNCTION__, pool->pool);
-                resource_change_counter(INT_RESOURCE_STORAGEPOOL, pool->conn->conn, pool->pool, 0 TSRMLS_CC);
+                resource_change_counter(INT_RESOURCE_STORAGEPOOL, pool->conn->conn, pool->pool, 0);
             }
             pool->pool = NULL;
         }
@@ -46,14 +46,14 @@ php_libvirt_storagepool_dtor(virt_resource *rsrc TSRMLS_DC)
 }
 
 void
-php_libvirt_volume_dtor(virt_resource *rsrc TSRMLS_DC)
+php_libvirt_volume_dtor(virt_resource *rsrc)
 {
     php_libvirt_volume *volume = (php_libvirt_volume *)rsrc->ptr;
     int rv = 0;
 
     if (volume != NULL) {
         if (volume->volume != NULL) {
-            if (!check_resource_allocation(NULL, INT_RESOURCE_VOLUME, volume->volume TSRMLS_CC)) {
+            if (!check_resource_allocation(NULL, INT_RESOURCE_VOLUME, volume->volume)) {
                 volume->volume = NULL;
                 efree(volume);
                 return;
@@ -61,10 +61,10 @@ php_libvirt_volume_dtor(virt_resource *rsrc TSRMLS_DC)
             rv = virStorageVolFree(volume->volume);
             if (rv != 0) {
                 DPRINTF("%s: virStorageVolFree(%p) returned %d (%s)\n", __FUNCTION__, volume->volume, rv, LIBVIRT_G(last_error));
-                php_error_docref(NULL TSRMLS_CC, E_WARNING, "virStorageVolFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
+                php_error_docref(NULL, E_WARNING, "virStorageVolFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
             } else {
                 DPRINTF("%s: virStorageVolFree(%p) completed successfully\n", __FUNCTION__, volume->volume);
-                resource_change_counter(INT_RESOURCE_VOLUME, volume->conn->conn, volume->volume, 0 TSRMLS_CC);
+                resource_change_counter(INT_RESOURCE_VOLUME, volume->conn->conn, volume->volume, 0);
             }
             volume->volume = NULL;
         }
@@ -103,7 +103,7 @@ PHP_FUNCTION(libvirt_storagepool_lookup_by_name)
     res_pool->conn = conn;
 
     DPRINTF("%s: returning %p\n", PHPFUNC, res_pool->pool);
-    resource_change_counter(INT_RESOURCE_STORAGEPOOL, conn->conn, res_pool->pool, 1 TSRMLS_CC);
+    resource_change_counter(INT_RESOURCE_STORAGEPOOL, conn->conn, res_pool->pool, 1);
 
     VIRT_REGISTER_RESOURCE(res_pool, le_libvirt_storagepool);
 }
@@ -134,7 +134,7 @@ PHP_FUNCTION(libvirt_storagepool_lookup_by_volume)
     res_pool->conn = volume->conn;
 
     DPRINTF("%s: returning %p\n", PHPFUNC, res_pool->pool);
-    resource_change_counter(INT_RESOURCE_STORAGEPOOL, res_pool->conn->conn, res_pool->pool, 1 TSRMLS_CC);
+    resource_change_counter(INT_RESOURCE_STORAGEPOOL, res_pool->conn->conn, res_pool->pool, 1);
 
     VIRT_REGISTER_RESOURCE(res_pool, le_libvirt_storagepool);
 }
@@ -288,7 +288,7 @@ PHP_FUNCTION(libvirt_storagepool_lookup_by_uuid_string)
     res_pool->conn = conn;
 
     DPRINTF("%s: returning %p\n", PHPFUNC, res_pool->pool);
-    resource_change_counter(INT_RESOURCE_STORAGEPOOL, conn->conn, res_pool->pool, 1 TSRMLS_CC);
+    resource_change_counter(INT_RESOURCE_STORAGEPOOL, conn->conn, res_pool->pool, 1);
 
     VIRT_REGISTER_RESOURCE(res_pool, le_libvirt_storagepool);
 }
@@ -320,7 +320,7 @@ PHP_FUNCTION(libvirt_storagepool_get_xml_desc)
 
     xml = virStoragePoolGetXMLDesc(pool->pool, flags);
     if (xml == NULL) {
-        set_error_if_unset("Cannot get the XML description" TSRMLS_CC);
+        set_error_if_unset("Cannot get the XML description");
         RETURN_FALSE;
     }
 
@@ -367,7 +367,7 @@ PHP_FUNCTION(libvirt_storagepool_define_xml)
     res_pool->conn = conn;
 
     DPRINTF("%s: returning %p\n", PHPFUNC, res_pool->pool);
-    resource_change_counter(INT_RESOURCE_STORAGEPOOL, conn->conn, res_pool->pool, 1 TSRMLS_CC);
+    resource_change_counter(INT_RESOURCE_STORAGEPOOL, conn->conn, res_pool->pool, 1);
 
     VIRT_REGISTER_RESOURCE(res_pool, le_libvirt_storagepool);
 }
@@ -622,7 +622,7 @@ PHP_FUNCTION(libvirt_storagevolume_lookup_by_name)
     res_volume->conn   = pool->conn;
 
     DPRINTF("%s: returning %p\n", PHPFUNC, res_volume->volume);
-    resource_change_counter(INT_RESOURCE_VOLUME, pool->conn->conn, res_volume->volume, 1 TSRMLS_CC);
+    resource_change_counter(INT_RESOURCE_VOLUME, pool->conn->conn, res_volume->volume, 1);
 
     VIRT_REGISTER_RESOURCE(res_volume, le_libvirt_volume);
 }
@@ -651,7 +651,7 @@ PHP_FUNCTION(libvirt_storagevolume_lookup_by_path)
     volume = virStorageVolLookupByPath(conn->conn, name);
     DPRINTF("%s: virStorageVolLookupByPath(%p, %s) returned %p\n", PHPFUNC, conn->conn, name, volume);
     if (volume == NULL) {
-        set_error_if_unset("Cannot find storage volume on requested path" TSRMLS_CC);
+        set_error_if_unset("Cannot find storage volume on requested path");
         RETURN_FALSE;
     }
 
@@ -660,7 +660,7 @@ PHP_FUNCTION(libvirt_storagevolume_lookup_by_path)
     res_volume->conn   = conn;
 
     DPRINTF("%s: returning %p\n", PHPFUNC, res_volume->volume);
-    resource_change_counter(INT_RESOURCE_VOLUME, conn->conn, res_volume->volume, 1 TSRMLS_CC);
+    resource_change_counter(INT_RESOURCE_VOLUME, conn->conn, res_volume->volume, 1);
 
     VIRT_REGISTER_RESOURCE(res_volume, le_libvirt_volume);
 }
@@ -767,7 +767,7 @@ PHP_FUNCTION(libvirt_storagevolume_get_xml_desc)
 
     xml = virStorageVolGetXMLDesc(volume->volume, flags);
     if (xml == NULL) {
-        set_error_if_unset("Cannot get the XML description" TSRMLS_CC);
+        set_error_if_unset("Cannot get the XML description");
         RETURN_FALSE;
     }
 
@@ -813,7 +813,7 @@ PHP_FUNCTION(libvirt_storagevolume_create_xml)
     res_volume->conn   = pool->conn;
 
     DPRINTF("%s: returning %p\n", PHPFUNC, res_volume->volume);
-    resource_change_counter(INT_RESOURCE_VOLUME, pool->conn->conn, res_volume->volume, 1 TSRMLS_CC);
+    resource_change_counter(INT_RESOURCE_VOLUME, pool->conn->conn, res_volume->volume, 1);
 
     VIRT_REGISTER_RESOURCE(res_volume, le_libvirt_volume);
 }
@@ -840,8 +840,8 @@ PHP_FUNCTION(libvirt_storagevolume_create_xml_from)
     char *xml;
     strsize_t xml_len;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rsr", &zpool, &xml, &xml_len, &zvolume) == FAILURE) {
-        set_error("Invalid pool resource, XML or volume resource" TSRMLS_CC);
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "rsr", &zpool, &xml, &xml_len, &zvolume) == FAILURE) {
+        set_error("Invalid pool resource, XML or volume resource");
         RETURN_FALSE;
     }
 
@@ -851,7 +851,7 @@ PHP_FUNCTION(libvirt_storagevolume_create_xml_from)
     VIRT_FETCH_RESOURCE(pl_volume, php_libvirt_volume*, &zvolume, PHP_LIBVIRT_VOLUME_RES_NAME, le_libvirt_volume);
     if ((pl_volume == NULL) || (pl_volume->volume == NULL))
         RETURN_FALSE;
-    resource_change_counter(INT_RESOURCE_VOLUME, pl_volume->conn->conn, pl_volume->volume, 1 TSRMLS_CC);
+    resource_change_counter(INT_RESOURCE_VOLUME, pl_volume->conn->conn, pl_volume->volume, 1);
 
     volume = virStorageVolCreateXMLFrom(pool->pool, xml, pl_volume->volume, 0);
     DPRINTF("%s: virStorageVolCreateXMLFrom(%p, <xml>, %p, 0) returned %p\n", PHPFUNC, pool->pool, pl_volume->volume, volume);
@@ -863,7 +863,7 @@ PHP_FUNCTION(libvirt_storagevolume_create_xml_from)
     res_volume->conn   = pool->conn;
 
     DPRINTF("%s: returning %p\n", PHPFUNC, res_volume->volume);
-    resource_change_counter(INT_RESOURCE_VOLUME, pool->conn->conn, res_volume->volume, 1 TSRMLS_CC);
+    resource_change_counter(INT_RESOURCE_VOLUME, pool->conn->conn, res_volume->volume, 1);
 
     VIRT_REGISTER_RESOURCE(res_volume, le_libvirt_volume);
 }
@@ -888,7 +888,7 @@ PHP_FUNCTION(libvirt_storagevolume_delete)
     retval = virStorageVolDelete(volume->volume, flags);
     DPRINTF("%s: virStorageVolDelete(%p, %d) returned %d\n", PHPFUNC, volume->volume, (int) flags, retval);
     if (retval != 0) {
-        set_error_if_unset("Cannot delete storage volume" TSRMLS_CC);
+        set_error_if_unset("Cannot delete storage volume");
         RETURN_FALSE;
     }
 
@@ -917,7 +917,7 @@ PHP_FUNCTION(libvirt_storagevolume_download)
     zend_long length = 0;
     int retval = -1;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rr|lll", &zvolume, &zstream, &offset, &length, &flags) == FAILURE)
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "rr|lll", &zvolume, &zstream, &offset, &length, &flags) == FAILURE)
         RETURN_LONG(retval);
     VIRT_FETCH_RESOURCE(volume, php_libvirt_volume*, &zvolume, PHP_LIBVIRT_VOLUME_RES_NAME, le_libvirt_volume);
     if ((volume == NULL) || (volume->volume == NULL))
@@ -930,7 +930,7 @@ PHP_FUNCTION(libvirt_storagevolume_download)
     DPRINTF("%s: virStorageVolDownload(%p, %p, %d, %d, %d) returned %d\n", PHPFUNC, volume->volume, stream->stream, (int) offset, (int) length, (int) flags, retval);
 
     if (retval == -1) {
-        set_error("Cannot download from stream" TSRMLS_CC);
+        set_error("Cannot download from stream");
         RETURN_LONG(retval);
     }
 
@@ -959,7 +959,7 @@ PHP_FUNCTION(libvirt_storagevolume_upload)
     zend_long length = 0;
     int retval = -1;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rr|lll", &zvolume, &zstream, &offset, &length, &flags) == FAILURE)
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "rr|lll", &zvolume, &zstream, &offset, &length, &flags) == FAILURE)
         RETURN_LONG(retval);
     VIRT_FETCH_RESOURCE(volume, php_libvirt_volume*, &zvolume, PHP_LIBVIRT_VOLUME_RES_NAME, le_libvirt_volume);
     if ((volume == NULL) || (volume->volume == NULL))
@@ -972,7 +972,7 @@ PHP_FUNCTION(libvirt_storagevolume_upload)
     DPRINTF("%s: virStorageVolUpload(%p, %p, %d, %d, %d) returned %d\n", PHPFUNC, volume->volume, stream->stream, (int) offset, (int) length, (int) flags, retval);
 
     if (retval == -1) {
-        set_error_if_unset("Cannot upload storage volume" TSRMLS_CC);
+        set_error_if_unset("Cannot upload storage volume");
         RETURN_LONG(retval);
     }
 
@@ -1001,7 +1001,7 @@ PHP_FUNCTION(libvirt_storagevolume_resize)
     retval = virStorageVolResize(volume->volume, capacity, flags);
     DPRINTF("%s: virStorageVolResize(%p, %d, %d) returned %d\n", PHPFUNC, volume->volume, (int) capacity, (int) flags, retval);
     if (retval != 0) {
-        set_error_if_unset("Cannot resize storage volume" TSRMLS_CC);
+        set_error_if_unset("Cannot resize storage volume");
         RETURN_LONG(retval);
     }
 

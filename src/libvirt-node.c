@@ -68,7 +68,7 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats)
     GET_CONNECTION_FROM_ARGS("r|l", &zconn, &cpunr);
 
     if (virNodeGetInfo(conn->conn, &info) != 0) {
-        set_error("Cannot get number of CPUs" TSRMLS_CC);
+        set_error("Cannot get number of CPUs");
         RETURN_FALSE;
     }
 
@@ -77,7 +77,7 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats)
         char tmp[256] = { 0 };
         snprintf(tmp, sizeof(tmp), "Invalid CPU number, valid numbers in range 0 to %d or VIR_NODE_CPU_STATS_ALL_CPUS",
                  numCpus - 1);
-        set_error(tmp TSRMLS_CC);
+        set_error(tmp);
 
         RETURN_FALSE;
     }
@@ -85,7 +85,7 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats)
     cpuNum = (int)cpunr;
 
     if (virNodeGetCPUStats(conn->conn, cpuNum, NULL, &nparams, 0) != 0) {
-        set_error("Cannot get number of CPU stats" TSRMLS_CC);
+        set_error("Cannot get number of CPU stats");
         RETURN_FALSE;
     }
 
@@ -108,7 +108,7 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats)
 #endif
 
         if (virNodeGetCPUStats(conn->conn, cpuNum, params, &nparams, 0) != 0) {
-            set_error("Unable to get node cpu stats" TSRMLS_CC);
+            set_error("Unable to get node cpu stats");
             RETURN_FALSE;
         }
 
@@ -162,12 +162,12 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats_for_each_cpu)
     GET_CONNECTION_FROM_ARGS("r|l", &zconn, &avg);
 
     if (virNodeGetInfo(conn->conn, &info) != 0) {
-        set_error("Cannot get number of CPUs" TSRMLS_CC);
+        set_error("Cannot get number of CPUs");
         RETURN_FALSE;
     }
 
     if (virNodeGetCPUStats(conn->conn, VIR_NODE_CPU_STATS_ALL_CPUS, NULL, &nparams, 0) != 0) {
-        set_error("Cannot get number of CPU stats" TSRMLS_CC);
+        set_error("Cannot get number of CPU stats");
         RETURN_FALSE;
     }
 
@@ -193,7 +193,7 @@ PHP_FUNCTION(libvirt_node_get_cpu_stats_for_each_cpu)
             zval *arr2;
 
             if (virNodeGetCPUStats(conn->conn, i, params, &nparams, 0) != 0) {
-                set_error("Unable to get node cpu stats" TSRMLS_CC);
+                set_error("Unable to get node cpu stats");
                 RETURN_FALSE;
             }
 
@@ -250,7 +250,7 @@ PHP_FUNCTION(libvirt_node_get_mem_stats)
     GET_CONNECTION_FROM_ARGS("r", &zconn);
 
     if (virNodeGetMemoryStats(conn->conn, memNum, NULL, &nparams, 0) != 0) {
-        set_error("Cannot get number of memory stats" TSRMLS_CC);
+        set_error("Cannot get number of memory stats");
         RETURN_FALSE;
     }
 
@@ -263,7 +263,7 @@ PHP_FUNCTION(libvirt_node_get_mem_stats)
 
     array_init(return_value);
     if (virNodeGetMemoryStats(conn->conn, memNum, params, &nparams, 0) != 0) {
-        set_error("Unable to get node memory stats" TSRMLS_CC);
+        set_error("Unable to get node memory stats");
         RETURN_FALSE;
     }
 
@@ -296,7 +296,7 @@ PHP_FUNCTION(libvirt_node_get_free_memory)
     if ((ret = virNodeGetFreeMemory(conn->conn)) != 0) {
         LONGLONG_RETURN_AS_STRING(ret);
     } else {
-        set_error("Cannot get the free memory for the node" TSRMLS_CC);
+        set_error("Cannot get the free memory for the node");
         RETURN_FALSE;
     }
 }

@@ -16,14 +16,14 @@ DEBUG_INIT("nwfilter");
 int le_libvirt_nwfilter;
 
 void
-php_libvirt_nwfilter_dtor(virt_resource *rsrc TSRMLS_DC)
+php_libvirt_nwfilter_dtor(virt_resource *rsrc)
 {
     php_libvirt_nwfilter *nwfilter = (php_libvirt_nwfilter *) rsrc->ptr;
     int rv = 0;
 
     if (nwfilter != NULL) {
         if (nwfilter->nwfilter != NULL) {
-            if (!check_resource_allocation(NULL, INT_RESOURCE_NWFILTER, nwfilter->nwfilter TSRMLS_CC)) {
+            if (!check_resource_allocation(NULL, INT_RESOURCE_NWFILTER, nwfilter->nwfilter)) {
                 nwfilter->nwfilter = NULL;
                 efree(nwfilter);
 
@@ -32,10 +32,10 @@ php_libvirt_nwfilter_dtor(virt_resource *rsrc TSRMLS_DC)
             rv = virNWFilterFree(nwfilter->nwfilter);
             if (rv != 0) {
                 DPRINTF("%s: virNWFilterFree(%p) returned %d\n", __FUNCTION__, nwfilter->nwfilter, rv);
-                php_error_docref(NULL TSRMLS_CC, E_WARNING, "virNWFilterFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
+                php_error_docref(NULL, E_WARNING, "virNWFilterFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
             } else {
                 DPRINTF("%s: virNWFilterFree(%p) completed successfully\n", __FUNCTION__, nwfilter->nwfilter);
-                resource_change_counter(INT_RESOURCE_NWFILTER, nwfilter->conn->conn, nwfilter->nwfilter, 0 TSRMLS_CC);
+                resource_change_counter(INT_RESOURCE_NWFILTER, nwfilter->conn->conn, nwfilter->nwfilter, 0);
             }
             nwfilter->nwfilter = NULL;
         }
@@ -63,7 +63,7 @@ PHP_FUNCTION(libvirt_nwfilter_define_xml)
     GET_CONNECTION_FROM_ARGS("rs", &zconn, &xml, &xml_len);
 
     if ((nwfilter = virNWFilterDefineXML(conn->conn, xml)) == NULL) {
-        set_error_if_unset("Cannot define a new NWFilter" TSRMLS_CC);
+        set_error_if_unset("Cannot define a new NWFilter");
         RETURN_FALSE;
     }
 
@@ -72,7 +72,7 @@ PHP_FUNCTION(libvirt_nwfilter_define_xml)
     res_nwfilter->conn = conn;
 
     resource_change_counter(INT_RESOURCE_NWFILTER, conn->conn,
-                            res_nwfilter->nwfilter, 1 TSRMLS_CC);
+                            res_nwfilter->nwfilter, 1);
 
     VIRT_REGISTER_RESOURCE(res_nwfilter, le_libvirt_nwfilter);
 }
@@ -123,7 +123,7 @@ PHP_FUNCTION(libvirt_nwfilter_get_xml_desc)
     xml = virNWFilterGetXMLDesc(nwfilter->nwfilter, 0);
 
     if (xml == NULL) {
-        set_error_if_unset("Cannot get nwfilter XML" TSRMLS_CC);
+        set_error_if_unset("Cannot get nwfilter XML");
         RETURN_FALSE;
     }
 
@@ -252,7 +252,7 @@ PHP_FUNCTION(libvirt_nwfilter_lookup_by_name)
     res_nwfilter->nwfilter = nwfilter;
 
     resource_change_counter(INT_RESOURCE_NWFILTER, conn->conn,
-                            res_nwfilter->nwfilter, 1 TSRMLS_CC);
+                            res_nwfilter->nwfilter, 1);
 
     VIRT_REGISTER_RESOURCE(res_nwfilter, le_libvirt_nwfilter);
 }
@@ -289,7 +289,7 @@ PHP_FUNCTION(libvirt_nwfilter_lookup_by_uuid_string)
     res_nwfilter->nwfilter = nwfilter;
 
     resource_change_counter(INT_RESOURCE_NWFILTER, conn->conn,
-                            res_nwfilter->nwfilter, 1 TSRMLS_CC);
+                            res_nwfilter->nwfilter, 1);
 
     VIRT_REGISTER_RESOURCE(res_nwfilter, le_libvirt_nwfilter);
 }
@@ -326,7 +326,7 @@ PHP_FUNCTION(libvirt_nwfilter_lookup_by_uuid)
     res_nwfilter->nwfilter = nwfilter;
 
     resource_change_counter(INT_RESOURCE_NWFILTER, conn->conn,
-                            res_nwfilter->nwfilter, 1 TSRMLS_CC);
+                            res_nwfilter->nwfilter, 1);
 
     VIRT_REGISTER_RESOURCE(res_nwfilter, le_libvirt_nwfilter);
 }
@@ -365,7 +365,7 @@ PHP_FUNCTION(libvirt_list_all_nwfilters)
         res_nwfilter->conn = conn;
 
         resource_change_counter(INT_RESOURCE_NWFILTER, conn->conn,
-                                res_nwfilter->nwfilter, 1 TSRMLS_CC);
+                                res_nwfilter->nwfilter, 1);
         VIRT_REGISTER_LIST_RESOURCE(nwfilter);
     }
     VIR_FREE(filters);

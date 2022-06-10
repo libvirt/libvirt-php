@@ -16,14 +16,14 @@ DEBUG_INIT("stream");
 int le_libvirt_stream;
 
 void
-php_libvirt_stream_dtor(virt_resource *rsrc TSRMLS_DC)
+php_libvirt_stream_dtor(virt_resource *rsrc)
 {
     php_libvirt_stream *stream = (php_libvirt_stream *)rsrc->ptr;
     int rv = 0;
 
     if (stream != NULL) {
         if (stream->stream != NULL) {
-            if (!check_resource_allocation(NULL, INT_RESOURCE_STREAM, stream->stream TSRMLS_CC)) {
+            if (!check_resource_allocation(NULL, INT_RESOURCE_STREAM, stream->stream)) {
                 stream->stream = NULL;
                 efree(stream);
                 return;
@@ -31,10 +31,10 @@ php_libvirt_stream_dtor(virt_resource *rsrc TSRMLS_DC)
             rv = virStreamFree(stream->stream);
             if (rv != 0) {
                 DPRINTF("%s: virStreamFree(%p) returned %d (%s)\n", __FUNCTION__, stream->stream, rv, LIBVIRT_G(last_error));
-                php_error_docref(NULL TSRMLS_CC, E_WARNING, "virStreamFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
+                php_error_docref(NULL, E_WARNING, "virStreamFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
             } else {
                 DPRINTF("%s: virStreamFree(%p) completed successfully\n", __FUNCTION__, stream->stream);
-                resource_change_counter(INT_RESOURCE_STREAM, stream->conn->conn, stream->stream, 0 TSRMLS_CC);
+                resource_change_counter(INT_RESOURCE_STREAM, stream->conn->conn, stream->stream, 0);
             }
             stream->stream = NULL;
         }
@@ -56,7 +56,7 @@ PHP_FUNCTION(libvirt_stream_create)
     virStreamPtr stream = NULL;
     php_libvirt_stream *res_stream;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zconn) == FAILURE)
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "r", &zconn) == FAILURE)
         RETURN_FALSE;
     VIRT_FETCH_RESOURCE(conn, php_libvirt_connection*, &zconn, PHP_LIBVIRT_CONNECTION_RES_NAME, le_libvirt_connection);
     if ((conn == NULL) || (conn->conn == NULL))
@@ -64,7 +64,7 @@ PHP_FUNCTION(libvirt_stream_create)
 
     stream = virStreamNew(conn->conn, 0);
     if (stream == NULL) {
-        set_error("Cannot create new stream" TSRMLS_CC);
+        set_error("Cannot create new stream");
         RETURN_FALSE;
     }
 
@@ -72,7 +72,7 @@ PHP_FUNCTION(libvirt_stream_create)
     res_stream->stream = stream;
     res_stream->conn = conn;
 
-    resource_change_counter(INT_RESOURCE_STREAM, conn->conn, res_stream->stream, 1 TSRMLS_CC);
+    resource_change_counter(INT_RESOURCE_STREAM, conn->conn, res_stream->stream, 1);
 
     VIRT_REGISTER_RESOURCE(res_stream, le_libvirt_stream);
 }
@@ -90,7 +90,7 @@ PHP_FUNCTION(libvirt_stream_close)
     php_libvirt_stream *stream = NULL;
     int retval = -1;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zstream) == FAILURE)
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "r", &zstream) == FAILURE)
         RETURN_LONG(retval);
     VIRT_FETCH_RESOURCE(stream, php_libvirt_stream*, &zstream, PHP_LIBVIRT_STREAM_RES_NAME, le_libvirt_stream);
     if ((stream == NULL) || (stream->stream == NULL))
@@ -98,11 +98,11 @@ PHP_FUNCTION(libvirt_stream_close)
 
     retval = virStreamFree(stream->stream);
     if (retval != 0) {
-        set_error("Cannot free stream" TSRMLS_CC);
+        set_error("Cannot free stream");
         RETURN_LONG(retval);
     }
 
-    resource_change_counter(INT_RESOURCE_STREAM, stream->conn->conn, stream->stream, 0 TSRMLS_CC);
+    resource_change_counter(INT_RESOURCE_STREAM, stream->conn->conn, stream->stream, 0);
     RETURN_LONG(retval);
 }
 
@@ -119,7 +119,7 @@ PHP_FUNCTION(libvirt_stream_abort)
     php_libvirt_stream *stream = NULL;
     int retval = -1;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zstream) == FAILURE)
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "r", &zstream) == FAILURE)
         RETURN_LONG(retval);
     VIRT_FETCH_RESOURCE(stream, php_libvirt_stream*, &zstream, PHP_LIBVIRT_STREAM_RES_NAME, le_libvirt_stream);
     if ((stream == NULL) || (stream->stream == NULL))
@@ -127,7 +127,7 @@ PHP_FUNCTION(libvirt_stream_abort)
 
     retval = virStreamAbort(stream->stream);
     if (retval != 0) {
-        set_error("Cannot abort stream" TSRMLS_CC);
+        set_error("Cannot abort stream");
         RETURN_LONG(retval);
     }
     RETURN_LONG(retval);
@@ -146,7 +146,7 @@ PHP_FUNCTION(libvirt_stream_finish)
     php_libvirt_stream *stream = NULL;
     int retval = -1;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zstream) == FAILURE)
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "r", &zstream) == FAILURE)
         RETURN_LONG(retval);
     VIRT_FETCH_RESOURCE(stream, php_libvirt_stream*, &zstream, PHP_LIBVIRT_STREAM_RES_NAME, le_libvirt_stream);
     if ((stream == NULL) || (stream->stream == NULL))
@@ -154,7 +154,7 @@ PHP_FUNCTION(libvirt_stream_finish)
 
     retval = virStreamFinish(stream->stream);
     if (retval != 0) {
-        set_error("Cannot finish stream" TSRMLS_CC);
+        set_error("Cannot finish stream");
         RETURN_LONG(retval);
     }
     RETURN_LONG(retval);
@@ -177,7 +177,7 @@ PHP_FUNCTION(libvirt_stream_recv)
     int retval = -1;
     zend_long length = 0;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rz|l", &zstream, &zbuf, &length) == FAILURE)
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "rz|l", &zstream, &zbuf, &length) == FAILURE)
         RETURN_LONG(retval);
     VIRT_FETCH_RESOURCE(stream, php_libvirt_stream*, &zstream, PHP_LIBVIRT_STREAM_RES_NAME, le_libvirt_stream);
     if ((stream == NULL) || (stream->stream == NULL))
@@ -195,7 +195,7 @@ PHP_FUNCTION(libvirt_stream_recv)
     }
 
     if (retval == -1)
-        set_error("Cannot recv from stream" TSRMLS_CC);
+        set_error("Cannot recv from stream");
 
     efree(recv_buf);
     RETURN_LONG(retval);
@@ -218,7 +218,7 @@ PHP_FUNCTION(libvirt_stream_send)
     zend_long length = 0;
     char *cstr;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rz|l", &zstream, &zbuf, &length) == FAILURE)
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "rz|l", &zstream, &zbuf, &length) == FAILURE)
         RETURN_LONG(retval);
     VIRT_FETCH_RESOURCE(stream, php_libvirt_stream*, &zstream, PHP_LIBVIRT_STREAM_RES_NAME, le_libvirt_stream);
     if ((stream == NULL) || (stream->stream == NULL))
@@ -228,7 +228,7 @@ PHP_FUNCTION(libvirt_stream_send)
 
     retval = virStreamSend(stream->stream, cstr, length);
     if (retval == -1)
-        set_error("Cannot send to stream" TSRMLS_CC);
+        set_error("Cannot send to stream");
 
     RETURN_LONG(retval);
 }

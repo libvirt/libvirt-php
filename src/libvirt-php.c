@@ -536,7 +536,7 @@ STD_PHP_INI_ENTRY("libvirt.image_path", "/var/lib/libvirt/images", PHP_INI_ALL, 
 STD_PHP_INI_ENTRY("libvirt.max_connections", "5", PHP_INI_ALL, OnUpdateLong, max_connections_ini, zend_libvirt_globals, libvirt_globals)
 PHP_INI_END()
 
-void change_debug(int val TSRMLS_DC)
+void change_debug(int val)
 {
 #ifdef DEBUG_SUPPORT
     LIBVIRT_G(debug) = val;
@@ -545,7 +545,7 @@ void change_debug(int val TSRMLS_DC)
 }
 
 /* PHP requires to have this function defined */
-static void php_libvirt_init_globals(zend_libvirt_globals *libvirt_globals TSRMLS_DC)
+static void php_libvirt_init_globals(zend_libvirt_globals *libvirt_globals)
 {
     libvirt_globals->longlong_to_string_ini = 1;
     libvirt_globals->signed_longlong_to_string_ini = 0;
@@ -556,7 +556,7 @@ static void php_libvirt_init_globals(zend_libvirt_globals *libvirt_globals TSRML
     libvirt_globals->binding_resources = NULL;
 #ifdef DEBUG_SUPPORT
     libvirt_globals->debug = 0;
-    change_debug(0 TSRMLS_CC);
+    change_debug(0);
 #endif
 }
 
@@ -565,7 +565,7 @@ PHP_RINIT_FUNCTION(libvirt)
 {
     LIBVIRT_G(last_error) = NULL;
     LIBVIRT_G(vnc_location) = NULL;
-    change_debug(0 TSRMLS_CC);
+    change_debug(0);
     return SUCCESS;
 }
 
@@ -587,13 +587,13 @@ PHP_RSHUTDOWN_FUNCTION(libvirt)
  *                          @maxsize [long]: integer value of maximum file size, file will be truncated after reaching max file size. Value is set in KiB.
  * Returns:                 0 on success, -errno otherwise
  */
-int set_logfile(char *filename, long maxsize TSRMLS_DC)
+int set_logfile(char *filename, long maxsize)
 {
     int res;
     struct stat st;
 
     if (filename == NULL) {
-        change_debug(0 TSRMLS_CC);
+        change_debug(0);
         return 0;
     }
 
@@ -607,7 +607,7 @@ int set_logfile(char *filename, long maxsize TSRMLS_DC)
 
     res = (freopen(filename, "a", stderr) != NULL) ? 0 : -errno;
     if (res == 0)
-        change_debug(1 TSRMLS_CC);
+        change_debug(1);
     return res;
 }
 
@@ -710,7 +710,7 @@ void free_tokens(tTokenizer t)
  *                          @inc [int/bool]: Increment the counter (1 = add memory location) or decrement the counter (0 = remove memory location) from entries.
  * Returns:                 0 on success, -errno otherwise
  */
-int resource_change_counter(int type, virConnectPtr conn, void *mem, int inc TSRMLS_DC)
+int resource_change_counter(int type, virConnectPtr conn, void *mem, int inc)
 {
     int i;
     int pos = -1;
@@ -883,7 +883,7 @@ PHP_MINFO_FUNCTION(libvirt)
  * Arguments:               @msg [string]: error message string
  * Returns:                 None
  */
-void set_error(char *msg TSRMLS_DC)
+void set_error(char *msg)
 {
     if (LIBVIRT_G(last_error) != NULL)
         efree(LIBVIRT_G(last_error));
@@ -893,7 +893,7 @@ void set_error(char *msg TSRMLS_DC)
         return;
     }
 
-    php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", msg);
+    php_error_docref(NULL, E_WARNING, "%s", msg);
     LIBVIRT_G(last_error) = estrndup(msg, strlen(msg));
 }
 
@@ -904,7 +904,7 @@ void set_error(char *msg TSRMLS_DC)
  * Arguments:               @msg [string]: vnc location string
  * Returns:                 None
  */
-void set_vnc_location(char *msg TSRMLS_DC)
+void set_vnc_location(char *msg)
 {
     if (LIBVIRT_G(vnc_location) != NULL)
         efree(LIBVIRT_G(vnc_location));
@@ -926,10 +926,10 @@ void set_vnc_location(char *msg TSRMLS_DC)
  * Arguments:               @msg [string]: error message string
  * Returns:                 None
  */
-void set_error_if_unset(char *msg TSRMLS_DC)
+void set_error_if_unset(char *msg)
 {
     if (LIBVIRT_G(last_error) == NULL)
-        set_error(msg TSRMLS_CC);
+        set_error(msg);
 }
 
 /*
@@ -939,18 +939,17 @@ void set_error_if_unset(char *msg TSRMLS_DC)
  * Arguments:               None
  * Returns:                 None
  */
-void reset_error(TSRMLS_D)
+void reset_error(void)
 {
-    set_error(NULL TSRMLS_CC);
+    set_error(NULL);
 }
 
 
 /* Error handler for receiving libvirt errors */
-static void catch_error(void *userData,
+static void catch_error(void *userData ATTRIBUTE_UNUSED,
                         virErrorPtr error)
 {
-    TSRMLS_FETCH_FROM_CTX(userData);
-    set_error(error->message TSRMLS_CC);
+    set_error(error->message);
 }
 
 /*
@@ -961,7 +960,7 @@ static void catch_error(void *userData,
  *                          @mem [uint]: memory location of the resource to be freed
  * Returns:                 None
  */
-void free_resource(int type, void *mem TSRMLS_DC)
+void free_resource(int type, void *mem)
 {
     int rv;
 
@@ -971,10 +970,10 @@ void free_resource(int type, void *mem TSRMLS_DC)
         rv = virDomainFree((virDomainPtr)mem);
         if (rv != 0) {
             DPRINTF("%s: virDomainFree(%p) returned %d (%s)\n", __FUNCTION__, (virDomainPtr)mem, rv, LIBVIRT_G(last_error));
-            php_error_docref(NULL TSRMLS_CC, E_WARNING, "virDomainFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
+            php_error_docref(NULL, E_WARNING, "virDomainFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
         } else {
             DPRINTF("%s: virDomainFree(%p) completed successfully\n", __FUNCTION__, (virDomainPtr)mem);
-            resource_change_counter(INT_RESOURCE_DOMAIN, NULL, (virDomainPtr)mem, 0 TSRMLS_CC);
+            resource_change_counter(INT_RESOURCE_DOMAIN, NULL, (virDomainPtr)mem, 0);
         }
     }
 
@@ -982,10 +981,10 @@ void free_resource(int type, void *mem TSRMLS_DC)
         rv = virStreamFree((virStreamPtr)mem);
         if (rv != 0) {
             DPRINTF("%s: virStreamFree(%p) returned %d (%s)\n", __FUNCTION__, (virStreamPtr)mem, rv, LIBVIRT_G(last_error));
-            php_error_docref(NULL TSRMLS_CC, E_WARNING, "virStreamFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
+            php_error_docref(NULL, E_WARNING, "virStreamFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
         } else {
             DPRINTF("%s: virStreamFree(%p) completed successfully\n", __FUNCTION__, (virStreamPtr)mem);
-            resource_change_counter(INT_RESOURCE_STREAM, NULL, (virStreamPtr)mem, 0 TSRMLS_CC);
+            resource_change_counter(INT_RESOURCE_STREAM, NULL, (virStreamPtr)mem, 0);
         }
     }
 
@@ -993,10 +992,10 @@ void free_resource(int type, void *mem TSRMLS_DC)
         rv = virNetworkFree((virNetworkPtr)mem);
         if (rv != 0) {
             DPRINTF("%s: virNetworkFree(%p) returned %d (%s)\n", __FUNCTION__, (virNetworkPtr)mem, rv, LIBVIRT_G(last_error));
-            php_error_docref(NULL TSRMLS_CC, E_WARNING, "virNetworkFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
+            php_error_docref(NULL, E_WARNING, "virNetworkFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
         } else {
             DPRINTF("%s: virNetworkFree(%p) completed successfully\n", __FUNCTION__, (virNetworkPtr)mem);
-            resource_change_counter(INT_RESOURCE_NETWORK, NULL, (virNetworkPtr)mem, 0 TSRMLS_CC);
+            resource_change_counter(INT_RESOURCE_NETWORK, NULL, (virNetworkPtr)mem, 0);
         }
     }
 
@@ -1004,10 +1003,10 @@ void free_resource(int type, void *mem TSRMLS_DC)
         rv = virNodeDeviceFree((virNodeDevicePtr)mem);
         if (rv != 0) {
             DPRINTF("%s: virNodeDeviceFree(%p) returned %d (%s)\n", __FUNCTION__, (virNodeDevicePtr)mem, rv, LIBVIRT_G(last_error));
-            php_error_docref(NULL TSRMLS_CC, E_WARNING, "virNodeDeviceFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
+            php_error_docref(NULL, E_WARNING, "virNodeDeviceFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
         } else {
             DPRINTF("%s: virNodeDeviceFree(%p) completed successfully\n", __FUNCTION__, (virNodeDevicePtr)mem);
-            resource_change_counter(INT_RESOURCE_NODEDEV, NULL, (virNodeDevicePtr)mem, 0 TSRMLS_CC);
+            resource_change_counter(INT_RESOURCE_NODEDEV, NULL, (virNodeDevicePtr)mem, 0);
         }
     }
 
@@ -1015,10 +1014,10 @@ void free_resource(int type, void *mem TSRMLS_DC)
         rv = virStoragePoolFree((virStoragePoolPtr)mem);
         if (rv != 0) {
             DPRINTF("%s: virStoragePoolFree(%p) returned %d (%s)\n", __FUNCTION__, (virStoragePoolPtr)mem, rv, LIBVIRT_G(last_error));
-            php_error_docref(NULL TSRMLS_CC, E_WARNING, "virStoragePoolFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
+            php_error_docref(NULL, E_WARNING, "virStoragePoolFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
         } else {
             DPRINTF("%s: virStoragePoolFree(%p) completed successfully\n", __FUNCTION__, (virStoragePoolPtr)mem);
-            resource_change_counter(INT_RESOURCE_STORAGEPOOL, NULL, (virStoragePoolPtr)mem, 0 TSRMLS_CC);
+            resource_change_counter(INT_RESOURCE_STORAGEPOOL, NULL, (virStoragePoolPtr)mem, 0);
         }
     }
 
@@ -1026,10 +1025,10 @@ void free_resource(int type, void *mem TSRMLS_DC)
         rv = virStorageVolFree((virStorageVolPtr)mem);
         if (rv != 0) {
             DPRINTF("%s: virStorageVolFree(%p) returned %d (%s)\n", __FUNCTION__, (virStorageVolPtr)mem, rv, LIBVIRT_G(last_error));
-            php_error_docref(NULL TSRMLS_CC, E_WARNING, "virStorageVolFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
+            php_error_docref(NULL, E_WARNING, "virStorageVolFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
         } else {
             DPRINTF("%s: virStorageVolFree(%p) completed successfully\n", __FUNCTION__, (virStorageVolPtr)mem);
-            resource_change_counter(INT_RESOURCE_VOLUME, NULL, (virStorageVolPtr)mem, 0 TSRMLS_CC);
+            resource_change_counter(INT_RESOURCE_VOLUME, NULL, (virStorageVolPtr)mem, 0);
         }
     }
 
@@ -1037,10 +1036,10 @@ void free_resource(int type, void *mem TSRMLS_DC)
         rv = virDomainSnapshotFree((virDomainSnapshotPtr)mem);
         if (rv != 0) {
             DPRINTF("%s: virDomainSnapshotFree(%p) returned %d (%s)\n", __FUNCTION__, (virDomainSnapshotPtr)mem, rv, LIBVIRT_G(last_error));
-            php_error_docref(NULL TSRMLS_CC, E_WARNING, "virDomainSnapshotFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
+            php_error_docref(NULL, E_WARNING, "virDomainSnapshotFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
         } else {
             DPRINTF("%s: virDomainSnapshotFree(%p) completed successfully\n", __FUNCTION__, (virDomainSnapshotPtr)mem);
-            resource_change_counter(INT_RESOURCE_SNAPSHOT, NULL, (virDomainSnapshotPtr)mem, 0 TSRMLS_CC);
+            resource_change_counter(INT_RESOURCE_SNAPSHOT, NULL, (virDomainSnapshotPtr)mem, 0);
         }
     }
 
@@ -1048,10 +1047,10 @@ void free_resource(int type, void *mem TSRMLS_DC)
         rv = virNWFilterFree((virNWFilterPtr) mem);
         if (rv != 0) {
             DPRINTF("%s: virNWFilterFree(%p) returned %d (%s)\n", __FUNCTION__, (virNWFilterPtr) mem, rv, LIBVIRT_G(last_error));
-            php_error_docref(NULL TSRMLS_CC, E_WARNING, "virDomainSnapshotFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
+            php_error_docref(NULL, E_WARNING, "virDomainSnapshotFree failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
         } else {
             DPRINTF("%s: virNWFilterFree(%p) completed successfully\n", __FUNCTION__, (virNWFilterPtr) mem);
-            resource_change_counter(INT_RESOURCE_NWFILTER, NULL, (virNWFilterPtr) mem, 0 TSRMLS_CC);
+            resource_change_counter(INT_RESOURCE_NWFILTER, NULL, (virNWFilterPtr) mem, 0);
         }
     }
 }
@@ -1065,7 +1064,7 @@ void free_resource(int type, void *mem TSRMLS_DC)
  *                          @memp [pointer]: pointer to the memory
  * Returns:                 1 if resource is allocated, 0 otherwise
  */
-int check_resource_allocation(virConnectPtr conn, int type, void *mem TSRMLS_DC)
+int check_resource_allocation(virConnectPtr conn, int type, void *mem)
 {
     int binding_resources_count = 0;
     resource_info *binding_resources = NULL;
@@ -1096,7 +1095,7 @@ int check_resource_allocation(virConnectPtr conn, int type, void *mem TSRMLS_DC)
  * Arguments:               @type [int]: integer interpretation of the type, see free_resource() API function for possible values
  * Returns:                 number of resources already used
  */
-int count_resources(int type TSRMLS_DC)
+int count_resources(int type)
 {
     int binding_resources_count = 0;
     resource_info *binding_resources = NULL;
@@ -1523,9 +1522,7 @@ PHP_MINIT_FUNCTION(libvirt)
     /* Initialize libvirt and set up error callback */
     virInitialize();
 
-    void *thread_ctx = NULL;
-    TSRMLS_SET_CTX(thread_ctx);
-    virSetErrorFunc(thread_ctx, catch_error);
+    virSetErrorFunc(NULL, catch_error);
 
     return SUCCESS;
 }
@@ -1586,7 +1583,7 @@ PHP_FUNCTION(libvirt_image_create)
         path = strdup(LIBVIRT_G(image_path_ini));
 
     if ((path == NULL) || (path[0] != '/')) {
-        set_error("Invalid argument, path must be set and absolute (start by slash character [/])" TSRMLS_CC);
+        set_error("Invalid argument, path must be set and absolute (start by slash character [/])");
         RETURN_FALSE;
     }
 
@@ -1600,7 +1597,7 @@ PHP_FUNCTION(libvirt_image_create)
     if (!is_local_connection(conn->conn)) {
         // TODO: Try to implement remote connection somehow. Maybe using SSH tunneling
         snprintf(msg, sizeof(msg), "%s works only on local systems!", PHPFUNC);
-        set_error(msg TSRMLS_CC);
+        set_error(msg);
         RETURN_FALSE;
     }
 
@@ -1608,7 +1605,7 @@ PHP_FUNCTION(libvirt_image_create)
 
     const char *qemu_img_cmd = get_feature_binary("create-image");
     if (qemu_img_cmd == NULL) {
-        set_error("Feature 'create-image' is not supported" TSRMLS_CC);
+        set_error("Feature 'create-image' is not supported");
         RETURN_FALSE;
     }
 
@@ -1620,7 +1617,7 @@ PHP_FUNCTION(libvirt_image_create)
         RETURN_TRUE;
     } else {
         snprintf(msg, sizeof(msg), "Cannot create image: %s", fpath);
-        set_error(msg TSRMLS_CC);
+        set_error(msg);
         RETURN_FALSE;
     }
 }
@@ -1647,7 +1644,7 @@ PHP_FUNCTION(libvirt_image_remove)
 
     // Disable remote connections
     if (!is_local_connection(conn->conn)) {
-        set_error("Function works only on local connection" TSRMLS_CC);
+        set_error("Function works only on local connection");
         RETURN_FALSE;
     }
 
@@ -1660,7 +1657,7 @@ PHP_FUNCTION(libvirt_image_remove)
 #endif
     if (strcmp(name, hostname) != 0) {
         snprintf(msg, sizeof(msg), "%s works only on local systems!", PHPFUNC);
-        set_error(msg TSRMLS_CC);
+        set_error(msg);
         VIR_FREE(hostname);
         RETURN_FALSE;
     }
@@ -1668,7 +1665,7 @@ PHP_FUNCTION(libvirt_image_remove)
 
     if (unlink(image) != 0) {
         snprintf(msg, sizeof(msg), "An error occurred while unlinking %s: %d (%s)", image, errno, strerror(errno));
-        set_error(msg TSRMLS_CC);
+        set_error(msg);
         RETURN_FALSE;
     } else {
         RETURN_TRUE;
@@ -1796,14 +1793,14 @@ char *get_node_string_from_xpath(char *xml, char *xpath)
         goto cleanup;
 
     if (result->nodesetval->nodeNr > 1) {
-        set_error("XPATH returned too much nodes, expeced only 1" TSRMLS_CC);
+        set_error("XPATH returned too much nodes, expeced only 1");
         goto cleanup;
     }
 
     if (!(xmlbuf = xmlBufferCreate()) ||
         xmlNodeDump(xmlbuf, doc, result->nodesetval->nodeTab[0], 0, 1) == 0 ||
         !(ret = strdup((const char *)xmlBufferContent(xmlbuf)))) {
-        set_error("failed to convert the XML node tree" TSRMLS_CC);
+        set_error("failed to convert the XML node tree");
         goto cleanup;
     }
 
@@ -2047,7 +2044,7 @@ long get_next_free_numeric_value(virDomainPtr domain, char *xpath)
  *                          @arch [string]: optional architecture string, can be NULL to get default
  * Returns:                 path to the emulator
  */
-char *connection_get_domain_type(virConnectPtr conn, char *arch TSRMLS_DC)
+char *connection_get_domain_type(virConnectPtr conn, char *arch)
 {
     char *ret = NULL;
     char *tmp = NULL;
@@ -2096,7 +2093,7 @@ char *connection_get_domain_type(virConnectPtr conn, char *arch TSRMLS_DC)
  *                          @arch [string]: optional architecture string, can be NULL to get default
  * Returns:                 path to the emulator
  */
-char *connection_get_emulator(virConnectPtr conn, char *arch TSRMLS_DC)
+char *connection_get_emulator(virConnectPtr conn, char *arch)
 {
     char *ret = NULL;
     char *tmp = NULL;
@@ -2148,7 +2145,7 @@ char *connection_get_emulator(virConnectPtr conn, char *arch TSRMLS_DC)
  * Arguments:               @conn [virConnectPtr]: libvirt connection pointer of connection to get architecture for
  * Returns:                 path to the emulator
  */
-char *connection_get_arch(virConnectPtr conn TSRMLS_DC)
+char *connection_get_arch(virConnectPtr conn)
 {
     char *ret = NULL;
     char *tmp = NULL;
@@ -2207,7 +2204,7 @@ char *generate_uuid_any()
  * Arguments:               @conn [virConnectPtr]: libvirt connection pointer
  * Returns:                 a new unused random UUID string
  */
-char *generate_uuid(virConnectPtr conn TSRMLS_DC)
+char *generate_uuid(virConnectPtr conn)
 {
     virDomainPtr domain = NULL;
     char *uuid = NULL;
@@ -2236,7 +2233,7 @@ char *generate_uuid(virConnectPtr conn TSRMLS_DC)
  *                          @disk_flags [int]: disk type, VIR_DOMAIN_DISK_FILE or VIR_DOMAIN_DISK_BLOCK
  * Returns:                 XML output for the disk
  */
-char *get_disk_xml(unsigned long long size, char *path, char *driver, char *bus, char *dev, int disk_flags TSRMLS_DC)
+char *get_disk_xml(unsigned long long size, char *path, char *driver, char *bus, char *dev, int disk_flags)
 {
     char xml[4096] = { 0 };
 
@@ -2352,8 +2349,8 @@ char *get_network_xml(char *mac, char *network, char *model)
 char *installation_get_xml(virConnectPtr conn, char *name, int memMB,
                            int maxmemMB, char *arch, char *uuid, int vCpus,
                            char *iso_image, tVMDisk *disks, int numDisks,
-                           tVMNetwork *networks, int numNetworks, int
-                           domain_flags TSRMLS_DC)
+                           tVMNetwork *networks, int numNetworks,
+                           int domain_flags)
 {
     int i;
     char *xml = NULL;
@@ -2371,7 +2368,7 @@ char *installation_get_xml(virConnectPtr conn, char *name, int memMB,
     }
 
     if (uuid == NULL)
-        uuid = generate_uuid(conn TSRMLS_CC);
+        uuid = generate_uuid(conn);
 
     if (domain_flags & DOMAIN_FLAG_FEATURE_ACPI)
         strcat(features, "<acpi/>");
@@ -2381,11 +2378,11 @@ char *installation_get_xml(virConnectPtr conn, char *name, int memMB,
         strcat(features, "<pae/>");
 
     if (arch == NULL) {
-        arch = connection_get_arch(conn TSRMLS_CC);
+        arch = connection_get_arch(conn);
         DPRINTF("%s: No architecture defined, got host arch of '%s'\n", __FUNCTION__, arch);
     }
 
-    if (!(emulator = connection_get_emulator(conn, arch TSRMLS_CC))) {
+    if (!(emulator = connection_get_emulator(conn, arch))) {
         DPRINTF("%s: Cannot get emulator\n", __FUNCTION__);
         return NULL;
     }
@@ -2395,12 +2392,12 @@ char *installation_get_xml(virConnectPtr conn, char *name, int memMB,
         return NULL;
     }
 
-    tmp = connection_get_domain_type(conn, arch TSRMLS_CC);
+    tmp = connection_get_domain_type(conn, arch);
     if (tmp != NULL)
         snprintf(type, sizeof(type), " type='%s'", tmp);
 
     for (i = 0; i < numDisks; i++) {
-        char *disk = get_disk_xml(disks[i].size, disks[i].path, disks[i].driver, disks[i].bus, disks[i].dev, disks[i].flags TSRMLS_CC);
+        char *disk = get_disk_xml(disks[i].size, disks[i].path, disks[i].driver, disks[i].bus, disks[i].dev, disks[i].flags);
 
         if (disk != NULL)
             strcat(disks_xml, disk);
@@ -2592,8 +2589,8 @@ PHP_FUNCTION(libvirt_version)
     unsigned long typeVer;
     strsize_t type_len;
     char *type = NULL;
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &type, &type_len) == FAILURE) {
-        set_error("Invalid arguments" TSRMLS_CC);
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "|s", &type, &type_len) == FAILURE) {
+        set_error("Invalid arguments");
         RETURN_FALSE;
     }
 
@@ -2639,8 +2636,8 @@ PHP_FUNCTION(libvirt_check_version)
     unsigned long libVer;
     zend_long major = 0, minor = 0, micro = 0, type = VIR_VERSION_BINDING;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "lll|l", &major, &minor, &micro, &type) == FAILURE) {
-        set_error("Invalid arguments" TSRMLS_CC);
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "lll|l", &major, &minor, &micro, &type) == FAILURE) {
+        set_error("Invalid arguments");
         RETURN_FALSE;
     }
 
@@ -2665,7 +2662,7 @@ PHP_FUNCTION(libvirt_check_version)
                  ((libVer % 1000) >= micro)))
                 RETURN_TRUE;
         } else {
-            set_error("Invalid version type" TSRMLS_CC);
+            set_error("Invalid version type");
         }
     }
 
@@ -2686,8 +2683,8 @@ PHP_FUNCTION(libvirt_has_feature)
     const char *binary = NULL;
     int ret = 0;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &name, &name_len) == FAILURE) {
-        set_error("Invalid argument" TSRMLS_CC);
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &name, &name_len) == FAILURE) {
+        set_error("Invalid argument");
         RETURN_FALSE;
     }
 
@@ -2717,8 +2714,8 @@ PHP_FUNCTION(libvirt_get_iso_images)
 #endif
     int num = 0;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &path, &path_len) == FAILURE) {
-        set_error("Invalid argument" TSRMLS_CC);
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "|s", &path, &path_len) == FAILURE) {
+        set_error("Invalid argument");
         RETURN_FALSE;
     }
 
@@ -2726,7 +2723,7 @@ PHP_FUNCTION(libvirt_get_iso_images)
         path = strdup(LIBVIRT_G(iso_path_ini));
 
     if ((path == NULL) || (path[0] != '/')) {
-        set_error("Invalid argument, path must be set and absolute (start by slash character [/])" TSRMLS_CC);
+        set_error("Invalid argument, path must be set and absolute (start by slash character [/])");
         RETURN_FALSE;
     }
 
@@ -2801,20 +2798,20 @@ PHP_FUNCTION(libvirt_logfile_set)
     strsize_t filename_len = 0;
     int err;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|l", &filename, &filename_len, &maxsize) == FAILURE) {
-        set_error("Invalid argument" TSRMLS_CC);
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "s|l", &filename, &filename_len, &maxsize) == FAILURE) {
+        set_error("Invalid argument");
         RETURN_FALSE;
     }
 
     if ((filename == NULL) || (strcasecmp(filename, "null") == 0))
-        err = set_logfile(NULL, 0 TSRMLS_CC);
+        err = set_logfile(NULL, 0);
     else
-        err = set_logfile(filename, maxsize TSRMLS_CC);
+        err = set_logfile(filename, maxsize);
 
     if (err < 0) {
         char tmp[1024] = { 0 };
         snprintf(tmp, sizeof(tmp), "Cannot set the log file to %s, error code = %d (%s)", filename, err, strerror(-err));
-        set_error(tmp TSRMLS_CC);
+        set_error(tmp);
         RETURN_FALSE;
     }
 

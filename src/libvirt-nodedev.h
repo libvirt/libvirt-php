@@ -21,11 +21,11 @@
 
 # define GET_NODEDEV_FROM_ARGS(args, ...)                                      \
     do {                                                                       \
-        reset_error(TSRMLS_C);                                                 \
-        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,                   \
+        reset_error();                                                         \
+        if (zend_parse_parameters(ZEND_NUM_ARGS(),                             \
                                   args,                                        \
                                   __VA_ARGS__) == FAILURE) {                   \
-            set_error("Invalid arguments" TSRMLS_CC);                          \
+            set_error("Invalid arguments");                                    \
             RETURN_FALSE;                                                      \
         }                                                                      \
                                                                                \
@@ -43,7 +43,7 @@ typedef struct _php_libvirt_nodedev {
 } php_libvirt_nodedev;
 
 
-void php_libvirt_nodedev_dtor(virt_resource *rsrc TSRMLS_DC);
+void php_libvirt_nodedev_dtor(virt_resource *rsrc);
 
 PHP_FUNCTION(libvirt_nodedev_get);
 PHP_FUNCTION(libvirt_nodedev_capabilities);

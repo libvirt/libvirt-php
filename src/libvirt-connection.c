@@ -24,7 +24,7 @@ int le_libvirt_connection;
  * Returns:                 None
  */
 static void
-free_resources_on_connection(virConnectPtr conn TSRMLS_DC)
+free_resources_on_connection(virConnectPtr conn)
 {
     int binding_resources_count = 0;
     resource_info *binding_resources;
@@ -35,28 +35,28 @@ free_resources_on_connection(virConnectPtr conn TSRMLS_DC)
 
     for (i = 0; i < binding_resources_count; i++) {
         if ((binding_resources[i].overwrite == 0) && (binding_resources[i].conn == conn))
-            free_resource(binding_resources[i].type, binding_resources[i].mem TSRMLS_CC);
+            free_resource(binding_resources[i].type, binding_resources[i].mem);
     }
 }
 
 /* Destructor for connection resource */
 void
-php_libvirt_connection_dtor(virt_resource *rsrc TSRMLS_DC)
+php_libvirt_connection_dtor(virt_resource *rsrc)
 {
     php_libvirt_connection *conn = (php_libvirt_connection *) rsrc->ptr;
     int rv = 0;
 
     if (conn != NULL) {
         if (conn->conn != NULL) {
-            free_resources_on_connection(conn->conn TSRMLS_CC);
+            free_resources_on_connection(conn->conn);
 
             rv = virConnectClose(conn->conn);
             if (rv == -1) {
                 DPRINTF("%s: virConnectClose(%p) returned %d (%s)\n", __FUNCTION__, conn->conn, rv, LIBVIRT_G(last_error));
-                php_error_docref(NULL TSRMLS_CC, E_WARNING, "virConnectClose failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
+                php_error_docref(NULL, E_WARNING, "virConnectClose failed with %i on destructor: %s", rv, LIBVIRT_G(last_error));
             } else {
                 DPRINTF("%s: virConnectClose(%p) completed successfully\n", __FUNCTION__, conn->conn);
-                resource_change_counter(INT_RESOURCE_CONNECTION, conn->conn, conn->conn, 0 TSRMLS_CC);
+                resource_change_counter(INT_RESOURCE_CONNECTION, conn->conn, conn->conn, 0);
             }
             conn->conn = NULL;
         }
@@ -72,8 +72,6 @@ php_libvirt_connection_dtor(virt_resource *rsrc TSRMLS_DC)
 static int libvirt_virConnectAuthCallback(virConnectCredentialPtr cred,
                                           unsigned int ncred, void *cbdata)
 {
-    TSRMLS_FETCH();
-
     unsigned int i, j;
     php_libvirt_cred_value *creds = (php_libvirt_cred_value *) cbdata;
     for (i = 0; i < (unsigned int)ncred; i++) {
@@ -138,7 +136,7 @@ PHP_FUNCTION(libvirt_connect)
 
     unsigned long libVer;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|sba", &url, &url_len, &readonly, &zcreds) == FAILURE) {
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "|sba", &url, &url_len, &readonly, &zcreds) == FAILURE) {
         RETURN_FALSE;
     }
 
@@ -146,13 +144,13 @@ PHP_FUNCTION(libvirt_connect)
         RETURN_FALSE;
 
     if (libVer < 6002) {
-        set_error("Only libvirt 0.6.2 and higher supported. Please upgrade your libvirt" TSRMLS_CC);
+        set_error("Only libvirt 0.6.2 and higher supported. Please upgrade your libvirt");
         RETURN_FALSE;
     }
 
-    if ((count_resources(INT_RESOURCE_CONNECTION TSRMLS_CC) + 1) > LIBVIRT_G(max_connections_ini)) {
+    if ((count_resources(INT_RESOURCE_CONNECTION) + 1) > LIBVIRT_G(max_connections_ini)) {
         DPRINTF("%s: maximum number of connections allowed exceeded (max %lu)\n", PHPFUNC, (unsigned long)LIBVIRT_G(max_connections_ini));
-        set_error("Maximum number of connections allowed exceeded" TSRMLS_CC);
+        set_error("Maximum number of connections allowed exceeded");
         RETURN_FALSE;
     }
 
@@ -209,7 +207,7 @@ PHP_FUNCTION(libvirt_connect)
         RETURN_FALSE;
     }
 
-    resource_change_counter(INT_RESOURCE_CONNECTION, conn->conn, conn->conn, 1 TSRMLS_CC);
+    resource_change_counter(INT_RESOURCE_CONNECTION, conn->conn, conn->conn, 1);
     DPRINTF("%s: Connection to %s established, returning %p\n", PHPFUNC, url, conn->conn);
 
     VIRT_REGISTER_RESOURCE(conn, le_libvirt_connection);
@@ -356,9 +354,9 @@ PHP_FUNCTION(libvirt_connect_get_emulator)
     if ((arch == NULL) || (arch_len == 0))
         arch = NULL;
 
-    tmp = connection_get_emulator(conn->conn, arch TSRMLS_CC);
+    tmp = connection_get_emulator(conn->conn, arch);
     if (tmp == NULL) {
-        set_error("Cannot get emulator" TSRMLS_CC);
+        set_error("Cannot get emulator");
         RETURN_FALSE;
     }
 
@@ -386,13 +384,13 @@ PHP_FUNCTION(libvirt_connect_get_nic_models)
 
     /* Disable getting it on remote connections */
     if (!is_local_connection(conn->conn)) {
-        set_error("This function works only on local connections" TSRMLS_CC);
+        set_error("This function works only on local connections");
         RETURN_FALSE;
     }
 
     /* This approach is working only for QEMU driver so bails if not currently using it */
     if (strcmp(virConnectGetType(conn->conn), "QEMU") != 0) {
-        set_error("This function can be used only for QEMU driver" TSRMLS_CC);
+        set_error("This function can be used only for QEMU driver");
         RETURN_FALSE;
     }
 
@@ -400,9 +398,9 @@ PHP_FUNCTION(libvirt_connect_get_nic_models)
     if ((arch == NULL) || (arch_len == 0))
         arch = NULL;
 
-    tmp = connection_get_emulator(conn->conn, arch TSRMLS_CC);
+    tmp = connection_get_emulator(conn->conn, arch);
     if (tmp == NULL) {
-        set_error("Cannot get emulator" TSRMLS_CC);
+        set_error("Cannot get emulator");
         RETURN_FALSE;
     }
 
@@ -462,20 +460,20 @@ PHP_FUNCTION(libvirt_connect_get_soundhw_models)
 
     /* Disable getting it on remote connections */
     if (!is_local_connection(conn->conn)) {
-        set_error("This function works only on local connections" TSRMLS_CC);
+        set_error("This function works only on local connections");
         RETURN_FALSE;
     }
 
 #ifndef EXTWIN
     /* This approach is working only for QEMU driver so bails if not currently using it */
     if (strcmp(virConnectGetType(conn->conn), "QEMU") != 0) {
-        set_error("This function can be used only for QEMU driver" TSRMLS_CC);
+        set_error("This function can be used only for QEMU driver");
         RETURN_FALSE;
     }
 
-    tmp = connection_get_emulator(conn->conn, arch TSRMLS_CC);
+    tmp = connection_get_emulator(conn->conn, arch);
     if (tmp == NULL) {
-        set_error("Cannot get emulator" TSRMLS_CC);
+        set_error("Cannot get emulator");
         RETURN_FALSE;
     }
 
@@ -879,11 +877,7 @@ PHP_FUNCTION(libvirt_connect_get_all_domain_stats)
             }
         }
         name = virDomainGetName(retstats[i]->dom);
-#if PHP_MAJOR_VERSION >= 7
         zend_hash_update(Z_ARRVAL_P(return_value), zend_string_init(name, strlen(name), 0), arr2);
-#else
-        zend_hash_update(Z_ARRVAL_P(return_value), name, strlen(name)+1, &arr2, sizeof(arr2), NULL);
-#endif
     }
 
     virDomainStatsRecordListFree(retstats);
