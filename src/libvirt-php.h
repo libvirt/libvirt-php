@@ -35,13 +35,6 @@
 #define COMPILE_DL_LIBVIRT
 #endif
 
-#ifndef VERSION
-#define VERSION "0.5.5"
-#define VERSION_MAJOR 0
-#define VERSION_MINOR 5
-#define VERSION_MICRO 5
-#endif
-
 #include <libvirt/libvirt.h>
 #include <libvirt/virterror.h>
 #include <libvirt/libvirt-qemu.h>
