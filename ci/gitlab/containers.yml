@@ -14,6 +14,13 @@ x86_64-debian-10-container:
     NAME: debian-10
 
 
+x86_64-debian-11-container:
+  extends: .container_job
+  allow_failure: false
+  variables:
+    NAME: debian-11
+
+
 x86_64-debian-sid-container:
   extends: .container_job
   allow_failure: true

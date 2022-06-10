@@ -17,6 +17,8 @@ targets:
         template: .native_git_build_job
         suffix: -git
 
+  debian-11: x86_64
+
   debian-sid:
     jobs:
       - arch: x86_64

@@ -17,6 +17,16 @@ x86_64-debian-10-git:
     NAME: debian-10
 
 
+x86_64-debian-11:
+  extends: .native_build_job
+  needs:
+    - job: x86_64-debian-11-container
+      optional: true
+  allow_failure: false
+  variables:
+    NAME: debian-11
+
+
 x86_64-debian-sid:
   extends: .native_build_job
   needs:
