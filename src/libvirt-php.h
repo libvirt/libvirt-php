@@ -35,10 +35,6 @@
 #define COMPILE_DL_LIBVIRT
 #endif
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #ifndef VERSION
 #define VERSION "0.5.5"
 #define VERSION_MAJOR 0
