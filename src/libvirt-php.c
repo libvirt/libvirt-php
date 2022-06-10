@@ -10,7 +10,6 @@
 
 #include <config.h>
 #include <stdio.h>
-#include <stdafx.h>
 
 #ifdef EXTWIN
 #define PHP_COMPILER_ID  "VC9"

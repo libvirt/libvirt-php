@@ -2,7 +2,7 @@ SUBDIRS = tools src docs tests
 
 ACLOCAL_AMFLAGS = -I m4
 
-EXTRA_DIST = libvirt-php.spec libvirt-php.spec.in winsrc AUTHORS.in
+EXTRA_DIST = libvirt-php.spec libvirt-php.spec.in AUTHORS.in
 
 AM_DISTCHECK_CONFIGURE_FLAGS = --with-distcheck
 
