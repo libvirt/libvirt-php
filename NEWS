@@ -1,0 +1,141 @@
+====================
+libvirt-php releases
+====================
+
+This is the list of official releases for libvirt-php, along with an
+overview of the changes introduced by each of them.
+
+
+v0.5.6 (unreleased)
+===================
+
+*
+
+
+v0.5.5 (2020-02-08)
+===================
+
+* Implemented virDomainReset() API
+* Implemented virDomainInterfaceAddresses() API
+* Bug fixes
+
+
+v0.5.4 (2017-08-02)
+===================
+
+* Added API bindings for getting/setting network autostart
+* Implement NWFilter API bindings
+* Bug fixes
+
+
+v0.5.3 (2017-05-11)
+===================
+
+* Several improvements for the build system
+* Implemented new libvirt APIs
+* Slight rework of our examples
+* Bug fixes
+
+
+v0.5.2 (2016-04-20)
+===================
+
+* Several bugfixes & improvements
+
+
+v0.5.1 (2015-10-02)
+===================
+
+* Several bugfixes & improvements
+
+
+v0.5.0 (2014-01-23)
+===================
+
+* Several bugfixes & improvements
+
+
+v0.4.9 (2013-09-06)
+===================
+
+
+v0.4.8 (2013-04-08)
+===================
+
+
+v0.4.7 (2013-01-17)
+===================
+
+
+v0.4.4 (2011-08-22)
+===================
+
+* Several bugfixes for VNC and updated SPEC file
+
+
+v0.4.3 (2011-08-11)
+===================
+
+* Rebase to 0.4.3 from master branch
+
+
+v0.4.1-5 (2011-04-19)
+=====================
+
+* Minor memory leak fixes
+* Several bug fixes
+
+
+v0.4.1-4 (2011-04-11)
+=====================
+
+* Add new storagepool API functions
+* Add optional xPath argument for *_get_xml_desc() functions
+* Add new network API functions
+* Add new API functions to add/remove disks
+
+
+v0.4.1-3 (2011-03-23)
+=====================
+
+* Add connection information function
+* Add coredump support
+* Add snapshots support
+* Improve error reporting for destructors
+
+
+v0.4.1-1 (2011-03-10)
+=====================
+
+* Changes done to comply with Fedora package policy
+
+
+v0.4.1 (2011-02-08)
+===================
+
+* Initial commit (from github)
+
+
+v0.3a (2010-06-29)
+==================
+
+* Alpha release
+* fixes compile against newer PHP
+
+
+v0.3 (2010-03-17)
+=================
+
+* Alpha release
+
+
+v0.2.1 (2009-04-14)
+===================
+
+* Alpha release
+
+
+v0.2 (2009-04-13)
+=================
+
+* Alpha release
