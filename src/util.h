@@ -246,38 +246,38 @@
     } while(0)
 
 # endif /* PHP_MAJOR_VERSION < 7 */
-
-# define LONGLONG_INIT                                                         \
-    char tmpnumber[64]
-
 # define LONGLONG_ASSOC(out, key, in)                                          \
     if (LIBVIRT_G(longlong_to_string_ini)) {                                   \
-        snprintf(tmpnumber, 63, "%llu", in);                                   \
-        VIRT_ADD_ASSOC_STRING(out, key, tmpnumber);                            \
+        char _tmpnumber[64] = { 0 };                                           \
+        snprintf(_tmpnumber, sizeof(_tmpnumber), "%llu", in);                  \
+        VIRT_ADD_ASSOC_STRING(out, key, _tmpnumber);                           \
     } else {                                                                   \
         add_assoc_long(out, key, in);                                          \
     }
 
 # define SIGNED_LONGLONG_ASSOC(out, key, in)                                   \
     if (LIBVIRT_G(signed_longlong_to_string_ini)) {                            \
-        snprintf(tmpnumber, 63, "%lld", in);                                   \
-        VIRT_ADD_ASSOC_STRING(out, key, tmpnumber);                            \
+        char _tmpnumber[64] = { 0 };                                           \
+        snprintf(_tmpnumber, sizeof(_tmpnumber), "%lld", in);                  \
+        VIRT_ADD_ASSOC_STRING(out, key, _tmpnumber);                           \
     } else {                                                                   \
         add_assoc_long(out, key, in);                                          \
     }
 
 # define LONGLONG_INDEX(out, key, in)                                          \
     if (LIBVIRT_G(longlong_to_string_ini)) {                                   \
-        snprintf(tmpnumber, 63, "%llu", in);                                   \
-        VIRT_ADD_INDEX_STRING(out, key, tmpnumber);                            \
+        char _tmpnumber[64] = { 0 };                                           \
+        snprintf(_tmpnumber, sizeof(_tmpnumber), "%llu", in);                  \
+        VIRT_ADD_INDEX_STRING(out, key, _tmpnumber);                           \
     } else {                                                                   \
         add_index_long(out, key, in);                                          \
     }
 
 # define LONGLONG_RETURN_AS_STRING(in)                                         \
     do {                                                                       \
-        snprintf(tmpnumber, 63, "%llu", in);                                   \
-        VIRT_RETURN_STRING(tmpnumber);                                         \
+        char _tmpnumber[64] = { 0 };                                           \
+        snprintf(_tmpnumber, sizeof(_tmpnumber), "%llu", in);                  \
+        VIRT_RETURN_STRING(_tmpnumber);                                        \
     } while (0)
 
 # define VIR_TYPED_PARAMETER_ASSOC(out, param)                                 \

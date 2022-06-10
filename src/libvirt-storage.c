@@ -201,7 +201,6 @@ PHP_FUNCTION(libvirt_storagepool_get_info)
     array_init(return_value);
 
     // @todo: fix the long long returns
-    LONGLONG_INIT;
     add_assoc_long(return_value, "state", (long)poolInfo.state);
     LONGLONG_ASSOC(return_value, "capacity", poolInfo.capacity);
     LONGLONG_ASSOC(return_value, "allocation", poolInfo.allocation);
@@ -735,7 +734,6 @@ PHP_FUNCTION(libvirt_storagevolume_get_info)
         RETURN_FALSE;
 
     array_init(return_value);
-    LONGLONG_INIT;
     add_assoc_long(return_value, "type", (long)volumeInfo.type);
     LONGLONG_ASSOC(return_value, "capacity", volumeInfo.capacity);
     LONGLONG_ASSOC(return_value, "allocation", volumeInfo.allocation);

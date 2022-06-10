@@ -290,7 +290,6 @@ PHP_FUNCTION(libvirt_node_get_free_memory)
     php_libvirt_connection *conn = NULL;
     zval *zconn;
     unsigned long long ret;
-    LONGLONG_INIT;
 
     GET_CONNECTION_FROM_ARGS("r", &zconn);
 

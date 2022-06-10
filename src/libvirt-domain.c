@@ -1763,7 +1763,6 @@ PHP_FUNCTION(libvirt_domain_memory_stats)
 
     if (retval == -1)
         RETURN_FALSE;
-    LONGLONG_INIT;
     array_init(return_value);
     for (i = 0; i < retval; i++)
         LONGLONG_INDEX(return_value, stats[i].tag, stats[i].val)
@@ -1836,7 +1835,6 @@ PHP_FUNCTION(libvirt_domain_block_stats)
         RETURN_FALSE;
 
     array_init(return_value);
-    LONGLONG_INIT;
     SIGNED_LONGLONG_ASSOC(return_value, "rd_req", stats.rd_req);
     SIGNED_LONGLONG_ASSOC(return_value, "rd_bytes", stats.rd_bytes);
     SIGNED_LONGLONG_ASSOC(return_value, "wr_req", stats.wr_req);
@@ -2048,7 +2046,6 @@ PHP_FUNCTION(libvirt_domain_interface_stats)
         RETURN_FALSE;
 
     array_init(return_value);
-    LONGLONG_INIT;
     SIGNED_LONGLONG_ASSOC(return_value, "rx_bytes", stats.rx_bytes);
     SIGNED_LONGLONG_ASSOC(return_value, "rx_packets", stats.rx_packets);
     SIGNED_LONGLONG_ASSOC(return_value, "rx_errs", stats.rx_errs);
@@ -2228,7 +2225,6 @@ PHP_FUNCTION(libvirt_domain_get_job_info)
         RETURN_FALSE;
 
     array_init(return_value);
-    LONGLONG_INIT;
     add_assoc_long(return_value, "type", jobinfo.type);
     LONGLONG_ASSOC(return_value, "time_elapsed", jobinfo.timeElapsed);
     LONGLONG_ASSOC(return_value, "time_remaining", jobinfo.timeRemaining);
@@ -2358,7 +2354,6 @@ PHP_FUNCTION(libvirt_domain_get_block_info)
     }
 
     array_init(return_value);
-    LONGLONG_INIT;
     VIRT_ADD_ASSOC_STRING(return_value, "device", dev);
 
     if (isFile)
@@ -3448,7 +3443,6 @@ PHP_FUNCTION(libvirt_domain_get_cpu_total_stats)
         goto cleanup;
 
     array_init(return_value);
-    LONGLONG_INIT;
     for (i = 0; i < stats_per_cpu; i++) {
         VIR_TYPED_PARAMETER_ASSOC(return_value, params[i]);
     }
