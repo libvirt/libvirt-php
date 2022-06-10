@@ -1,7 +1,11 @@
-test_scripts = runtests.sh
+test_scripts = \
+	runtests.sh \
+	check_parameters.sh
 
 TESTS = $(test_scripts)
+
 EXTRA_DIST = $(test_scripts) \
+	check_parameters.php \
 	runtests-report.sh \
 	data \
 	functions.phpt.in \
@@ -31,5 +35,10 @@ functions.phpt: functions.phpt.in
 	< $< > $@-t && \
 	chmod a+x $@-t && \
 	mv $@-t $@
+
+TESTS_ENVIRONMENT = \
+  abs_builddir="$(abs_builddir)" \
+  abs_srcdir="$(abs_srcdir)" \
+  LC_ALL=C
 
 CLEANFILES = functions.phpt
