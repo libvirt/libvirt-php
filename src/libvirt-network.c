@@ -623,7 +623,7 @@ PHP_FUNCTION(libvirt_network_get_dhcp_leases)
 
     done = 1;
 
-    cleanup:
+ cleanup:
     if (leases) {
         for (i = 0; i < nleases; i++)
             virNetworkDHCPLeaseFree(leases[i]);

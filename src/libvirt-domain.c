@@ -1484,7 +1484,7 @@ PHP_FUNCTION(libvirt_domain_reboot)
  * Since version:   0.5.5
  * Description:     Function is used to reset the domain identified by its resource
  * Arguments:       @res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
-                    @flags [int]: optional flags
+ *                  @flags [int]: optional flags
  * Returns:         TRUE for success, FALSE on error
  */
 PHP_FUNCTION(libvirt_domain_reset)
@@ -1612,7 +1612,7 @@ PHP_FUNCTION(libvirt_domain_xml_from_native)
  *                  @format [string]: configuration format converting to
  *                  @xml_data [string]: content of the libvirt domain xml file
  * Returns:         contents of the native data file, FALSE on error
-*/
+ */
 PHP_FUNCTION(libvirt_domain_xml_to_native)
 {
     php_libvirt_connection *conn = NULL;
@@ -3481,7 +3481,7 @@ PHP_FUNCTION(libvirt_domain_get_cpu_total_stats)
 
     done = 1;
 
-    cleanup:
+ cleanup:
     VIR_FREE(params);
     if (!done)
         RETURN_FALSE;

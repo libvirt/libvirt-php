@@ -34,8 +34,8 @@
         if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,                   \
                                   args,                                        \
                                   __VA_ARGS__) == FAILURE) {                   \
-           set_error("Invalid arguments" TSRMLS_CC);                           \
-           RETURN_FALSE;                                                       \
+            set_error("Invalid arguments" TSRMLS_CC);                          \
+            RETURN_FALSE;                                                      \
         }                                                                      \
                                                                                \
         VIRT_FETCH_RESOURCE(conn, php_libvirt_connection*, &zconn,             \
