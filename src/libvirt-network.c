@@ -16,7 +16,7 @@ DEBUG_INIT("network");
 int le_libvirt_network;
 
 void
-php_libvirt_network_dtor(virt_resource *rsrc)
+php_libvirt_network_dtor(zend_resource *rsrc)
 {
     php_libvirt_network *network = (php_libvirt_network *)rsrc->ptr;
     int rv = 0;
@@ -57,7 +57,7 @@ PHP_FUNCTION(libvirt_network_define_xml)
     virNetwork *net;
     zval *zconn;
     char *xml = NULL;
-    strsize_t xml_len;
+    size_t xml_len;
 
     GET_CONNECTION_FROM_ARGS("rs", &zconn, &xml, &xml_len);
 
@@ -91,7 +91,7 @@ PHP_FUNCTION(libvirt_network_get_xml_desc)
     char *xml = NULL;
     char *xpath = NULL;
     char *tmp;
-    strsize_t xpath_len;
+    size_t xpath_len;
     int retval = -1;
 
     GET_NETWORK_FROM_ARGS("r|s", &znetwork, &xpath, &xpath_len);
@@ -151,7 +151,7 @@ PHP_FUNCTION(libvirt_network_get)
     virNetwork *net;
     zval *zconn;
     char *name;
-    strsize_t name_len;
+    size_t name_len;
 
     GET_CONNECTION_FROM_ARGS("rs", &zconn, &name, &name_len);
 
@@ -587,7 +587,7 @@ PHP_FUNCTION(libvirt_network_get_dhcp_leases)
     php_libvirt_network *network = NULL;
     zval *znetwork;
     char *mac = NULL;
-    strsize_t mac_len;
+    size_t mac_len;
     zend_long flags = 0;
 
     virNetworkDHCPLeasePtr *leases = NULL;

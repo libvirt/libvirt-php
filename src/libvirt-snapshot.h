@@ -46,7 +46,7 @@ typedef struct _php_libvirt_snapshot {
     php_libvirt_domain* domain;
 } php_libvirt_snapshot;
 
-void php_libvirt_snapshot_dtor(virt_resource *rsrc);
+void php_libvirt_snapshot_dtor(zend_resource *rsrc);
 
 PHP_FUNCTION(libvirt_domain_has_current_snapshot);
 PHP_FUNCTION(libvirt_domain_snapshot_lookup_by_name);

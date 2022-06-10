@@ -16,7 +16,7 @@ DEBUG_INIT("nwfilter");
 int le_libvirt_nwfilter;
 
 void
-php_libvirt_nwfilter_dtor(virt_resource *rsrc)
+php_libvirt_nwfilter_dtor(zend_resource *rsrc)
 {
     php_libvirt_nwfilter *nwfilter = (php_libvirt_nwfilter *) rsrc->ptr;
     int rv = 0;
@@ -58,7 +58,7 @@ PHP_FUNCTION(libvirt_nwfilter_define_xml)
     virNWFilter *nwfilter;
     zval *zconn;
     char *xml = NULL;
-    strsize_t xml_len;
+    size_t xml_len;
 
     GET_CONNECTION_FROM_ARGS("rs", &zconn, &xml, &xml_len);
 
@@ -112,7 +112,7 @@ PHP_FUNCTION(libvirt_nwfilter_get_xml_desc)
     char *xml = NULL;
     char *xpath = NULL;
     char *tmp;
-    strsize_t xpath_len = 0;
+    size_t xpath_len = 0;
     int retval = -1;
 
     GET_NWFILTER_FROM_ARGS("r|s", &znwfilter, &xpath, &xpath_len);
@@ -234,7 +234,7 @@ PHP_FUNCTION(libvirt_nwfilter_lookup_by_name)
     php_libvirt_connection *conn = NULL;
     virNWFilterPtr nwfilter = NULL;
     zval *zconn;
-    strsize_t name_len;
+    size_t name_len;
     char *name = NULL;
 
     GET_CONNECTION_FROM_ARGS("rs", &zconn, &name, &name_len);
@@ -272,7 +272,7 @@ PHP_FUNCTION(libvirt_nwfilter_lookup_by_uuid_string)
     virNWFilterPtr nwfilter = NULL;
     zval *zconn;
     char *uuid = NULL;
-    strsize_t uuid_len;
+    size_t uuid_len;
 
     GET_CONNECTION_FROM_ARGS("rs", &zconn, &uuid, &uuid_len);
 
@@ -308,7 +308,7 @@ PHP_FUNCTION(libvirt_nwfilter_lookup_by_uuid)
     php_libvirt_connection *conn = NULL;
     virNWFilterPtr nwfilter = NULL;
     zval *zconn;
-    strsize_t uuid_len;
+    size_t uuid_len;
     char *uuid = NULL;
 
     GET_CONNECTION_FROM_ARGS("rs", &zconn, &uuid, &uuid_len);

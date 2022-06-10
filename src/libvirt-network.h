@@ -53,7 +53,7 @@ typedef struct _php_libvirt_network {
     php_libvirt_connection* conn;
 } php_libvirt_network;
 
-void php_libvirt_network_dtor(virt_resource *rsrc);
+void php_libvirt_network_dtor(zend_resource *rsrc);
 
 PHP_FUNCTION(libvirt_network_define_xml);
 PHP_FUNCTION(libvirt_network_get_xml_desc);

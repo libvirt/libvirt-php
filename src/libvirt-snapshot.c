@@ -15,7 +15,7 @@ DEBUG_INIT("snapshot");
 
 int le_libvirt_snapshot;
 
-void php_libvirt_snapshot_dtor(virt_resource *rsrc)
+void php_libvirt_snapshot_dtor(zend_resource *rsrc)
 {
     php_libvirt_snapshot *snapshot = (php_libvirt_snapshot *)rsrc->ptr;
     int rv = 0;
@@ -77,7 +77,7 @@ PHP_FUNCTION(libvirt_domain_snapshot_lookup_by_name)
 {
     php_libvirt_domain *domain = NULL;
     zval *zdomain;
-    strsize_t name_len;
+    size_t name_len;
     char *name = NULL;
     zend_long flags = 0;
     php_libvirt_snapshot *res_snapshot;

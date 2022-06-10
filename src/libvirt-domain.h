@@ -129,7 +129,7 @@ typedef struct _php_libvirt_domain {
     php_libvirt_connection* conn;
 } php_libvirt_domain;
 
-void php_libvirt_domain_dtor(virt_resource *rsrc);
+void php_libvirt_domain_dtor(zend_resource *rsrc);
 
 PHP_FUNCTION(libvirt_domain_new);
 PHP_FUNCTION(libvirt_domain_new_get_vnc);

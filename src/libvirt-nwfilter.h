@@ -49,7 +49,7 @@ typedef struct _php_libvirt_nwfilter {
     php_libvirt_connection* conn;
 } php_libvirt_nwfilter;
 
-void php_libvirt_nwfilter_dtor(virt_resource *rsrc);
+void php_libvirt_nwfilter_dtor(zend_resource *rsrc);
 
 PHP_FUNCTION(libvirt_nwfilter_define_xml);
 PHP_FUNCTION(libvirt_nwfilter_undefine);

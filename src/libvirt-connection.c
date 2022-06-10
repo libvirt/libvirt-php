@@ -41,7 +41,7 @@ free_resources_on_connection(virConnectPtr conn)
 
 /* Destructor for connection resource */
 void
-php_libvirt_connection_dtor(virt_resource *rsrc)
+php_libvirt_connection_dtor(zend_resource *rsrc)
 {
     php_libvirt_connection *conn = (php_libvirt_connection *) rsrc->ptr;
     int rv = 0;
@@ -127,7 +127,7 @@ PHP_FUNCTION(libvirt_connect)
     };
 
     char *url = NULL;
-    strsize_t url_len = 0;
+    size_t url_len = 0;
     bool readonly = 1;
 
     HashTable *arr_hash;
@@ -312,7 +312,7 @@ PHP_FUNCTION(libvirt_connect_get_capabilities)
     zval *zconn;
     char *caps;
     char *xpath = NULL;
-    strsize_t xpath_len;
+    size_t xpath_len;
     char *tmp = NULL;
     int retval = -1;
 
@@ -346,7 +346,7 @@ PHP_FUNCTION(libvirt_connect_get_emulator)
     php_libvirt_connection *conn = NULL;
     zval *zconn;
     char *arch = NULL;
-    strsize_t arch_len;
+    size_t arch_len;
     char *tmp;
 
     GET_CONNECTION_FROM_ARGS("r|s", &zconn, &arch, &arch_len);
@@ -377,7 +377,7 @@ PHP_FUNCTION(libvirt_connect_get_nic_models)
     php_libvirt_connection *conn = NULL;
     zval *zconn;
     char *arch = NULL;
-    strsize_t arch_len;
+    size_t arch_len;
     char *tmp;
 
     GET_CONNECTION_FROM_ARGS("r|s", &zconn, &arch, &arch_len);
@@ -449,7 +449,7 @@ PHP_FUNCTION(libvirt_connect_get_soundhw_models)
     php_libvirt_connection *conn = NULL;
     zval *zconn;
     char *arch = NULL;
-    strsize_t arch_len;
+    size_t arch_len;
     char *tmp;
     zend_long flags = 0;
 

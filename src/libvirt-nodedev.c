@@ -16,7 +16,7 @@ DEBUG_INIT("nodedev");
 int le_libvirt_nodedev;
 
 void
-php_libvirt_nodedev_dtor(virt_resource *rsrc)
+php_libvirt_nodedev_dtor(zend_resource *rsrc)
 {
     php_libvirt_nodedev *nodedev = (php_libvirt_nodedev *)rsrc->ptr;
     int rv = 0;
@@ -57,7 +57,7 @@ PHP_FUNCTION(libvirt_nodedev_get)
     virNodeDevice *dev;
     zval *zconn;
     char *name;
-    strsize_t name_len;
+    size_t name_len;
 
     GET_CONNECTION_FROM_ARGS("rs", &zconn, &name, &name_len);
 
@@ -125,7 +125,7 @@ PHP_FUNCTION(libvirt_nodedev_get_xml_desc)
     char *tmp = NULL;
     char *xml = NULL;
     char *xpath = NULL;
-    strsize_t xpath_len;
+    size_t xpath_len;
     int retval = -1;
 
     GET_NODEDEV_FROM_ARGS("r|s", &znodedev, &xpath, &xpath_len);
@@ -321,7 +321,7 @@ PHP_FUNCTION(libvirt_list_nodedevs)
     char *cap = NULL;
     char **names;
     int i;
-    strsize_t cap_len;
+    size_t cap_len;
 
     GET_CONNECTION_FROM_ARGS("r|s", &zconn, &cap, &cap_len);
 

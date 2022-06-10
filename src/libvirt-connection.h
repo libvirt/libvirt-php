@@ -50,7 +50,7 @@ extern int le_libvirt_connection;
 
 typedef struct _php_libvirt_connection {
     virConnectPtr conn;
-    virt_resource_handle resource;
+    zend_resource *resource;
 } php_libvirt_connection;
 
 typedef struct _php_libvirt_cred_value {
@@ -60,7 +60,7 @@ typedef struct _php_libvirt_cred_value {
     unsigned int    resultlen;
 } php_libvirt_cred_value;
 
-void php_libvirt_connection_dtor(virt_resource *rsrc);
+void php_libvirt_connection_dtor(zend_resource *rsrc);
 
 PHP_FUNCTION(libvirt_connect);
 PHP_FUNCTION(libvirt_connect_get_uri);

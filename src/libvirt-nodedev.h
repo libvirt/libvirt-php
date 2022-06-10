@@ -43,7 +43,7 @@ typedef struct _php_libvirt_nodedev {
 } php_libvirt_nodedev;
 
 
-void php_libvirt_nodedev_dtor(virt_resource *rsrc);
+void php_libvirt_nodedev_dtor(zend_resource *rsrc);
 
 PHP_FUNCTION(libvirt_nodedev_get);
 PHP_FUNCTION(libvirt_nodedev_capabilities);

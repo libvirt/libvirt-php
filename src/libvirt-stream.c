@@ -16,7 +16,7 @@ DEBUG_INIT("stream");
 int le_libvirt_stream;
 
 void
-php_libvirt_stream_dtor(virt_resource *rsrc)
+php_libvirt_stream_dtor(zend_resource *rsrc)
 {
     php_libvirt_stream *stream = (php_libvirt_stream *)rsrc->ptr;
     int rv = 0;

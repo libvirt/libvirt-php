@@ -1571,12 +1571,12 @@ PHP_FUNCTION(libvirt_image_create)
     char *path = NULL;
     char fpath[4096] = { 0 };
     char *image = NULL;
-    strsize_t image_len;
+    size_t image_len;
     char *format;
-    strsize_t format_len;
+    size_t format_len;
     unsigned long long size;
     char *size_str;
-    strsize_t size_str_len;
+    size_t size_str_len;
     int cmdRet;
 
     if (LIBVIRT_G(image_path_ini))
@@ -1638,7 +1638,7 @@ PHP_FUNCTION(libvirt_image_remove)
     char name[1024];
     char msg[4096] = { 0 };
     char *image = NULL;
-    strsize_t image_len;
+    size_t image_len;
 
     GET_CONNECTION_FROM_ARGS("rs", &zconn, &image, &image_len);
 
@@ -2587,7 +2587,7 @@ PHP_FUNCTION(libvirt_version)
 {
     unsigned long libVer;
     unsigned long typeVer;
-    strsize_t type_len;
+    size_t type_len;
     char *type = NULL;
     if (zend_parse_parameters(ZEND_NUM_ARGS(), "|s", &type, &type_len) == FAILURE) {
         set_error("Invalid arguments");
@@ -2679,7 +2679,7 @@ PHP_FUNCTION(libvirt_check_version)
 PHP_FUNCTION(libvirt_has_feature)
 {
     char *name = NULL;
-    strsize_t name_len = 0;
+    size_t name_len = 0;
     const char *binary = NULL;
     int ret = 0;
 
@@ -2707,7 +2707,7 @@ PHP_FUNCTION(libvirt_has_feature)
 PHP_FUNCTION(libvirt_get_iso_images)
 {
     char *path = NULL;
-    strsize_t path_len = 0;
+    size_t path_len = 0;
 #ifndef EXTWIN
     struct dirent *entry;
     DIR *d = NULL;
@@ -2795,7 +2795,7 @@ PHP_FUNCTION(libvirt_logfile_set)
 {
     char *filename = NULL;
     zend_long maxsize = DEFAULT_LOG_MAXSIZE;
-    strsize_t filename_len = 0;
+    size_t filename_len = 0;
     int err;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS(), "s|l", &filename, &filename_len, &maxsize) == FAILURE) {

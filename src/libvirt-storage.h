@@ -96,8 +96,8 @@ typedef struct _php_libvirt_volume {
     php_libvirt_connection* conn;
 } php_libvirt_volume;
 
-void php_libvirt_storagepool_dtor(virt_resource *rsrc);
-void php_libvirt_volume_dtor(virt_resource *rsrc);
+void php_libvirt_storagepool_dtor(zend_resource *rsrc);
+void php_libvirt_volume_dtor(zend_resource *rsrc);
 
 PHP_FUNCTION(libvirt_storagepool_lookup_by_name);
 PHP_FUNCTION(libvirt_storagepool_lookup_by_volume);

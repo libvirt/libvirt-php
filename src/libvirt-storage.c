@@ -19,7 +19,7 @@ int le_libvirt_storagepool;
 int le_libvirt_volume;
 
 void
-php_libvirt_storagepool_dtor(virt_resource *rsrc)
+php_libvirt_storagepool_dtor(zend_resource *rsrc)
 {
     php_libvirt_storagepool *pool = (php_libvirt_storagepool *)rsrc->ptr;
     int rv = 0;
@@ -46,7 +46,7 @@ php_libvirt_storagepool_dtor(virt_resource *rsrc)
 }
 
 void
-php_libvirt_volume_dtor(virt_resource *rsrc)
+php_libvirt_volume_dtor(zend_resource *rsrc)
 {
     php_libvirt_volume *volume = (php_libvirt_volume *)rsrc->ptr;
     int rv = 0;
@@ -84,7 +84,7 @@ PHP_FUNCTION(libvirt_storagepool_lookup_by_name)
 {
     php_libvirt_connection *conn = NULL;
     zval *zconn;
-    strsize_t name_len;
+    size_t name_len;
     char *name = NULL;
     virStoragePoolPtr pool = NULL;
     php_libvirt_storagepool *res_pool;
@@ -269,7 +269,7 @@ PHP_FUNCTION(libvirt_storagepool_lookup_by_uuid_string)
     php_libvirt_connection *conn = NULL;
     zval *zconn;
     char *uuid = NULL;
-    strsize_t uuid_len;
+    size_t uuid_len;
     virStoragePoolPtr storage = NULL;
     php_libvirt_storagepool *res_pool;
 
@@ -309,7 +309,7 @@ PHP_FUNCTION(libvirt_storagepool_get_xml_desc)
     char *xpath = NULL;
     char *tmp = NULL;
     zend_long flags = 0;
-    strsize_t xpath_len;
+    size_t xpath_len;
     int retval = -1;
 
     GET_STORAGEPOOL_FROM_ARGS("r|s", &zpool, &xpath, &xpath_len, &flags);
@@ -351,7 +351,7 @@ PHP_FUNCTION(libvirt_storagepool_define_xml)
     zval *zconn;
     virStoragePoolPtr pool = NULL;
     char *xml;
-    strsize_t xml_len;
+    size_t xml_len;
     zend_long flags = 0;
 
 
@@ -604,7 +604,7 @@ PHP_FUNCTION(libvirt_storagevolume_lookup_by_name)
     php_libvirt_storagepool *pool = NULL;
     php_libvirt_volume *res_volume;
     zval *zpool;
-    strsize_t name_len;
+    size_t name_len;
     char *name = NULL;
     virStorageVolPtr volume = NULL;
 
@@ -640,7 +640,7 @@ PHP_FUNCTION(libvirt_storagevolume_lookup_by_path)
     php_libvirt_connection *conn = NULL;
     php_libvirt_volume *res_volume;
     zval *zconn;
-    strsize_t name_len;
+    size_t name_len;
     char *name = NULL;
     virStorageVolPtr volume = NULL;
 
@@ -755,7 +755,7 @@ PHP_FUNCTION(libvirt_storagevolume_get_xml_desc)
     char *tmp = NULL;
     char *xml;
     char *xpath = NULL;
-    strsize_t xpath_len;
+    size_t xpath_len;
     zend_long flags = 0;
     int retval = -1;
 
@@ -799,7 +799,7 @@ PHP_FUNCTION(libvirt_storagevolume_create_xml)
     virStorageVolPtr volume = NULL;
     char *xml;
     zend_long flags = 0;
-    strsize_t xml_len;
+    size_t xml_len;
 
     GET_STORAGEPOOL_FROM_ARGS("rs|l", &zpool, &xml, &xml_len, &flags);
 
@@ -838,7 +838,7 @@ PHP_FUNCTION(libvirt_storagevolume_create_xml_from)
 
     virStorageVolPtr volume = NULL;
     char *xml;
-    strsize_t xml_len;
+    size_t xml_len;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS(), "rsr", &zpool, &xml, &xml_len, &zvolume) == FAILURE) {
         set_error("Invalid pool resource, XML or volume resource");

@@ -82,10 +82,6 @@
                ((uint32_t)var[2] <<  8) +   \
                ((uint32_t)var[3]))
 
-typedef size_t strsize_t;
-typedef zend_resource virt_resource;
-typedef virt_resource *virt_resource_handle;
-
 # define VIRT_RETURN_RESOURCE(_resource) \
     RETVAL_RES(_resource)
 
