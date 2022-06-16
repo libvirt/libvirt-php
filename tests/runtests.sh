@@ -18,7 +18,7 @@ run_test()
 	ret=0
 
 	php -n -c "${srcdir}/php.ini" "${srcdir}/${name}.phpt"
-	if [ "x$?" != "x0" && "x$?" != "x77" ]; then
+	if [ "x$?" != "x0" -a "x$?" != "x77" ]; then
 		if [ "x$nf" == 'x1' ]; then
 			ret=1
 		else
