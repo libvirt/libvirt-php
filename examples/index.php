@@ -624,7 +624,7 @@
             echo 'Domain doesn\'t have any network devices';
         }
 
-        if ( $dom['state'] == 1 ) {
+        if ($lv->domain_is_active($dom)) {
             echo "<h3>Screenshot</h3><img src=\"?action=get-screenshot&uuid={$_GET['uuid']}&width=640\">";
         }
     } else if ($action == 'nwfilters') {
