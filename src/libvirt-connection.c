@@ -763,7 +763,7 @@ PHP_FUNCTION(libvirt_connect_get_machine_types)
                                 VIRT_ADD_ASSOC_STRING(arr4, "name", ret3[k]);
                                 VIRT_ADD_ASSOC_STRING(arr4, "maxCpus", numTmp);
 
-                                add_assoc_zval_ex(arr2, key, strlen(key) + 1, arr4);
+                                VIRT_ADD_ASSOC_ZVAL_EX(arr2, key, arr4);
                                 VIR_FREE(numTmp);
                             }
 
@@ -797,19 +797,19 @@ PHP_FUNCTION(libvirt_connect_get_machine_types)
                                 VIRT_ADD_ASSOC_STRING(arr4, "name", ret3[k]);
                                 VIRT_ADD_ASSOC_STRING(arr4, "maxCpus", numTmp);
 
-                                add_assoc_zval_ex(arr3, key, strlen(key) + 1, arr4);
+                                VIRT_ADD_ASSOC_ZVAL_EX(arr3, key, arr4);
                                 VIR_FREE(numTmp);
                             }
 
                             VIR_FREE(ret3[k]);
                         }
 
-                        add_assoc_zval_ex(arr2, ret2[j], strlen(ret2[j]) + 1, arr3);
+                        VIRT_ADD_ASSOC_ZVAL_EX(arr2, ret2[j], arr3);
                     }
                 }
                 //free(ret2[j]);
 
-                add_assoc_zval_ex(return_value, ret[i], strlen(ret[i]) + 1, arr2);
+                VIRT_ADD_ASSOC_ZVAL_EX(return_value, ret[i], arr2);
             }
             VIR_FREE(ret[i]);
         }

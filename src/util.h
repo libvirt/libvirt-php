@@ -137,6 +137,9 @@
 # define VIRT_ADD_ASSOC_STRING_EX(_arg, _key, _key_len, _value) \
     add_assoc_string_ex(_arg, _key, _key_len, _value)
 
+#  define VIRT_ADD_ASSOC_ZVAL_EX(_zv, _key, _value) \
+    add_assoc_zval_ex(_zv, _key, strlen(_key), _value);
+
 # define VIRT_FOREACH(_ht, _pos, _zv) \
     for (zend_hash_internal_pointer_reset_ex(_ht, &_pos); \
          (_zv = zend_hash_get_current_data_ex(_ht, &_pos)) != NULL; \
