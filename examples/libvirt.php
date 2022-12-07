@@ -77,9 +77,7 @@ class Libvirt {
             $data = $image->getImageBlob();
             $mime = "image/png";
         } else {
-            $fp = fopen($tmp['file'], "rb");
-            $data = fread($fp, filesize($tmp['file']));
-            fclose($fp);
+            $data = file_get_contents($tmp['file']);
         }
         unlink($tmp['file']);
         unset($tmp['file']);
