@@ -5,10 +5,13 @@ libvirt-php releases
 This is the list of official releases for libvirt-php, along with an
 overview of the changes introduced by each of them.
 
-v0.5.7 (unreleased)
+v0.5.7 (2022-12-07)
 ===================
 
 * Dropped support for PHP-6.0 and older
+* Fixed libvirt_connect_get_machine_types() with PHP-7.0 and newer
+* Dropped imagick dependency
+* Bug fixes
 
 
 v0.5.6 (2022-06-14)
