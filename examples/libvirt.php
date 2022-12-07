@@ -87,24 +87,6 @@ class Libvirt {
         return $tmp;
     }
 
-    function domain_get_screenshot_thumbnail($domain, $w=120) {
-        $screen = $this->domain_get_screenshot($domain);
-
-        if (!$screen)
-            return false;
-
-        $image = new Imagick();
-        $image->readImageBlob($screen['data']);
-        $origW = $image->getImageWidth();
-        $origH = $image->getImageHeight();
-        $h = ($w / $origW) * $origH;
-        $image->resizeImage($w, $h, 0, 0);
-
-        $screen['data'] = $image->getImageBlob();
-
-        return $screen;
-    }
-
     function domain_send_keys($domain, $keys) {
         $dom = $this->get_domain_object($domain);
 

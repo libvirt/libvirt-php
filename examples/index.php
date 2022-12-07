@@ -11,10 +11,7 @@
     $subaction = array_key_exists('subaction', $_GET) ? $_GET['subaction'] : false;
 
     if (($action == 'get-screenshot') && (array_key_exists('uuid', $_GET))) {
-        if (array_key_exists('width', $_GET) && $_GET['width'])
-            $tmp = $lv->domain_get_screenshot_thumbnail($_GET['uuid'], $_GET['width']);
-        else
-            $tmp = $lv->domain_get_screenshot($_GET['uuid'], 0);
+        $tmp = $lv->domain_get_screenshot($_GET['uuid'], 0);
 
         if (!$tmp) {
             die($lv->get_last_error().'<br/>');
@@ -625,7 +622,7 @@
         }
 
         if ($lv->domain_is_active($dom)) {
-            echo "<h3>Screenshot</h3><img src=\"?action=get-screenshot&uuid={$_GET['uuid']}&width=640\">";
+            echo "<h3>Screenshot</h3><img src=\"?action=get-screenshot&uuid={$_GET['uuid']}\" id=\"screenshot\" width=\"640\">";
         }
     } else if ($action == 'nwfilters') {
         echo "<h2>Network filters</h2>";
@@ -756,7 +753,7 @@
                  "<td align=\"center\">$spaces$id / $vnc$spaces</td>";
 
             if ($lv->supports('screenshot') && $active)
-                echo "<td align=\"center\"><img src=\"?action=get-screenshot&uuid=$uuid&width=120\" id=\"screenshot$id\"></td>";
+                echo "<td align=\"center\"><img src=\"?action=get-screenshot&uuid=$uuid\" id=\"screenshot$id\" width=\"120\"></td>";
             else
                 echo "<td>$spaces</td>";
 
