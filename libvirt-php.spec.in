@@ -27,7 +27,6 @@ BuildRequires:  php-devel
 BuildRequires:  libvirt-devel >= %{req_libvirt_version}
 BuildRequires:  libxml2-devel
 BuildRequires:  libxslt
-BuildRequires:  php-pecl-imagick
 %if 0%{?suse_version}
 BuildRequires:  xhtml-dtd
 %else
