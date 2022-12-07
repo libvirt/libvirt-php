@@ -11,7 +11,7 @@
     $subaction = array_key_exists('subaction', $_GET) ? $_GET['subaction'] : false;
 
     if (($action == 'get-screenshot') && (array_key_exists('uuid', $_GET))) {
-        $tmp = $lv->domain_get_screenshot($_GET['uuid'], 0);
+        $tmp = $lv->domain_get_screenshot($_GET['uuid']);
 
         if (!$tmp) {
             die($lv->get_last_error().'<br/>');

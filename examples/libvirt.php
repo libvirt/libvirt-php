@@ -61,7 +61,7 @@ class Libvirt {
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function domain_get_screenshot($domain, $convert = 1) {
+    function domain_get_screenshot($domain) {
         $dom = $this->get_domain_object($domain);
 
         $tmp = libvirt_domain_get_screenshot_api($dom);
@@ -70,15 +70,7 @@ class Libvirt {
 
         $mime = $tmp['mime'];
 
-        if ($convert && $tmp['mime'] != "image/png") {
-            $image = new Imagick();
-            $image->readImage($tmp['file']);
-            $image->setImageFormat("png");
-            $data = $image->getImageBlob();
-            $mime = "image/png";
-        } else {
-            $data = file_get_contents($tmp['file']);
-        }
+        $data = file_get_contents($tmp['file']);
         unlink($tmp['file']);
         unset($tmp['file']);
         $tmp['data'] = $data;
