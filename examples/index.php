@@ -17,6 +17,11 @@
             die($lv->get_last_error().'<br/>');
         } else {
             Header('Content-Type: ' . $tmp['mime']);
+            if (array_key_exists('download', $_GET)) {
+                Header("Content-Disposition: attachment; filename=\"" . $tmp['filename'] . "\"");
+            } else {
+                Header("Content-Disposition: inline");
+            }
             die($tmp['data']);
         }
     }
@@ -769,7 +774,7 @@
             if (!$lv->domain_is_running($name))
                 echo "| <a href=\"?action=domain-edit&amp;uuid=$uuid\">Edit domain XML</a>";
             else if ($active > 0)
-                echo "| <a href=\"?action=get-screenshot&amp;uuid=$uuid\">Get screenshot</a>";
+                echo "| <a href=\"?action=get-screenshot&amp;uuid=${uuid}&amp;download=1\">Get screenshot</a>";
 
             echo "$spaces" .
                   "</td>" .

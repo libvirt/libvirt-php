@@ -62,6 +62,11 @@ class Libvirt {
     }
 
     function domain_get_screenshot($domain) {
+        $extensions = array(
+            'image/pmg' => 'png',
+            'image/x-portable-pixmap' => 'ppm',
+        );
+
         $dom = $this->get_domain_object($domain);
 
         $tmp = libvirt_domain_get_screenshot_api($dom);
@@ -69,12 +74,15 @@ class Libvirt {
             return $this->_set_last_error();
 
         $mime = $tmp['mime'];
+        $ext = isset($extensions[$mime]) ? $extensions[$mime] : "";
 
         $data = file_get_contents($tmp['file']);
+
         unlink($tmp['file']);
         unset($tmp['file']);
         $tmp['data'] = $data;
         $tmp['mime'] = $mime;
+        $tmp['filename'] = libvirt_domain_get_name($dom) . $ext;
 
         return $tmp;
     }
