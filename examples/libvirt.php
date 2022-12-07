@@ -107,26 +107,6 @@ class Libvirt {
         return $screen;
     }
 
-    function domain_get_screen_dimensions($domain) {
-        $screen = $this->domain_get_screenshot($domain);
-        $imgFile = tempnam("/tmp", "libvirt-php-tmp-resize-XXXXXX");;
-
-        $width = false;
-        $height = false;
-
-        if ($screen) {
-            $fp = fopen($imgFile, "wb");
-            fwrite($fp, $screen);
-            fclose($fp);
-        }
-        if (file_exists($imgFile) && $screen)
-            list($width, $height) = getimagesize($imgFile);
-
-        unlink($imgFile);
-
-        return array('height' => $height, 'width' => $width);
-    }
-
     function domain_send_keys($domain, $keys) {
         $dom = $this->get_domain_object($domain);
 
