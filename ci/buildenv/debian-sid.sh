@@ -24,7 +24,6 @@ function install_buildenv() {
             locales \
             make \
             php-dev \
-            php-imagick \
             pkgconf \
             xsltproc \
             xz-utils

@@ -23,7 +23,6 @@ RUN zypper update -y && \
            libxslt \
            make \
            php-devel \
-           php-imagick \
            pkgconfig \
            rpm-build \
            xz && \

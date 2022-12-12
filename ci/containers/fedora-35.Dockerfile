@@ -33,7 +33,6 @@ exec "$@"' > /usr/bin/nosync && \
                libxslt \
                make \
                php-devel \
-               php-pecl-imagick \
                pkgconfig \
                rpm-build \
                xz && \

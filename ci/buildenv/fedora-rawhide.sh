@@ -23,7 +23,6 @@ function install_buildenv() {
         libxslt \
         make \
         php-devel \
-        php-pecl-imagick \
         pkgconfig \
         rpm-build \
         xz

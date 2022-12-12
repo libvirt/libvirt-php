@@ -23,7 +23,6 @@ RUN zypper dist-upgrade -y && \
            libxslt \
            make \
            php-devel \
-           php-imagick \
            pkgconfig \
            rpm-build \
            xz && \

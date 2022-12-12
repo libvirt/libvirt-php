@@ -34,7 +34,6 @@ function install_buildenv() {
             ninja-build \
             perl-base \
             php-dev \
-            php-imagick \
             pkgconf \
             python3 \
             python3-docutils \

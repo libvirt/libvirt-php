@@ -26,7 +26,6 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
                       locales \
                       make \
                       php-dev \
-                      php-imagick \
                       pkgconf \
                       xsltproc \
                       xz-utils && \
