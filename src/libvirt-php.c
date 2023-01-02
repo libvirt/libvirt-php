@@ -699,6 +699,8 @@ void free_tokens(tTokenizer t)
 
     for (i = 0; i < t.numTokens; i++)
         VIR_FREE(t.tokens[i]);
+    VIR_FREE(t.tokens);
+    t.numTokens = 0;
 }
 
 /*
