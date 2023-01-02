@@ -673,6 +673,7 @@ tTokenizer tokenize(const char *string, char *delim)
         t.tokens = realloc(t.tokens, (i + 1) * sizeof(char *));
         t.tokens[i++] = strdup(token);
     }
+    VIR_FREE(tmp);
 
     t.numTokens = i;
     return t;
