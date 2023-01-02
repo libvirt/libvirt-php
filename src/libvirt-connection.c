@@ -378,7 +378,9 @@ PHP_FUNCTION(libvirt_connect_get_nic_models)
     zval *zconn;
     char *arch = NULL;
     size_t arch_len;
-    char *tmp;
+    char cmd[1024] = { 0 };
+    char *reply = NULL;
+    char *tmp = NULL;
 
     GET_CONNECTION_FROM_ARGS("r|s", &zconn, &arch, &arch_len);
 
@@ -404,34 +406,27 @@ PHP_FUNCTION(libvirt_connect_get_nic_models)
         RETURN_FALSE;
     }
 
-    char cmd[4096] = { 0 };
-    char tmp2[16]  = { 0 };
-    snprintf(cmd, sizeof(cmd), "%s -net nic,model=? 2>&1", tmp);
+    snprintf(cmd, sizeof(cmd), "%s -net nic,model=?", tmp);
     VIR_FREE(tmp);
 
-    FILE *fp = popen(cmd, "r");
-    if (fp == NULL)
+    if (runCommand(cmd, &reply) < 0)
         RETURN_FALSE;
 
+# define NEEDLE "Supported NIC models:\n"
     array_init(return_value);
-    while (!feof(fp)) {
-        memset(cmd, 0, sizeof(cmd));
-        if (!fgets(cmd, sizeof(cmd), fp))
-            break;
+    if ((tmp = strstr(reply, NEEDLE))) {
+        size_t i;
+        char num[16] = { 0 };
+        tTokenizer t = tokenize(tmp + strlen(NEEDLE), "\n");
 
-        if ((tmp = strstr(cmd, "Supported NIC models:")) != NULL) {
-            tmp = strstr(tmp, ":") + 2;
-
-            int i;
-            tTokenizer t = tokenize(tmp, ",");
-            for (i = 0; i < t.numTokens; i++) {
-                snprintf(tmp2, sizeof(tmp2), "%d", i);
-                VIRT_ADD_ASSOC_STRING(return_value, tmp2, t.tokens[i]);
-            }
-            free_tokens(t);
+        for (i = 0; i < t.numTokens; i++) {
+            snprintf(num, sizeof(num), "%zu", i);
+            VIRT_ADD_ASSOC_STRING(return_value, num, t.tokens[i]);
         }
+        free_tokens(t);
     }
-    fclose(fp);
+    VIR_FREE(reply);
+# undef NEEDLE
 #endif
 }
 
