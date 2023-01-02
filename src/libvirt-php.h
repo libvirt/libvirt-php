@@ -159,7 +159,7 @@ int check_resource_allocation(virConnectPtr conn, int type,
 void free_resource(int type, void *mem);
 char *connection_get_emulator(virConnectPtr conn, char *arch);
 int is_local_connection(virConnectPtr conn);
-tTokenizer tokenize(char *string, char *by);
+tTokenizer tokenize(const char *string, char *by);
 void free_tokens(tTokenizer t);
 int set_logfile(char *filename, long maxsize);
 char *get_string_from_xpath(char *xml, char *xpath, zval **val, int *retVal);

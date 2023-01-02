@@ -653,7 +653,7 @@ translate_counter_type(int type)
  *                          @by [string]: string used as delimited
  * Returns:                 tTokenizer structure
  */
-tTokenizer tokenize(char *string, char *by)
+tTokenizer tokenize(const char *string, char *by)
 {
 #ifndef EXTWIN
     char *tmp;
