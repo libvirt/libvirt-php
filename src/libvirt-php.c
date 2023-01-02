@@ -1771,9 +1771,6 @@ char *get_node_string_from_xpath(char *xml, char *xpath)
     xmlDocPtr doc = NULL;
     xmlXPathContextPtr context = NULL;
     xmlXPathObjectPtr result = NULL;
-    xmlNodeSetPtr nodeset = NULL;
-    size_t i;
-    char *value = NULL;
     xmlBufferPtr xmlbuf = NULL;
     char *ret = NULL;
 

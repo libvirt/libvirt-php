@@ -1033,7 +1033,6 @@ PHP_FUNCTION(libvirt_list_storagepools)
 
     array_init(return_value);
     for (i = 0; i < npools; i++) {
-        virStoragePoolPtr pool = pools[i];
         const char *name;
 
         if (!(name = virStoragePoolGetName(pools[i])))
@@ -1080,7 +1079,6 @@ PHP_FUNCTION(libvirt_list_active_storagepools)
 
     array_init(return_value);
     for (i = 0; i < npools; i++) {
-        virStoragePoolPtr pool = pools[i];
         const char *name;
 
         if (!(name = virStoragePoolGetName(pools[i])))
@@ -1127,7 +1125,6 @@ PHP_FUNCTION(libvirt_list_inactive_storagepools)
 
     array_init(return_value);
     for (i = 0; i < npools; i++) {
-        virStoragePoolPtr pool = pools[i];
         const char *name;
 
         if (!(name = virStoragePoolGetName(pools[i])))

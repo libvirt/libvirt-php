@@ -762,7 +762,6 @@ PHP_FUNCTION(libvirt_domain_disk_remove)
     size_t dev_len;
     char *newXml = NULL;
     zend_long xflags = 0;
-    int retval = -1;
     char *xpath = NULL;
     char *tmp = NULL;
     unsigned int detachFlags = VIR_DOMAIN_AFFECT_CURRENT;
@@ -930,7 +929,6 @@ PHP_FUNCTION(libvirt_domain_nic_remove)
     size_t mac_len;
     char *newXml = NULL;
     zend_long xflags = 0;
-    int retval = -1;
     char *xpath = NULL;
     char *tmp = NULL;
     unsigned int detachFlags = VIR_DOMAIN_AFFECT_CURRENT;
@@ -3428,7 +3426,7 @@ PHP_FUNCTION(libvirt_domain_get_cpu_total_stats)
     zval *zdomain;
 
     virTypedParameterPtr params = NULL;
-    int max_id, cpu = 0, show_count = -1, nparams = 0, stats_per_cpu, done = 0, i;
+    int nparams = 0, stats_per_cpu, done = 0, i;
 
     GET_DOMAIN_FROM_ARGS("r", &zdomain);
 
