@@ -232,4 +232,7 @@ void debugPrint(const char *source,
 
 void setDebug(int level);
 
+int runCommand(const char *cmd,
+               char **reply);
+
 #endif /* __UTIL_H__ */

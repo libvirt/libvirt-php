@@ -68,3 +68,43 @@ void setDebug(int level)
 {
     gdebug = level;
 }
+
+int runCommand(const char *cmd,
+               char **reply)
+{
+    char *rep = NULL;
+    size_t rep_len = 0;
+    FILE *fp = popen(cmd, "r");
+    int ret = -1;
+
+    if (fp == NULL)
+        return -1;
+
+    while (!feof(fp)) {
+        char tmp[1024] = { 0 };
+        size_t tmp_len = 0;
+        char *rep_new = NULL;
+
+        if (!fgets(tmp, sizeof(tmp) - 1, fp))
+            break;
+
+        tmp_len = strlen(tmp);
+
+        rep_new = realloc(rep, rep_len + tmp_len + 1);
+        if (!rep_new)
+            goto cleanup;
+
+        rep = rep_new;
+
+        memcpy(rep + rep_len, tmp, tmp_len + 1);
+        rep_len += tmp_len;
+    }
+
+    *reply = rep;
+    rep = NULL;
+    ret = 0;
+ cleanup:
+    fclose(fp);
+    VIR_FREE(rep);
+    return ret;
+}
