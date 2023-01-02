@@ -648,12 +648,12 @@ translate_counter_type(int type)
 /*
  * Private function name:   tokenize
  * Since version:           0.4.9
- * Description:             Function to tokenize string into tokens by delimiter $by
+ * Description:             Function to tokenize string into tokens by delimiter $delim
  * Arguments:               @string [string]: input string
- *                          @by [string]: string used as delimited
+ *                          @delim [string]: string used as delimiter
  * Returns:                 tTokenizer structure
  */
-tTokenizer tokenize(const char *string, char *by)
+tTokenizer tokenize(const char *string, char *delim)
 {
 #ifndef EXTWIN
     char *tmp;
@@ -666,7 +666,7 @@ tTokenizer tokenize(const char *string, char *by)
     tmp = strdup(string);
     t.tokens = (char **)malloc(sizeof(char *));
     for (str = tmp; ; str = NULL) {
-        token = strtok_r(str, by, &save);
+        token = strtok_r(str, delim, &save);
         if (token == NULL)
             break;
 
