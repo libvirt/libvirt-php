@@ -445,8 +445,10 @@ PHP_FUNCTION(libvirt_connect_get_soundhw_models)
     zval *zconn;
     char *arch = NULL;
     size_t arch_len;
-    char *tmp;
     zend_long flags = 0;
+    char cmd[1024] = { 0 };
+    char *reply = NULL;
+    char *tmp = NULL;
 
     GET_CONNECTION_FROM_ARGS("r|sl", &zconn, &arch, &arch_len, &flags);
 
@@ -472,60 +474,65 @@ PHP_FUNCTION(libvirt_connect_get_soundhw_models)
         RETURN_FALSE;
     }
 
-    char cmd[4096] = { 0 };
-    snprintf(cmd, sizeof(cmd), "%s -soundhw help 2>&1", tmp);
+    snprintf(cmd, sizeof(cmd), "%s -device ?", tmp);
     VIR_FREE(tmp);
 
-    FILE *fp = popen(cmd, "r");
-    if (fp == NULL)
+    if (runCommand(cmd, &reply) < 0)
         RETURN_FALSE;
 
-    short inFunc = 0;
+# define NEEDLE "Sound devices:\n"
+    if ((tmp = strstr(reply, NEEDLE))) {
+        char *nextSec = strstr(tmp, "\n\n");
+        tTokenizer t;
+        size_t i;
 
-    int n = 0;
-    array_init(return_value);
-    while (!feof(fp)) {
-        memset(cmd, 0, sizeof(cmd));
-        if (!fgets(cmd, sizeof(cmd), fp))
-            break;
+        if (nextSec) {
+            /* Terminate next section */
+            *nextSec = '\0';
+        }
 
-        if (strncmp(cmd, "Valid ", 6) == 0) {
-            inFunc = 1;
-            continue;
-        } else
-            if (strlen(cmd) < 2)
-                inFunc = 0;
+        t = tokenize(tmp + strlen(NEEDLE), "\n");
+        array_init(return_value);
+        for (i = 0; i < t.numTokens; i++) {
+            tTokenizer subT;
+            const char *line = t.tokens[i];
 
-        if (inFunc) {
-            int i = 0;
-            char desc[1024] = { 0 };
-            tTokenizer t = tokenize(cmd, " ");
-            if (t.numTokens == 0)
+            if (strncmp(line, "name ", 5) != 0)
                 continue;
 
-            if ((i > 0) && (flags & CONNECT_FLAG_SOUNDHW_GET_NAMES)) {
-                zval *arr;
-                memset(desc, 0, sizeof(desc));
-                for (i = 1; i < t.numTokens; i++) {
-                    strcat(desc, t.tokens[i]);
-                    if (i < t.numTokens - 1)
-                        strcat(desc, " ");
-                }
-
-                VIRT_ARRAY_INIT(arr);
-                VIRT_ADD_ASSOC_STRING(arr, "name", t.tokens[0]);
-                VIRT_ADD_ASSOC_STRING(arr, "description", desc);
-                add_next_index_zval(return_value, arr);
-            } else {
-                char tmp2[16] = { 0 };
-                snprintf(tmp2, sizeof(tmp2), "%d", n++);
-                VIRT_ADD_ASSOC_STRING(return_value, tmp2, t.tokens[0]);
+            subT = tokenize(line, "\"");
+            if (subT.numTokens < 2) {
+                free_tokens(subT);
+                continue;
             }
 
-            free_tokens(t);
+            if (flags & CONNECT_FLAG_SOUNDHW_GET_NAMES) {
+                zval *arr = NULL;
+
+                VIRT_ARRAY_INIT(arr);
+                VIRT_ADD_ASSOC_STRING(arr, "name", subT.tokens[1]);
+                if (subT.numTokens > 3) {
+                    VIRT_ADD_ASSOC_STRING(arr, "description",
+                                          subT.tokens[subT.numTokens - 1]);
+                }
+                add_next_index_zval(return_value, arr);
+            } else {
+                char num[16] = { 0 };
+
+                snprintf(num, sizeof(num), "%zu", i);
+                VIRT_ADD_ASSOC_STRING(return_value, num, subT.tokens[1]);
+            }
+
+            free_tokens(subT);
         }
+        free_tokens(t);
+    } else {
+        RETURN_FALSE;
     }
-    fclose(fp);
+
+ cleanup:
+    VIR_FREE(reply);
+# undef NEEDLE
 #endif
 }
 
