@@ -246,7 +246,11 @@ PHP_FUNCTION(libvirt_domain_new)
     resource_change_counter(INT_RESOURCE_DOMAIN, conn->conn, res_domain->domain, 1);
 
     VIRT_REGISTER_RESOURCE(res_domain, le_libvirt_domain);
+    for (i = 0; i < numDisks; i++)
+        tVMDiskClear(&vmDisks[i]);
     VIR_FREE(vmDisks);
+    for (i = 0; i < numNets; i++)
+        tVMNetworkClear(&vmNetworks[i]);
     VIR_FREE(vmNetworks);
     VIR_FREE(tmp);
     VIR_FREE(hostname);
@@ -261,7 +265,11 @@ PHP_FUNCTION(libvirt_domain_new)
     }
     if (domainUpdated)
         virDomainFree(domainUpdated);
+    for (i = 0; i < numDisks; i++)
+        tVMDiskClear(&vmDisks[i]);
     VIR_FREE(vmDisks);
+    for (i = 0; i < numNets; i++)
+        tVMNetworkClear(&vmNetworks[i]);
     VIR_FREE(vmNetworks);
     VIR_FREE(tmp);
     VIR_FREE(hostname);

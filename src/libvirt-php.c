@@ -2576,6 +2576,25 @@ void parse_array(zval *arr, tVMDisk *disk, tVMNetwork *network)
     } VIRT_FOREACH_END();
 }
 
+
+void tVMDiskClear(tVMDisk *disk)
+{
+    VIR_FREE(disk->path);
+    VIR_FREE(disk->driver);
+    VIR_FREE(disk->bus);
+    VIR_FREE(disk->dev);
+    memset(disk, 0, sizeof(*disk));
+}
+
+
+void tVMNetworkClear(tVMNetwork *network)
+{
+    VIR_FREE(network->mac);
+    VIR_FREE(network->network);
+    VIR_FREE(network->model);
+    memset(network, 0, sizeof(*network));
+}
+
 /*
  * Function name:   libvirt_version
  * Since version:   0.4.1(-1)
