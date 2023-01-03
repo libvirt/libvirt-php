@@ -7,8 +7,8 @@
 #ifndef __SOCKETS_H__
 # define __SOCKETS_H__
 
-int connect_socket(char *server,
-                   char *port,
+int connect_socket(const char *server,
+                   const char *port,
                    int keepalive,
                    int nodelay,
                    int allow_server_override);

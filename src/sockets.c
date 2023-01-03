@@ -39,7 +39,11 @@ DEBUG_INIT("sockets");
  *                         @allow_server_override [bool]: allows function to override server to localhost if server equals local hostname
  * Returns:                socket descriptor on success, -errno otherwise
  */
-int connect_socket(char *server, char *port, int keepalive, int nodelay, int allow_server_override)
+int connect_socket(const char *server,
+                   const char *port,
+                   int keepalive,
+                   int nodelay,
+                   int allow_server_override)
 {
     struct addrinfo hints;
     struct addrinfo *result, *rp;
@@ -56,7 +60,7 @@ int connect_socket(char *server, char *port, int keepalive, int nodelay, int all
         /* Get the current hostname and override to localhost if local machine */
         gethostname(name, 1024);
         if (strcmp(name, server) == 0)
-            server = strdup("localhost");
+            server = "localhost";
     }
 
     DPRINTF("%s: Connecting to %s:%s\n", SOCKETFUNC, server, port);
