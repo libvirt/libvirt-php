@@ -2359,6 +2359,7 @@ char *installation_get_xml(virConnectPtr conn, char *name, int memMB,
     char networks_xml[16384] = { 0 };
     char features[128] = { 0 };
     char *tmp = NULL;
+    char *generated_uuid = NULL;
     char type[64] = { 0 };
     int rv;
 
@@ -2366,9 +2367,6 @@ char *installation_get_xml(virConnectPtr conn, char *name, int memMB,
         DPRINTF("%s: Invalid libvirt connection pointer\n", __FUNCTION__);
         return NULL;
     }
-
-    if (uuid == NULL)
-        uuid = generate_uuid(conn);
 
     if (domain_flags & DOMAIN_FLAG_FEATURE_ACPI)
         strcat(features, "<acpi/>");
@@ -2412,6 +2410,10 @@ char *installation_get_xml(virConnectPtr conn, char *name, int memMB,
             strcat(networks_xml, network);
 
         VIR_FREE(network);
+    }
+
+    if (uuid == NULL) {
+        generated_uuid = uuid = generate_uuid(conn);
     }
 
     if (iso_image) {
@@ -2497,6 +2499,7 @@ char *installation_get_xml(virConnectPtr conn, char *name, int memMB,
             (domain_flags & DOMAIN_FLAG_SOUND_AC97 ? "<sound model='ac97'/>\n" : ""));
     }
 
+    VIR_FREE(generated_uuid);
     VIR_FREE(emulator);
     VIR_FREE(tmp);
     VIR_FREE(arch);
