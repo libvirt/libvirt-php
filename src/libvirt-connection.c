@@ -334,6 +334,60 @@ PHP_FUNCTION(libvirt_connect_get_capabilities)
 }
 
 /*
+ * Function name:   libvirt_connect_get_domain_capabilities
+ * Since version:   0.5.8
+ * Description:     Function is used to get the domain capabilities information
+ *                  from the connection
+ * Arguments:       @conn [resource]: resource for connection
+ *                  @emulatorbin [string]: optional path to emulator
+ *                  @arch [string]: optional domain architecture
+ *                  @machine [string]: optional machine type
+ *                  @virttype [string]: optional virtualization type
+ *                  @flags [int] : extra flags; not used yet, so callers should always pass 0
+ *                  @xpath [string]: optional xPath query to be applied on the result
+ * Returns:         domain capabilities XML from the connection or FALSE for error
+ */
+PHP_FUNCTION(libvirt_connect_get_domain_capabilities)
+{
+    php_libvirt_connection *conn = NULL;
+    zval *zconn;
+    char *caps;
+    char *emulatorbin = NULL;
+    size_t emulatorbin_len = 0;
+    char *arch = NULL;
+    size_t arch_len = 0;
+    char *machine = NULL;
+    size_t machine_len = 0;
+    char *virttype = NULL;
+    size_t virttype_len = 0;
+    zend_long flags = 0;
+    char *xpath = NULL;
+    size_t xpath_len = 0;
+    char *tmp = NULL;
+    int retval = -1;
+
+    GET_CONNECTION_FROM_ARGS("r|s!s!s!s!ls!", &zconn, &emulatorbin,
+                             &emulatorbin_len, &arch, &arch_len, &machine,
+                             &machine_len, &virttype, &virttype_len, &flags,
+                             &xpath, &xpath_len);
+
+    caps = virConnectGetDomainCapabilities(conn->conn, emulatorbin,
+                                           arch, machine, virttype, flags);
+    if (caps == NULL)
+        RETURN_FALSE;
+
+    tmp = get_string_from_xpath(caps, xpath, NULL, &retval);
+    if ((tmp == NULL) || (retval < 0)) {
+        VIRT_RETVAL_STRING(caps);
+    } else {
+        VIRT_RETVAL_STRING(tmp);
+    }
+
+    VIR_FREE(caps);
+    VIR_FREE(tmp);
+}
+
+/*
  * Function name:   libvirt_connect_get_emulator
  * Since version:   0.4.5
  * Description:     Function is used to get the emulator for requested connection/architecture

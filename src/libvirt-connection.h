@@ -17,6 +17,7 @@
     PHP_FE(libvirt_connect_get_hostname,         arginfo_libvirt_conn)                         \
     PHP_FE(libvirt_connect_get_hypervisor,       arginfo_libvirt_conn)                         \
     PHP_FE(libvirt_connect_get_capabilities,     arginfo_libvirt_conn_xpath)                   \
+    PHP_FE(libvirt_connect_get_domain_capabilities, arginfo_libvirt_connect_get_domain_capabilities)    \
     PHP_FE(libvirt_connect_get_emulator,         arginfo_libvirt_connect_get_emulator)         \
     PHP_FE(libvirt_connect_get_nic_models,       arginfo_libvirt_connect_get_emulator)         \
     PHP_FE(libvirt_connect_get_soundhw_models,   arginfo_libvirt_connect_get_soundhw_models)   \
@@ -67,6 +68,7 @@ PHP_FUNCTION(libvirt_connect_get_uri);
 PHP_FUNCTION(libvirt_connect_get_hostname);
 PHP_FUNCTION(libvirt_connect_get_hypervisor);
 PHP_FUNCTION(libvirt_connect_get_capabilities);
+PHP_FUNCTION(libvirt_connect_get_domain_capabilities);
 PHP_FUNCTION(libvirt_connect_get_emulator);
 PHP_FUNCTION(libvirt_connect_get_nic_models);
 PHP_FUNCTION(libvirt_connect_get_soundhw_models);
