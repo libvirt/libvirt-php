@@ -349,10 +349,7 @@ PHP_FUNCTION(libvirt_connect_get_emulator)
     size_t arch_len;
     char *tmp;
 
-    GET_CONNECTION_FROM_ARGS("r|s", &zconn, &arch, &arch_len);
-
-    if ((arch == NULL) || (arch_len == 0))
-        arch = NULL;
+    GET_CONNECTION_FROM_ARGS("r|s!", &zconn, &arch, &arch_len);
 
     tmp = connection_get_emulator(conn->conn, arch);
     if (tmp == NULL) {
@@ -382,7 +379,7 @@ PHP_FUNCTION(libvirt_connect_get_nic_models)
     char *reply = NULL;
     char *tmp = NULL;
 
-    GET_CONNECTION_FROM_ARGS("r|s", &zconn, &arch, &arch_len);
+    GET_CONNECTION_FROM_ARGS("r|s!", &zconn, &arch, &arch_len);
 
     /* Disable getting it on remote connections */
     if (!is_local_connection(conn->conn)) {
@@ -397,9 +394,6 @@ PHP_FUNCTION(libvirt_connect_get_nic_models)
     }
 
 #ifndef EXTWIN
-    if ((arch == NULL) || (arch_len == 0))
-        arch = NULL;
-
     tmp = connection_get_emulator(conn->conn, arch);
     if (tmp == NULL) {
         set_error("Cannot get emulator");
@@ -450,10 +444,7 @@ PHP_FUNCTION(libvirt_connect_get_soundhw_models)
     char *reply = NULL;
     char *tmp = NULL;
 
-    GET_CONNECTION_FROM_ARGS("r|sl", &zconn, &arch, &arch_len, &flags);
-
-    if ((arch == NULL) || (arch_len == 0))
-        arch = NULL;
+    GET_CONNECTION_FROM_ARGS("r|s!l", &zconn, &arch, &arch_len, &flags);
 
     /* Disable getting it on remote connections */
     if (!is_local_connection(conn->conn)) {

@@ -95,15 +95,12 @@ PHP_FUNCTION(libvirt_domain_new)
     zend_long flags = 0;
     int fd = -1;
 
-    GET_CONNECTION_FROM_ARGS("rsslllsaa|l", &zconn, &name, &name_len, &arch, &arch_len, &memMB, &maxmemMB, &vcpus, &iso_image, &iso_image_len, &disks, &networks, &flags);
+    GET_CONNECTION_FROM_ARGS("rss!lllsaa|l", &zconn, &name, &name_len, &arch, &arch_len, &memMB, &maxmemMB, &vcpus, &iso_image, &iso_image_len, &disks, &networks, &flags);
 
     if (iso_image == NULL) {
         DPRINTF("%s: Iso image is not defined\n", PHPFUNC);
         RETURN_FALSE;
     }
-
-    if ((arch == NULL) || (arch_len == 0))
-        arch = NULL;
 
     //DPRINTF("%s: name: %s, arch: %s, memMB: %d, maxmemMB: %d, vcpus: %d, iso_image: %s\n", PHPFUNC, name, arch, memMB, maxmemMB, vcpus, iso_image);
     if (memMB == 0)
