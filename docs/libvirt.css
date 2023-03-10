@@ -6,7 +6,7 @@ h1, h2, h3, h4, h5, h6 {
     margin: 0px;
     height: 104px;
     width: 100%;
-    background: url(graphics/libvirt-header-bg.png);
+    background: url(libvirt-header-bg.png);
     border: 0px;
 }
 
@@ -102,7 +102,7 @@ h1, h2, h3, h4, h5, h6 {
     left: 0px;
     height: 104px;
     width: 400px;
-    background: url(graphics/libvirt-php-header-logo.png);
+    background: url(libvirt-php-header-logo.png);
 }
 
 #headerSearch {
