@@ -7,13 +7,6 @@
 
 # Native container jobs
 
-x86_64-debian-10-container:
-  extends: .container_job
-  allow_failure: false
-  variables:
-    NAME: debian-10
-
-
 x86_64-debian-11-container:
   extends: .container_job
   allow_failure: false
@@ -28,18 +21,18 @@ x86_64-debian-sid-container:
     NAME: debian-sid
 
 
-x86_64-fedora-35-container:
-  extends: .container_job
-  allow_failure: false
-  variables:
-    NAME: fedora-35
-
-
 x86_64-fedora-36-container:
   extends: .container_job
   allow_failure: false
   variables:
     NAME: fedora-36
+
+
+x86_64-fedora-37-container:
+  extends: .container_job
+  allow_failure: false
+  variables:
+    NAME: fedora-37
 
 
 x86_64-fedora-rawhide-container:

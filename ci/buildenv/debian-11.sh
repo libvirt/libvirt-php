@@ -14,17 +14,30 @@ function install_buildenv() {
             autopoint \
             ca-certificates \
             ccache \
+            cpp \
             gcc \
+            gettext \
             git \
+            libc-dev-bin \
+            libc6-dev \
+            libglib2.0-dev \
+            libgnutls28-dev \
+            libnl-3-dev \
+            libnl-route-3-dev \
+            libtirpc-dev \
             libtool \
             libtool-bin \
-            libvirt-dev \
             libxml2-dev \
             libxml2-utils \
             locales \
             make \
+            meson \
+            ninja-build \
+            perl-base \
             php-dev \
             pkgconf \
+            python3 \
+            python3-docutils \
             xsltproc \
             xz-utils
     sed -Ei 's,^# (en_US\.UTF-8 .*)$,\1,' /etc/locale.gen
@@ -38,3 +51,5 @@ function install_buildenv() {
 export CCACHE_WRAPPERSDIR="/usr/libexec/ccache-wrappers"
 export LANG="en_US.UTF-8"
 export MAKE="/usr/bin/make"
+export NINJA="/usr/bin/ninja"
+export PYTHON="/usr/bin/python3"

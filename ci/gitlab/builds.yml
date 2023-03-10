@@ -7,26 +7,8 @@
 
 # Native build jobs
 
-x86_64-debian-10-git-prebuilt-env:
+x86_64-debian-11-git-prebuilt-env:
   extends: .native_git_build_job_prebuilt_env
-  needs:
-    - job: x86_64-debian-10-container
-      optional: true
-  allow_failure: false
-  variables:
-    NAME: debian-10
-
-x86_64-debian-10-git-local-env:
-  extends: .native_git_build_job_local_env
-  needs: []
-  allow_failure: false
-  variables:
-    IMAGE: docker.io/library/debian:10-slim
-    NAME: debian-10
-
-
-x86_64-debian-11-prebuilt-env:
-  extends: .native_build_job_prebuilt_env
   needs:
     - job: x86_64-debian-11-container
       optional: true
@@ -34,8 +16,8 @@ x86_64-debian-11-prebuilt-env:
   variables:
     NAME: debian-11
 
-x86_64-debian-11-local-env:
-  extends: .native_build_job_local_env
+x86_64-debian-11-git-local-env:
+  extends: .native_git_build_job_local_env
   needs: []
   allow_failure: false
   variables:
@@ -61,24 +43,6 @@ x86_64-debian-sid-local-env:
     NAME: debian-sid
 
 
-x86_64-fedora-35-prebuilt-env:
-  extends: .native_build_job_prebuilt_env
-  needs:
-    - job: x86_64-fedora-35-container
-      optional: true
-  allow_failure: false
-  variables:
-    NAME: fedora-35
-
-x86_64-fedora-35-local-env:
-  extends: .native_build_job_local_env
-  needs: []
-  allow_failure: false
-  variables:
-    IMAGE: registry.fedoraproject.org/fedora:35
-    NAME: fedora-35
-
-
 x86_64-fedora-36-prebuilt-env:
   extends: .native_build_job_prebuilt_env
   needs:
@@ -95,6 +59,24 @@ x86_64-fedora-36-local-env:
   variables:
     IMAGE: registry.fedoraproject.org/fedora:36
     NAME: fedora-36
+
+
+x86_64-fedora-37-prebuilt-env:
+  extends: .native_build_job_prebuilt_env
+  needs:
+    - job: x86_64-fedora-37-container
+      optional: true
+  allow_failure: false
+  variables:
+    NAME: fedora-37
+
+x86_64-fedora-37-local-env:
+  extends: .native_build_job_local_env
+  needs: []
+  allow_failure: false
+  variables:
+    IMAGE: registry.fedoraproject.org/fedora:37
+    NAME: fedora-37
 
 
 x86_64-fedora-rawhide-prebuilt-env:

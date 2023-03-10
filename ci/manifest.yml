@@ -7,7 +7,7 @@ gitlab:
   project: libvirt-php
 
 targets:
-  debian-10:
+  debian-11:
     projects:
       - libvirt-php
       - libvirt+minimal
@@ -17,16 +17,15 @@ targets:
         template: .native_git_build_job
         suffix: -git
 
-  debian-11: x86_64
-
   debian-sid:
     jobs:
       - arch: x86_64
         allow-failure: true
 
-  fedora-35: x86_64
 
   fedora-36: x86_64
+
+  fedora-37: x86_64
 
   fedora-rawhide:
     jobs:

@@ -16,17 +16,30 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
                       autopoint \
                       ca-certificates \
                       ccache \
+                      cpp \
                       gcc \
+                      gettext \
                       git \
+                      libc-dev-bin \
+                      libc6-dev \
+                      libglib2.0-dev \
+                      libgnutls28-dev \
+                      libnl-3-dev \
+                      libnl-route-3-dev \
+                      libtirpc-dev \
                       libtool \
                       libtool-bin \
-                      libvirt-dev \
                       libxml2-dev \
                       libxml2-utils \
                       locales \
                       make \
+                      meson \
+                      ninja-build \
+                      perl-base \
                       php-dev \
                       pkgconf \
+                      python3 \
+                      python3-docutils \
                       xsltproc \
                       xz-utils && \
     eatmydata apt-get autoremove -y && \
@@ -41,3 +54,5 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
 ENV CCACHE_WRAPPERSDIR "/usr/libexec/ccache-wrappers"
 ENV LANG "en_US.UTF-8"
 ENV MAKE "/usr/bin/make"
+ENV NINJA "/usr/bin/ninja"
+ENV PYTHON "/usr/bin/python3"
