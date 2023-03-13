@@ -8,10 +8,10 @@
     <p>Here will the list of official releases of libvirt-php project but it's empty now since no release has been done yet.</p>
     <p>If you want to see the commits or download the source from <a href="http://git-scm.com">git</a> please refer to project's GIT repository at:</p>
 
-    <pre>http://libvirt.org/git/?p=libvirt-php.git</pre>
+    <pre>https://gitlab.com/libvirt/libvirt-php/</pre>
 
     <p>
-    If you want to see the latest patches committed to the repository can also refer to <a href="http://libvirt.org/git/?p=libvirt-php.git;a=log">GIT log</a>.
+    If you want to see the latest patches committed to the repository can also refer to <a href="https://gitlab.com/libvirt/libvirt-php/-/commits/master">GIT log</a>.
     </p>
   </body>
 </html>

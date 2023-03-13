@@ -13,7 +13,7 @@
         <span>Details of new features and bugs fixed in each release</span>
         <ul>
           <li>
-            <a href="http://libvirt.org/git/?p=libvirt-php.git;a=log">Git log</a>
+            <a href="https://gitlab.com/libvirt/libvirt-php/-/commits/master">Git log</a>
             <span>Latest commit messages from the source repository </span>
           </li>
         </ul>
