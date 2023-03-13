@@ -35,7 +35,7 @@
      <term><parameter>xml</parameter></term>
      <listitem>
       <para>
-	XML description of the domain. For more details see <link xlink:href="http://www.libvirt.org/formatdomain.html">http://www.libvirt.org/formatdomain.html</link>
+	XML description of the domain. For more details see <link xlink:href="https:/www.libvirt.org/formatdomain.html">https:/www.libvirt.org/formatdomain.html</link>
       </para>
      </listitem>
     </varlistentry>

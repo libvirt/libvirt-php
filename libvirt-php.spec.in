@@ -40,7 +40,7 @@ Requires:   php
 
 %description
 PHP language bindings for Libvirt API.
-For more details see: http://www.libvirt.org/php/
+For more details see: https:/www.libvirt.org/php/
 
 %package -n libvirt-php-doc
 Summary:    Document of libvirt-php
@@ -50,7 +50,7 @@ Requires:   libvirt-php = %{version}
 
 %description -n libvirt-php-doc
 PHP language bindings for Libvirt API.
-For more details see: http://www.libvirt.org/php/ http://www.php.net/
+For more details see: https:/www.libvirt.org/php/ http://www.php.net/
 
 This package contain the document for libvirt-php.
 
