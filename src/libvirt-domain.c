@@ -493,7 +493,7 @@ PHP_FUNCTION(libvirt_domain_get_interface_devices)
  * Description:     Function is used to change the VCPU count for the domain
  * Arguments:       @res [resource]: libvirt domain resource
  *                  @numCpus [int]: number of VCPUs to be set for the guest
- *                  @flags [int]: flags for virDomainSetVcpusFlags (available at http://libvirt.org/html/libvirt-libvirt.html#virDomainVcpuFlags)
+ *                  @flags [int]: flags for virDomainSetVcpusFlags (available at https:/www.libvirt.org/html/libvirt-libvirt.html#virDomainVcpuFlags)
  * Returns:         true on success, false on error
  */
 PHP_FUNCTION(libvirt_domain_change_vcpus)

@@ -2,8 +2,8 @@
  ==========================
 
 Libvirt-php is basically just PHP binding for libvirt virtualization toolkit.
-For more information about libvirt please refer to: http://libvirt.org
-The project site for php-libvirt is http://libvirt.org/php and
+For more information about libvirt please refer to: https:/www.libvirt.org
+The project site for php-libvirt is https:/www.libvirt.org/php and
 the documentation can be found in the doc and/or docs subdirectory of
 this repository.
 

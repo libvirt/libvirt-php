@@ -276,7 +276,7 @@
           </dt><dd>
             <span>A configuration editing tool and API</span>
           </dd><dt>
-            <a href="http://libvirt.org/">libvirt</a>
+            <a href="https:/www.libvirt.org/">libvirt</a>
           </dt><dd>
             <span>The open source virtualization API</span>
           </dd></dl>
