@@ -21,7 +21,7 @@
    <methodparam ><type>integer</type><parameter>bandwith</parameter></methodparam>
   </methodsynopsis>
   <para>
-   Performs migration of the domain from one host to another. For description of parameters and flags see <link xlink:href="https://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateToURI2">original documentation</link>.
+   Performs migration of the domain from one host to another. For description of parameters and flags see <link xlink:href="https://libvirt.org/html/libvirt-libvirt.html#virDomainMigrateToURI2">original documentation</link>.
   </para>
   <para>
    Please note that the function returns after the migration is complete. It may take a lot of time to migrate a host. Be sure to configure PHP maximum execution time.

@@ -91,7 +91,7 @@
 ]]>
 </programlisting>
 </para>
-<para>If you are connecting to the TCP socket, you need to provide credentials. These credentials must be set beforehand using SASL. See <link xlink:href="https://www.libvirt.org/auth.html#ACL_server_username">https://www.libvirt.org/auth.html#ACL_server_username</link> for more details. You can You can specify the creentials as third argument. It is supposed to be an array in form of credential_type=>credential value. In example:
+<para>If you are connecting to the TCP socket, you need to provide credentials. These credentials must be set beforehand using SASL. See <link xlink:href="https://libvirt.org/auth.html#ACL_server_username">https://libvirt.org/auth.html#ACL_server_username</link> for more details. You can You can specify the creentials as third argument. It is supposed to be an array in form of credential_type=>credential value. In example:
     <programlisting role="php">
 <![CDATA[
   Array(VIR_CRED_AUTHNAME=>"fred",VIR_CRED_PASSPHRASE=>"fred");

@@ -8,7 +8,7 @@
  <preface xml:id="intro.libvirt">
   &reftitle.intro;
   <para>
-  Libvirt is a toolkit to interact with the virtualization capabilities of recent versions of Linux (and other OSes). This is PHP language binding for it. For more details see <link xlink:href="https://www.libvirt.org/">libvirt homepage</link>.
+  Libvirt is a toolkit to interact with the virtualization capabilities of recent versions of Linux (and other OSes). This is PHP language binding for it. For more details see <link xlink:href="https://libvirt.org/">libvirt homepage</link>.
   </para>
   <para>
   Many of functions here is only PHP binding to Libvirt C function however in some cases argument types are modified to reflect PHP nature. 

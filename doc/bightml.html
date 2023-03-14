@@ -12,7 +12,7 @@
  <div id="intro.libvirt" class="preface"><hr />
   <h1 class="title">Introduction</h1>
   <p class="para">
-  Libvirt is a toolkit to interact with the virtualization capabilities of recent versions of Linux (and other OSes). This is PHP language binding for it. For more details see <a href="https://www.libvirt.org/" class="link external">&raquo; libvirt homepage</a>.
+  Libvirt is a toolkit to interact with the virtualization capabilities of recent versions of Linux (and other OSes). This is PHP language binding for it. For more details see <a href="https://libvirt.org/" class="link external">&raquo; libvirt homepage</a>.
   </p>
   <p class="para">
   Many of functions here is only PHP binding to Libvirt C function however in some cases argument types are modified to reflect PHP nature. 
@@ -787,7 +787,7 @@ Array
 </div>
 <p>
 <br />
-If you are connecting to the TCP socket, you need to provide credentials. These credentials must be set beforehand using SASL. See <a href="https://www.libvirt.org/auth.html#ACL_server_username" class="link external">&raquo; https://www.libvirt.org/auth.html#ACL_server_username</a> for more details. You can You can specify the creentials as third argument. It is supposed to be an array in form of credential_type=&gt;credential value. In example:
+If you are connecting to the TCP socket, you need to provide credentials. These credentials must be set beforehand using SASL. See <a href="https://libvirt.org/auth.html#ACL_server_username" class="link external">&raquo; https://libvirt.org/auth.html#ACL_server_username</a> for more details. You can You can specify the creentials as third argument. It is supposed to be an array in form of credential_type=&gt;credential value. In example:
     </p><div class="example-contents programlisting">
 <div class="phpcode"><code><span style="color: #000000">
 Array(VIR_CRED_AUTHNAME=&gt;"fred",VIR_CRED_PASSPHRASE=&gt;"fred");</span>
@@ -1031,7 +1031,7 @@ Array
      </dt><dd class="listitem">
 
       <p class="para">
-	XML description of the domain. For more details see <a href="https://www.libvirt.org/formatdomain.html" class="link external">&raquo; https://www.libvirt.org/formatdomain.html</a>
+	XML description of the domain. For more details see <a href="https://libvirt.org/formatdomain.html" class="link external">&raquo; https://libvirt.org/formatdomain.html</a>
       </p>
      </dd>
 
@@ -1195,7 +1195,7 @@ Array
      </dt><dd class="listitem">
 
       <p class="para">
-	XML description of the domain. For more details see <a href="https://www.libvirt.org/formatdomain.html" class="link external">&raquo; https://www.libvirt.org/formatdomain.html</a>
+	XML description of the domain. For more details see <a href="https://libvirt.org/formatdomain.html" class="link external">&raquo; https://libvirt.org/formatdomain.html</a>
       </p>
      </dd>
 
@@ -1586,7 +1586,7 @@ Array
    )</div>
 
   <p class="para rdfs-comment">
-  Extract information about progress of a background job on a domain. Will return an error if the domain is not active. For exact description of returned values see <a href="https://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetJobInfo" class="link external">&raquo; original documentation</a>.
+  Extract information about progress of a background job on a domain. Will return an error if the domain is not active. For exact description of returned values see <a href="https://libvirt.org/html/libvirt-libvirt.html#virDomainGetJobInfo" class="link external">&raquo; original documentation</a>.
   </p>
 
  <blockquote><p><b class="note">Note</b>: <b>Libvirt version</b><br />
@@ -1986,7 +1986,7 @@ Array
   <h3 class="title">Return Values</h3>
   
   <p class="para">
-   String with XML description of domain. For more details see <a href="https://www.libvirt.org/formatdomain.html" class="link external">&raquo; https://www.libvirt.org/formatdomain.html</a>.
+   String with XML description of domain. For more details see <a href="https://libvirt.org/formatdomain.html" class="link external">&raquo; https://libvirt.org/formatdomain.html</a>.
   </p>
  </div>
 
@@ -2702,7 +2702,7 @@ This function has been added to Libvirt in version 0.7.5. You need this or newer
    )</div>
 
   <p class="para rdfs-comment">
-   Performs migration of the domain from one host to another. For description of parameters and flags see <a href="https://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateToUri" class="link external">&raquo; original documentation</a>.
+   Performs migration of the domain from one host to another. For description of parameters and flags see <a href="https://libvirt.org/html/libvirt-libvirt.html#virDomainMigrateToUri" class="link external">&raquo; original documentation</a>.
   </p>
   <p class="para">
    Please note that the function returns after the migration is complete. It may take a lot of time to migrate a host. Be sure to configure PHP maximum execution time.
@@ -2780,7 +2780,7 @@ This function has been added to Libvirt in version 0.7.5. You need this or newer
    )</div>
 
   <p class="para rdfs-comment">
-   Performs migration of the domain from one host to another. For description of parameters and flags see <a href="https://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrate" class="link external">&raquo; original documentation</a>.
+   Performs migration of the domain from one host to another. For description of parameters and flags see <a href="https://libvirt.org/html/libvirt-libvirt.html#virDomainMigrate" class="link external">&raquo; original documentation</a>.
   </p>
   <p class="para">
    Please note that the function returns after the migration is complete. It may take a lot of time to migrate a host. Be sure to configure PHP maximum execution time.
