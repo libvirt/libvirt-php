@@ -16,7 +16,7 @@
    <methodparam ><type>resource</type><parameter>domain</parameter></methodparam>
   </methodsynopsis>
   <para>
-  Extract information about progress of a background job on a domain. Will return an error if the domain is not active. For exact description of returned values see <link xlink:href="https:/www.libvirt.org/html/libvirt-libvirt.html#virDomainGetJobInfo">original documentation</link>.
+  Extract information about progress of a background job on a domain. Will return an error if the domain is not active. For exact description of returned values see <link xlink:href="https://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetJobInfo">original documentation</link>.
   </para>
 
  <note><title>Libvirt version</title>

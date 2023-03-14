@@ -8,7 +8,7 @@
         NEWS file for libvirt
 
   Note that this is automatically generated from the news webpage at:
-       https:/www.libvirt.org/news.html
+       https://www.libvirt.org/news.html
 
 </xsl:text>
     <xsl:apply-templates select="html/body/*"/>

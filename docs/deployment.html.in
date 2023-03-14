@@ -15,7 +15,7 @@
 <p>If you're using PHP as a module (<i>mod_php5.so</i>) in the Apache webserver you need to restart your Apache to trigger configuration reload for PHP.</p>
 <p>If you're not sure that you have everything set up right and you don't want to restart your Apache webserver before you're sure everything will be working fine you could try running the test using cli-based PHP interpreter. There are some example scripts coming along the source codes in the example subdirectory so you can try to run php on the index.php script to check whether it's working fine to establish connection or not.</p>
 
-<p>When you're having some issues with the connection make sure the apache user is having access to libvirt. For more information please see <a href="https:/www.libvirt.org/auth.html">Libvirt access control page.</a>
+<p>When you're having some issues with the connection make sure the apache user is having access to libvirt. For more information please see <a href="https://www.libvirt.org/auth.html">Libvirt access control page.</a>
     </p>
 
   </body>
