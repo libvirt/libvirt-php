@@ -20,7 +20,7 @@ Group:      Development/Libraries
 %endif
 License:    PHP
 URL:        https://www.libvirt.org/php
-Source0:    https://www.libvirt.org/sources/php/libvirt-php-%{version}.tar.xz
+Source0:    https://download.libvirt.org/php/libvirt-php-%{version}.tar.xz
 BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root
 
 BuildRequires:  php-devel
