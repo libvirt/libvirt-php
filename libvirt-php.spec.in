@@ -19,7 +19,7 @@ Group:      Development/Libraries/PHP
 Group:      Development/Libraries
 %endif
 License:    PHP
-URL:        https://libvirt.org/php
+URL:        https://php.libvirt.org
 Source0:    https://download.libvirt.org/php/libvirt-php-%{version}.tar.xz
 BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root
 
@@ -40,7 +40,7 @@ Requires:   php
 
 %description
 PHP language bindings for Libvirt API.
-For more details see: https://libvirt.org/php/
+For more details see: https://php.libvirt.org/
 
 %package -n libvirt-php-doc
 Summary:    Document of libvirt-php
@@ -50,7 +50,7 @@ Requires:   libvirt-php = %{version}
 
 %description -n libvirt-php-doc
 PHP language bindings for Libvirt API.
-For more details see: https://libvirt.org/php/ http://www.php.net/
+For more details see: https://php.libvirt.org/ http://www.php.net/
 
 This package contain the document for libvirt-php.
 
