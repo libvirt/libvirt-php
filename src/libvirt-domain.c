@@ -1438,9 +1438,10 @@ PHP_FUNCTION(libvirt_domain_undefine)
 
 /*
  * Function name:   libvirt_domain_undefine_flags
+ * Since version:   0.5.6
  * Description:     Function is used to undefine(with flags) the domain identified by it's resource
  * Arguments:       @res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
- *                  @flags [int]: optional flags
+ *                  @flags [int]: optional flags, bitwise-OR of VIR_DOMAIN_UNDEFINE_*
  * Returns:         TRUE for success, FALSE on error
  */
 PHP_FUNCTION(libvirt_domain_undefine_flags)
