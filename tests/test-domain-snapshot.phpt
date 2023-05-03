@@ -67,7 +67,7 @@
 
 	unset($snapshot_res);
 
-	$snapshot_res = libvirt_domain_snapshot_create($res);
+	$snapshot_res = libvirt_domain_snapshot_create_xml($res, "<domainsnapshot/>");
 	if (!libvirt_domain_snapshot_delete($snapshot_res))
 		bail('Cannot delete snapshot with children: '.libvirt_get_last_error());
 

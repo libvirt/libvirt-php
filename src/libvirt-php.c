@@ -384,6 +384,12 @@ ZEND_ARG_INFO(0, name)
 ZEND_ARG_INFO(0, flags)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_libvirt_domain_snapshot_create_xml, 0, 0, 2)
+ZEND_ARG_INFO(0, conn)
+ZEND_ARG_INFO(0, xml)
+ZEND_ARG_INFO(0, flags)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_libvirt_conn_name, 0, 0, 2)
 ZEND_ARG_INFO(0, conn)
 ZEND_ARG_INFO(0, name)
