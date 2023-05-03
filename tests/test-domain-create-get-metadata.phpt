@@ -24,5 +24,5 @@
 	unset($res);
 	unset($conn);
 
-	testskip( basename(__FILE__) );
+	success( basename(__FILE__) );
 ?>
