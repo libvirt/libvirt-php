@@ -547,7 +547,7 @@ class Libvirt {
     function domain_change_xml($domain, $xml) {
         $dom = $this->get_domain_object($domain);
 
-        if (!($old_xml = libvirt_domain_get_xml_desc($dom, NULL)))
+        if (!($old_xml = libvirt_domain_get_xml_desc($dom)))
             return $this->_set_last_error();
         if (!libvirt_domain_undefine($dom))
             return $this->_set_last_error();
@@ -757,7 +757,7 @@ class Libvirt {
         if (!$dom)
             return false;
 
-        $tmp = libvirt_domain_get_xml_desc($dom, $get_inactive ? VIR_DOMAIN_XML_INACTIVE : 0);
+        $tmp = libvirt_domain_get_xml_desc($dom, NULL, $get_inactive ? VIR_DOMAIN_XML_INACTIVE : 0);
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 

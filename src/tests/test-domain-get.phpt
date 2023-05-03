@@ -48,7 +48,7 @@ echo "# libvirt_domain_is_persistent\n";
 var_dump(libvirt_domain_is_persistent($dom) !== -1);
 
 echo "# libvirt_domain_get_xml_desc\n";
-$xmlstr = libvirt_domain_get_xml_desc($dom, NULL);
+$xmlstr = libvirt_domain_get_xml_desc($dom);
 
 $xmlok = (strpos($xmlstr, "<name>{$dom_name}</name>") &&
           strpos($xmlstr, "<uuid>{$dom_uuid_str}</uuid>"));

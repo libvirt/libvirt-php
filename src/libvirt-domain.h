@@ -45,7 +45,7 @@
     PHP_FE(libvirt_domain_get_counts,            arginfo_libvirt_conn)                         \
     PHP_FE(libvirt_domain_is_persistent,         arginfo_libvirt_conn)                         \
     PHP_FE(libvirt_domain_lookup_by_name,        arginfo_libvirt_conn_name)                    \
-    PHP_FE(libvirt_domain_get_xml_desc,          arginfo_libvirt_conn_xpath)                   \
+    PHP_FE(libvirt_domain_get_xml_desc,          arginfo_libvirt_conn)                         \
     PHP_FE(libvirt_domain_get_disk_devices,      arginfo_libvirt_conn)                         \
     PHP_FE(libvirt_domain_get_interface_devices, arginfo_libvirt_conn)                         \
     PHP_FE(libvirt_domain_change_vcpus,          arginfo_libvirt_domain_change_vcpus)          \

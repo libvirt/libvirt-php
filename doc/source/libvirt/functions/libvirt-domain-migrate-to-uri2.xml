@@ -58,7 +58,7 @@
    }
    echo ("Domain found\n");
 
-   $xmllibvirt=libvirt_domain_get_xml_desc($domain, NULL);
+   $xmllibvirt=libvirt_domain_get_xml_desc($domain);
    $spicePort=5900;
    $xml='';
    $pos1=strpos($xmllibvirt,'<graphics');
