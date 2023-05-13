@@ -882,7 +882,6 @@ PHP_FUNCTION(libvirt_connect_get_all_domain_stats)
     const char *name = NULL;
     int i;
     int j;
-    virTypedParameter params;
     virDomainStatsRecordPtr *retstats = NULL;
 
     GET_CONNECTION_FROM_ARGS("r|ll", &zconn, &stats, &flags);
@@ -898,30 +897,7 @@ PHP_FUNCTION(libvirt_connect_get_all_domain_stats)
         VIRT_ARRAY_INIT(arr2);
 
         for (j = 0; j < retstats[i]->nparams; j++) {
-            params = retstats[i]->params[j];
-            switch (params.type) {
-            case VIR_TYPED_PARAM_INT:
-                add_assoc_long(arr2, params.field, params.value.i);
-                break;
-            case VIR_TYPED_PARAM_UINT:
-                add_assoc_long(arr2, params.field, params.value.ui);
-                break;
-            case VIR_TYPED_PARAM_LLONG:
-                add_assoc_long(arr2, params.field, params.value.l);
-                break;
-            case VIR_TYPED_PARAM_ULLONG:
-                add_assoc_long(arr2, params.field, params.value.ul);
-                break;
-            case VIR_TYPED_PARAM_DOUBLE:
-                add_assoc_double(arr2, params.field, params.value.d);
-                break;
-            case VIR_TYPED_PARAM_BOOLEAN:
-                add_assoc_bool(arr2, params.field, params.value.b);
-                break;
-            case VIR_TYPED_PARAM_STRING:
-                VIRT_ADD_ASSOC_STRING(arr2, params.field, params.value.s);
-                break;
-            }
+            VIR_TYPED_PARAMETER_ASSOC(arr2, retstats[i]->params[j]);
         }
         name = virDomainGetName(retstats[i]->dom);
         zend_hash_update(Z_ARRVAL_P(return_value), zend_string_init(name, strlen(name), 0), arr2);
