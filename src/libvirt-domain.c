@@ -13,6 +13,7 @@
 #include "libvirt-domain.h"
 #include "sockets.h"
 #include "vncfunc.h"
+#include "typedparams.h"
 
 DEBUG_INIT("domain");
 
@@ -1808,6 +1809,52 @@ PHP_FUNCTION(libvirt_domain_block_commit)
     if (retval == -1)
         RETURN_FALSE;
 
+    RETURN_TRUE;
+}
+
+/*
+ * Function name:   libvirt_domain_block_copy
+ * Since version:   0.5.8
+ * Description:     Function is used to commit block job
+ * Arguments:       @res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
+ *                  @disk [string]: path to the block device, or device shorthand
+ *                  @destxml [string]: XML description of the copy destination
+ *                  @params: Associative array of block copy parameter objects, or NULL
+ *                  @flags [int]: bitwise-OR of VIR_DOMAIN_BLOCK_COPY_*
+ *
+ * Returns:         true on success fail on error
+ */
+PHP_FUNCTION(libvirt_domain_block_copy)
+{
+    php_libvirt_domain *domain = NULL;
+    zval *zdomain;
+    int retval;
+    char *disk = NULL;
+    size_t disk_len = 0;
+    char *destxml = NULL;
+    size_t destxml_len = 0;
+    zval *params = NULL;
+    virTypedParameterPtr params2 = NULL;
+    int nparams2 = 0;
+    zend_long flags = 0;
+    virPHPTypedParamsHint hints[] = {
+        { VIR_DOMAIN_BLOCK_COPY_BANDWIDTH, VIR_TYPED_PARAM_ULLONG },
+        { VIR_DOMAIN_BLOCK_COPY_GRANULARITY, VIR_TYPED_PARAM_UINT },
+        { VIR_DOMAIN_BLOCK_COPY_BUF_SIZE, VIR_TYPED_PARAM_ULLONG }
+    };
+
+    GET_DOMAIN_FROM_ARGS("rss|a!l", &zdomain, &disk, &disk_len, &destxml, &destxml_len, &params, &flags);
+
+    if (parseTypedParameter(params, &params2, &nparams2, hints, ARRAY_CARDINALITY(hints)) < 0)
+        RETURN_FALSE;
+
+    retval = virDomainBlockCopy(domain->domain, disk, destxml, params2, nparams2, flags);
+    if (retval == -1) {
+        virTypedParamsFree(params2, nparams2);
+        RETURN_FALSE;
+    }
+
+    virTypedParamsFree(params2, nparams2);
     RETURN_TRUE;
 }
 
