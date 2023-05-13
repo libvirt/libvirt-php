@@ -104,7 +104,7 @@ static int libvirt_virConnectCredType[] = {
  * Function name:   libvirt_connect
  * Since version:   0.4.1(-1)
  * Description:     libvirt_connect() is used to connect to the specified libvirt daemon using the specified URL, user can also set the readonly flag and/or set credentials for connection
- * Arguments:       @url [string]: URI for connection
+ * Arguments:       @url [string]: URI for connection, can be NULL
  *                  @readonly [bool]: flag whether to use read-only connection or not
  *                  @credentials [array]: array of connection credentials
  * Returns:         libvirt connection resource
@@ -136,7 +136,7 @@ PHP_FUNCTION(libvirt_connect)
 
     unsigned long libVer;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS(), "|sba", &url, &url_len, &readonly, &zcreds) == FAILURE) {
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "|s!ba", &url, &url_len, &readonly, &zcreds) == FAILURE) {
         RETURN_FALSE;
     }
 
@@ -155,7 +155,7 @@ PHP_FUNCTION(libvirt_connect)
     }
 
     /* If 'null' value has been passed as URL override url to NULL value to autodetect the hypervisor */
-    if ((url == NULL) || (strcasecmp(url, "NULL") == 0))
+    if (url && strcasecmp(url, "NULL") == 0)
         url = NULL;
 
     conn = (php_libvirt_connection *)emalloc(sizeof(php_libvirt_connection));
