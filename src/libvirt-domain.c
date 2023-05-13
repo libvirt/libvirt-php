@@ -122,7 +122,7 @@ PHP_FUNCTION(libvirt_domain_new)
                 vmDisks[i++] = disk;
             }
         }
-    } VIRT_FOREACH_END();
+    }
     numDisks = i;
 
     /* Parse all networks from array */
@@ -140,7 +140,7 @@ PHP_FUNCTION(libvirt_domain_new)
                 vmNetworks[i++] = network;
             }
         }
-    } VIRT_FOREACH_END();
+    }
     numNets = i;
 
     tmp = installation_get_xml(conn->conn, name, memMB, maxmemMB,
@@ -3030,7 +3030,7 @@ PHP_FUNCTION(libvirt_domain_send_key_api)
         if (Z_TYPE_P(data) == IS_LONG) {
             keycodes[i++] = (uint) Z_LVAL_P(data);
         }
-    } VIRT_FOREACH_END();
+    }
 
     if (virDomainSendKey(domain->domain, codeset, holdtime, keycodes, count,
                          flags) != 0) {

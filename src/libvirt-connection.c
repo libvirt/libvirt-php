@@ -191,7 +191,7 @@ PHP_FUNCTION(libvirt_connect)
                     j++;
                 }
             }
-        } VIRT_FOREACH_END();
+        }
         DPRINTF("%s: Found %d elements for credentials\n", PHPFUNC, j);
         creds[0].count = j;
         libvirt_virConnectAuth.cbdata = (void *)creds;

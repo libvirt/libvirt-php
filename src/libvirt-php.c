@@ -2042,7 +2042,7 @@ long get_next_free_numeric_value(virDomainPtr domain, char *xpath)
                     max_slot = num;
             }
         }
-    } VIRT_FOREACH_END();
+    }
 
     efree(output);
     VIR_FREE(xml);
@@ -2589,7 +2589,7 @@ void parse_array(zval *arr, tVMDisk *disk, tVMNetwork *network)
                 }
             }
         }
-    } VIRT_FOREACH_END();
+    }
 }
 
 

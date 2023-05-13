@@ -145,8 +145,6 @@
          (_zv = zend_hash_get_current_data_ex(_ht, &_pos)) != NULL; \
          zend_hash_move_forward_ex(_ht, &_pos)) \
 
-# define VIRT_FOREACH_END(_dummy)
-
 # define VIRT_HASH_CURRENT_KEY_INFO(_ht, _pos, _info) \
     do { \
         zend_string *tmp_name = NULL; \
