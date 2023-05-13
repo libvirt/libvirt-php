@@ -20,6 +20,7 @@ libvirt_php_la_SOURCES = \
 	util.c util.h	\
 	vncfunc.c vncfunc.h	\
 	sockets.c sockets.h \
+	typedparams.c typedparams.h \
 	libvirt-php.c libvirt-php.h \
 	libvirt-connection.c libvirt-connection.h \
 	libvirt-domain.c libvirt-domain.h \
