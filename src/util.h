@@ -145,6 +145,13 @@
          (_zv = zend_hash_get_current_data_ex(_ht, &_pos)) != NULL; \
          zend_hash_move_forward_ex(_ht, &_pos)) \
 
+typedef struct _php_libvirt_hash_key_info {
+    char *name;
+    unsigned int length;
+    zend_ulong index;
+    unsigned int type;
+} php_libvirt_hash_key_info;
+
 # define VIRT_HASH_CURRENT_KEY_INFO(_ht, _pos, _info) \
     do { \
         zend_string *tmp_name = NULL; \

@@ -123,13 +123,6 @@ typedef struct tVMNetwork {
     char *model;
 } tVMNetwork;
 
-typedef struct _php_libvirt_hash_key_info {
-    char *name;
-    unsigned int length;
-    zend_ulong index;
-    unsigned int type;
-} php_libvirt_hash_key_info;
-
 ZEND_BEGIN_MODULE_GLOBALS(libvirt)
     char *last_error;
     char *vnc_location;
