@@ -86,6 +86,7 @@
     PHP_FE(libvirt_domain_set_max_memory,        arginfo_libvirt_domain_set_memory)            \
     PHP_FE(libvirt_domain_set_memory_flags,      arginfo_libvirt_domain_set_memory_flags)      \
     PHP_FE(libvirt_domain_block_commit,          arginfo_libvirt_domain_block_commit)          \
+    PHP_FE(libvirt_domain_block_pull,            arginfo_libvirt_domain_block_pull)            \
     PHP_FE(libvirt_domain_block_stats,           arginfo_libvirt_conn_path)                    \
     PHP_FE(libvirt_domain_block_resize,          arginfo_libvirt_domain_block_resize)          \
     PHP_FE(libvirt_domain_block_job_info,        arginfo_libvirt_domain_block_job_info)        \
@@ -180,6 +181,7 @@ PHP_FUNCTION(libvirt_domain_set_memory_flags);
 PHP_FUNCTION(libvirt_domain_memory_peek);
 PHP_FUNCTION(libvirt_domain_memory_stats);
 PHP_FUNCTION(libvirt_domain_block_commit);
+PHP_FUNCTION(libvirt_domain_block_pull);
 PHP_FUNCTION(libvirt_domain_block_stats);
 PHP_FUNCTION(libvirt_domain_block_resize);
 PHP_FUNCTION(libvirt_domain_block_job_info);

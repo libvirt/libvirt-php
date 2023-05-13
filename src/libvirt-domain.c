@@ -1812,6 +1812,35 @@ PHP_FUNCTION(libvirt_domain_block_commit)
 }
 
 /*
+ * Function name:   libvirt_domain_block_pull
+ * Since version:   0.5.8
+ * Description:     Function is used to populate a disk image with data from its backing image.
+ * Arguments:       @res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
+ *                  @disk [string]: path to the block device, or device shorthand
+ *                  @bandwidth [int]: (optional) specify bandwidth limit; flags determine the unit
+ *                  @flags [int]: bitwise-OR of VIR_DOMAIN_BLOCK_PULL_*
+ * Returns:         true on success fail on error
+ */
+PHP_FUNCTION(libvirt_domain_block_pull)
+{
+    php_libvirt_domain *domain = NULL;
+    zval *zdomain;
+    int retval;
+    char *disk = NULL;
+    size_t disk_len;
+    zend_long bandwidth = 0;
+    zend_long flags = 0;
+
+    GET_DOMAIN_FROM_ARGS("rs|ll", &zdomain, &disk, &disk_len, &bandwidth, &flags);
+
+    retval = virDomainBlockPull(domain->domain, disk, bandwidth, flags);
+    if (retval == -1)
+        RETURN_FALSE;
+
+    RETURN_TRUE;
+}
+
+/*
  * Function name:   libvirt_domain_block_stats
  * Since version:   0.4.1(-1)
  * Description:     Function is used to get the domain's block stats

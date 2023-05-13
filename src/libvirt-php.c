@@ -234,6 +234,13 @@ ZEND_ARG_INFO(0, base)
 ZEND_ARG_INFO(0, top)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_libvirt_domain_block_pull, 0, 0, 2)
+ZEND_ARG_INFO(0, res)
+ZEND_ARG_INFO(0, disk)
+ZEND_ARG_INFO(0, bandwidth)
+ZEND_ARG_INFO(0, flags)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_libvirt_conn_path, 0, 0, 2)
 ZEND_ARG_INFO(0, conn)
 ZEND_ARG_INFO(0, path)
