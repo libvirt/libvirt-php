@@ -1841,6 +1841,41 @@ PHP_FUNCTION(libvirt_domain_block_pull)
 }
 
 /*
+ * Function name:   libvirt_domain_block_rebase
+ * Since version:   0.5.8
+ * Description:     Populate a disk image with data from its backing image
+ *                  chain, and setting the backing image to @base, or
+ *                  alternatively copy an entire backing chain to a new file @base.
+ * Arguments:       @res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
+ *                  @disk [string]: path to the block device, or device shorthand
+ *                  @base [string]: path to backing file to keep, or device shorthand,
+ *                                  or NULL for no backing file
+ *                  @bandwidth [int]: (optional) specify bandwidth limit; flags determine the unit
+ *                  @flags [int]: bitwise-OR of VIR_DOMAIN_BLOCK_REBASE_*
+ * Returns:         true on success fail on error
+ */
+PHP_FUNCTION(libvirt_domain_block_rebase)
+{
+    php_libvirt_domain *domain = NULL;
+    zval *zdomain;
+    int retval;
+    char *disk = NULL;
+    size_t disk_len;
+    char *base = NULL;
+    size_t base_len;
+    zend_long bandwidth = 0;
+    zend_long flags = 0;
+
+    GET_DOMAIN_FROM_ARGS("rss!|ll", &zdomain, &disk, &disk_len, &base, &base_len, &bandwidth, &flags);
+
+    retval = virDomainBlockRebase(domain->domain, disk, base, bandwidth, flags);
+    if (retval == -1)
+        RETURN_FALSE;
+
+    RETURN_TRUE;
+}
+
+/*
  * Function name:   libvirt_domain_block_stats
  * Since version:   0.4.1(-1)
  * Description:     Function is used to get the domain's block stats
