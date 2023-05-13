@@ -390,9 +390,7 @@ PHP_FUNCTION(libvirt_domain_get_xml_desc)
     zend_long flags = 0;
     int retval = -1;
 
-    GET_DOMAIN_FROM_ARGS("rs|l", &zdomain, &xpath, &xpath_len, &flags);
-    if (xpath_len < 1)
-        xpath = NULL;
+    GET_DOMAIN_FROM_ARGS("rs!|l", &zdomain, &xpath, &xpath_len, &flags);
 
     DPRINTF("%s: Getting the XML for domain %p (xPath = %s)\n", PHPFUNC, domain->domain, xpath);
 
