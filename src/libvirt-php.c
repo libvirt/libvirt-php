@@ -1192,6 +1192,10 @@ unsigned long long size_def_to_mbytes(char *arg)
 # define AI_CANONIDN 0
 #endif
 
+#ifndef HOST_NAME_MAX
+# define HOST_NAME_MAX 256
+#endif
+
 /*
  * Private function name:   is_local_connection
  * Since version:           0.4.5
@@ -1202,13 +1206,17 @@ unsigned long long size_def_to_mbytes(char *arg)
 int is_local_connection(virConnectPtr conn)
 {
 #ifndef EXTWIN
-    int ret;
+    int ret = 0;
     char *lv_hostname = NULL, *result = NULL;
-    char name[1024];
+    char name[HOST_NAME_MAX + 1] = { 0 };
     struct addrinfo hints, *info = NULL;
+    int r;
 
-    name[1023] = '\0';
-    gethostname(name, 1024);
+    if (gethostname(name, sizeof(name)) < 0) {
+        DPRINTF("%s: gethostname returned error: %s\n", __FUNCTION__, strerror(errno));
+        /* assume remote connection */
+        return 0;
+    }
 
     if (strcmp(name, "localhost") == 0)
         return 1;
@@ -1216,8 +1224,10 @@ int is_local_connection(virConnectPtr conn)
     lv_hostname = virConnectGetHostname(conn);
 
     /* gethostname gave us FQDN, compare */
-    if (strchr(name, '.') && strcmp(name, lv_hostname) == 0)
-        return 1;
+    if (strchr(name, '.') && strcmp(name, lv_hostname) == 0) {
+        ret = 1;
+        goto cleanup;
+    }
 
     /* need to get FQDN of the local name */
     memset(&hints, 0, sizeof(hints));
@@ -1225,20 +1235,24 @@ int is_local_connection(virConnectPtr conn)
     hints.ai_family = AF_UNSPEC;
 
     /* could not get FQDN or got localhost, use whatever gethostname gave us */
-    if (getaddrinfo(name, NULL, &hints, &info) != 0 ||
-        info->ai_canonname == NULL ||
-        strcmp(info->ai_canonname, "localhost") == 0)
+    if ((r = getaddrinfo(name, NULL, &hints, &info)) < 0) {
+        DPRINTF("%s: getaddrinfo returned error: %s\n", __FUNCTION__, gai_strerror(r));
         result = strdup(name);
-    else
-        result = strdup(info->ai_canonname);
+    } else {
+        if (info->ai_canonname == NULL ||
+            strcmp(info->ai_canonname, "localhost") == 0)
+            result = strdup(name);
+        else
+            result = strdup(info->ai_canonname);
+        freeaddrinfo(info);
+    }
 
     ret = strcmp(result, lv_hostname) == 0;
 
-    freeaddrinfo(info);
-    if (lv_hostname)
-        VIR_FREE(lv_hostname);
-    if (result)
-        VIR_FREE(result);
+
+ cleanup:
+    VIR_FREE(lv_hostname);
+    VIR_FREE(result);
 
     return ret;
 #else
