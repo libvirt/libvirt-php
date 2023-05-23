@@ -1188,6 +1188,10 @@ unsigned long long size_def_to_mbytes(char *arg)
     return atoi(arg) * multiplicator;
 }
 
+#ifndef AI_CANONIDN
+# define AI_CANONIDN 0
+#endif
+
 /*
  * Private function name:   is_local_connection
  * Since version:           0.4.5
