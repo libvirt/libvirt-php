@@ -14,11 +14,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#ifdef __APPLE__
 #include <netinet/tcp.h>
-#else
-#include <linux/tcp.h>
-#endif
 
 #include "sockets.h"
 #include "util.h"
