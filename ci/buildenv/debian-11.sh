@@ -38,6 +38,7 @@ function install_buildenv() {
             pkgconf \
             python3 \
             python3-docutils \
+            tar \
             xsltproc \
             xz-utils
     sed -Ei 's,^# (en_US\.UTF-8 .*)$,\1,' /etc/locale.gen

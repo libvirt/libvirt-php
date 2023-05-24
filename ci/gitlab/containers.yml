@@ -21,18 +21,18 @@ x86_64-debian-sid-container:
     NAME: debian-sid
 
 
-x86_64-fedora-36-container:
-  extends: .container_job
-  allow_failure: false
-  variables:
-    NAME: fedora-36
-
-
 x86_64-fedora-37-container:
   extends: .container_job
   allow_failure: false
   variables:
     NAME: fedora-37
+
+
+x86_64-fedora-38-container:
+  extends: .container_job
+  allow_failure: false
+  variables:
+    NAME: fedora-38
 
 
 x86_64-fedora-rawhide-container:
@@ -42,11 +42,11 @@ x86_64-fedora-rawhide-container:
     NAME: fedora-rawhide
 
 
-x86_64-opensuse-leap-153-container:
+x86_64-opensuse-leap-15-container:
   extends: .container_job
   allow_failure: false
   variables:
-    NAME: opensuse-leap-153
+    NAME: opensuse-leap-15
 
 
 x86_64-opensuse-tumbleweed-container:

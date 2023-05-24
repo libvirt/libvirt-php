@@ -18,6 +18,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
                       ccache \
                       gcc \
                       git \
+                      libc6-dev \
                       libtool \
                       libtool-bin \
                       libvirt-dev \
@@ -27,6 +28,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
                       make \
                       php-dev \
                       pkgconf \
+                      tar \
                       xsltproc \
                       xz-utils && \
     eatmydata apt-get autoremove -y && \

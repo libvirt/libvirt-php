@@ -15,6 +15,7 @@ RUN zypper dist-upgrade -y && \
            gcc \
            gettext-devel \
            git \
+           glibc-devel \
            glibc-locale \
            libtool \
            libvirt-devel \
@@ -25,6 +26,7 @@ RUN zypper dist-upgrade -y && \
            php-devel \
            pkgconfig \
            rpm-build \
+           tar \
            xz && \
     zypper clean --all && \
     rpm -qa | sort > /packages.txt && \

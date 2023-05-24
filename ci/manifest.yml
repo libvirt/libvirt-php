@@ -23,16 +23,16 @@ targets:
         allow-failure: true
 
 
-  fedora-36: x86_64
-
   fedora-37: x86_64
+
+  fedora-38: x86_64
 
   fedora-rawhide:
     jobs:
       - arch: x86_64
         allow-failure: true
 
-  opensuse-leap-153: x86_64
+  opensuse-leap-15: x86_64
 
   opensuse-tumbleweed:
     jobs:

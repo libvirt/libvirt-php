@@ -40,6 +40,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
                       pkgconf \
                       python3 \
                       python3-docutils \
+                      tar \
                       xsltproc \
                       xz-utils && \
     eatmydata apt-get autoremove -y && \

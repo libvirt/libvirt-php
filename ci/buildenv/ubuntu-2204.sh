@@ -16,6 +16,7 @@ function install_buildenv() {
             ccache \
             gcc \
             git \
+            libc6-dev \
             libtool \
             libtool-bin \
             libvirt-dev \
@@ -25,6 +26,7 @@ function install_buildenv() {
             make \
             php-dev \
             pkgconf \
+            tar \
             xsltproc \
             xz-utils
     sed -Ei 's,^# (en_US\.UTF-8 .*)$,\1,' /etc/locale.gen

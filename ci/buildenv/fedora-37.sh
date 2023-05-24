@@ -14,6 +14,7 @@ function install_buildenv() {
         gcc \
         gettext-devel \
         git \
+        glibc-devel \
         glibc-langpack-en \
         libtool \
         libvirt-devel \
@@ -24,6 +25,7 @@ function install_buildenv() {
         php-devel \
         pkgconfig \
         rpm-build \
+        tar \
         xz
     rpm -qa | sort > /packages.txt
     mkdir -p /usr/libexec/ccache-wrappers
