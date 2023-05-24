@@ -7,6 +7,21 @@ gitlab:
   project: libvirt-php
 
 targets:
+  alpine-317:
+    jobs:
+      - arch: x86_64
+        variables:
+          CONFIGURE_ARGS: --with-php=/usr/bin/php81 --with-php-config=/usr/bin/php-config81
+
+  alpine-318:
+    jobs:
+      - arch: x86_64
+
+  alpine-edge:
+    jobs:
+      - arch: x86_64
+        allow-failure: true
+
   debian-11:
     projects:
       - libvirt-php

@@ -7,6 +7,62 @@
 
 # Native build jobs
 
+x86_64-alpine-317-prebuilt-env:
+  extends: .native_build_job_prebuilt_env
+  needs:
+    - job: x86_64-alpine-317-container
+      optional: true
+  allow_failure: false
+  variables:
+    CONFIGURE_ARGS: --with-php=/usr/bin/php81 --with-php-config=/usr/bin/php-config81
+    NAME: alpine-317
+
+x86_64-alpine-317-local-env:
+  extends: .native_build_job_local_env
+  needs: []
+  allow_failure: false
+  variables:
+    CONFIGURE_ARGS: --with-php=/usr/bin/php81 --with-php-config=/usr/bin/php-config81
+    IMAGE: docker.io/library/alpine:3.17
+    NAME: alpine-317
+
+
+x86_64-alpine-318-prebuilt-env:
+  extends: .native_build_job_prebuilt_env
+  needs:
+    - job: x86_64-alpine-318-container
+      optional: true
+  allow_failure: false
+  variables:
+    NAME: alpine-318
+
+x86_64-alpine-318-local-env:
+  extends: .native_build_job_local_env
+  needs: []
+  allow_failure: false
+  variables:
+    IMAGE: docker.io/library/alpine:3.18
+    NAME: alpine-318
+
+
+x86_64-alpine-edge-prebuilt-env:
+  extends: .native_build_job_prebuilt_env
+  needs:
+    - job: x86_64-alpine-edge-container
+      optional: true
+  allow_failure: true
+  variables:
+    NAME: alpine-edge
+
+x86_64-alpine-edge-local-env:
+  extends: .native_build_job_local_env
+  needs: []
+  allow_failure: true
+  variables:
+    IMAGE: docker.io/library/alpine:edge
+    NAME: alpine-edge
+
+
 x86_64-debian-11-git-prebuilt-env:
   extends: .native_git_build_job_prebuilt_env
   needs:

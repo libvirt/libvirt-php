@@ -7,6 +7,27 @@
 
 # Native container jobs
 
+x86_64-alpine-317-container:
+  extends: .container_job
+  allow_failure: false
+  variables:
+    NAME: alpine-317
+
+
+x86_64-alpine-318-container:
+  extends: .container_job
+  allow_failure: false
+  variables:
+    NAME: alpine-318
+
+
+x86_64-alpine-edge-container:
+  extends: .container_job
+  allow_failure: true
+  variables:
+    NAME: alpine-edge
+
+
 x86_64-debian-11-container:
   extends: .container_job
   allow_failure: false
