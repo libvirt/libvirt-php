@@ -1,4 +1,4 @@
-<domain type='kvm'>
+<domain type='qemu'>
   <name>test-guest-qcow</name>
   <uuid>e0cccc71-1a93-d008-15c0-60155feecb01</uuid>
   <memory>65565</memory>
