@@ -193,11 +193,6 @@ if test "$PHPVERNUM" -lt 70000 ; then
     AC_MSG_ERROR([PHP too old; please upgrade to 7.0.0 at least])
 fi
 
-AC_PATH_PROG([PHPIZE], [phpize], [no], [`$PHPCONFIG --prefix`/bin$PATH_SEPARATOR$PATH])
-if test "x$PHPIZE" = "xno"; then
-    AC_MSG_ERROR([phpize not found; please install the PHP SDK])
-fi
-
 PHP_CFLAGS=$($PHPCONFIG --includes)
 PHP_LDFLAGS=$($PHPCONFIG --ldflags)
 AC_SUBST(PHP_CFLAGS)
@@ -216,7 +211,6 @@ else
 fi
 
 AC_SUBST([SHLIB_FLAGS])
-AC_SUBST([PHPIZE])
 AC_SUBST([PHPCONFIG])
 AC_SUBST([PHPEXECUTABLE])
 AC_CONFIG_FILES([Makefile tools/Makefile src/Makefile \
