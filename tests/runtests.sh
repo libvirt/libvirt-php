@@ -3,13 +3,22 @@
 : ${srcdir=.}
 
 nf=$1
-tests=( "test-version-check" "test-version-get" "test-get-emulator" "test-logging"
-		"test-connect" "test-conn-limit"
-		"test-domain-define-undefine"
-		"test-domain-define-create-destroy"
-		"test-domain-create" "test-domain-create-and-get-xpath" "test-domain-create-and-coredump"
-		"test-install" "test-get-models" "test-get-models-unsupported-hw" "test-domain-create-get-metadata"
-	)
+tests=\
+"test-version-check" \
+"test-version-get" \
+"test-get-emulator" \
+"test-logging" \
+"test-connect" \
+"test-conn-limit" \
+"test-domain-define-undefine" \
+"test-domain-define-create-destroy" \
+"test-domain-create" \
+"test-domain-create-and-get-xpath" \
+"test-domain-create-and-coredump" \
+"test-install" \
+"test-get-models" \
+"test-get-models-unsupported-hw" \
+"test-domain-create-get-metadata"
 
 run_test()
 {
@@ -32,7 +41,7 @@ run_test()
 touch /tmp/test-libvirt-php.tmp
 
 error=0
-for atest in ${tests[@]}
+for atest in ${tests}
 do
 	run_test $atest $nf; ret="$?"
 
