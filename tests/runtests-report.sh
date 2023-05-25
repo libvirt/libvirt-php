@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 AUTHOR_MAIL=minovotn@redhat.com
 MAIL_SUBJECT="[libvirt-php bug report] libvirt-php check error"
