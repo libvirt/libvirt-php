@@ -26,7 +26,7 @@ run_test()
 	local nf=$2
 	ret=0
 
-	php -n -c "${srcdir}/php.ini" "${srcdir}/${name}.phpt"
+	@PHPEXECUTABLE@ -n -c "${srcdir}/php.ini" "${srcdir}/${name}.phpt"
 	if [ "x$?" != "x0" -a "x$?" != "x77" ]; then
 		if [ "x$nf" == 'x1' ]; then
 			ret=1

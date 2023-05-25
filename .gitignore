@@ -18,6 +18,8 @@
 /missing
 /tests/*.log
 /tests/*.trs
+/tests/check_parameters.sh
+/tests/runtests.sh
 /tests/functions.phpt
 /test-driver
 /AUTHORS

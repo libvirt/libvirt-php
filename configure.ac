@@ -148,6 +148,27 @@ AC_ARG_WITH([html-subdir], [AS_HELP_STRING([--with-html-subdir=path],
             [HTML_DIR="$HTML_DIR/\$(PACKAGE)-\$(VERSION)/html"])
 AC_SUBST([HTML_DIR])
 
+AC_ARG_WITH([php], [AS_HELP_STRING([--with-php=path],
+            [php executable name, by default search for 'php' in $PATH])])
+
+if test "x$with_php" != "x" ; then
+    AC_MSG_CHECKING(for php executable)
+    PHPEXECUTABLE=$with_php
+    AC_MSG_RESULT($with_php)
+else
+    AC_PATH_PROG([PHPEXECUTABLE], [php], [no])
+fi
+
+if test "x$PHPEXECUTABLE" = "xno"; then
+    AC_MSG_ERROR([php not found; please install the PHP binary])
+fi
+
+AC_MSG_CHECKING(whether $PHPEXECUTABLE is executable)
+if test ! -x $PHPEXECUTABLE ; then
+    AC_MSG_ERROR([php binary is not executable])
+fi
+AC_MSG_RESULT(yes)
+
 AC_ARG_WITH([php-config], [AS_HELP_STRING([--with-php-config=path],
             [path to php-config, default search all paths])])
 
@@ -197,8 +218,13 @@ fi
 AC_SUBST([SHLIB_FLAGS])
 AC_SUBST([PHPIZE])
 AC_SUBST([PHPCONFIG])
+AC_SUBST([PHPEXECUTABLE])
 AC_CONFIG_FILES([Makefile tools/Makefile src/Makefile \
                  tests/Makefile docs/Makefile libvirt-php.spec])
+
+AC_CONFIG_FILES([tests/runtests.sh], [chmod +x tests/runtests.sh])
+AC_CONFIG_FILES([tests/check_parameters.sh], [chmod +x tests/check_parameters.sh])
+
 AC_OUTPUT
 
 LIBVIRT_RESULT_PHP_EXTENSIONDIR

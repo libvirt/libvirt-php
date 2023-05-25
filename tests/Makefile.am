@@ -4,8 +4,10 @@ test_scripts = \
 
 TESTS = $(test_scripts)
 
-EXTRA_DIST = $(test_scripts) \
+EXTRA_DIST = \
+	check_parameters.sh.in \
 	check_parameters.php \
+	runtests.sh.in \
 	runtests-report.sh \
 	data \
 	functions.phpt.in \
