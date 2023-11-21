@@ -141,7 +141,7 @@ int socket_has_data(int sfd, long maxtime, int ignoremsg)
         rc = select( sizeof(fds), &fds, NULL, NULL, NULL);
 
     if (rc==-1) {
-        DPRINTF("%s: Select with error %d (%s)\n", SOCKETFUNC, errno, strerror(-errno));
+        DPRINTF("%s: Select with error %d (%s)\n", SOCKETFUNC, errno, strerror(errno));
         return -errno;
     }
 
