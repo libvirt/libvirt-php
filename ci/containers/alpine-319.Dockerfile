@@ -4,13 +4,14 @@
 #
 # https://gitlab.com/libvirt/libvirt-ci
 
-FROM docker.io/library/alpine:3.17
+FROM docker.io/library/alpine:3.19
 
 RUN apk update && \
     apk upgrade && \
     apk add \
         autoconf \
         automake \
+        busybox \
         ca-certificates \
         ccache \
         gcc \
@@ -23,7 +24,7 @@ RUN apk update && \
         libxslt \
         make \
         musl-dev \
-        php81-dev \
+        php83-dev \
         pkgconf \
         tar \
         xz && \

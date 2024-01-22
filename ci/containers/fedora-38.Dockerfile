@@ -22,6 +22,7 @@ exec "$@"\n' > /usr/bin/nosync && \
                automake \
                ca-certificates \
                ccache \
+               gawk \
                gcc \
                gettext-devel \
                git \

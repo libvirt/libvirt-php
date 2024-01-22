@@ -11,6 +11,7 @@ function install_buildenv() {
         automake \
         ca-certificates \
         ccache \
+        gawk \
         gcc \
         gettext-devel \
         git \

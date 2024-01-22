@@ -11,6 +11,7 @@ RUN apk update && \
     apk add \
         autoconf \
         automake \
+        busybox \
         ca-certificates \
         ccache \
         gcc \
@@ -23,7 +24,7 @@ RUN apk update && \
         libxslt \
         make \
         musl-dev \
-        php81-dev \
+        php82-dev \
         pkgconf \
         tar \
         xz && \

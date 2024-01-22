@@ -4,7 +4,7 @@
 #
 # https://gitlab.com/libvirt/libvirt-ci
 
-FROM docker.io/library/debian:11-slim
+FROM docker.io/library/debian:12-slim
 
 RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get update && \
@@ -20,7 +20,6 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
                       gcc \
                       gettext \
                       git \
-                      libc-dev-bin \
                       libc6-dev \
                       libglib2.0-dev \
                       libgnutls28-dev \
@@ -35,6 +34,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
                       make \
                       meson \
                       ninja-build \
+                      original-awk \
                       perl-base \
                       php-dev \
                       pkgconf \
@@ -47,6 +47,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     eatmydata apt-get autoclean -y && \
     sed -Ei 's,^# (en_US\.UTF-8 .*)$,\1,' /etc/locale.gen && \
     dpkg-reconfigure locales && \
+    rm -f /usr/lib*/python3*/EXTERNALLY-MANAGED && \
     dpkg-query --showformat '${Package}_${Version}_${Architecture}\n' --show > /packages.txt && \
     mkdir -p /usr/libexec/ccache-wrappers && \
     ln -s /usr/bin/ccache /usr/libexec/ccache-wrappers/cc && \

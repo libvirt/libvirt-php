@@ -7,219 +7,136 @@
 
 # Native build jobs
 
-x86_64-alpine-317-prebuilt-env:
-  extends: .native_build_job_prebuilt_env
-  needs:
-    - job: x86_64-alpine-317-container
-      optional: true
-  allow_failure: false
-  variables:
-    CONFIGURE_ARGS: --with-php=/usr/bin/php81 --with-php-config=/usr/bin/php-config81
-    NAME: alpine-317
-
-x86_64-alpine-317-local-env:
-  extends: .native_build_job_local_env
-  needs: []
-  allow_failure: false
-  variables:
-    CONFIGURE_ARGS: --with-php=/usr/bin/php81 --with-php-config=/usr/bin/php-config81
-    IMAGE: docker.io/library/alpine:3.17
-    NAME: alpine-317
-
-
-x86_64-alpine-318-prebuilt-env:
-  extends: .native_build_job_prebuilt_env
+x86_64-alpine-318:
+  extends: .native_build_job
   needs:
     - job: x86_64-alpine-318-container
       optional: true
   allow_failure: false
   variables:
+    CONFIGURE_ARGS: --with-php=/usr/bin/php82 --with-php-config=/usr/bin/php-config82
     NAME: alpine-318
+    TARGET_BASE_IMAGE: docker.io/library/alpine:3.18
 
-x86_64-alpine-318-local-env:
-  extends: .native_build_job_local_env
-  needs: []
+
+x86_64-alpine-319:
+  extends: .native_build_job
+  needs:
+    - job: x86_64-alpine-319-container
+      optional: true
   allow_failure: false
   variables:
-    IMAGE: docker.io/library/alpine:3.18
-    NAME: alpine-318
+    CONFIGURE_ARGS: --with-php=/usr/bin/php83 --with-php-config=/usr/bin/php-config83
+    NAME: alpine-319
+    TARGET_BASE_IMAGE: docker.io/library/alpine:3.19
 
 
-x86_64-alpine-edge-prebuilt-env:
-  extends: .native_build_job_prebuilt_env
+x86_64-alpine-edge:
+  extends: .native_build_job
   needs:
     - job: x86_64-alpine-edge-container
       optional: true
   allow_failure: true
   variables:
+    CONFIGURE_ARGS: --with-php=/usr/bin/php83 --with-php-config=/usr/bin/php-config83
     NAME: alpine-edge
-
-x86_64-alpine-edge-local-env:
-  extends: .native_build_job_local_env
-  needs: []
-  allow_failure: true
-  variables:
-    IMAGE: docker.io/library/alpine:edge
-    NAME: alpine-edge
+    TARGET_BASE_IMAGE: docker.io/library/alpine:edge
 
 
-x86_64-debian-11-git-prebuilt-env:
-  extends: .native_git_build_job_prebuilt_env
+x86_64-debian-12-git:
+  extends: .native_git_build_job
   needs:
-    - job: x86_64-debian-11-container
+    - job: x86_64-debian-12-container
       optional: true
   allow_failure: false
   variables:
-    NAME: debian-11
-
-x86_64-debian-11-git-local-env:
-  extends: .native_git_build_job_local_env
-  needs: []
-  allow_failure: false
-  variables:
-    IMAGE: docker.io/library/debian:11-slim
-    NAME: debian-11
+    NAME: debian-12
+    TARGET_BASE_IMAGE: docker.io/library/debian:12-slim
 
 
-x86_64-debian-sid-prebuilt-env:
-  extends: .native_build_job_prebuilt_env
+x86_64-debian-sid:
+  extends: .native_build_job
   needs:
     - job: x86_64-debian-sid-container
       optional: true
   allow_failure: true
   variables:
     NAME: debian-sid
-
-x86_64-debian-sid-local-env:
-  extends: .native_build_job_local_env
-  needs: []
-  allow_failure: true
-  variables:
-    IMAGE: docker.io/library/debian:sid-slim
-    NAME: debian-sid
+    TARGET_BASE_IMAGE: docker.io/library/debian:sid-slim
 
 
-x86_64-fedora-37-prebuilt-env:
-  extends: .native_build_job_prebuilt_env
-  needs:
-    - job: x86_64-fedora-37-container
-      optional: true
-  allow_failure: false
-  variables:
-    NAME: fedora-37
-
-x86_64-fedora-37-local-env:
-  extends: .native_build_job_local_env
-  needs: []
-  allow_failure: false
-  variables:
-    IMAGE: registry.fedoraproject.org/fedora:37
-    NAME: fedora-37
-
-
-x86_64-fedora-38-prebuilt-env:
-  extends: .native_build_job_prebuilt_env
+x86_64-fedora-38:
+  extends: .native_build_job
   needs:
     - job: x86_64-fedora-38-container
       optional: true
   allow_failure: false
   variables:
     NAME: fedora-38
+    TARGET_BASE_IMAGE: registry.fedoraproject.org/fedora:38
 
-x86_64-fedora-38-local-env:
-  extends: .native_build_job_local_env
-  needs: []
+
+x86_64-fedora-39:
+  extends: .native_build_job
+  needs:
+    - job: x86_64-fedora-39-container
+      optional: true
   allow_failure: false
   variables:
-    IMAGE: registry.fedoraproject.org/fedora:38
-    NAME: fedora-38
+    NAME: fedora-39
+    TARGET_BASE_IMAGE: registry.fedoraproject.org/fedora:39
 
 
-x86_64-fedora-rawhide-prebuilt-env:
-  extends: .native_build_job_prebuilt_env
+x86_64-fedora-rawhide:
+  extends: .native_build_job
   needs:
     - job: x86_64-fedora-rawhide-container
       optional: true
   allow_failure: true
   variables:
     NAME: fedora-rawhide
-
-x86_64-fedora-rawhide-local-env:
-  extends: .native_build_job_local_env
-  needs: []
-  allow_failure: true
-  variables:
-    IMAGE: registry.fedoraproject.org/fedora:rawhide
-    NAME: fedora-rawhide
+    TARGET_BASE_IMAGE: registry.fedoraproject.org/fedora:rawhide
 
 
-x86_64-opensuse-leap-15-prebuilt-env:
-  extends: .native_build_job_prebuilt_env
+x86_64-opensuse-leap-15:
+  extends: .native_build_job
   needs:
     - job: x86_64-opensuse-leap-15-container
       optional: true
   allow_failure: false
   variables:
     NAME: opensuse-leap-15
-
-x86_64-opensuse-leap-15-local-env:
-  extends: .native_build_job_local_env
-  needs: []
-  allow_failure: false
-  variables:
-    IMAGE: registry.opensuse.org/opensuse/leap:15.4
-    NAME: opensuse-leap-15
+    TARGET_BASE_IMAGE: registry.opensuse.org/opensuse/leap:15.5
 
 
-x86_64-opensuse-tumbleweed-prebuilt-env:
-  extends: .native_build_job_prebuilt_env
+x86_64-opensuse-tumbleweed:
+  extends: .native_build_job
   needs:
     - job: x86_64-opensuse-tumbleweed-container
       optional: true
   allow_failure: true
   variables:
     NAME: opensuse-tumbleweed
-
-x86_64-opensuse-tumbleweed-local-env:
-  extends: .native_build_job_local_env
-  needs: []
-  allow_failure: true
-  variables:
-    IMAGE: registry.opensuse.org/opensuse/tumbleweed:latest
-    NAME: opensuse-tumbleweed
+    TARGET_BASE_IMAGE: registry.opensuse.org/opensuse/tumbleweed:latest
 
 
-x86_64-ubuntu-2004-prebuilt-env:
-  extends: .native_build_job_prebuilt_env
+x86_64-ubuntu-2004:
+  extends: .native_build_job
   needs:
     - job: x86_64-ubuntu-2004-container
       optional: true
   allow_failure: false
   variables:
     NAME: ubuntu-2004
-
-x86_64-ubuntu-2004-local-env:
-  extends: .native_build_job_local_env
-  needs: []
-  allow_failure: false
-  variables:
-    IMAGE: docker.io/library/ubuntu:20.04
-    NAME: ubuntu-2004
+    TARGET_BASE_IMAGE: docker.io/library/ubuntu:20.04
 
 
-x86_64-ubuntu-2204-prebuilt-env:
-  extends: .native_build_job_prebuilt_env
+x86_64-ubuntu-2204:
+  extends: .native_build_job
   needs:
     - job: x86_64-ubuntu-2204-container
       optional: true
   allow_failure: false
   variables:
     NAME: ubuntu-2204
-
-x86_64-ubuntu-2204-local-env:
-  extends: .native_build_job_local_env
-  needs: []
-  allow_failure: false
-  variables:
-    IMAGE: docker.io/library/ubuntu:22.04
-    NAME: ubuntu-2204
+    TARGET_BASE_IMAGE: docker.io/library/ubuntu:22.04

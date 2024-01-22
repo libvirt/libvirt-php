@@ -4,7 +4,7 @@
 #
 # https://gitlab.com/libvirt/libvirt-ci
 
-FROM registry.fedoraproject.org/fedora:37
+FROM registry.fedoraproject.org/fedora:39
 
 RUN dnf install -y nosync && \
     printf '#!/bin/sh\n\
@@ -22,6 +22,7 @@ exec "$@"\n' > /usr/bin/nosync && \
                automake \
                ca-certificates \
                ccache \
+               gawk \
                gcc \
                gettext-devel \
                git \

@@ -24,6 +24,7 @@ function install_buildenv() {
             libxml2-utils \
             locales \
             make \
+            original-awk \
             php-dev \
             pkgconf \
             tar \

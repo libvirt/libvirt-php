@@ -26,6 +26,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
                       libxml2-utils \
                       locales \
                       make \
+                      original-awk \
                       php-dev \
                       pkgconf \
                       tar \

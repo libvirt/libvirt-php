@@ -5,6 +5,8 @@ stages:
   - sanity_checks
 
 .native_git_build_job:
+  extends:
+    - .gitlab_native_build_job
   script:
     - export MAKEFLAGS="-j$(getconf _NPROCESSORS_ONLN)"
     - export SCRATCH_DIR="/tmp/scratch"
@@ -26,33 +28,15 @@ stages:
   after_script:
     - find -name test-suite.log | xargs cat
 
-.native_git_build_job_prebuilt_env:
-  extends:
-    - .native_git_build_job
-    - .gitlab_native_build_job_prebuilt_env
-
-.native_git_build_job_local_env:
-  extends:
-    - .native_git_build_job
-    - .gitlab_native_build_job_local_env
-
 .native_build_job:
+  extends:
+    - .gitlab_native_build_job
   script:
     - export MAKEFLAGS="-j$(getconf _NPROCESSORS_ONLN)"
     - ./autogen.sh ${CONFIGURE_ARGS}
     - make distcheck
   after_script:
     - find -name test-suite.log | xargs cat
-
-.native_build_job_prebuilt_env:
-  extends:
-    - .native_build_job
-    - .gitlab_native_build_job_prebuilt_env
-
-.native_build_job_local_env:
-  extends:
-    - .native_build_job
-    - .gitlab_native_build_job_local_env
 
 .website:
   script:
@@ -68,19 +52,12 @@ stages:
 pages:
   extends:
     - .website
-    - .gitlab_native_build_job_prebuilt_env
+    - .gitlab_native_build_job
   needs:
     - job: x86_64-ubuntu-2204-container
       optional: true
   variables:
     NAME: ubuntu-2204
-
-website_local_env:
-  extends:
-    - .website
-    - .gitlab_native_build_job_local_env
-  variables:
-    IMAGE: docker.io/library/ubuntu:22.04
-    NAME: ubuntu-2204
+    TARGET_BASE_IMAGE: docker.io/library/ubuntu:22.04
 
 include: '/ci/gitlab.yml'
