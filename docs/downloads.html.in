@@ -6,17 +6,19 @@
     <h2>Official Releases</h2>
 
     <p>
-      You can download the official release, release 0.5.7, from:
+      You can download the official release, release 0.5.8, from:
     </p>
 
 <pre>
-<a href="https://download.libvirt.org/php/libvirt-php-0.5.7.tar.xz">https://download.libvirt.org/php/libvirt-php-0.5.7.tar.xz</a>
+<a href="https://download.libvirt.org/php/libvirt-php-0.5.8.tar.xz">https://download.libvirt.org/php/libvirt-php-0.5.8.tar.xz</a>
 </pre>
 
     <p>
       However if you prefer to download any versions of the previous official releases please click on the release you want to download:
     </p>
 
+<a href="https://download.libvirt.org/php/libvirt-php-0.5.7.tar.xz">https://download.libvirt.org/php/libvirt-php-0.5.7.tar.xz</a>
+<br/>
 <a href="https://download.libvirt.org/php/libvirt-php-0.5.6.tar.xz">https://download.libvirt.org/php/libvirt-php-0.5.6.tar.xz</a>
 <br/>
 <a href="https://download.libvirt.org/php/libvirt-php-0.5.5.tar.gz">https://download.libvirt.org/php/libvirt-php-0.5.5.tar.gz</a>

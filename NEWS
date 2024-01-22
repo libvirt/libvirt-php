@@ -5,10 +5,20 @@ libvirt-php releases
 This is the list of official releases for libvirt-php, along with an
 overview of the changes introduced by each of them.
 
-v0.5.8 (unreleased)
+v0.5.8 (2024-01-22)
 ===================
 
-*
+* Adapt libvirt_connect_get_nic_models() to new QEMU
+* Adapt libvirt_connect_get_soundhw_models() to new QEMU
+* Implement virConnectGetDomainCapabilities() API
+* Implement virDomainSnapshotCreateXML() API
+* Implement virDomainBlockPull() API
+* Implement virDomainBlockRebase() API
+* Implement virDomainBlockCopy() API
+* Various memleak fixes
+* Various test suite fixes
+* Bug fixes
+
 
 v0.5.7 (2022-12-07)
 ===================
