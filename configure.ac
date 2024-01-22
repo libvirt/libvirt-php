@@ -1,4 +1,4 @@
-AC_INIT([libvirt-php],[0.5.8],[libvir-list@redhat.com],[],[https://libvirt.org])
+AC_INIT([libvirt-php],[0.5.8],[devel@lists.libvirt.org],[],[https://libvirt.org])
 AC_CONFIG_SRCDIR([src/libvirt-php.c])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
