@@ -584,7 +584,11 @@ PHP_FUNCTION(libvirt_connect_get_soundhw_models)
 /*
  * Function name:   libvirt_connect_get_maxvcpus
  * Since version:   0.4.1(-2)
- * Description:     Function is used to get maximum number of VCPUs per VM on the hypervisor connection
+ * Description:     Function is used to get maximum number of VCPUs per VM on
+ *                  the hypervisor connection. This API doesn't take emulator limits into
+ *                  consideration, hence the returned value is not guaranteed to be usable. It
+ *                  is recommended to use libvirt_connect_get_domain_capabilities() and look for
+ *                  /domainCapabilities/vcpu[1]/@max value in its output instead.
  * Arguments:       @conn [resource]: resource for connection
  *                  @type [string]: valid domain type, i.e. the 'type'
  *                  attribute in the <domain> element
