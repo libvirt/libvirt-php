@@ -1,9 +1,9 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 : ${srcdir=.}
 
 nf=$1
-tests=\
+tests=(\
 "test-version-check" \
 "test-version-get" \
 "test-get-emulator" \
@@ -18,7 +18,8 @@ tests=\
 "test-install" \
 "test-get-models" \
 "test-get-models-unsupported-hw" \
-"test-domain-create-get-metadata"
+"test-domain-create-get-metadata" \
+)
 
 run_test()
 {
@@ -41,7 +42,7 @@ run_test()
 touch /tmp/test-libvirt-php.tmp
 
 error=0
-for atest in ${tests}
+for atest in ${tests[@]}
 do
 	run_test $atest $nf; ret="$?"
 
