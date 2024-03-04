@@ -80,6 +80,11 @@ ZEND_ARG_INFO(0, arch)
 ZEND_ARG_INFO(0, flags)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_libvirt_connect_get_maxvcpus, 0, 0, 1)
+ZEND_ARG_INFO(0, conn)
+ZEND_ARG_INFO(0, type)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_libvirt_connect_get_all_domain_stats, 0, 0, 1)
 ZEND_ARG_INFO(0, conn)
 ZEND_ARG_INFO(0, stats)

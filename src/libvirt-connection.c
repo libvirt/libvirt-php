@@ -586,19 +586,18 @@ PHP_FUNCTION(libvirt_connect_get_soundhw_models)
  * Since version:   0.4.1(-2)
  * Description:     Function is used to get maximum number of VCPUs per VM on the hypervisor connection
  * Arguments:       @conn [resource]: resource for connection
- * Returns:         number of VCPUs available per VM on the connection or FALSE for error
+ *                  @type [string]: valid domain type, i.e. the 'type'
+ *                  attribute in the <domain> element
+ * Returns:         number of VCPUs available per VM on the connection or -1 for error
  */
 PHP_FUNCTION(libvirt_connect_get_maxvcpus)
 {
     php_libvirt_connection *conn = NULL;
     zval *zconn;
-    const char *type = NULL;
+    char *type = NULL;
+    size_t type_len = 0;
 
-    GET_CONNECTION_FROM_ARGS("r", &zconn);
-
-    type = virConnectGetType(conn->conn);
-    if (type == NULL)
-        RETURN_FALSE;
+    GET_CONNECTION_FROM_ARGS("r|s", &zconn, &type, &type_len);
 
     RETURN_LONG(virConnectGetMaxVcpus(conn->conn, type));
 }

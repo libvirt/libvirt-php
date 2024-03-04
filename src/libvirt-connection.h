@@ -21,7 +21,7 @@
     PHP_FE(libvirt_connect_get_emulator,         arginfo_libvirt_connect_get_emulator)         \
     PHP_FE(libvirt_connect_get_nic_models,       arginfo_libvirt_connect_get_emulator)         \
     PHP_FE(libvirt_connect_get_soundhw_models,   arginfo_libvirt_connect_get_soundhw_models)   \
-    PHP_FE(libvirt_connect_get_maxvcpus,         arginfo_libvirt_conn)                         \
+    PHP_FE(libvirt_connect_get_maxvcpus,         arginfo_libvirt_connect_get_maxvcpus)         \
     PHP_FE(libvirt_connect_get_sysinfo,          arginfo_libvirt_conn)                         \
     PHP_FE(libvirt_connect_get_encrypted,        arginfo_libvirt_conn)                         \
     PHP_FE(libvirt_connect_get_secure,           arginfo_libvirt_conn)                         \
