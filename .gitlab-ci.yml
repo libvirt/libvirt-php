@@ -27,6 +27,7 @@ stages:
     - make distcheck
   after_script:
     - find -name test-suite.log | xargs cat
+    - find -name runtests.sh.log | xargs cat
 
 .native_build_job:
   extends:
@@ -37,6 +38,7 @@ stages:
     - make distcheck
   after_script:
     - find -name test-suite.log | xargs cat
+    - find -name runtests.sh.log | xargs cat
 
 .website:
   script:
