@@ -10,7 +10,7 @@ function install_buildenv() {
     apk add \
         autoconf \
         automake \
-        busybox \
+        bash \
         ca-certificates \
         ccache \
         gcc \
@@ -27,7 +27,7 @@ function install_buildenv() {
         pkgconf \
         tar \
         xz
-    apk list | sort > /packages.txt
+    apk list --installed | sort > /packages.txt
     mkdir -p /usr/libexec/ccache-wrappers
     ln -s /usr/bin/ccache /usr/libexec/ccache-wrappers/cc
     ln -s /usr/bin/ccache /usr/libexec/ccache-wrappers/gcc

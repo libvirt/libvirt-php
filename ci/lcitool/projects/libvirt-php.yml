@@ -3,6 +3,7 @@ packages:
   - autoconf
   - automake
   - autopoint
+  - bash
   - ccache
   - gcc
   - libc

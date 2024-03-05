@@ -14,6 +14,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
                       autoconf \
                       automake \
                       autopoint \
+                      bash \
                       ca-certificates \
                       ccache \
                       gcc \
@@ -26,7 +27,6 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
                       libxml2-utils \
                       locales \
                       make \
-                      original-awk \
                       php-dev \
                       pkgconf \
                       tar \

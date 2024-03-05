@@ -21,9 +21,9 @@ exec "$@"\n' > /usr/bin/nosync && \
     nosync dnf install -y \
                autoconf \
                automake \
+               bash \
                ca-certificates \
                ccache \
-               gawk \
                gcc \
                gettext-devel \
                git \

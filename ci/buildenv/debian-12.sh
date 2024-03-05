@@ -12,6 +12,7 @@ function install_buildenv() {
             autoconf \
             automake \
             autopoint \
+            bash \
             ca-certificates \
             ccache \
             cpp \
@@ -32,7 +33,6 @@ function install_buildenv() {
             make \
             meson \
             ninja-build \
-            original-awk \
             perl-base \
             php-dev \
             pkgconf \

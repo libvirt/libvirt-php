@@ -9,7 +9,7 @@ function install_buildenv() {
     zypper install -y \
            autoconf \
            automake \
-           awk \
+           bash \
            ca-certificates \
            ccache \
            gcc \

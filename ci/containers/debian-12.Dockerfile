@@ -14,6 +14,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
                       autoconf \
                       automake \
                       autopoint \
+                      bash \
                       ca-certificates \
                       ccache \
                       cpp \
@@ -34,7 +35,6 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
                       make \
                       meson \
                       ninja-build \
-                      original-awk \
                       perl-base \
                       php-dev \
                       pkgconf \
