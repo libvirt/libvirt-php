@@ -2,6 +2,7 @@
 stages:
   - containers
   - builds
+  - pages
   - sanity_checks
 
 .native_git_build_job:
@@ -40,26 +41,32 @@ stages:
     - find -name test-suite.log | xargs cat
     - find -name runtests.sh.log | xargs cat
 
-.website:
+website_job:
+  extends:
+    - .gitlab_native_build_job
+  needs:
+    - job: x86_64-ubuntu-2204-container
+      optional: true
   script:
     - mkdir /tmp/web
     - ./autogen.sh --with-html-dir=/tmp/web ${CONFIGURE_ARGS}
     - make
     - make install
-    - mv /tmp/web/libvirt-php*/html public
+    - mv /tmp/web/libvirt-php*/html website
+  artifacts:
+    paths:
+      - website
+  variables:
+    NAME: ubuntu-2204
+
+pages:
+  stage: pages
+  dependencies:
+    - website_job
+  script:
+    - mv website public
   artifacts:
     paths:
       - public
-
-pages:
-  extends:
-    - .website
-    - .gitlab_native_build_job
-  needs:
-    - job: x86_64-ubuntu-2204-container
-      optional: true
-  variables:
-    NAME: ubuntu-2204
-    TARGET_BASE_IMAGE: docker.io/library/ubuntu:22.04
 
 include: '/ci/gitlab.yml'
