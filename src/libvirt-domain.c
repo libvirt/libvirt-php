@@ -3567,3 +3567,31 @@ PHP_FUNCTION(libvirt_domain_get_cpu_total_stats)
     if (!done)
         RETURN_FALSE;
 }
+
+/*
+ * Function name:    libvirt_domain_rename
+ * Since version:    0.5.9
+ * Description:      Function used to rename the domain.
+ * Arguments:        @res [resource]: libvirt domain resource, e.g. from libvirt_domain_lookup_by_*()
+ *                   @name [string]: the new name for the domain
+ *                   @flags [int]: extra flags; not used yet so callers should always pass 0
+ * Returns:          TRUE for success, FALSE on error
+ */
+PHP_FUNCTION(libvirt_domain_rename)
+{
+    php_libvirt_domain *domain = NULL;
+    zval *zdomain;
+    char *name;
+    size_t name_len;
+    zend_long flags = 0;
+    int res;
+
+    GET_DOMAIN_FROM_ARGS("rs|l", &zdomain, &name, &name_len, &flags);
+  
+    res = virDomainRename(domain->domain, name, flags);
+    DPRINTF("%s: virDomainRename(%p) returned %d\n", PHPFUNC, domain->domain, res);
+    if (res != 0)
+        RETURN_FALSE;
+
+    RETURN_TRUE;
+}
