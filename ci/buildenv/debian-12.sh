@@ -27,6 +27,7 @@ function install_buildenv() {
             libtirpc-dev \
             libtool \
             libtool-bin \
+            libvirt-dev \
             libxml2-dev \
             libxml2-utils \
             locales \
