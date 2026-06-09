@@ -5,30 +5,30 @@
 # https://gitlab.com/libvirt/libvirt-ci
 
 function install_buildenv() {
-    dnf update -y --nogpgcheck fedora-gpg-keys
-    dnf distro-sync -y
-    dnf install -y \
-        autoconf \
-        automake \
-        bash \
-        ca-certificates \
-        ccache \
-        gcc \
-        gettext-devel \
-        git \
-        glibc-devel \
-        glibc-langpack-en \
-        libtool \
-        libvirt-devel \
-        libxml2 \
-        libxml2-devel \
-        libxslt \
-        make \
-        php-devel \
-        pkgconfig \
-        rpm-build \
-        tar \
-        xz
+    dnf --quiet update -y --nogpgcheck fedora-gpg-keys
+    dnf --quiet distro-sync -y
+    dnf --quiet install -y \
+                autoconf \
+                automake \
+                bash \
+                ca-certificates \
+                ccache \
+                gcc \
+                gettext-devel \
+                git \
+                glibc-devel \
+                glibc-langpack-en \
+                libtool \
+                libvirt-devel \
+                libxml2 \
+                libxml2-devel \
+                libxslt \
+                make \
+                php-devel \
+                pkgconfig \
+                rpm-build \
+                tar \
+                xz
     rpm -qa | sort > /packages.txt
     mkdir -p /usr/libexec/ccache-wrappers
     ln -s /usr/bin/ccache /usr/libexec/ccache-wrappers/cc
