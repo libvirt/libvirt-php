@@ -179,18 +179,19 @@ void socket_read(int sfd, long length)
 
     DPRINTF("%s: Reading %ld bytes\n", SOCKETFUNC, length);
     while (length > 0) {
-        len = read(sfd, bigbuf, sizeof(bigbuf));
+        size_t want = length;
+        if (length > sizeof(bigbuf))
+            want = sizeof(bigbuf);
+        len = read(sfd, bigbuf, want);
+        if (len <= 0) {
+            DPRINTF("%s: not all byes read\n", SOCKETFUNC);
+            return;
+        }
 
         length -= len;
-        if (length < 0)
-            length = 0;
     }
 
-    if (length &&
-        read(sfd, bigbuf, length) != length)
-        DPRINTF("%s: not all byes read\n", SOCKETFUNC);
-    else
-        DPRINTF("%s: All bytes read\n", SOCKETFUNC);
+    DPRINTF("%s: All bytes read\n", SOCKETFUNC);
 }
 
 /*
@@ -219,36 +220,39 @@ int socket_read_and_save(int sfd, char *fn, long length)
 
     if (socket_has_data(sfd, 50000, 0) != 1) {
         DPRINTF("%s: No data appears to be available\n", SOCKETFUNC);
+        close(fd);
         return -ENOENT;
     }
 
     DPRINTF("%s: Reading %ld bytes\n", SOCKETFUNC, length);
     while (length > 0) {
-        len = read(sfd, bigbuf, sizeof(bigbuf));
+        size_t want = length;
+        if (length > sizeof(bigbuf))
+            want = sizeof(bigbuf);
+        len = read(sfd, bigbuf, want);
+        if (len <= 0) {
+            DPRINTF("%s: not all byes read\n", SOCKETFUNC);
+            close(fd);
+            return -EIO;
+        }
 
         for (i = 0; i < len; i += 4)
             SWAP2_BYTES_ENDIAN(1, bigbuf[i+1], bigbuf[i+2]);
 
-        if (write(fd, bigbuf, len) != len)
+        if (write(fd, bigbuf, len) != len) {
             DPRINTF("%s: unable to write to %d", SOCKETFUNC, fd);
+            close(fd);
+            return -EIO;
+        }
 
         length -= len;
-        if (length < 0)
-            length = 0;
     }
 
-    if (length) {
-        len = read(sfd, bigbuf, length);
-
-        for (i = 0; i < len; i += 4)
-            SWAP2_BYTES_ENDIAN(1, bigbuf[i+1], bigbuf[i+2]);
-
-        if (write(fd, bigbuf, len) != len)
-            DPRINTF("%s: unable to write to %d", SOCKETFUNC, fd);
-    }
-
-    if (ftruncate(fd, orig_len) < 0)
+    if (ftruncate(fd, orig_len) < 0) {
         DPRINTF("%s: Unable to truncate %d", SOCKETFUNC, fd);
+        close(fd);
+        return -EIO;
+    }
 
     close(fd);
 
